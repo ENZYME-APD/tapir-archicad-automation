@@ -1,0 +1,104 @@
+{
+  "title": "ModifyColumns says why it cannot change a column on a hidden layer, as SetDetailsOfElements does (#2972)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "a shown layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer 2972", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "save": { "layerIndex": "layers[0].index" },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": false, "name": "the layer is shown" }
+      ]
+    },
+    {
+      "id": "a column on that layer, away from the origin",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "layerIndex": "${layerIndex}", "floorIndex": 0, "coordinates": { "x": 940.0, "y": 940.0, "z": 0.0 }, "height": 3.0 }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "hide the layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "attributeId": { "guid": "${layer}" }, "name": "Tapir check layer 2972", "isHidden": true, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      }
+    },
+    {
+      "id": "the layer is hidden",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": true, "name": "the layer is hidden" }
+      ]
+    },
+    {
+      "id": "change the height of the column on the hidden layer",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          { "elementId": { "guid": "${c1}" }, "height": 3.2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the change is refused" },
+        { "path": "executionResults[0].error.message", "contains": "its layer is hidden", "name": "the error says the layer is hidden" }
+      ]
+    },
+    {
+      "id": "show the layer again",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "attributeId": { "guid": "${layer}" }, "name": "Tapir check layer 2972", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      }
+    },
+    {
+      "id": "change the height of the column on the shown layer",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": {
+        "columnsWithDetails": [
+          { "elementId": { "guid": "${c1}" }, "height": 3.2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the change is made once the layer is shown" }
+      ]
+    }
+  ]
+}

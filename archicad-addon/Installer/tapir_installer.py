@@ -18,6 +18,7 @@ PyInstaller (see the release workflow).
 """
 
 import argparse
+import codecs
 import contextlib
 import http.client
 import json
@@ -263,6 +264,868 @@ TEXTS = {
         'invalidPid' : 'Invalid --archicadPid value: {0}',
         'addOnFileNeedsPath' : '--addOnFile requires the path of the Tapir Add-On to update.',
     },
+    # German: formal (Sie), the site's terms (Installer, Add-On, Release).
+    'GER' : {
+        # The window
+        'installerTitle' : 'Tapir Add-On-Installer',
+        'checkingRelease' : 'Das neueste Tapir-Release wird geprüft...',
+        'latestRelease' : 'Neuestes Tapir-Release: {0}',
+        'latestReleaseWithUpdates' : 'Neuestes Tapir-Release: {0} (Update für {1} Archicad-Version(en) verfügbar)',
+        'sectionInstallations' : 'ARCHICAD-INSTALLATIONEN',
+        'sectionUpdate' : 'TAPIR-UPDATE',
+        'detectingInstallations' : 'Archicad-Installationen werden gesucht...',
+        'preparingUpdate' : 'Das Update wird vorbereitet...',
+        'noArchicadOnComputer' : 'Auf diesem Computer wurde keine Archicad-Installation gefunden.',
+        'showManualInstructions' : 'Anleitung zur manuellen Installation anzeigen',
+        'detectionFailed' : 'Die Archicad-Installationen konnten nicht erkannt werden: {0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : 'Alle auswählen',
+        'selectNone' : 'Keine auswählen',
+        'selectedCount' : '{0} von {1} ausgewählt',
+        'buttonInstall' : 'Installieren',
+        'buttonUninstall' : 'Deinstallieren',
+        'buttonUpdate' : 'Aktualisieren',
+        'buttonClose' : 'Schließen',
+        'buttonCancel' : 'Abbrechen',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : 'Nicht installiert',
+        'statusInstalled' : 'Installiert',
+        'statusInstalledVersion' : 'Installiert {0}',
+        'statusUpdateAvailable' : 'Update {0} → {1}',
+        'statusReadyToUpdate' : 'Bereit zum Update',
+        'statusDownloading' : 'Herunterladen...',
+        'statusDownloadingPercent' : 'Herunterladen {0} %',
+        'statusWaitingToInstall' : 'In Warteschlange',
+        'statusInstalling' : 'Installieren...',
+        'statusClosingArchicad' : 'Archicad wird beendet...',
+        'statusWaitingForArchicad' : 'Warten auf Archicad...',
+        'statusRestartingArchicad' : 'Archicad startet neu...',
+        'statusCancelling' : 'Abbrechen...',
+        'statusDownloaded' : 'Heruntergeladen',
+        'statusUpdated' : 'Aktualisiert',
+        'statusCancelled' : 'Abgebrochen',
+        'statusUninstalled' : 'Deinstalliert',
+        'statusFailed' : 'Fehlgeschlagen',
+        # The results
+        'installedForAll' : 'Tapir wurde für {0} Archicad-Version(en) installiert. Starten Sie Archicad neu, um das Add-On zu laden.',
+        'installedForSome' : 'Tapir wurde für {0} von {1} Archicad-Version(en) installiert.\n{2}',
+        'uninstallFinished' : 'Das Tapir Add-On wurde deinstalliert.',
+        'uninstallFailed' : 'Das Tapir Add-On konnte nicht deinstalliert werden.\n{0}',
+        'versionError' : 'Archicad {0}: {1}',
+        'noAddOnForThisVersion' : 'Kein Add-On für diese Version',
+        # The update
+        'waitingForArchicadHint' : 'Wenn Archicad fragt, ob Ihre Änderungen gesichert werden sollen, antworten Sie in Archicad.',
+        'updateCancelled' : ('Das Update wurde abgebrochen. Der Installer hat Archicad nicht geschlossen. '
+            'Falls Archicad sich trotzdem schließt, starten Sie es wieder und wiederholen Sie das Update aus Archicad.'),
+        'updateRunning' : 'Tapir wird bereits aktualisiert. Warten Sie, bis dieses Update fertig ist: Es schließt Archicad selbst und startet es wieder.',
+        'updateWaitingForQuit' : ('Tapir wird bereits aktualisiert, und dieses Update wartet darauf, dass Archicad beendet wird. '
+            'Beenden Sie Archicad, um es abzuschließen; Archicad wird danach wieder gestartet.'),
+        'archicadDidNotQuit' : 'Archicad wurde nicht beendet ({0}), daher wurde Tapir nicht aktualisiert. Starten Sie das Update erneut aus Archicad.',
+        'quittingRefused' : 'das Beenden wurde abgelehnt',
+        'quittingCancelled' : 'wurde das Beenden abgebrochen?',
+        'updated' : 'Tapir wurde auf {0} aktualisiert.',
+        'latestVersion' : 'die neueste Version',
+        'archicadIsStartingAgain' : 'Archicad wird wieder gestartet.',
+        'archicadWasStartedAgain' : 'Archicad wurde wieder gestartet.',
+        'startUpdateAgain' : 'Starten Sie das Update erneut aus Archicad.',
+        'restartFailed' : 'Archicad konnte nicht wieder gestartet werden: {0}',
+        'oldBundleNotDeleted' : 'Die alte Version konnte nicht gelöscht werden: Löschen Sie {0} von Hand.',
+        'archicadConnectionFailed' : 'Die Verbindung zu Archicad auf Port {0} ist fehlgeschlagen: {1}',
+        'archicadCommandFailed' : 'Archicad konnte {0} nicht ausführen: {1}',
+        'mappedDrive' : ('Das zu aktualisierende Tapir Add-On liegt auf Laufwerk {0}, das der als Administrator laufende Installer nicht sehen kann '
+            '(ein verbundenes Netzlaufwerk?): {1}. Installieren Sie das Update manuell: {2}'),
+        'addOnToUpdateNotFound' : 'Das zu aktualisierende Tapir Add-On wurde nicht gefunden: {0}',
+        'notAnAddOnBundle' : 'Kein Add-On-Bundle: {0}',
+        'notAnAddOnFile' : 'Keine Add-On-Datei (.apx): {0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : 'Zugriff verweigert. Schließen Sie Archicad, falls es läuft, oder wählen Sie „Für mich installieren“.',
+        'releaseInfoFailed' : 'Das neueste Tapir-Release konnte nicht von GitHub abgerufen werden: {0}',
+        'noAddOnForVersion' : 'Im Release {1} gibt es kein Tapir Add-On für Archicad {0}.',
+        'downloadFailed' : '{0} konnte nicht heruntergeladen werden: {1}',
+        'downloadIncomplete' : '{0} konnte nicht heruntergeladen werden: {1} statt {2} Bytes empfangen.',
+        'downloadNotAddOn' : '{0} konnte nicht heruntergeladen werden: Die empfangene Datei ist nicht das Add-On (wurde sie von einem Proxy blockiert?).',
+        'adminInstallFailed' : 'Die Installation mit Administratorrechten ist fehlgeschlagen: {0}',
+        'installFailed' : 'Die Installation ist fehlgeschlagen (schließen Sie Archicad und versuchen Sie es erneut): {0}',
+        'addOnsFolderMissing' : 'Der Ordner Add-Ons existiert nicht: {0}',
+        'extractFailed' : '{0} konnte nicht entpackt werden: {1}',
+        'notOneBundle' : '{0} enthält nicht genau ein Add-On-Bundle.',
+        'copyNextToFailed' : 'Das Add-On konnte nicht neben {0} kopiert werden: {1}',
+        'replaceFailed' : '{0} konnte nicht ersetzt werden: {1}',
+        'replaceAndMoveBackFailed' : ('{0} konnte nicht ersetzt werden: {1}. Auch das alte Add-On konnte nicht zurückverschoben werden: '
+            'Benennen Sie {2} von Hand zurück.'),
+        # Install for me, or for all users
+        'sectionInstallFor' : 'INSTALLIEREN',
+        'installForMe' : 'Für mich installieren (keine Administratorrechte nötig)',
+        'installForAllUsers' : 'Für alle Benutzer dieses Computers installieren (Administratorrechte nötig)',
+        'closeArchicad' : 'Schließen Sie Archicad {0}, um die Installation von Tapir abzuschließen.',
+        'closeArchicadToUninstall' : 'Schließen Sie Archicad {0}, um die Deinstallation von Tapir abzuschließen.',
+        'startArchicadOnce' : 'Starten Sie Archicad {0} einmal und schließen Sie es, dann klicken Sie auf Wiederholen.',
+        'startArchicadOnceConsole' : 'Starten Sie Archicad {0} einmal und schließen Sie es, dann führen Sie den Installer erneut aus.',
+        'installedForAllUsersAlready' : ('Tapir für Archicad {0} ist für alle Benutzer installiert und wird dort aktualisiert. '
+            'Bitten Sie Ihren Administrator, es zu entfernen, um Ihre eigene Kopie zu installieren.'),
+        'allUsersCopyLeft' : ('Tapir für Archicad {0} ist auch für alle Benutzer dieses Computers installiert. '
+            'Deinstallieren Sie es für alle Benutzer (Administratorrechte nötig), um es zu entfernen.'),
+        'forMeElevated' : ('Der Installer läuft als Administrator und kann daher nicht für Sie installieren: Die Archicad-Einstellungen, '
+            'die er ändern würde, sind die des Administrators, die nicht Ihre sein müssen. Starten Sie ihn ohne Administratorrechte, '
+            'oder wählen Sie „Für alle Benutzer installieren“.'),
+        'elevationFailed' : 'Der Installer konnte nicht mit Administratorrechten gestartet werden (Fehler {0}).',
+        'startedAsAdministrator' : 'Der Installer wurde mit Administratorrechten neu gestartet.',
+        'buttonRetry' : 'Wiederholen',
+        'buttonSkipVersion' : 'Diese Version überspringen',
+        'statusSkipped' : 'Übersprungen',
+        'skippedVersion' : 'Archicad {0} wurde übersprungen.',
+        'forMeAndAllUsers' : '--forMe und --allUsers können nicht kombiniert werden.',
+        # Console mode
+        'foundInstallations' : 'Gefundene Archicad-Installationen:',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1}), Tapir {2} installiert',
+        'noArchicadFound' : 'Es wurde keine Archicad-Installation gefunden. Zur manuellen Installation siehe {0}.',
+        'archicadVersionNotFound' : 'Es wurde keine Installation von Archicad {0} gefunden.',
+        'wouldInstall' : 'Würde {0} in {1} installieren',
+        'installed' : '{0} in {1} installiert',
+        'wouldInstallForMe' : 'Würde {0} für Sie in {1} installieren',
+        'installedForMe' : '{0} für Sie in {1} installiert',
+        'uninstalledForMe' : 'Ihr Tapir wurde aus {0} deinstalliert',
+        'wouldUninstall' : 'Würde Tapir aus {0} deinstallieren',
+        'uninstalled' : 'Tapir wurde aus {0} deinstalliert',
+        'notInstalledIn' : 'Tapir war nicht in {0} installiert',
+        'consoleDone' : 'Fertig. Starten Sie Archicad neu, um das Tapir Add-On zu laden.',
+        'consoleUpdating' : 'Das Tapir Add-On von Archicad {0} wird aktualisiert: {1}',
+        'dryRun' : 'Würde {0}',
+        'dryRunQuit' : 'Archicad auf Port {0} beenden',
+        'dryRunReplace' : '{0} durch {1} ersetzen',
+        'dryRunRestart' : 'Archicad neu starten',
+        'dryRunStepSeparator' : ', ',
+        'consoleError' : 'FEHLER: {0}',
+        'ignoringUnknownOptions' : 'Unbekannte Optionen werden ignoriert: {0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : 'Ungültiger Wert für --versions: {0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder erfordert --versions mit genau einer Archicad-Version.',
+        'portAndPidNeedAddOnFile' : '--archicadPort und --archicadPid erfordern --addOnFile.',
+        'addOnFileCannotBeCombined' : '--addOnFile kann nicht mit --addOnsFolder, --uninstall oder --mockRoot kombiniert werden.',
+        'addOnFileNeedsOneVersion' : '--addOnFile erfordert --versions mit genau einer Archicad-Version.',
+        'pidNeedsPort' : '--archicadPid erfordert --archicadPort.',
+        'invalidPort' : 'Ungültiger Wert für --archicadPort: {0}',
+        'invalidPid' : 'Ungültiger Wert für --archicadPid: {0}',
+        'addOnFileNeedsPath' : '--addOnFile erfordert den Pfad des zu aktualisierenden Tapir Add-Ons.',
+    },
+    # French: formal (vous), the site's terms (installateur, add-on, version).
+    'FRA' : {
+        # The window
+        'installerTitle' : 'Installateur de l\'add-on Tapir',
+        'checkingRelease' : 'Recherche de la dernière version de Tapir...',
+        'latestRelease' : 'Dernière version de Tapir : {0}',
+        'latestReleaseWithUpdates' : 'Dernière version de Tapir : {0} (mise à jour disponible pour {1} version(s) d\'Archicad)',
+        'sectionInstallations' : 'INSTALLATIONS D\'ARCHICAD',
+        'sectionUpdate' : 'MISE À JOUR DE TAPIR',
+        'detectingInstallations' : 'Recherche des installations d\'Archicad...',
+        'preparingUpdate' : 'Préparation de la mise à jour...',
+        'noArchicadOnComputer' : 'Aucune installation d\'Archicad n\'a été trouvée sur cet ordinateur.',
+        'showManualInstructions' : 'Afficher les instructions d\'installation manuelle',
+        'detectionFailed' : 'Impossible de détecter les installations d\'Archicad : {0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : 'Tout sélectionner',
+        'selectNone' : 'Tout désélectionner',
+        'selectedCount' : '{0} sur {1} sélectionnée(s)',
+        'buttonInstall' : 'Installer',
+        'buttonUninstall' : 'Désinstaller',
+        'buttonUpdate' : 'Mettre à jour',
+        'buttonClose' : 'Fermer',
+        'buttonCancel' : 'Annuler',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : 'Non installé',
+        'statusInstalled' : 'Installé',
+        'statusInstalledVersion' : 'Installé {0}',
+        'statusUpdateAvailable' : 'Mise à jour {0} → {1}',
+        'statusReadyToUpdate' : 'Prêt à mettre à jour',
+        'statusDownloading' : 'Téléchargement...',
+        'statusDownloadingPercent' : 'Téléchargement {0} %',
+        'statusWaitingToInstall' : 'En attente',
+        'statusInstalling' : 'Installation...',
+        'statusClosingArchicad' : 'Fermeture d\'Archicad...',
+        'statusWaitingForArchicad' : 'Attente d\'Archicad...',
+        'statusRestartingArchicad' : 'Redémarrage d\'Archicad...',
+        'statusCancelling' : 'Annulation...',
+        'statusDownloaded' : 'Téléchargé',
+        'statusUpdated' : 'Mis à jour',
+        'statusCancelled' : 'Annulé',
+        'statusUninstalled' : 'Désinstallé',
+        'statusFailed' : 'Échec',
+        # The results
+        'installedForAll' : 'Tapir a été installé pour {0} version(s) d\'Archicad. Redémarrez Archicad pour charger l\'add-on.',
+        'installedForSome' : 'Tapir a été installé pour {0} version(s) d\'Archicad sur {1}.\n{2}',
+        'uninstallFinished' : 'La désinstallation de l\'add-on Tapir est terminée.',
+        'uninstallFailed' : 'Impossible de désinstaller l\'add-on Tapir.\n{0}',
+        'versionError' : 'Archicad {0} : {1}',
+        'noAddOnForThisVersion' : 'Pas d\'add-on pour cette version',
+        # The update
+        'waitingForArchicadHint' : 'Si Archicad demande s\'il faut enregistrer vos modifications, répondez dans Archicad.',
+        'updateCancelled' : ('La mise à jour a été annulée. L\'installateur n\'a pas fermé Archicad. '
+            'Si Archicad se ferme quand même, redémarrez-le et relancez la mise à jour depuis Archicad.'),
+        'updateRunning' : 'Tapir est déjà en cours de mise à jour. Attendez la fin de cette mise à jour : elle ferme Archicad elle-même et le redémarre.',
+        'updateWaitingForQuit' : ('Tapir est déjà en cours de mise à jour, et cette mise à jour attend qu\'Archicad soit quitté. '
+            'Quittez Archicad pour la terminer ; Archicad est ensuite redémarré.'),
+        'archicadDidNotQuit' : 'Archicad n\'a pas été quitté ({0}), Tapir n\'a donc pas été mis à jour. Relancez la mise à jour depuis Archicad.',
+        'quittingRefused' : 'la fermeture a été refusée',
+        'quittingCancelled' : 'la fermeture a-t-elle été annulée ?',
+        'updated' : 'Tapir a été mis à jour vers {0}.',
+        'latestVersion' : 'la dernière version',
+        'archicadIsStartingAgain' : 'Archicad redémarre.',
+        'archicadWasStartedAgain' : 'Archicad a été redémarré.',
+        'startUpdateAgain' : 'Relancez la mise à jour depuis Archicad.',
+        'restartFailed' : 'Archicad n\'a pas pu être redémarré : {0}',
+        'oldBundleNotDeleted' : 'Son ancienne version n\'a pas pu être supprimée : supprimez {0} à la main.',
+        'archicadConnectionFailed' : 'Impossible de se connecter à Archicad sur le port {0} : {1}',
+        'archicadCommandFailed' : 'Archicad n\'a pas pu exécuter {0} : {1}',
+        'mappedDrive' : ('L\'add-on Tapir à mettre à jour se trouve sur le lecteur {0}, que l\'installateur, exécuté en tant qu\'administrateur, '
+            'ne voit pas (un lecteur réseau mappé ?) : {1}. Installez la mise à jour manuellement : {2}'),
+        'addOnToUpdateNotFound' : 'L\'add-on Tapir à mettre à jour est introuvable : {0}',
+        'notAnAddOnBundle' : 'Ce n\'est pas un bundle d\'add-on : {0}',
+        'notAnAddOnFile' : 'Ce n\'est pas un fichier d\'add-on (.apx) : {0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : 'Accès refusé. Fermez Archicad s\'il est ouvert, ou choisissez « Installer pour moi ».',
+        'releaseInfoFailed' : 'Impossible d\'obtenir la dernière version de Tapir depuis GitHub : {0}',
+        'noAddOnForVersion' : 'Aucun add-on Tapir n\'est disponible pour Archicad {0} dans la version {1}.',
+        'downloadFailed' : 'Impossible de télécharger {0} : {1}',
+        'downloadIncomplete' : 'Impossible de télécharger {0} : {1} octets reçus au lieu de {2}.',
+        'downloadNotAddOn' : 'Impossible de télécharger {0} : le fichier reçu n\'est pas l\'add-on (a-t-il été bloqué par un proxy ?).',
+        'adminInstallFailed' : 'Échec de l\'installation avec les droits d\'administrateur : {0}',
+        'installFailed' : 'Échec de l\'installation (fermez Archicad et réessayez) : {0}',
+        'addOnsFolderMissing' : 'Le dossier des add-ons n\'existe pas : {0}',
+        'extractFailed' : 'Impossible d\'extraire {0} : {1}',
+        'notOneBundle' : '{0} ne contient pas exactement un bundle d\'add-on.',
+        'copyNextToFailed' : 'Impossible de copier l\'add-on à côté de {0} : {1}',
+        'replaceFailed' : 'Impossible de remplacer {0} : {1}',
+        'replaceAndMoveBackFailed' : ('Impossible de remplacer {0} : {1}. L\'ancien add-on n\'a pas pu être remis en place non plus : '
+            'renommez {2} à la main.'),
+        # Install for me, or for all users
+        'sectionInstallFor' : 'INSTALLER',
+        'installForMe' : 'Installer pour moi (sans droits d\'administrateur)',
+        'installForAllUsers' : 'Installer pour tous les utilisateurs de cet ordinateur (droits d\'administrateur requis)',
+        'closeArchicad' : 'Fermez Archicad {0} pour terminer l\'installation de Tapir.',
+        'closeArchicadToUninstall' : 'Fermez Archicad {0} pour terminer la désinstallation de Tapir.',
+        'startArchicadOnce' : 'Démarrez Archicad {0} une fois et fermez-le, puis cliquez sur Réessayer.',
+        'startArchicadOnceConsole' : 'Démarrez Archicad {0} une fois et fermez-le, puis relancez l\'installateur.',
+        'installedForAllUsersAlready' : ('Tapir pour Archicad {0} est installé pour tous les utilisateurs, et il y est mis à jour. '
+            'Demandez à votre administrateur de le retirer pour installer votre propre copie.'),
+        'allUsersCopyLeft' : ('Tapir pour Archicad {0} est aussi installé pour tous les utilisateurs de cet ordinateur. '
+            'Désinstallez-le pour tous les utilisateurs (droits d\'administrateur requis) pour le retirer.'),
+        'forMeElevated' : ('L\'installateur s\'exécute en tant qu\'administrateur, il ne peut donc pas installer pour vous : les réglages '
+            'd\'Archicad qu\'il modifierait sont ceux de l\'administrateur, qui ne sont peut-être pas les vôtres. Lancez-le sans droits '
+            'd\'administrateur, ou choisissez « Installer pour tous les utilisateurs ».'),
+        'elevationFailed' : 'L\'installateur n\'a pas pu être lancé avec les droits d\'administrateur (erreur {0}).',
+        'startedAsAdministrator' : 'L\'installateur a été relancé avec les droits d\'administrateur.',
+        'buttonRetry' : 'Réessayer',
+        'buttonSkipVersion' : 'Ignorer cette version',
+        'statusSkipped' : 'Ignoré',
+        'skippedVersion' : 'Archicad {0} a été ignoré.',
+        'forMeAndAllUsers' : '--forMe et --allUsers ne peuvent pas être combinés.',
+        # Console mode
+        'foundInstallations' : 'Installations d\'Archicad trouvées :',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1}), Tapir {2} installé',
+        'noArchicadFound' : 'Aucune installation d\'Archicad n\'a été trouvée. Voir {0} pour l\'installation manuelle.',
+        'archicadVersionNotFound' : 'Aucune installation d\'Archicad {0} n\'a été trouvée.',
+        'wouldInstall' : 'Installerait {0} dans {1}',
+        'installed' : '{0} installé dans {1}',
+        'wouldInstallForMe' : 'Installerait {0} pour vous dans {1}',
+        'installedForMe' : '{0} installé pour vous dans {1}',
+        'uninstalledForMe' : 'Votre Tapir a été désinstallé de {0}',
+        'wouldUninstall' : 'Désinstallerait Tapir de {0}',
+        'uninstalled' : 'Tapir désinstallé de {0}',
+        'notInstalledIn' : 'Tapir n\'était pas installé dans {0}',
+        'consoleDone' : 'Terminé. Redémarrez Archicad pour charger l\'add-on Tapir.',
+        'consoleUpdating' : 'Mise à jour de l\'add-on Tapir d\'Archicad {0} : {1}',
+        'dryRun' : 'Simulation : {0}',
+        'dryRunQuit' : 'quitter Archicad sur le port {0}',
+        'dryRunReplace' : 'remplacer {0} par {1}',
+        'dryRunRestart' : 'redémarrer Archicad',
+        'dryRunStepSeparator' : ', ',
+        'consoleError' : 'ERREUR : {0}',
+        'ignoringUnknownOptions' : 'Options inconnues ignorées : {0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : 'Valeur de --versions non valide : {0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder exige --versions avec exactement une version d\'Archicad.',
+        'portAndPidNeedAddOnFile' : '--archicadPort et --archicadPid exigent --addOnFile.',
+        'addOnFileCannotBeCombined' : '--addOnFile ne peut pas être combiné avec --addOnsFolder, --uninstall ou --mockRoot.',
+        'addOnFileNeedsOneVersion' : '--addOnFile exige --versions avec exactement une version d\'Archicad.',
+        'pidNeedsPort' : '--archicadPid exige --archicadPort.',
+        'invalidPort' : 'Valeur de --archicadPort non valide : {0}',
+        'invalidPid' : 'Valeur de --archicadPid non valide : {0}',
+        'addOnFileNeedsPath' : '--addOnFile exige le chemin de l\'add-on Tapir à mettre à jour.',
+    },
+    # Spanish: informal (tú) as on the site, its terms (instalador, add-on, versión).
+    'SPA' : {
+        # The window
+        'installerTitle' : 'Instalador del add-on Tapir',
+        'checkingRelease' : 'Buscando la última versión de Tapir...',
+        'latestRelease' : 'Última versión de Tapir: {0}',
+        'latestReleaseWithUpdates' : 'Última versión de Tapir: {0} (actualización disponible para {1} versión(es) de Archicad)',
+        'sectionInstallations' : 'INSTALACIONES DE ARCHICAD',
+        'sectionUpdate' : 'ACTUALIZACIÓN DE TAPIR',
+        'detectingInstallations' : 'Buscando instalaciones de Archicad...',
+        'preparingUpdate' : 'Preparando la actualización...',
+        'noArchicadOnComputer' : 'No se encontró ninguna instalación de Archicad en este ordenador.',
+        'showManualInstructions' : 'Mostrar las instrucciones de instalación manual',
+        'detectionFailed' : 'No se pudieron detectar las instalaciones de Archicad: {0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : 'Seleccionar todo',
+        'selectNone' : 'Deseleccionar todo',
+        'selectedCount' : '{0} de {1} seleccionadas',
+        'buttonInstall' : 'Instalar',
+        'buttonUninstall' : 'Desinstalar',
+        'buttonUpdate' : 'Actualizar',
+        'buttonClose' : 'Cerrar',
+        'buttonCancel' : 'Cancelar',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : 'No instalado',
+        'statusInstalled' : 'Instalado',
+        'statusInstalledVersion' : 'Instalado {0}',
+        'statusUpdateAvailable' : 'Actualizar {0} → {1}',
+        'statusReadyToUpdate' : 'Listo para actualizar',
+        'statusDownloading' : 'Descargando...',
+        'statusDownloadingPercent' : 'Descargando {0} %',
+        'statusWaitingToInstall' : 'En espera',
+        'statusInstalling' : 'Instalando...',
+        'statusClosingArchicad' : 'Cerrando Archicad...',
+        'statusWaitingForArchicad' : 'Esperando a Archicad...',
+        'statusRestartingArchicad' : 'Reiniciando Archicad...',
+        'statusCancelling' : 'Cancelando...',
+        'statusDownloaded' : 'Descargado',
+        'statusUpdated' : 'Actualizado',
+        'statusCancelled' : 'Cancelado',
+        'statusUninstalled' : 'Desinstalado',
+        'statusFailed' : 'Error',
+        # The results
+        'installedForAll' : 'Tapir se instaló para {0} versión(es) de Archicad. Reinicia Archicad para cargar el add-on.',
+        'installedForSome' : 'Tapir se instaló para {0} de {1} versión(es) de Archicad.\n{2}',
+        'uninstallFinished' : 'Se terminó de desinstalar el add-on Tapir.',
+        'uninstallFailed' : 'No se pudo desinstalar el add-on Tapir.\n{0}',
+        'versionError' : 'Archicad {0}: {1}',
+        'noAddOnForThisVersion' : 'No hay add-on para esta versión',
+        # The update
+        'waitingForArchicadHint' : 'Si Archicad pregunta si quieres guardar los cambios, responde en Archicad.',
+        'updateCancelled' : ('Se canceló la actualización. El instalador no cerró Archicad. '
+            'Si Archicad se cierra de todos modos, vuelve a iniciarlo y repite la actualización desde Archicad.'),
+        'updateRunning' : 'Tapir ya se está actualizando. Espera a que termine esa actualización: ella misma cierra Archicad y lo vuelve a iniciar.',
+        'updateWaitingForQuit' : ('Tapir ya se está actualizando, y esa actualización espera a que se cierre Archicad. '
+            'Cierra Archicad para terminarla; después Archicad se vuelve a iniciar.'),
+        'archicadDidNotQuit' : 'Archicad no se cerró ({0}), así que Tapir no se actualizó. Vuelve a iniciar la actualización desde Archicad.',
+        'quittingRefused' : 'se rechazó el cierre',
+        'quittingCancelled' : '¿se canceló el cierre?',
+        'updated' : 'Tapir se actualizó a {0}.',
+        'latestVersion' : 'la última versión',
+        'archicadIsStartingAgain' : 'Archicad se está iniciando de nuevo.',
+        'archicadWasStartedAgain' : 'Archicad se inició de nuevo.',
+        'startUpdateAgain' : 'Vuelve a iniciar la actualización desde Archicad.',
+        'restartFailed' : 'No se pudo volver a iniciar Archicad: {0}',
+        'oldBundleNotDeleted' : 'No se pudo eliminar su versión anterior: elimina {0} a mano.',
+        'archicadConnectionFailed' : 'No se pudo conectar con Archicad en el puerto {0}: {1}',
+        'archicadCommandFailed' : 'Archicad no pudo ejecutar {0}: {1}',
+        'mappedDrive' : ('El add-on Tapir que hay que actualizar está en la unidad {0}, que el instalador, al ejecutarse como administrador, '
+            'no puede ver (¿una unidad de red asignada?): {1}. Instala la actualización manualmente: {2}'),
+        'addOnToUpdateNotFound' : 'No se encontró el add-on Tapir que hay que actualizar: {0}',
+        'notAnAddOnBundle' : 'No es un bundle de add-on: {0}',
+        'notAnAddOnFile' : 'No es un archivo de add-on (.apx): {0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : 'Permiso denegado. Cierra Archicad si está abierto, o elige «Instalar para mí».',
+        'releaseInfoFailed' : 'No se pudo obtener la última versión de Tapir de GitHub: {0}',
+        'noAddOnForVersion' : 'No hay ningún add-on Tapir para Archicad {0} en la versión {1}.',
+        'downloadFailed' : 'No se pudo descargar {0}: {1}',
+        'downloadIncomplete' : 'No se pudo descargar {0}: se recibieron {1} bytes en lugar de {2}.',
+        'downloadNotAddOn' : 'No se pudo descargar {0}: el archivo recibido no es el add-on (¿lo bloqueó un proxy?).',
+        'adminInstallFailed' : 'No se pudo instalar con derechos de administrador: {0}',
+        'installFailed' : 'No se pudo instalar (cierra Archicad y vuelve a intentarlo): {0}',
+        'addOnsFolderMissing' : 'La carpeta de add-ons no existe: {0}',
+        'extractFailed' : 'No se pudo extraer {0}: {1}',
+        'notOneBundle' : '{0} no contiene exactamente un bundle de add-on.',
+        'copyNextToFailed' : 'No se pudo copiar el add-on junto a {0}: {1}',
+        'replaceFailed' : 'No se pudo reemplazar {0}: {1}',
+        'replaceAndMoveBackFailed' : ('No se pudo reemplazar {0}: {1}. Tampoco se pudo devolver el add-on anterior a su sitio: '
+            'vuelve a cambiar el nombre de {2} a mano.'),
+        # Install for me, or for all users
+        'sectionInstallFor' : 'INSTALAR',
+        'installForMe' : 'Instalar para mí (no requiere derechos de administrador)',
+        'installForAllUsers' : 'Instalar para todos los usuarios de este ordenador (requiere derechos de administrador)',
+        'closeArchicad' : 'Cierra Archicad {0} para terminar de instalar Tapir.',
+        'closeArchicadToUninstall' : 'Cierra Archicad {0} para terminar de desinstalar Tapir.',
+        'startArchicadOnce' : 'Inicia Archicad {0} una vez y ciérralo; luego pulsa Reintentar.',
+        'startArchicadOnceConsole' : 'Inicia Archicad {0} una vez y ciérralo; luego vuelve a ejecutar el instalador.',
+        'installedForAllUsersAlready' : ('Tapir para Archicad {0} está instalado para todos los usuarios, y se actualiza allí. '
+            'Pide a tu administrador que lo quite para instalar tu propia copia.'),
+        'allUsersCopyLeft' : ('Tapir para Archicad {0} también está instalado para todos los usuarios de este ordenador. '
+            'Desinstálalo para todos los usuarios (requiere derechos de administrador) para quitarlo.'),
+        'forMeElevated' : ('El instalador se ejecuta como administrador, así que no puede instalar para ti: los ajustes de Archicad que '
+            'cambiaría son los del administrador, que pueden no ser los tuyos. Inícialo sin derechos de administrador, '
+            'o elige «Instalar para todos los usuarios».'),
+        'elevationFailed' : 'No se pudo iniciar el instalador con derechos de administrador (error {0}).',
+        'startedAsAdministrator' : 'El instalador se volvió a iniciar con derechos de administrador.',
+        'buttonRetry' : 'Reintentar',
+        'buttonSkipVersion' : 'Omitir esta versión',
+        'statusSkipped' : 'Omitido',
+        'skippedVersion' : 'Se omitió Archicad {0}.',
+        'forMeAndAllUsers' : '--forMe y --allUsers no se pueden combinar.',
+        # Console mode
+        'foundInstallations' : 'Instalaciones de Archicad encontradas:',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1}), Tapir {2} instalado',
+        'noArchicadFound' : 'No se encontró ninguna instalación de Archicad. Consulta {0} para instalarlo manualmente.',
+        'archicadVersionNotFound' : 'No se encontró ninguna instalación de Archicad {0}.',
+        'wouldInstall' : 'Se instalaría {0} en {1}',
+        'installed' : 'Se instaló {0} en {1}',
+        'wouldInstallForMe' : 'Se instalaría {0} para ti en {1}',
+        'installedForMe' : 'Se instaló {0} para ti en {1}',
+        'uninstalledForMe' : 'Se desinstaló tu Tapir de {0}',
+        'wouldUninstall' : 'Se desinstalaría Tapir de {0}',
+        'uninstalled' : 'Se desinstaló Tapir de {0}',
+        'notInstalledIn' : 'Tapir no estaba instalado en {0}',
+        'consoleDone' : 'Listo. Reinicia Archicad para cargar el add-on Tapir.',
+        'consoleUpdating' : 'Actualizando el add-on Tapir de Archicad {0}: {1}',
+        'dryRun' : 'Simulación: {0}',
+        'dryRunQuit' : 'cerrar Archicad en el puerto {0}',
+        'dryRunReplace' : 'reemplazar {0} por {1}',
+        'dryRunRestart' : 'reiniciar Archicad',
+        'dryRunStepSeparator' : ', ',
+        'consoleError' : 'ERROR: {0}',
+        'ignoringUnknownOptions' : 'Se ignoran las opciones desconocidas: {0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : 'Valor de --versions no válido: {0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder requiere --versions con exactamente una versión de Archicad.',
+        'portAndPidNeedAddOnFile' : '--archicadPort y --archicadPid requieren --addOnFile.',
+        'addOnFileCannotBeCombined' : '--addOnFile no se puede combinar con --addOnsFolder, --uninstall ni --mockRoot.',
+        'addOnFileNeedsOneVersion' : '--addOnFile requiere --versions con exactamente una versión de Archicad.',
+        'pidNeedsPort' : '--archicadPid requiere --archicadPort.',
+        'invalidPort' : 'Valor de --archicadPort no válido: {0}',
+        'invalidPid' : 'Valor de --archicadPid no válido: {0}',
+        'addOnFileNeedsPath' : '--addOnFile requiere la ruta del add-on Tapir que hay que actualizar.',
+    },
+    # Italian: informal (tu) as on the site, its terms (installer, add-on, release).
+    'ITA' : {
+        # The window
+        'installerTitle' : 'Installer dell\'add-on Tapir',
+        'checkingRelease' : 'Verifica dell\'ultima release di Tapir...',
+        'latestRelease' : 'Ultima release di Tapir: {0}',
+        'latestReleaseWithUpdates' : 'Ultima release di Tapir: {0} (aggiornamento disponibile per {1} versione/i di Archicad)',
+        'sectionInstallations' : 'INSTALLAZIONI DI ARCHICAD',
+        'sectionUpdate' : 'AGGIORNAMENTO DI TAPIR',
+        'detectingInstallations' : 'Ricerca delle installazioni di Archicad...',
+        'preparingUpdate' : 'Preparazione dell\'aggiornamento...',
+        'noArchicadOnComputer' : 'Non è stata trovata alcuna installazione di Archicad su questo computer.',
+        'showManualInstructions' : 'Mostra le istruzioni per l\'installazione manuale',
+        'detectionFailed' : 'Impossibile rilevare le installazioni di Archicad: {0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : 'Seleziona tutto',
+        'selectNone' : 'Deseleziona tutto',
+        'selectedCount' : '{0} di {1} selezionate',
+        'buttonInstall' : 'Installa',
+        'buttonUninstall' : 'Disinstalla',
+        'buttonUpdate' : 'Aggiorna',
+        'buttonClose' : 'Chiudi',
+        'buttonCancel' : 'Annulla',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : 'Non installato',
+        'statusInstalled' : 'Installato',
+        'statusInstalledVersion' : 'Installato {0}',
+        'statusUpdateAvailable' : 'Aggiorna {0} → {1}',
+        'statusReadyToUpdate' : 'Pronto per aggiornare',
+        'statusDownloading' : 'Download...',
+        'statusDownloadingPercent' : 'Download {0}%',
+        'statusWaitingToInstall' : 'In attesa',
+        'statusInstalling' : 'Installazione...',
+        'statusClosingArchicad' : 'Chiusura di Archicad...',
+        'statusWaitingForArchicad' : 'In attesa di Archicad...',
+        'statusRestartingArchicad' : 'Riavvio di Archicad...',
+        'statusCancelling' : 'Annullamento...',
+        'statusDownloaded' : 'Scaricato',
+        'statusUpdated' : 'Aggiornato',
+        'statusCancelled' : 'Annullato',
+        'statusUninstalled' : 'Disinstallato',
+        'statusFailed' : 'Non riuscito',
+        # The results
+        'installedForAll' : 'Tapir è stato installato per {0} versione/i di Archicad. Riavvia Archicad per caricare l\'add-on.',
+        'installedForSome' : 'Tapir è stato installato per {0} di {1} versione/i di Archicad.\n{2}',
+        'uninstallFinished' : 'Disinstallazione dell\'add-on Tapir completata.',
+        'uninstallFailed' : 'Impossibile disinstallare l\'add-on Tapir.\n{0}',
+        'versionError' : 'Archicad {0}: {1}',
+        'noAddOnForThisVersion' : 'Nessun add-on per questa versione',
+        # The update
+        'waitingForArchicadHint' : 'Se Archicad chiede se salvare le modifiche, rispondi in Archicad.',
+        'updateCancelled' : ('L\'aggiornamento è stato annullato. L\'installer non ha chiuso Archicad. '
+            'Se Archicad si chiude comunque, riavvialo e riprova l\'aggiornamento da Archicad.'),
+        'updateRunning' : 'Tapir è già in fase di aggiornamento. Attendi che quell\'aggiornamento finisca: chiude Archicad da solo e lo riavvia.',
+        'updateWaitingForQuit' : ('Tapir è già in fase di aggiornamento, e quell\'aggiornamento attende la chiusura di Archicad. '
+            'Chiudi Archicad per completarlo; Archicad viene poi riavviato.'),
+        'archicadDidNotQuit' : 'Archicad non si è chiuso ({0}), quindi Tapir non è stato aggiornato. Avvia di nuovo l\'aggiornamento da Archicad.',
+        'quittingRefused' : 'la chiusura è stata rifiutata',
+        'quittingCancelled' : 'la chiusura è stata annullata?',
+        'updated' : 'Tapir è stato aggiornato a {0}.',
+        'latestVersion' : 'l\'ultima versione',
+        'archicadIsStartingAgain' : 'Archicad si sta riavviando.',
+        'archicadWasStartedAgain' : 'Archicad è stato riavviato.',
+        'startUpdateAgain' : 'Avvia di nuovo l\'aggiornamento da Archicad.',
+        'restartFailed' : 'Impossibile riavviare Archicad: {0}',
+        'oldBundleNotDeleted' : 'Non è stato possibile eliminare la sua vecchia versione: elimina {0} a mano.',
+        'archicadConnectionFailed' : 'Impossibile connettersi ad Archicad sulla porta {0}: {1}',
+        'archicadCommandFailed' : 'Archicad non è riuscito a eseguire {0}: {1}',
+        'mappedDrive' : ('L\'add-on Tapir da aggiornare si trova sull\'unità {0}, che l\'installer, in esecuzione come amministratore, '
+            'non vede (un\'unità di rete mappata?): {1}. Installa l\'aggiornamento manualmente: {2}'),
+        'addOnToUpdateNotFound' : 'L\'add-on Tapir da aggiornare non è stato trovato: {0}',
+        'notAnAddOnBundle' : 'Non è un bundle di add-on: {0}',
+        'notAnAddOnFile' : 'Non è un file di add-on (.apx): {0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : 'Permesso negato. Chiudi Archicad se è in esecuzione, oppure scegli «Installa per me».',
+        'releaseInfoFailed' : 'Impossibile ottenere l\'ultima release di Tapir da GitHub: {0}',
+        'noAddOnForVersion' : 'Nessun add-on Tapir disponibile per Archicad {0} nella release {1}.',
+        'downloadFailed' : 'Impossibile scaricare {0}: {1}',
+        'downloadIncomplete' : 'Impossibile scaricare {0}: ricevuti {1} byte invece di {2}.',
+        'downloadNotAddOn' : 'Impossibile scaricare {0}: il file ricevuto non è l\'add-on (è stato bloccato da un proxy?).',
+        'adminInstallFailed' : 'Installazione con diritti di amministratore non riuscita: {0}',
+        'installFailed' : 'Installazione non riuscita (chiudi Archicad e riprova): {0}',
+        'addOnsFolderMissing' : 'La cartella Add-Ons non esiste: {0}',
+        'extractFailed' : 'Impossibile estrarre {0}: {1}',
+        'notOneBundle' : '{0} non contiene esattamente un bundle di add-on.',
+        'copyNextToFailed' : 'Impossibile copiare l\'add-on accanto a {0}: {1}',
+        'replaceFailed' : 'Impossibile sostituire {0}: {1}',
+        'replaceAndMoveBackFailed' : ('Impossibile sostituire {0}: {1}. Non è stato possibile nemmeno rimettere a posto il vecchio add-on: '
+            'rinomina {2} a mano.'),
+        # Install for me, or for all users
+        'sectionInstallFor' : 'INSTALLA',
+        'installForMe' : 'Installa per me (non servono diritti di amministratore)',
+        'installForAllUsers' : 'Installa per tutti gli utenti di questo computer (servono diritti di amministratore)',
+        'closeArchicad' : 'Chiudi Archicad {0} per completare l\'installazione di Tapir.',
+        'closeArchicadToUninstall' : 'Chiudi Archicad {0} per completare la disinstallazione di Tapir.',
+        'startArchicadOnce' : 'Avvia Archicad {0} una volta e chiudilo, poi fai clic su Riprova.',
+        'startArchicadOnceConsole' : 'Avvia Archicad {0} una volta e chiudilo, poi esegui di nuovo l\'installer.',
+        'installedForAllUsersAlready' : ('Tapir per Archicad {0} è installato per tutti gli utenti, e viene aggiornato lì. '
+            'Chiedi al tuo amministratore di rimuoverlo per installare la tua copia.'),
+        'allUsersCopyLeft' : ('Tapir per Archicad {0} è installato anche per tutti gli utenti di questo computer. '
+            'Disinstallalo per tutti gli utenti (servono diritti di amministratore) per rimuoverlo.'),
+        'forMeElevated' : ('L\'installer è in esecuzione come amministratore, quindi non può installare per te: le impostazioni di Archicad '
+            'che cambierebbe sono quelle dell\'amministratore, che potrebbero non essere le tue. Avvialo senza diritti di amministratore, '
+            'oppure scegli «Installa per tutti gli utenti».'),
+        'elevationFailed' : 'Impossibile avviare l\'installer con i diritti di amministratore (errore {0}).',
+        'startedAsAdministrator' : 'L\'installer è stato riavviato con i diritti di amministratore.',
+        'buttonRetry' : 'Riprova',
+        'buttonSkipVersion' : 'Salta questa versione',
+        'statusSkipped' : 'Saltato',
+        'skippedVersion' : 'Archicad {0} è stato saltato.',
+        'forMeAndAllUsers' : '--forMe e --allUsers non possono essere combinati.',
+        # Console mode
+        'foundInstallations' : 'Installazioni di Archicad trovate:',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1}), Tapir {2} installato',
+        'noArchicadFound' : 'Non è stata trovata alcuna installazione di Archicad. Vedi {0} per l\'installazione manuale.',
+        'archicadVersionNotFound' : 'Non è stata trovata alcuna installazione di Archicad {0}.',
+        'wouldInstall' : 'Installerebbe {0} in {1}',
+        'installed' : '{0} installato in {1}',
+        'wouldInstallForMe' : 'Installerebbe {0} per te in {1}',
+        'installedForMe' : '{0} installato per te in {1}',
+        'uninstalledForMe' : 'Il tuo Tapir è stato disinstallato da {0}',
+        'wouldUninstall' : 'Disinstallerebbe Tapir da {0}',
+        'uninstalled' : 'Tapir disinstallato da {0}',
+        'notInstalledIn' : 'Tapir non era installato in {0}',
+        'consoleDone' : 'Fatto. Riavvia Archicad per caricare l\'add-on Tapir.',
+        'consoleUpdating' : 'Aggiornamento dell\'add-on Tapir di Archicad {0}: {1}',
+        'dryRun' : 'Simulazione: {0}',
+        'dryRunQuit' : 'chiudere Archicad sulla porta {0}',
+        'dryRunReplace' : 'sostituire {0} con {1}',
+        'dryRunRestart' : 'riavviare Archicad',
+        'dryRunStepSeparator' : ', ',
+        'consoleError' : 'ERRORE: {0}',
+        'ignoringUnknownOptions' : 'Opzioni sconosciute ignorate: {0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : 'Valore di --versions non valido: {0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder richiede --versions con esattamente una versione di Archicad.',
+        'portAndPidNeedAddOnFile' : '--archicadPort e --archicadPid richiedono --addOnFile.',
+        'addOnFileCannotBeCombined' : '--addOnFile non può essere combinato con --addOnsFolder, --uninstall o --mockRoot.',
+        'addOnFileNeedsOneVersion' : '--addOnFile richiede --versions con esattamente una versione di Archicad.',
+        'pidNeedsPort' : '--archicadPid richiede --archicadPort.',
+        'invalidPort' : 'Valore di --archicadPort non valido: {0}',
+        'invalidPid' : 'Valore di --archicadPid non valido: {0}',
+        'addOnFileNeedsPath' : '--addOnFile richiede il percorso dell\'add-on Tapir da aggiornare.',
+    },
+    # Simplified Chinese, the site's terms (安装程序, 插件, 版本).
+    'CHI' : {
+        # The window
+        'installerTitle' : 'Tapir 插件安装程序',
+        'checkingRelease' : '正在检查 Tapir 的最新版本...',
+        'latestRelease' : 'Tapir 最新版本：{0}',
+        'latestReleaseWithUpdates' : 'Tapir 最新版本：{0}（{1} 个 Archicad 版本有可用更新）',
+        'sectionInstallations' : 'Archicad 安装',
+        'sectionUpdate' : 'Tapir 更新',
+        'detectingInstallations' : '正在检测 Archicad 安装...',
+        'preparingUpdate' : '正在准备更新...',
+        'noArchicadOnComputer' : '在这台电脑上没有找到 Archicad 安装。',
+        'showManualInstructions' : '显示手动安装说明',
+        'detectionFailed' : '无法检测 Archicad 安装：{0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : '全选',
+        'selectNone' : '全不选',
+        'selectedCount' : '已选择 {0} 个，共 {1} 个',
+        'buttonInstall' : '安装',
+        'buttonUninstall' : '卸载',
+        'buttonUpdate' : '更新',
+        'buttonClose' : '关闭',
+        'buttonCancel' : '取消',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : '未安装',
+        'statusInstalled' : '已安装',
+        'statusInstalledVersion' : '已安装 {0}',
+        'statusUpdateAvailable' : '更新 {0} → {1}',
+        'statusReadyToUpdate' : '准备更新',
+        'statusDownloading' : '正在下载...',
+        'statusDownloadingPercent' : '正在下载 {0}%',
+        'statusWaitingToInstall' : '等待安装',
+        'statusInstalling' : '正在安装...',
+        'statusClosingArchicad' : '正在关闭 Archicad...',
+        'statusWaitingForArchicad' : '正在等待 Archicad...',
+        'statusRestartingArchicad' : '正在重启 Archicad...',
+        'statusCancelling' : '正在取消...',
+        'statusDownloaded' : '已下载',
+        'statusUpdated' : '已更新',
+        'statusCancelled' : '已取消',
+        'statusUninstalled' : '已卸载',
+        'statusFailed' : '失败',
+        # The results
+        'installedForAll' : '已为 {0} 个 Archicad 版本安装 Tapir。请重启 Archicad 以加载插件。',
+        'installedForSome' : '已为 {1} 个 Archicad 版本中的 {0} 个安装 Tapir。\n{2}',
+        'uninstallFinished' : 'Tapir 插件已卸载完毕。',
+        'uninstallFailed' : '无法卸载 Tapir 插件。\n{0}',
+        'versionError' : 'Archicad {0}：{1}',
+        'noAddOnForThisVersion' : '此版本没有插件',
+        # The update
+        'waitingForArchicadHint' : '如果 Archicad 询问是否保存更改，请在 Archicad 中回答。',
+        'updateCancelled' : '更新已取消。安装程序没有关闭 Archicad。如果 Archicad 仍然关闭了，请重新启动它，并从 Archicad 中重试更新。',
+        'updateRunning' : 'Tapir 已在更新中。请等待该更新完成：它会自行关闭 Archicad 并重新启动。',
+        'updateWaitingForQuit' : 'Tapir 已在更新中，该更新正在等待 Archicad 退出。请退出 Archicad 以完成更新；之后 Archicad 会重新启动。',
+        'archicadDidNotQuit' : 'Archicad 没有退出（{0}），因此 Tapir 没有更新。请从 Archicad 中重新开始更新。',
+        'quittingRefused' : '退出被拒绝',
+        'quittingCancelled' : '退出是否被取消了？',
+        'updated' : 'Tapir 已更新到 {0}。',
+        'latestVersion' : '最新版本',
+        'archicadIsStartingAgain' : 'Archicad 正在重新启动。',
+        'archicadWasStartedAgain' : 'Archicad 已重新启动。',
+        'startUpdateAgain' : '请从 Archicad 中重新开始更新。',
+        'restartFailed' : '无法重新启动 Archicad：{0}',
+        'oldBundleNotDeleted' : '无法删除其旧版本：请手动删除 {0}。',
+        'archicadConnectionFailed' : '无法连接端口 {0} 上的 Archicad：{1}',
+        'archicadCommandFailed' : 'Archicad 无法执行 {0}：{1}',
+        'mappedDrive' : '要更新的 Tapir 插件位于驱动器 {0}，以管理员身份运行的安装程序无法访问它（是映射的网络驱动器吗？）：{1}。请手动安装更新：{2}',
+        'addOnToUpdateNotFound' : '找不到要更新的 Tapir 插件：{0}',
+        'notAnAddOnBundle' : '不是插件 bundle：{0}',
+        'notAnAddOnFile' : '不是插件文件 (.apx)：{0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : '权限被拒绝。如果 Archicad 正在运行，请关闭它，或选择“为我安装”。',
+        'releaseInfoFailed' : '无法从 GitHub 获取 Tapir 的最新版本：{0}',
+        'noAddOnForVersion' : '版本 {1} 中没有适用于 Archicad {0} 的 Tapir 插件。',
+        'downloadFailed' : '无法下载 {0}：{1}',
+        'downloadIncomplete' : '无法下载 {0}：收到 {1} 字节，而不是 {2} 字节。',
+        'downloadNotAddOn' : '无法下载 {0}：收到的文件不是插件（是否被代理拦截了？）。',
+        'adminInstallFailed' : '无法以管理员权限安装：{0}',
+        'installFailed' : '安装失败（请关闭 Archicad 后重试）：{0}',
+        'addOnsFolderMissing' : 'Add-Ons 文件夹不存在：{0}',
+        'extractFailed' : '无法解压 {0}：{1}',
+        'notOneBundle' : '{0} 中包含的插件 bundle 不是正好一个。',
+        'copyNextToFailed' : '无法将插件复制到 {0} 旁边：{1}',
+        'replaceFailed' : '无法替换 {0}：{1}',
+        'replaceAndMoveBackFailed' : '无法替换 {0}：{1}。旧插件也无法移回：请手动将 {2} 改回原名。',
+        # Install for me, or for all users
+        'sectionInstallFor' : '安装',
+        'installForMe' : '为我安装（无需管理员权限）',
+        'installForAllUsers' : '为这台电脑的所有用户安装（需要管理员权限）',
+        'closeArchicad' : '请关闭 Archicad {0} 以完成 Tapir 的安装。',
+        'closeArchicadToUninstall' : '请关闭 Archicad {0} 以完成 Tapir 的卸载。',
+        'startArchicadOnce' : '请启动一次 Archicad {0} 并关闭它，然后点击“重试”。',
+        'startArchicadOnceConsole' : '请启动一次 Archicad {0} 并关闭它，然后再次运行安装程序。',
+        'installedForAllUsersAlready' : '适用于 Archicad {0} 的 Tapir 已为所有用户安装，并在那里更新。如需安装你自己的副本，请让管理员将其删除。',
+        'allUsersCopyLeft' : '适用于 Archicad {0} 的 Tapir 也已为这台电脑的所有用户安装。要删除它，请为所有用户卸载它（需要管理员权限）。',
+        'forMeElevated' : ('安装程序正以管理员身份运行，因此无法为你安装：它要更改的 Archicad 设置属于管理员，可能不是你的。'
+            '请不使用管理员权限启动它，或选择“为所有用户安装”。'),
+        'elevationFailed' : '无法以管理员权限启动安装程序（错误 {0}）。',
+        'startedAsAdministrator' : '安装程序已以管理员权限重新启动。',
+        'buttonRetry' : '重试',
+        'buttonSkipVersion' : '跳过此版本',
+        'statusSkipped' : '已跳过',
+        'skippedVersion' : '已跳过 Archicad {0}。',
+        'forMeAndAllUsers' : '--forMe 和 --allUsers 不能同时使用。',
+        # Console mode
+        'foundInstallations' : '找到的 Archicad 安装：',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1})，已安装 Tapir {2}',
+        'noArchicadFound' : '没有找到 Archicad 安装。手动安装请参阅 {0}。',
+        'archicadVersionNotFound' : '没有找到 Archicad {0} 的安装。',
+        'wouldInstall' : '将把 {0} 安装到 {1}',
+        'installed' : '已将 {0} 安装到 {1}',
+        'wouldInstallForMe' : '将为你把 {0} 安装到 {1}',
+        'installedForMe' : '已为你把 {0} 安装到 {1}',
+        'uninstalledForMe' : '已从 {0} 卸载你的 Tapir',
+        'wouldUninstall' : '将从 {0} 卸载 Tapir',
+        'uninstalled' : '已从 {0} 卸载 Tapir',
+        'notInstalledIn' : 'Tapir 未安装在 {0} 中',
+        'consoleDone' : '完成。请重启 Archicad 以加载 Tapir 插件。',
+        'consoleUpdating' : '正在更新 Archicad {0} 的 Tapir 插件：{1}',
+        'dryRun' : '模拟运行：将{0}',
+        'dryRunQuit' : '退出端口 {0} 上的 Archicad',
+        'dryRunReplace' : '用 {1} 替换 {0}',
+        'dryRunRestart' : '重启 Archicad',
+        'dryRunStepSeparator' : '，',
+        'consoleError' : '错误：{0}',
+        'ignoringUnknownOptions' : '忽略未知选项：{0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : '无效的 --versions 值：{0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder 需要 --versions 正好指定一个 Archicad 版本。',
+        'portAndPidNeedAddOnFile' : '--archicadPort 和 --archicadPid 需要 --addOnFile。',
+        'addOnFileCannotBeCombined' : '--addOnFile 不能与 --addOnsFolder、--uninstall 或 --mockRoot 同时使用。',
+        'addOnFileNeedsOneVersion' : '--addOnFile 需要 --versions 正好指定一个 Archicad 版本。',
+        'pidNeedsPort' : '--archicadPid 需要 --archicadPort。',
+        'invalidPort' : '无效的 --archicadPort 值：{0}',
+        'invalidPid' : '无效的 --archicadPid 值：{0}',
+        'addOnFileNeedsPath' : '--addOnFile 需要要更新的 Tapir 插件的路径。',
+    },
+    # Japanese: polite (です/ます), the site's terms (インストーラー, アドオン, リリース).
+    'JPN' : {
+        # The window
+        'installerTitle' : 'Tapir アドオン インストーラー',
+        'checkingRelease' : 'Tapir の最新リリースを確認しています...',
+        'latestRelease' : 'Tapir の最新リリース：{0}',
+        'latestReleaseWithUpdates' : 'Tapir の最新リリース：{0}（{1} 個の Archicad バージョンにアップデートがあります）',
+        'sectionInstallations' : 'Archicad のインストール',
+        'sectionUpdate' : 'Tapir のアップデート',
+        'detectingInstallations' : 'Archicad のインストールを検出しています...',
+        'preparingUpdate' : 'アップデートを準備しています...',
+        'noArchicadOnComputer' : 'このコンピューターに Archicad のインストールが見つかりませんでした。',
+        'showManualInstructions' : '手動インストールの手順を表示',
+        'detectionFailed' : 'Archicad のインストールを検出できませんでした：{0}',
+        'archicadVersion' : 'Archicad {0}',
+        'selectAll' : 'すべて選択',
+        'selectNone' : '選択を解除',
+        'selectedCount' : '{1} 個中 {0} 個を選択',
+        'buttonInstall' : 'インストール',
+        'buttonUninstall' : 'アンインストール',
+        'buttonUpdate' : 'アップデート',
+        'buttonClose' : '閉じる',
+        'buttonCancel' : 'キャンセル',
+        # The status of an Archicad version (short: the badge has a fixed width)
+        'statusNotInstalled' : '未インストール',
+        'statusInstalled' : 'インストール済み',
+        'statusInstalledVersion' : 'インストール済み {0}',
+        'statusUpdateAvailable' : 'アップデート {0} → {1}',
+        'statusReadyToUpdate' : 'アップデート準備完了',
+        'statusDownloading' : 'ダウンロード中...',
+        'statusDownloadingPercent' : 'ダウンロード中 {0}%',
+        'statusWaitingToInstall' : 'インストール待ち',
+        'statusInstalling' : 'インストール中...',
+        'statusClosingArchicad' : 'Archicad を終了中...',
+        'statusWaitingForArchicad' : 'Archicad を待機中...',
+        'statusRestartingArchicad' : 'Archicad を再起動中...',
+        'statusCancelling' : 'キャンセル中...',
+        'statusDownloaded' : 'ダウンロード済み',
+        'statusUpdated' : 'アップデート済み',
+        'statusCancelled' : 'キャンセル済み',
+        'statusUninstalled' : 'アンインストール済み',
+        'statusFailed' : '失敗',
+        # The results
+        'installedForAll' : '{0} 個の Archicad バージョンに Tapir をインストールしました。アドオンを読み込むには Archicad を再起動してください。',
+        'installedForSome' : '{1} 個中 {0} 個の Archicad バージョンに Tapir をインストールしました。\n{2}',
+        'uninstallFinished' : 'Tapir アドオンのアンインストールが完了しました。',
+        'uninstallFailed' : 'Tapir アドオンをアンインストールできませんでした。\n{0}',
+        'versionError' : 'Archicad {0}：{1}',
+        'noAddOnForThisVersion' : 'このバージョン用のアドオンはありません',
+        # The update
+        'waitingForArchicadHint' : 'Archicad が変更を保存するかどうか尋ねてきたら、Archicad で答えてください。',
+        'updateCancelled' : ('アップデートはキャンセルされました。インストーラーは Archicad を閉じていません。'
+            'それでも Archicad が閉じた場合は、もう一度起動して Archicad からアップデートをやり直してください。'),
+        'updateRunning' : ('Tapir はすでにアップデート中です。そのアップデートが終わるまでお待ちください。'
+            'そのアップデートが Archicad を自分で閉じ、再び起動します。'),
+        'updateWaitingForQuit' : ('Tapir はすでにアップデート中で、そのアップデートは Archicad の終了を待っています。'
+            '完了させるには Archicad を終了してください。その後 Archicad は再び起動されます。'),
+        'archicadDidNotQuit' : 'Archicad が終了しなかったため（{0}）、Tapir はアップデートされませんでした。Archicad からアップデートをもう一度開始してください。',
+        'quittingRefused' : '終了が拒否されました',
+        'quittingCancelled' : '終了がキャンセルされましたか？',
+        'updated' : 'Tapir を {0} にアップデートしました。',
+        'latestVersion' : '最新バージョン',
+        'archicadIsStartingAgain' : 'Archicad を再び起動しています。',
+        'archicadWasStartedAgain' : 'Archicad を再び起動しました。',
+        'startUpdateAgain' : 'Archicad からアップデートをもう一度開始してください。',
+        'restartFailed' : 'Archicad を再び起動できませんでした：{0}',
+        'oldBundleNotDeleted' : '古いバージョンを削除できませんでした。{0} を手動で削除してください。',
+        'archicadConnectionFailed' : 'ポート {0} の Archicad に接続できませんでした：{1}',
+        'archicadCommandFailed' : 'Archicad は {0} を実行できませんでした：{1}',
+        'mappedDrive' : ('アップデートする Tapir アドオンはドライブ {0} にありますが、管理者として実行中のインストーラーからはこのドライブが見えません'
+            '（割り当てられたネットワーク ドライブですか？）：{1}。アップデートを手動でインストールしてください：{2}'),
+        'addOnToUpdateNotFound' : 'アップデートする Tapir アドオンが見つかりません：{0}',
+        'notAnAddOnBundle' : 'アドオンのバンドルではありません：{0}',
+        'notAnAddOnFile' : 'アドオンのファイル (.apx) ではありません：{0}',
+        # Installing and replacing the add-on
+        'permissionDenied' : 'アクセスが拒否されました。Archicad が実行中なら閉じるか、「自分用にインストール」を選んでください。',
+        'releaseInfoFailed' : 'GitHub から Tapir の最新リリースを取得できませんでした：{0}',
+        'noAddOnForVersion' : 'リリース {1} には Archicad {0} 用の Tapir アドオンがありません。',
+        'downloadFailed' : '{0} をダウンロードできませんでした：{1}',
+        'downloadIncomplete' : '{0} をダウンロードできませんでした：{2} バイトではなく {1} バイトを受信しました。',
+        'downloadNotAddOn' : '{0} をダウンロードできませんでした：受信したファイルはアドオンではありません（プロキシにブロックされましたか？）。',
+        'adminInstallFailed' : '管理者権限でインストールできませんでした：{0}',
+        'installFailed' : 'インストールできませんでした（Archicad を閉じてやり直してください）：{0}',
+        'addOnsFolderMissing' : 'Add-Ons フォルダーがありません：{0}',
+        'extractFailed' : '{0} を展開できませんでした：{1}',
+        'notOneBundle' : '{0} にはアドオンのバンドルがちょうど 1 つ含まれていません。',
+        'copyNextToFailed' : 'アドオンを {0} の横にコピーできませんでした：{1}',
+        'replaceFailed' : '{0} を置き換えられませんでした：{1}',
+        'replaceAndMoveBackFailed' : '{0} を置き換えられませんでした：{1}。古いアドオンも元に戻せませんでした。{2} の名前を手動で元に戻してください。',
+        # Install for me, or for all users
+        'sectionInstallFor' : 'インストール',
+        'installForMe' : '自分用にインストール（管理者権限は不要）',
+        'installForAllUsers' : 'このコンピューターのすべてのユーザー用にインストール（管理者権限が必要）',
+        'closeArchicad' : 'Tapir のインストールを完了するには Archicad {0} を閉じてください。',
+        'closeArchicadToUninstall' : 'Tapir のアンインストールを完了するには Archicad {0} を閉じてください。',
+        'startArchicadOnce' : 'Archicad {0} を一度起動して閉じてから、「再試行」を押してください。',
+        'startArchicadOnceConsole' : 'Archicad {0} を一度起動して閉じてから、インストーラーをもう一度実行してください。',
+        'installedForAllUsersAlready' : ('Archicad {0} 用の Tapir はすべてのユーザー用にインストールされており、そちらでアップデートされます。'
+            '自分用のコピーをインストールするには、管理者に削除を依頼してください。'),
+        'allUsersCopyLeft' : ('Archicad {0} 用の Tapir は、このコンピューターのすべてのユーザー用にもインストールされています。'
+            '削除するには、すべてのユーザー用にアンインストールしてください（管理者権限が必要）。'),
+        'forMeElevated' : ('インストーラーは管理者として実行されているため、あなた用にはインストールできません。変更される Archicad の設定は'
+            '管理者のもので、あなたのものとは限りません。管理者権限なしで起動するか、「すべてのユーザー用にインストール」を選んでください。'),
+        'elevationFailed' : 'インストーラーを管理者権限で起動できませんでした（エラー {0}）。',
+        'startedAsAdministrator' : 'インストーラーを管理者権限で起動し直しました。',
+        'buttonRetry' : '再試行',
+        'buttonSkipVersion' : 'このバージョンをスキップ',
+        'statusSkipped' : 'スキップ済み',
+        'skippedVersion' : 'Archicad {0} をスキップしました。',
+        'forMeAndAllUsers' : '--forMe と --allUsers は同時に指定できません。',
+        # Console mode
+        'foundInstallations' : '見つかった Archicad のインストール：',
+        'consoleInstallation' : 'Archicad {0} ({1})',
+        'consoleInstallationWithTapir' : 'Archicad {0} ({1})、Tapir {2} をインストール済み',
+        'noArchicadFound' : 'Archicad のインストールが見つかりませんでした。手動インストールについては {0} を参照してください。',
+        'archicadVersionNotFound' : 'Archicad {0} のインストールが見つかりませんでした。',
+        'wouldInstall' : '{0} を {1} にインストールする予定',
+        'installed' : '{0} を {1} にインストールしました',
+        'wouldInstallForMe' : '{0} をあなた用に {1} にインストールする予定',
+        'installedForMe' : '{0} をあなた用に {1} にインストールしました',
+        'uninstalledForMe' : '{0} からあなたの Tapir をアンインストールしました',
+        'wouldUninstall' : '{0} から Tapir をアンインストールする予定',
+        'uninstalled' : '{0} から Tapir をアンインストールしました',
+        'notInstalledIn' : 'Tapir は {0} にインストールされていませんでした',
+        'consoleDone' : '完了しました。Tapir アドオンを読み込むには Archicad を再起動してください。',
+        'consoleUpdating' : 'Archicad {0} の Tapir アドオンをアップデートしています：{1}',
+        'dryRun' : 'ドライラン：{0}',
+        'dryRunQuit' : 'ポート {0} の Archicad を終了',
+        'dryRunReplace' : '{0} を {1} で置き換え',
+        'dryRunRestart' : 'Archicad を再起動',
+        'dryRunStepSeparator' : '、',
+        'consoleError' : 'エラー：{0}',
+        'ignoringUnknownOptions' : '不明なオプションを無視します：{0}',
+        # Wrong options (the option names are not translated)
+        'invalidVersions' : '--versions の値が無効です：{0}',
+        'addOnsFolderNeedsOneVersion' : '--addOnsFolder には、Archicad バージョンをちょうど 1 つ指定した --versions が必要です。',
+        'portAndPidNeedAddOnFile' : '--archicadPort と --archicadPid には --addOnFile が必要です。',
+        'addOnFileCannotBeCombined' : '--addOnFile は --addOnsFolder、--uninstall、--mockRoot と同時に指定できません。',
+        'addOnFileNeedsOneVersion' : '--addOnFile には、Archicad バージョンをちょうど 1 つ指定した --versions が必要です。',
+        'pidNeedsPort' : '--archicadPid には --archicadPort が必要です。',
+        'invalidPort' : '--archicadPort の値が無効です：{0}',
+        'invalidPid' : '--archicadPid の値が無効です：{0}',
+        'addOnFileNeedsPath' : '--addOnFile には、アップデートする Tapir アドオンのパスが必要です。',
+    },
 }
 # The codes of the Archicad language versions (the list of the Add-Ons
 # folder names above), which --language accepts as they are.
@@ -282,12 +1145,20 @@ LANGUAGE_CODES_BY_ISO_LANGUAGE = {
 LANGUAGE = DEFAULT_LANGUAGE
 
 
+# The Archicad language versions without a table of their own that use
+# another language's texts: the Austrian and Swiss versions are German.
+TEXT_LANGUAGES = {
+    'AUT' : 'GER',
+    'CHE' : 'GER',
+}
+
+
 def GetText (key, *arguments):
     # The text of the key in the current language, filled in with the
     # arguments. A text missing from the language, or one whose placeholders
     # do not fit the arguments, is shown in English.
     englishText = TEXTS[DEFAULT_LANGUAGE][key]
-    text = TEXTS.get (LANGUAGE, {}).get (key, englishText)
+    text = TEXTS.get (TEXT_LANGUAGES.get (LANGUAGE, LANGUAGE), {}).get (key, englishText)
     if len (arguments) == 0:
         return text
     try:
@@ -2452,13 +3323,21 @@ def RunGuiInstaller (args):
     # 96 DPI, so the layout grows with the text on high DPI Windows displays.
     # macOS scales the whole window itself, so the factor stays 1 there.
     uiScale = [1.0]
+    # Windows, macOS, then Linux families of each language.
+    CJK_FONT_FAMILIES = {
+        'CHI' : ['Microsoft YaHei UI', 'PingFang SC', 'Noto Sans CJK SC'],
+        'JPN' : ['Yu Gothic UI', 'Meiryo UI', 'Hiragino Sans', 'Noto Sans CJK JP'],
+    }
 
     def Px (value):
         return int (round (value * uiScale[0]))
 
     def GetFontFamily (root):
+        # Tk takes a glyph that the family lacks from another font, but
+        # Chinese and Japanese share characters drawn differently, so their
+        # texts get a family of their own language when there is one.
         availableFamilies = set (tkinter.font.families (root))
-        for family in ['Segoe UI', 'SF Pro Text', 'Helvetica Neue', 'Inter', 'Cantarell', 'DejaVu Sans']:
+        for family in CJK_FONT_FAMILIES.get (LANGUAGE, []) + ['Segoe UI', 'SF Pro Text', 'Helvetica Neue', 'Inter', 'Cantarell', 'DejaVu Sans']:
             if family in availableFamilies:
                 return family
         return tkinter.font.nametofont ('TkDefaultFont').actual ('family')
@@ -2607,7 +3486,11 @@ def RunGuiInstaller (args):
 
         def SetStatus (self, statusText, kind, progressFraction = None):
             foreground, background = STATUS_COLORS[kind]
-            self.statusLabel.configure (text = statusText, fg = COLORS[foreground], bg = COLORS[background], width = max (self.statusWidth, len (statusText)))
+            # The width counts digits: a Chinese or Japanese character is
+            # about two of them wide.
+            badgeFont = self.app.fonts['badge']
+            textWidth = -(-badgeFont.measure (statusText) // badgeFont.measure ('0'))
+            self.statusLabel.configure (text = statusText, fg = COLORS[foreground], bg = COLORS[background], width = max (self.statusWidth, textWidth))
             if progressFraction is None:
                 self.progressBar.configure (bg = COLORS['surface'])
                 self.progressBar.SetFraction (0.0)
@@ -3099,12 +3982,29 @@ def TryAttachWindowsConsole ():
     try:
         import ctypes
         if ctypes.windll.kernel32.AttachConsole (-1):
+            # In the console's code page, which the translated texts need.
+            encoding = 'cp{0}'.format (ctypes.windll.kernel32.GetConsoleOutputCP ())
+            try:
+                codecs.lookup (encoding)
+            except LookupError:
+                encoding = None
             if sys.stdout is None:
-                sys.stdout = open ('CONOUT$', 'w')
+                sys.stdout = open ('CONOUT$', 'w', encoding = encoding, errors = 'replace')
             if sys.stderr is None:
-                sys.stderr = open ('CONOUT$', 'w')
+                sys.stderr = open ('CONOUT$', 'w', encoding = encoding, errors = 'replace')
     except Exception:
         pass
+
+
+def ReplaceUnprintableCharacters ():
+    # A translated text that the console or the file the output goes to
+    # cannot encode (a Japanese text in a German console) is printed with
+    # replacement characters instead of failing the installer.
+    for stream in [sys.stdout, sys.stderr]:
+        try:
+            stream.reconfigure (errors = 'replace')
+        except Exception:
+            pass
 
 
 def Main ():
@@ -3147,6 +4047,7 @@ def Main ():
             pass
     if args.console or (not isUpdateMode and (args.dryRun or args.uninstall or args.versions is not None or args.addOnsFolderPath is not None)):
         TryAttachWindowsConsole ()
+        ReplaceUnprintableCharacters ()
         if len (unknownArgs) > 0:
             print (GetText ('ignoringUnknownOptions', ' '.join (unknownArgs)), file = sys.stderr)
         return RunConsoleInstaller (args)

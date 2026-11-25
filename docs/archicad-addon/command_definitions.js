@@ -2041,12 +2041,16 @@ var gCommands = [{
             },{
                 "name": "SetStories",
                 "version": "1.1.5",
-                "description": "Sets the story sructure of the currently loaded project.",
+                "description": "Sets the story structure of the currently loaded project to the given list of stories. Existing stories outside the list are deleted, and Archicad deletes every element whose home story they are with them; dryRun lists those stories with the number of elements on each, without changing anything. To add, change or delete a single story, use InsertStory or DeleteStory instead.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "stories": {
                 "$ref": "#/StoriesSettings"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun",
+                "description": "If true, nothing is changed in the project and no undo step is created: the list is checked as in a real run, and the response lists the existing stories a real run would delete (with the number of elements Archicad would delete with each) and the number of stories it would insert. Default is false."
             }
         },
         "additionalProperties": false,
@@ -2055,7 +2059,205 @@ var gCommands = [{
         ]
     },
                 "outputScheme": {
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the story structure was set, or on a dry run, whether the list passed the checks a real run makes first."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDeleteStories": {
+                "type": "array",
+                "description": "Only on a successful dry run: the existing stories a real run would delete, from the bottom up. Empty when it would delete none.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the story."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        },
+                        "elementCount": {
+                            "type": "integer",
+                            "description": "The number of elements whose home story is the story (in the floor plan database): Archicad deletes them together with it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "elementCount"
+                    ]
+                }
+            },
+            "wouldInsertStoryCount": {
+                "type": "integer",
+                "description": "Only on a successful dry run: the number of new stories a real run would add below and above the existing ones until they reach the requested indices. When the requested indices leave a gap above or below the existing stories, this includes the stories in the gap, which the real run deletes again."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    }
+            },{
+                "name": "InsertStory",
+                "version": "2.0.1",
+                "description": "Inserts one new story directly above or below an existing story, with its name, height and level line display, and returns the new story as GetStories reports it. Other stories are never deleted; their indices and levels can change with the insertion as in Archicad's Story Settings dialog, so read them again with GetStories.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of an existing story (see GetStories) next to which the new story is inserted."
+            },
+            "position": {
+                "type": "string",
+                "description": "Whether the new story is inserted directly above or directly below the story of storyIndex.",
+                "enum": [
+                    "Above",
+                    "Below"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the new story. Default is an empty name."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the new story, greater than zero. Default is the height of the story of storyIndex.",
+                "exclusiveMinimum": 0
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Whether the level line of the new story appears on sections and elevations. Default is what Archicad gives a new story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex",
+            "position"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "story": {
+                "$ref": "#/StoryParameters",
+                "description": "The new story, as GetStories reports it after the insertion."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "story"
+        ]
+    }
+            },{
+                "name": "DeleteStory",
+                "version": "2.0.1",
+                "description": "Deletes one story. Archicad deletes every element whose home story it is together with it, so a story that is the home story of any element is only deleted with deleteElements: true; otherwise it fails and gives the number of those elements. dryRun reports, without changing anything, whether the story would be deleted and how many elements with it.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story to delete (see GetStories)."
+            },
+            "deleteElements": {
+                "type": "boolean",
+                "description": "Archicad deletes every element whose home story is the deleted story. Without true here, a story that is the home story of any element is not deleted, and the response says how many elements it has. Default is false."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the story was deleted, or on a dry run, whether a real run would delete it."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "description": "Present, and true, on a dry run that a real run would delete the story.",
+                "enum": [ true ]
+            },
+            "elementCount": {
+                "type": "integer",
+                "description": "The number of elements whose home story is the story (in the floor plan database): the elements deleted with it, or that kept it from being deleted. Absent when the story was not found."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    }
+            },{
+                "name": "ModifyStory",
+                "version": "2.0.1",
+                "description": "Changes the name, level, height or level line display of one story, and returns the story as GetStories reports it. It never adds or deletes a story. level moves only this story; height moves every story above with the top of this one, as in Archicad's Story Settings dialog. The elements of a moved story move with it.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story to modify (see GetStories)."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The new level of the story. Only this story moves: the story below gets taller or shorter, and the stories above stay where they are unless height is given too. It must stay above the level of the story below, and, without height, below the level of the story above. On the top story without height its top stays where it is: moving it up makes it shorter by as much, and moving it down taller."
+            },
+            "height": {
+                "type": "number",
+                "description": "The new height of the story, greater than zero. As in Archicad's Story Settings dialog, every story above moves up or down with the top of this story and keeps its height.",
+                "exclusiveMinimum": 0
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Whether the level line of the story appears on sections and elevations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "story": {
+                "$ref": "#/StoryParameters",
+                "description": "The modified story, as GetStories reports it after the change."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "story"
+        ]
     }
             },{
                 "name": "GetAutoTextKeys",
@@ -2622,6 +2824,52 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "MergeFile",
+                "version": "2.0.1",
+                "description": "Merges an Archicad project or module file into the model, as File > Interoperability > Merge does, at an origin, rotation and mirroring, each story of the file on the story with the same index (or from floorIndex on). The Archicad API has no merge, so the file is placed as a hotlink and the hotlink is broken, in one undo step, and the elements that are new afterwards are returned; Archicad leaves them grouped together. A file the project already hotlinks is refused, because breaking would break that hotlink too.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "sourceLocation": {
+                "type": "string",
+                "description": "Absolute path of the file to merge: an Archicad project (.pln, .pla) or module (.mod). It cannot be a file the project already hotlinks: breaking that hotlink would turn its placed instances into ordinary elements too."
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "Optional. Where the origin of the file lands in the project. Defaults to the project origin; if z is omitted, it is 0."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Optional. Reflects the file's local X axis before the rotation. Defaults to false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional story of the project that the story with index 0 of the file goes to; the other stories of the file follow it. Defaults to 0, so each story of the file goes to the story with the same index."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sourceLocation"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements the merge added to the model, every element of the file's model. Archicad leaves them grouped together, as it leaves the elements of a broken hotlink; UngroupElements dissolves the group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
                 "name": "GetHotlinkOwnersOfElements",
                 "version": "1.8.0",
                 "description": "Tells for each element whether it comes from a hotlinked module, and returns the hotlink element that contains it and the hotlink instance it belongs to. Available from Archicad 27.",
@@ -2781,7 +3029,7 @@ var gCommands = [{
             },{
                 "name": "CloseProject",
                 "version": "1.3.1",
-                "description": "Closes the currently opened project.",
+                "description": "Closes the currently opened project. Fails, instead of answering success, when Archicad leaves the project open, as it does with its last open project.",
                 "inputScheme": null,
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
@@ -5580,7 +5828,7 @@ var gCommands = [{
             },{
                 "name": "GetElementsByType",
                 "version": "1.0.7",
-                "description": "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+                "description": "Returns the identifier of every element of the given type on the plan. It works for any type. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements of the type that the window shows, the same elements GetAllElements reports there; pass the floor plan's database (GetDatabases) to list every one.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -5609,7 +5857,7 @@ var gCommands = [{
             },{
                 "name": "GetAllElements",
                 "version": "1.0.7",
-                "description": "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+                "description": "Returns the identifier of all elements on the plan. Use the optional filter parameter for filtering. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. Without databases it lists the current database: in a section or elevation window the model elements that the window shows (and its own 2D elements); pass the floor plan's database (GetDatabases) to list every model element.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -6022,7 +6270,7 @@ var gCommands = [{
             },{
                 "name": "GetElementsByCriteria",
                 "version": "2.0.0",
-                "description": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+                "description": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given. It searches the current database, as GetElementsByType does (in a section or elevation window the model elements the window shows), or the given databases.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -6107,6 +6355,10 @@ var gCommands = [{
                 "type": "integer",
                 "description": "Maximum number of matching elements to list. The count is still the total number of matches.",
                 "minimum": 1
+            },
+            "databases": {
+                "$ref": "#/Databases",
+                "description": "Optional. The databases to search, as GetDatabases lists them; an element found in more than one is counted once. If omitted, the current database is searched: the floor plan, or in a section or elevation window the model elements it shows."
             }
         },
         "additionalProperties": false
@@ -6121,6 +6373,10 @@ var gCommands = [{
             "elements": {
                 "$ref": "#/Elements",
                 "description": "List of matching elements."
+            },
+            "executionResultForDatabases": {
+                "$ref": "#/ExecutionResults",
+                "description": "Only when databases is given: whether each database could be searched, in the order of databases."
             }
         },
         "additionalProperties": false,
@@ -6131,7 +6387,7 @@ var gCommands = [{
             },{
                 "name": "GetDetailsOfElements",
                 "version": "1.5.7",
-                "description": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+                "description": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. The components of a Railing (posts, inner posts, rails, top rails, handrails, balusters, baluster sets, panels, patterns, rail ends, rail connections and end finishes, as GetSubelementsOfHierarchicalElements lists them) return their owner, library part and settings. A Stair returns the structure settings of each part and side (structures, with the monolith or side stringer data of its type), and a StairStructure subelement returns the same keys. A Stair also returns its plan outline (its left and right boundary lines) and its walking lines. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -6192,7 +6448,7 @@ var gCommands = [{
             },{
                 "name": "SetDetailsOfElements",
                 "version": "1.0.7",
-                "description": "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.",
+                "description": "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special, fill orientation, fill category and contour line type; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands, and the name, ID and clip polygon of Detail and Worksheet markers by ModifyDetailMarkers: typeSpecificDetails given for a Detail or Worksheet marker fail the item, and nothing of it is changed. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -7316,7 +7572,7 @@ var gCommands = [{
             },{
                 "name": "GetQuantitiesOfElements",
                 "version": "1.7.2",
-                "description": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.",
+                "description": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment, Stair. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -7754,6 +8010,109 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "GetRailingSegmentPatterns",
+                "version": "2.0.1",
+                "description": "Gets the pattern of each segment of the given railings, telling the entry apart from its instances: the entry is the segment's pattern settings (distribution, panel, baluster set with its spacing, baluster and inner post) that Archicad generates the pattern from, the instances are the RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements it generated for the segment, whose own settings GetDetailsOfElements reads. Read only.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The railings to read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "One item per given element, in the order of the input. An element that is not a railing, or whose segments cannot be read, is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "segments": {
+                                    "type": "array",
+                                    "description": "The segments of the railing, in the order of GetDetailsOfElements' segments.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "segmentIndex": {
+                                                "type": "integer",
+                                                "description": "The index of the segment in the railing, from 0, as in GetDetailsOfElements' segments."
+                                            },
+                                            "segmentId": {
+                                                "$ref": "#/ElementId",
+                                                "description": "The RailingSegment subelement."
+                                            },
+                                            "entry": {
+                                                "$ref": "#/RailingPatternEntry"
+                                            },
+                                            "instances": {
+                                                "type": "object",
+                                                "description": "The subelements Archicad generated for this segment from its entry. Their own settings are read with GetDetailsOfElements.",
+                                                "properties": {
+                                                    "patterns": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPattern subelements the segment owns."
+                                                    },
+                                                    "panels": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingPanel subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "balusterSets": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingBalusterSet subelements owned by the segment or by one of its patterns."
+                                                    },
+                                                    "innerPosts": {
+                                                        "$ref": "#/Elements",
+                                                        "description": "The RailingInnerPost subelements owned by the segment or by one of its patterns."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "patterns",
+                                                    "panels",
+                                                    "balusterSets",
+                                                    "innerPosts"
+                                                ]
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "segmentIndex",
+                                            "segmentId",
+                                            "entry",
+                                            "instances"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "segments"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "railings"
+        ]
+    }
+            },{
                 "name": "GetHierarchicalElementOwners",
                 "version": "1.7.3",
                 "description": "Gets the owner of each given element in its hierarchical element: the root (e.g. the Curtain Wall, Stair or Railing of a frame, tread or post) or the immediate parent. Also returns whether the given element is a main element, a subelement or not part of a hierarchical element.",
@@ -7796,6 +8155,350 @@ var gCommands = [{
         "additionalProperties": false,
         "required": [
             "owners"
+        ]
+    }
+            },{
+                "name": "GetElementFieldDefinitions",
+                "version": "2.0.1",
+                "description": "Lists every field of an element type's struct in the Archicad API (e.g. API_AngleDimensionType) that GetElementFields reads and SetElementFields writes (and GetFieldsOfElementDefaults and SetFieldsOfElementDefaults in the tool defaults): its path, JSON type, C++ kind, size and whether it is read-only. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type whose fields are listed."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "structName": {
+                "type": "string",
+                "description": "The C++ struct of the element type in the Archicad API, e.g. API_AngleDimensionType."
+            },
+            "fields": {
+                "type": "array",
+                "description": "Every field GetElementFields reads and SetElementFields writes for this element type.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "The field's path in the struct, as in C++: e.g. note.noteFont, u.planeRoof.angle or defHandrailEnd[0].x."
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [ "number", "boolean", "integer", "string", "object" ],
+                            "description": "The JSON type of the field's value: object for an OverriddenPen or OverriddenAttribute (see ElementFieldOptionalValue)."
+                        },
+                        "kind": {
+                            "type": "string",
+                            "enum": [ "Real", "Bool", "SignedInt", "UnsignedInt", "CString", "UString", "AttributeIndex", "Guid", "OverriddenPen", "OverriddenAttribute", "UniStringPointer" ],
+                            "description": "The C++ kind of the field: an enum is a SignedInt, an AttributeIndex is the index of an attribute (pen tables excepted, pens are plain integers). OverriddenPen and OverriddenAttribute are the optional pens and attributes of the API (API_OverriddenPen, API_OverriddenAttribute, e.g. cutFillPen and refMat of a wall), read and written as an object with hasValue and value. A UniStringPointer is a GS::UniString* through which Archicad passes a text (e.g. note.contentUStr, the text of a dimension note): it is read and written as a string, the commands pointing it to a string of their own."
+                        },
+                        "size": {
+                            "type": "integer",
+                            "description": "The size of the field in bytes (for a string, the room in bytes including the closing zero; for a UniStringPointer, the size of the pointer)."
+                        },
+                        "readOnly": {
+                            "type": "boolean",
+                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit): SetElementFields refuses them."
+                        },
+                        "variant": {
+                            "type": "string",
+                            "description": "For a field in a union, the member it is in, e.g. u.revolvedShell, u.planeRoof or structure[0][1].data.monolith. Only the member the element uses holds values (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, the structType of that default structure of a stair): GetElementFields leaves the others out and SetElementFields refuses them."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [ "path", "type", "kind", "size", "readOnly" ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structName",
+            "fields"
+        ]
+    }
+            },{
+                "name": "GetElementFields",
+                "version": "2.0.1",
+                "description": "Reads fields of elements by their path in the element's struct in the Archicad API (e.g. note.noteFont of an angle dimension, u.planeRoof.angle of a roof): every field, or only the given ones. Reaches the settings the other commands do not return.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "fields": {
+                "type": "array",
+                "description": "The paths of the fields to read (see GetElementFieldDefinitions), e.g. [\"note.noteFont\", \"note.frame\"]. Every field of the element is read when it is left out. A path the element type does not have is listed in the element's missingFields.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elementFields": {
+                "type": "array",
+                "description": "The fields of each element, aligned with the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "structName": {
+                                    "type": "string",
+                                    "description": "The C++ struct of the element in the Archicad API."
+                                },
+                                "fields": {
+                                    "type": "object",
+                                    "description": "The value of each field, by its path.",
+                                    "additionalProperties": {
+                                        "$ref": "#/ElementFieldValue"
+                                    }
+                                },
+                                "missingFields": {
+                                    "type": "array",
+                                    "description": "The asked paths this element type does not have.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "inactiveFields": {
+                                    "type": "array",
+                                    "description": "The asked paths in a member of a union this element does not use (see variant in GetElementFieldDefinitions), e.g. u.revolvedShell fields of an extruded shell: their bytes hold another member's values, so they are not read. Without the fields input, these are simply left out.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "elementType", "structName", "fields" ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementFields"
+        ]
+    }
+            },{
+                "name": "SetElementFields",
+                "version": "2.0.1",
+                "description": "Writes fields of elements by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_Change and a mask of exactly the given fields, in one undoable command. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementsWithFields": {
+                "type": "array",
+                "description": "The elements to change and the fields to write to each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "fields": {
+                            "type": "object",
+                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"note.noteFont\": 3, \"note.frame\": true, \"note.contentUStr\": \"A\"}, or {\"refMat\": {\"hasValue\": true, \"value\": 12}} for a wall. Only these fields change: they are written with ACAPI_Element_Change and a mask of exactly their bytes, then read back.",
+                            "additionalProperties": {
+                                "$ref": "#/ElementFieldValue"
+                            },
+                            "minProperties": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "fields"
+                    ]
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsWithFields"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per element, aligned with the input. An element whose fields Archicad did not all keep fails with the fields and the values Archicad kept; the other fields of that element are changed. On a dry run, a successful result has wouldChange with the oldValue and newValue of the given fields."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "GetFieldsOfElementDefaults",
+                "version": "2.0.1",
+                "description": "Reads fields of the tool defaults of element types, the settings new elements of the type get, by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), e.g. thickness of the wall defaults: every field, or only the given ones. Reaches the default settings the other commands do not return. The list is generated from the Archicad 29 and 30 DevKit headers; other Archicad versions answer that it is not available.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "fields": {
+                "type": "array",
+                "description": "The paths of the fields to read (see GetElementFieldDefinitions), e.g. [\"thickness\", \"height\"]. Every field of the defaults is read when it is left out. A path the element type does not have is listed in missingFields.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "fieldsOfElementDefaults": {
+                "type": "array",
+                "description": "The fields of the tool defaults of each element type, in the input order, or an error when the type has no fields in the table or no tool defaults.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "structName": {
+                                    "type": "string",
+                                    "description": "The C++ struct of the element type in the Archicad API."
+                                },
+                                "fields": {
+                                    "type": "object",
+                                    "description": "The value of each field of the tool defaults, by its path.",
+                                    "additionalProperties": {
+                                        "$ref": "#/ElementFieldValue"
+                                    }
+                                },
+                                "missingFields": {
+                                    "type": "array",
+                                    "description": "The asked paths this element type does not have.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "inactiveFields": {
+                                    "type": "array",
+                                    "description": "The asked paths in a member of a union the defaults do not use (see variant in GetElementFieldDefinitions). Without the fields input, these are simply left out.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [ "elementType", "structName", "fields" ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fieldsOfElementDefaults"
+        ]
+    }
+            },{
+                "name": "SetFieldsOfElementDefaults",
+                "version": "2.0.1",
+                "description": "Writes fields of the tool defaults of element types by their path in the element's struct in the Archicad API (see GetElementFieldDefinitions), with ACAPI_Element_ChangeDefaults and a mask of exactly the given fields: the elements created afterwards get them. Like the settings dialogs of the tools, it is not undoable. Each value is read back afterwards: one Archicad did not keep is reported as a failure that names the field and the value Archicad kept. A change Archicad refuses can still have written some of the given fields (seen with libInd, the library part, which Archicad refuses in the tool defaults): the failure names them.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "fieldsOfElementDefaults": {
+                "type": "array",
+                "description": "The element types whose tool defaults change and the fields to write to each.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "fields": {
+                            "type": "object",
+                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7, \"cutFillPen\": {\"hasValue\": true, \"value\": 5}}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
+                            "additionalProperties": {
+                                "$ref": "#/ElementFieldValue"
+                            },
+                            "minProperties": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "fields"
+                    ]
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fieldsOfElementDefaults"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per item, in the input order. Tool defaults whose fields Archicad did not all keep fail with the fields and the values Archicad kept; the other fields are changed. On a dry run, a successful result has wouldChange with the oldValue and newValue of the given fields."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
         ]
     }
             },{
@@ -9243,13 +9946,13 @@ var gCommands = [{
             },{
                 "name": "DeleteElements",
                 "version": "1.2.1",
-                "description": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.",
+                "description": "Deletes elements, each in the database that contains it (the floor plan, a section, a worksheet, a layout, ...), whichever window is the current one; the current window stays. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.",
                 "inputScheme": {
         "type": "object",
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
+                "description": "The elements to delete, of any database (the floor plan, a section, a worksheet, a layout, ...): each is deleted in the database that contains it, whichever window is the current one, and the current window stays. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             },
             "dryRun": {
                 "$ref": "#/DryRun"
@@ -9389,12 +10092,23 @@ var gCommands = [{
             },{
                 "name": "GetGDLParametersOfElements",
                 "version": "1.5.7",
-                "description": "Gets all the GDL parameters (name, type, value) of the given elements. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.",
+                "description": "Gets all the GDL parameters (name, type, value) of the given elements. parameterNames returns only the named parameters, and includePossibleValues false leaves out the value lists (which for font parameters list every installed font), for a much smaller answer. For the railing components GetSubelementsOfHierarchicalElements lists (posts, rails, balusters, panels ...), which have no parameter session in the Archicad API, the parameters are read from the component itself: isLocked is then always false and possibleValues is not given.",
                 "inputScheme": {
     "type": "object",
     "properties": {
         "elements": {
             "$ref": "#/Elements"
+        },
+        "parameterNames": {
+            "type": "array",
+            "description": "Optional. Only the parameters with these GDL variable names are returned (case-insensitive), in the order of the library part. A name the element's library part does not have is left out. All parameters are returned when it is not given.",
+            "items": {
+                "type": "string"
+            }
+        },
+        "includePossibleValues": {
+            "type": "boolean",
+            "description": "Optional, true by default. When false, possibleValues (the value lists of the Parameter Script, e.g. every installed font for a font parameter) is left out of the answer, which makes it much smaller."
         }
     },
     "additionalProperties": false,
@@ -9473,7 +10187,7 @@ var gCommands = [{
             },{
                 "name": "GetMarkerParametersOfElements",
                 "version": "1.7.1",
-                "description": "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window and Door elements. The marker is the stamp drawn next to the opening on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns.",
+                "description": "Gets the marker library part and the marker's GDL parameters (name, type, value) of the given Window, Door and Change Marker elements. The marker of an opening is the stamp drawn next to it on the floor plan; its parameters are separate from the opening's own GDL parameters, which GetGDLParametersOfElements returns. The marker of a Change Marker is its marker head, e.g. with the texts typed into it; a Change Marker with only a cloud has no marker and gets an error. GetDetailsOfElements gives the Change a Change Marker is linked to.",
                 "inputScheme": {
     "type": "object",
     "properties": {
@@ -9491,7 +10205,7 @@ var gCommands = [{
     "properties": {
         "markerParametersOfElements": {
             "type": "array",
-            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window or a door.",
+            "description": "The marker of each given element, in the order of the input, or an error for an element that is not a window, a door or a change marker, or has no marker (a change marker with only a cloud).",
             "items": {
                 "type": "object",
                 "oneOf": [
@@ -9530,7 +10244,7 @@ var gCommands = [{
             },{
                 "name": "SetMarkerParametersOfElements",
                 "version": "1.7.1",
-                "description": "Sets the given GDL parameters of the marker of the given Window and Door elements. The opening's own settings and the other marker parameters are left as they are.",
+                "description": "Sets the given GDL parameters of the marker of the given Window, Door and Change Marker elements (the marker head of a Change Marker). The element's own settings and the other marker parameters are left as they are.",
                 "inputScheme": {
     "type": "object",
     "properties": {
@@ -9545,7 +10259,7 @@ var gCommands = [{
                     },
                     "markerParameters": {
                         "type": "array",
-                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the opening's own settings are left as they are.",
+                        "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the element's own settings are left as they are.",
                         "items": {
                             "oneOf": [
                                 {
@@ -10239,7 +10953,7 @@ var gCommands = [{
                             "exclusiveMinimum": 0.0,
                             "description": "Optional thickness. When omitted, the favorite's or the Wall tool default's thickness is kept. Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Without structureType the new wall keeps the structure of the favorite (or the wall tool default), which may be a composite; send structureType 'Basic' for the thickness to apply."
                         },
-                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept." },
+                        "offset": { "type": "number", "description": "Optional reference line offset. When omitted, the favorite's or the Wall tool default's offset is kept. Unavailable when the wall's referenceLineLocation is Center or CoreCenter (Archicad keeps 0 there): a non-zero value on such a wall fails it instead of being dropped." },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints)." },
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation",
@@ -10481,7 +11195,7 @@ var gCommands = [{
             },{
                 "name": "CreateStairs",
                 "version": "1.5.0",
-                "description": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings, and the floor plan and reflected ceiling plan display (shown stories and components); settings not given come from the Stair tool defaults or the favorite.",
+                "description": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); settings not given come from the Stair tool defaults or the favorite. Archicad lays out the boundaries and the walking lines from the baseline and the flight width, and the API cannot write them: an item that gives one is refused with an error that says so.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -10558,9 +11272,15 @@ var gCommands = [{
                             "description": "Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
                         },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the baseline, for a curved or spiral stair, in the format GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, and an arc bends one edge, so endIndex = begIndex + 1. arcAngle is the angle of the arc in radians, not 0 and less than a full turn; it is positive if the arc is on the right-hand side of the straight edge. At most one arc per edge; the edges without an arc are straight.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
                         "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
+                        "headroom": { "$ref": "#/StairHeadroom", "description": "The headroom of the stair (Stair Settings > Headroom): only the given fields are written, the others are kept. An unknown key is refused, and ModifyStairs reads the given fields back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -10568,6 +11288,7 @@ var gCommands = [{
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
                         "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
                         "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
                         "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
@@ -10575,13 +11296,29 @@ var gCommands = [{
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
                         "structureVisibility": { "type": "boolean", "description": "Whether the structure of the stair is shown." },
                         "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
-                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout." },
-                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
+                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of reflectedCeilingPlanLayout." },
+                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of floorPlanLayout." },
+                        "structureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the structure symbol, per structure type (UnderStructure, Stringer) and view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureSymbolSettings" }
+                        },
+                        "monolithStructureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
+                        },
+                        "structureVisibilityOnStories": {
+                            "type": "array",
+                            "description": "Which structure symbols are shown on which of the stair's relevant stories, per view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns: whether one representation is used on every story, and per story range the visible structures, fills and monolithic parts. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureVisibilitySettings" }
+                        },
                         "treads": {
                             "type": "array",
-                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in treads.",
                             "items": {
                                 "type": "object",
+                                "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the treads are present." },
@@ -10597,9 +11334,10 @@ var gCommands = [{
                         },
                         "risers": {
                             "type": "array",
-                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in risers.",
                             "items": {
                                 "type": "object",
+                                "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the risers are present." },
@@ -10615,7 +11353,7 @@ var gCommands = [{
                         },
                         "structures": {
                             "type": "array",
-                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.",
+                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair, with the keys GetDetailsOfElements reads in structures. Only the given fields of the given parts and sides are changed. ModifyStairs reads the given monolith and sideStair data back and reports a value Archicad did not apply as an error.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -10625,12 +11363,19 @@ var gCommands = [{
                                     "structureType": { "type": "string", "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport"], "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered." },
                                     "bottomType": { "type": "string", "enum": ["Stepped", "Flat", "Smooth"], "description": "The shape of the underside of the structure." },
                                     "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the structure." },
-                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." }
+                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." },
+                                    "monolith": { "$ref": "#/StairMonolithStructureSettings", "description": "The monolith data of the structure: only for a Monolith structure (its structureType, given in the same item or already set), refused otherwise." },
+                                    "sideStair": { "$ref": "#/StairSideStructureSettings", "description": "The stringer data of the structure: only for a Side structure (its structureType, given in the same item or already set), refused otherwise." }
                                 },
                                 "additionalProperties": false,
                                 "required": ["role", "side"]
                             }
-                        }
+                        },
+                        "leftBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the left boundary of the stair. An item with it is refused." },
+                        "rightBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the right boundary of the stair. An item with it is refused." },
+                        "walkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the walking line of the stair. An item with it is refused." },
+                        "customWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the custom walking line of the stair. An item with it is refused." },
+                        "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." }
                     },
                     "additionalProperties": false,
                     "required": ["baseLinePoints", "zCoordinate"]
@@ -10655,7 +11400,7 @@ var gCommands = [{
             },{
                 "name": "SolveStairBaseline",
                 "version": "1.7.3",
-                "description": "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27.",
+                "description": "Runs the Archicad stair solver on the given Stair baselines (straight or with curved edges) and parameters without creating any element. Returns for each one whether the baseline was already correct, could be solved or could not be solved, with the baseline and the main stair settings after solving, and the Rules and Standards (riser height and going limits, 2R+G, R+G, R/G, pitch) CreateStairs would lay the steps out by, with a given treadDepth pinned as CreateStairs pins it. The solver checks the baseline only: it does not lay out the steps, so stepNum, riserHeight and treadDepth are the given values or the tool defaults, and CreateStairs picks the riser count and height for totalHeight within the rules. Available from Archicad 27.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -11814,7 +12559,7 @@ var gCommands = [{
                                         "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
                                         "polygon": {
                                             "type": "array",
-                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis. Left out when the opening has no polygon.",
+                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis, measured from anchorPoint (the origin of the opening's own coordinate system). Left out when the opening has no polygon.",
                                             "items": { "$ref": "#/Coordinate2D" }
                                         }
                                     },
@@ -11914,13 +12659,13 @@ var gCommands = [{
                         },
                         "polygon": {
                             "type": "array",
-                            "description": "The new polygon of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails.",
+                            "description": "The new shape of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails. Archicad keeps only the shape: it places the polygon on the opening's anchor point by the opening's anchor (extrusionParameters.anchor), so with the Center anchor the polygon is centred on the anchor point, and an offset in the given coordinates is dropped. The polygon does not move the opening; GetOpeningDetails reads it back measured from the anchor point.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
                         "transformation": {
                             "type": "array",
-                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] moves the opening by 1 along X.",
+                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] is a translation by 1 along X. The matrix goes to Archicad as it is, and Archicad refuses a 3x3 part that is not orthogonal or that scales with the error 'Can transform only with ortogonal matrix with no scaling.' Archicad 29 has also been reported to refuse a pure translation with that error (#2957); the cause is not known yet.",
                             "items": { "type": "number" },
                             "minItems": 12,
                             "maxItems": 12
@@ -12142,6 +12887,10 @@ var gCommands = [{
                             "exclusiveMinimum": 0.0
                         },
                         "eavesOverhang": { "type": "number" },
+                        "fitSkylightToCurve": {
+                            "type": "boolean",
+                            "description": "Multi-plane roofs only: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments, as GetDetailsOfElements reports it. When omitted the new roof gets the value of the roof tool default."
+                        },
                         "levels": {
                             "type": "array",
                             "minItems": 1,
@@ -12582,6 +13331,10 @@ var gCommands = [{
                         "type": "number",
                         "description": "Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite), as in CreateRailings: its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, layer and home story. floorIndex and height given here override them. With itself as template, a railing is given a new 3D reference line by creating it again and deleting the old one."
                     }
                 },
                 "additionalProperties": false,
@@ -12626,6 +13379,10 @@ var gCommands = [{
                         "type": "string",
                         "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
                     },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Curtain Wall whose settings the new curtain wall takes instead of the tool defaults (or the favorite): its frame and panel classes, pattern, surfaces, boundary and corner frames, height, home story and base, layer and slant angle. The fields given here override them. With itself as template, a curtain wall is given a reference line with more or fewer segments by creating it again and deleting the old one (see RecreateCurtainWalls)."
+                    },
                     "id": {
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
@@ -12650,6 +13407,12 @@ var gCommands = [{
                         "type": "number",
                         "description": "Optional height of the curtain wall. When omitted, the height of the favorite (or of the Curtain Wall tool defaults) is kept.",
                         "exclusiveMinimum": 0.0
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional slant angle of the curtain wall plane in degrees, measured from the horizontal: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first coordinate), more than 90 to the right. It is the value GetDetailsOfElements returns as angle. A slanted curtain wall needs a straight reference line (exactly 2 coordinates); height stays its vertical height, and zCoordinate the elevation of its reference line (Archicad raises the bottom of the panels by offset times the cosine of the angle). Give it even with a slanted favorite: Archicad does not take the slant of a favorite or of the tool defaults on creation, so without angle the curtain wall comes out vertical (seen in Archicad 29).",
+                        "exclusiveMinimum": 0.0,
+                        "exclusiveMaximum": 180.0
                     },
                     "primaryPattern": {
                         "$ref": "#/CurtainWallPattern",
@@ -12739,6 +13502,10 @@ var gCommands = [{
                         "elevationOrigin": {
                             "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "linePen": {
                             "type": "integer",
@@ -12861,6 +13628,10 @@ var gCommands = [{
                         "elevationOrigin": {
                             "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "linePen": {
                             "type": "integer",
@@ -13009,6 +13780,10 @@ var gCommands = [{
                             "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
                         },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
                         "linePen": {
                             "type": "integer",
                             "minimum": 1,
@@ -13078,7 +13853,7 @@ var gCommands = [{
             },{
                 "name": "ModifyAssociativeDimensions",
                 "version": "2.0.0",
-                "description": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type, pen and size, the text placement method, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, and the reset to the automatic text position. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
+                "description": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, the text position and the reset to the automatic text position; GetDetailsOfElements reads them back with the same keys. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -13094,39 +13869,9 @@ var gCommands = [{
                         "witnessPointTexts": {
                             "type": "array",
                             "minItems": 1,
-                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDimensionData reads them back for every witness point.",
+                            "description": "Optional texts of single witness points, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position (moved and fixed, or reset to the automatic position). Only the given fields of the given witness points are changed. GetDetailsOfElements reads them back for every witness point with the same keys (witnessPointTexts), so the list read can be sent back; GetDimensionData reads them too.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
-                                    },
-                                    "content": {
-                                        "type": "string",
-                                        "enum": ["MeasuredValue", "CustomText"],
-                                        "description": "Optional: show the measured value or the custom text (API note contentType)."
-                                    },
-                                    "customText": {
-                                        "type": "string",
-                                        "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). Without content the witness point shows the custom text."
-                                    },
-                                    "superscript": {
-                                        "type": "boolean",
-                                        "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
-                                    },
-                                    "resetTextPosition": {
-                                        "type": "boolean",
-                                        "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition."
-                                    },
-                                    "textPosition": {
-                                        "$ref": "#/Coordinate2D",
-                                        "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["index"]
+                                "$ref": "#/DimensionWitnessPointText"
                             }
                         },
                         "textHeight": {
@@ -13156,6 +13901,10 @@ var gCommands = [{
                         "elevationOrigin": {
                             "$ref": "#/DimensionOrigin",
                             "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "linePen": {
                             "type": "integer",
@@ -13223,7 +13972,7 @@ var gCommands = [{
             },{
                 "name": "GetDimensionData",
                 "version": "1.5.0",
-                "description": "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen and frame, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
+                "description": "Gets the data of existing dimension chains: the line pen, the marker type, pen and size, the text placement method and the default witness line, and per witness point the coordinates, measured value, witness line, the text height, pen, frame, font and style, and the text content (measured value or custom text), superscript and whether the text was moved by hand.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -13340,7 +14089,7 @@ var gCommands = [{
             },{
                 "name": "CreateZones",
                 "version": "1.1.8",
-                "description": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
+                "description": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, stamp pen, levels, letter size (roomLSize, in millimetres), contour line, cover fill, 3D surface, polygon display and area reduction), applied by the same helpers; the polygon or reference point, and the layer (layerIndex), are only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
                 "inputScheme": {
     "type": "object",
     "properties": {
@@ -13443,6 +14192,11 @@ var gCommands = [{
                         "minimum": 0.0,
                         "description" : "Optional thickness of the floor finish (subfloor thickness) of the zone."
                     },
+                    "roomLSize": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description" : "Optional letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
+                    },
                     "geometry": {
                         "$ref": "#/ZoneCreationGeometry"
                     }
@@ -13482,7 +14236,7 @@ var gCommands = [{
     "properties": {
         "polylinesData": {
             "type": "array",
-            "description": "Array of data to create Polylines.",
+            "description": "Array of data to create Polylines. The settings left out come from the Polyline tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description" : "The parameters of the new Polyline.",
@@ -13503,25 +14257,25 @@ var gCommands = [{
                         "type": "integer",
                         "description" : "Layer attribute index to place the polyline on. Optional parameter, by default the current layer is used."
                     },
+
                     "linePenIndex": {
                         "type": "integer",
-                        "description" : "Pen index of the polyline contour. Optional parameter, by default the current pen is used."
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the polyline contour. Optional parameter."
                     },
                     "lineTypeIndex": {
                         "type": "integer",
-                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given."
+                        "minimum": 1,
+                        "description": "Line type attribute index of the polyline contour. Optional parameter, ignored when lineTypeId is given."
                     },
                     "lineTypeId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used."
-                    },
-                    "penWeightMm": {
-                        "type": "number",
-                        "description" : "Optional pen weight override in mm."
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it and GetDetailsOfElements returns it. Takes precedence over lineTypeIndex."
                     },
                     "roomSeparator": {
                         "type": "boolean",
-                        "description": "Is this a zone boundary line? Optional, defaults to false."
+                        "description": "Is this a zone boundary line? Optional parameter."
                     },
                     "drawSegmentMode": {
                         "$ref": "#/PolylineDrawSegmentMode"
@@ -13533,6 +14287,14 @@ var gCommands = [{
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
+                    },
+                    "penWeightMm": {
+                        "type": "number",
+                        "description": "Optional pen weight override in mm, greater than 0; -1 uses the weight of the pen."
                     },
                     "coordinates": {
                         "type": "array",
@@ -13579,6 +14341,92 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "ModifyPolylines",
+                "version": "2.0.1",
+                "description": "Changes existing Polyline elements with the keys CreatePolylines takes and GetDetailsOfElements returns: the pen, the line type, zone boundary (roomSeparator), the dash mode (drawSegmentMode), the arrowheads at both ends, and the polygon (coordinates with its arcs, replaced as a whole; the polyline keeps its GUID). Only the given settings are changed. With databaseId the polylines are looked for in that database, e.g. a worksheet, a detail or a layout. The polyline is read back, so a value Archicad did not keep is reported as a failure.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "polylinesWithDetails": {
+            "type": "array",
+            "description": "The Polylines to change, each with the settings to change. Only the given settings are changed; the keys are those CreatePolylines takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs. The pen weight override (penWeightMm of CreatePolylines) is not taken: Archicad did not keep a pen weight changed on an existing polyline.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "linePenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the polyline contour. Optional parameter."
+                    },
+                    "lineTypeIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Line type attribute index of the polyline contour. Optional parameter, ignored when lineTypeId is given."
+                    },
+                    "lineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it and GetDetailsOfElements returns it. Takes precedence over lineTypeIndex."
+                    },
+                    "roomSeparator": {
+                        "type": "boolean",
+                        "description": "Is this a zone boundary line? Optional parameter."
+                    },
+                    "drawSegmentMode": {
+                        "$ref": "#/PolylineDrawSegmentMode"
+                    },
+                    "startArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the start. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "endArrow": {
+                        "$ref": "#/LineArrowhead",
+                        "description": "Optional new arrowhead at the end. Given, it is shown unless its visible is false; the type, size and pen left out are kept."
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new points of the polyline, replacing all of its points, as CreatePolylines takes them and GetDetailsOfElements returns them. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 2
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new polygon, with indices into coordinates (endIndex is begIndex + 1). Only taken with coordinates; without it the new polygon has straight segments only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the polylines are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreatePolylines takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the polylines are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "polylinesWithDetails"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    }
+            },{
                 "name": "CreateLineElements",
                 "version": "1.5.6",
                 "description": "Creates Line elements based on the given parameters.",
@@ -13621,6 +14469,10 @@ var gCommands = [{
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },
                     "roomSeparator": {
                         "type": "boolean",
@@ -13728,6 +14580,10 @@ var gCommands = [{
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },
                     "roomSeparator": {
                         "type": "boolean",
@@ -14023,7 +14879,7 @@ var gCommands = [{
     "properties": {
         "hatchesData": {
             "type": "array",
-            "description": "Array of data to create Hatches.",
+            "description": "Array of data to create Hatches. The settings left out come from the Fill tool defaults, or from the favorite given by favoriteName.",
             "items": {
                 "type": "object",
                 "description": "The parameters of the new Hatch.",
@@ -14065,19 +14921,25 @@ var gCommands = [{
                     },
                     "contourPenIndex": {
                         "type": "integer",
-                        "description": "Optional pen index for the contour; 0 switches the contour off. By default the current pen is used."
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Optional pen index for the contour; 0 switches the contour off."
                     },
                     "contourLineTypeId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional line type of the contour. By default the current line type is used."
+                        "description": "Optional line type of the contour."
                     },
                     "fillPenIndex": {
                         "type": "integer",
-                        "description": "Optional pen index for the fill. By default the current pen is used."
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill. It switches off the RGB color of the fill foreground (foregroundColor), unless that is given too."
                     },
                     "fillBackgroundPenIndex": {
                         "type": "integer",
-                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color."
+                        "minimum": -1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color. It switches off the RGB color of the fill background (backgroundColor), unless that is given too."
                     },
                     "foregroundColor": {
                         "$ref": "#/ColorRGB",
@@ -14089,25 +14951,29 @@ var gCommands = [{
                     },
                     "fillId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional fill attribute. By default the current fill is used."
+                        "description": "Optional fill attribute. Given without buildingMaterialId, it makes the hatch a fill hatch; given with it, the hatch keeps its type (fill or building material) and both are written."
                     },
                     "buildingMaterialId": {
-                        "$ref": "#/AttributeId"
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material attribute, whose cut fill the hatch shows. Given without fillId, it makes the hatch a building material hatch."
                     },
                     "roomSpecial": {
                         "type": "integer",
+                        "minimum": -128,
+                        "maximum": 100,
                         "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
                     },
                     "showArea": {
-                        "type": "boolean"
+                        "type": "boolean",
+                        "description": "Optional: show the area text of the hatch."
                     },
                     "fillOrientation": {
                         "$ref": "#/HatchOrientation",
-                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the current ones (the tool defaults for a new hatch). A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
                     },
                     "fillCategory": {
                         "$ref": "#/HatchFillCategory",
-                        "description": "Optional fill category: Drafting, Cut or Cover. By default the current one is used."
+                        "description": "Optional fill category: Drafting, Cut or Cover."
                     }
                 },
                 "additionalProperties": false,
@@ -14137,6 +15003,122 @@ var gCommands = [{
         "required": [
             "elements"
         ]
+    }
+            },{
+                "name": "ModifyHatches",
+                "version": "2.0.1",
+                "description": "Changes existing Hatch (Fill) elements with the keys CreateHatches takes and GetDetailsOfElements returns: the contour pen and line type, the fill pen and background pen or their RGB colors, the fill or building material, the fill category, the fill orientation, the area text and the percentage subtracted from the zone area, and the polygon (coordinates with its arcs and holes, replaced as a whole; the hatch keeps its GUID). Only the given settings are changed. With databaseId the hatches are looked for in that database, e.g. a worksheet, a detail or a layout. The hatch is read back, so a value Archicad did not keep is reported as a failure.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "hatchesWithDetails": {
+            "type": "array",
+            "description": "The Hatches (Fills) to change, each with the settings to change. Only the given settings are changed; the keys are those CreateHatches takes and GetDetailsOfElements returns. coordinates replaces the whole polygon, with its arcs and holes.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "coordinates": {
+                        "type": "array",
+                        "description": "The new outline of the hatch, replacing the whole polygon, as CreateHatches takes it. The first point may be repeated at the end, as in the closed outline GetDetailsOfElements returns; that last point is then ignored. Optional parameter.",
+                        "items": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "minItems": 3
+                    },
+                    "arcs": {
+                        "type": "array",
+                        "description": "The arcs of the new outline, with indices into coordinates. Only taken with coordinates; without it the new outline has straight edges only.",
+                        "items": {
+                            "$ref": "#/PolyArc"
+                        }
+                    },
+                    "holes": {
+                        "$ref": "#/Holes2D",
+                        "description": "The holes of the new polygon, each with its polygonOutline and optional polygonArcs (arc indices are relative to the hole's own outline), in the format GetDetailsOfElements returns. Only taken with coordinates; without it the new polygon has no holes."
+                    },
+                    "contourPenIndex": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 255,
+                        "description": "Optional pen index for the contour; 0 switches the contour off."
+                    },
+                    "contourLineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type of the contour."
+                    },
+                    "fillPenIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill. It switches off the RGB color of the fill foreground (foregroundColor), unless that is given too."
+                    },
+                    "fillBackgroundPenIndex": {
+                        "type": "integer",
+                        "minimum": -1,
+                        "maximum": 255,
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color. It switches off the RGB color of the fill background (backgroundColor), unless that is given too."
+                    },
+                    "foregroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill foreground, used instead of fillPenIndex. Takes precedence over fillPenIndex when both are given. The same format as the colors returned by GetZoneCategories and GetPenTables."
+                    },
+                    "backgroundColor": {
+                        "$ref": "#/ColorRGB",
+                        "description": "Optional RGB color (components between 0.0 and 1.0) of the fill background, used instead of fillBackgroundPenIndex. Takes precedence over fillBackgroundPenIndex when both are given."
+                    },
+                    "fillId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional fill attribute. Given without buildingMaterialId, it makes the hatch a fill hatch; given with it, the hatch keeps its type (fill or building material) and both are written."
+                    },
+                    "buildingMaterialId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional building material attribute, whose cut fill the hatch shows. Given without fillId, it makes the hatch a building material hatch."
+                    },
+                    "roomSpecial": {
+                        "type": "integer",
+                        "minimum": -128,
+                        "maximum": 100,
+                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
+                    },
+                    "showArea": {
+                        "type": "boolean",
+                        "description": "Optional: show the area text of the hatch."
+                    },
+                    "fillOrientation": {
+                        "$ref": "#/HatchOrientation",
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the current ones (the tool defaults for a new hatch). A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                    },
+                    "fillCategory": {
+                        "$ref": "#/HatchFillCategory",
+                        "description": "Optional fill category: Drafting, Cut or Cover."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database the hatches are in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), as CreateHatches takes it. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the hatches are looked for in the current database. If Archicad cannot switch to it, nothing is changed and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "hatchesWithDetails"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
     }
             },{
                 "name": "CreateSplines",
@@ -14187,6 +15169,10 @@ var gCommands = [{
                     "endArrow": {
                         "$ref": "#/LineArrowhead",
                         "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; by default the tool's (or the favorite's) arrowhead is kept."
+                    },
+                    "linkedArrowAttributes": {
+                        "$ref": "#/LinkedArrowAttributes",
+                        "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads. By default the tool's (or the favorite's) setting is kept, and ends given a different size or pen are unlinked."
                     },
                     "roomSeparator": {
                         "type": "boolean",
@@ -14784,7 +15770,7 @@ var gCommands = [{
                     },
                     "parentElementId": {
                         "$ref": "#/ElementId",
-                        "description" : "The parent element if the label is an associative label."
+                        "description" : "The parent element if the label is an associative label. In a section, elevation, interior elevation or 3D document (the current window, or databaseId) give the model element: the label is attached to the section element that shows it there, which GetDetailsOfElements reports as the model element in ownerElementId. A section element of GetSectionElements is taken as it is. There, the label is placed at its default position unless begCoordinate, midCoordinate and endCoordinate are all given."
                     },
                     "labelClass": {
                         "$ref": "#/LabelClass",
@@ -14796,11 +15782,11 @@ var gCommands = [{
                     },
                     "text": {
                         "type": "string",
-                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+                        "description": "The text content if the label is a text label. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given. A text label needs 'text' or 'runs', unless favoriteName is given: then the label keeps the text content of the favorite, autotext included, with the fields of 'style' applied to it."
                     },
                     "runs": {
                         "type": "array",
-                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                        "description": "Multi-style text content for a text label: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given. Like 'text', it replaces the content of the favorite given in favoriteName.",
                         "items": { "$ref": "#/TextRunDetails" },
                         "minItems": 1
                     },
@@ -14923,7 +15909,7 @@ var gCommands = [{
                     "width": {
                         "type": "number",
                         "exclusiveMinimum": 0.0,
-                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -15210,9 +16196,182 @@ var gCommands = [{
         ]
     }
             },{
+                "name": "CreateRadialDimensions",
+                "version": "2.0.1",
+                "description": "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, whose dimension line Archicad moved off the given direction (it may lengthen the line so that the text fits) or that did not keep a given setting fails with the values Archicad stored and is deleted again. Archicad stores the link to a circle with the type Arc, and to a curved wall with ownerElementInIndex -1, as for a dimension placed by hand. Tested on Archicad 29 with circles, arcs and curved walls. The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "radialDimensionsData": {
+            "type": "array",
+            "description": "Array of data to create Radial Dimensions (the Radial Dimension tool), each measuring the radius of an arc, a circle or a curved wall. They are created in the current database (the floor plan, or the worksheet or detail whose window is active), or in the one given by databaseId, which must hold the measured element.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Radial Dimension. It is linked to the measured element, so Archicad measures its radius and keeps the dimension up to date. Each new dimension is read back: when Archicad did not link it to the element, measured another radius, moved its dimension line off the given direction, or did not keep a given setting, the item fails with the values Archicad stored and the dimension is deleted again.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Radial Dimension favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                    },
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "elementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The measured element: an arc or a circle (not an elliptic one), or a curved wall. The dimension is placed on its story. Archicad stores the link to a circle with the type Arc, so GetDetailsOfElements returns ownerElementType Arc for it."
+                    },
+                    "dimensionLineEnd": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The end of the dimension line (API_RadialDimensionType endC), as GetDetailsOfElements returns it. It must not be the centre of the arc. Archicad may lengthen the line along the same direction so that its text fits (Archicad 29 made a 0.5 m line 0.966 m long); GetDetailsOfElements returns the end it kept."
+                    },
+                    "basePoint": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Optional. The point of the arc the dimension starts from (base.loc), as GetDetailsOfElements returns it. By default the point of the arc (of its full circle) towards dimensionLineEnd, seen from the centre."
+                    },
+                    "ownerElementInIndex": {
+                        "type": "integer",
+                        "description": "Optional. The index of the measured part of the element (base.base.inIndex), as GetDetailsOfElements returns it for a radial dimension placed by hand. The Archicad API does not document it for radial dimensions. When not given: -1 for a curved wall (what Archicad 29 stores for a dimension placed by hand on one, and the only value it takes), 1 for an arc or a circle."
+                    },
+                    "ownerElementLine": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the dimension is linked to the line of the element (base.base.line: the arc or the circle itself, the wall's line) rather than to a node, as GetDetailsOfElements returns it. true when not given."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "description": "Optional. Layer attribute index to place the dimension on. By default the layer of the favorite or the Radial Dimension tool default is used."
+                    },
+                    "linePen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension line."
+                    },
+                    "marker": {
+                        "$ref": "#/DimensionMarker",
+                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension text."
+                    },
+                    "textPosition": {
+                        "type": "string",
+                        "enum": ["Above", "In", "Below"],
+                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
+                    },
+                    "textDirection": {
+                        "type": "string",
+                        "enum": ["Horizontal", "Vertical", "Radial"],
+                        "description": "Optional. The direction of the text (textWay)."
+                    },
+                    "customText": {
+                        "type": "string",
+                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
+                    },
+                    "showOrigin": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "dimensionLineEnd"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet or a detail (see GetDatabases), which must hold the measured elements. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "radialDimensionsData"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    }
+            },{
+                "name": "ModifyAngleDimensions",
+                "version": "2.0.1",
+                "description": "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure.",
+                "inputScheme": {
+    "type": "object",
+    "properties": {
+        "angleDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Angle Dimensions to change, each with the settings to change. Only the given settings are changed; the keys are those CreateAngleDimensions takes and GetDetailsOfElements returns. The lines and the arc position cannot be changed: Archicad keeps them as they are, so delete the dimension and create it again with CreateAngleDimensions.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "smallArc": {
+                        "type": "boolean",
+                        "description": "Measure the smaller angle between the lines (inner dimension) rather than the larger one (outer dimension). Optional parameter."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension and witness lines. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text. Optional parameter."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "angleDimensionsWithDetails"
+    ]
+},
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    }
+            },{
                 "name": "ModifyLevelDimensions",
                 "version": "2.0.0",
-                "description": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId).",
+                "description": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height, pen, font and style, marker type and size, plus sign, angle, origin, text content (measured or custom text with Autotext keys) of both texts, and from Archicad 29 hide with associated element), with the same keys, and the static level, the Static checkbox (staticLevel) and the owner element (parentElementId, or ownerElementId as GetDetailsOfElements reads it, which does not change the Static checkbox).",
                 "inputScheme": {
     "type": "object",
     "properties": {
@@ -15240,6 +16399,10 @@ var gCommands = [{
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
+                    },
+                    "ownerElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but does not change the Static checkbox (staticLevel) itself, so it can be sent back together with the staticLevel read with it. In tests on Archicad 29, staticLevel true failed for a level dimension with an owner, so the round trip is for associative level dimensions. Cannot name another element than a parentElementId given with it. Optional parameter."
                     },
                     "pen": {
                         "type": "integer",
@@ -15367,7 +16530,7 @@ var gCommands = [{
                             "description": "Only takes effect on a Basic (homogeneous) wall - a Composite or Profile wall takes its thickness from the composite or profile attribute. Send structureType 'Basic' in the same call to switch such a wall first."
                         },
                         "bottomOffset": { "type": "number" },
-                        "offset": { "type": "number" },
+                        "offset": { "type": "number", "description": "Reference line offset. Unavailable when the wall's referenceLineLocation is Center or CoreCenter after this item is applied (Archicad keeps 0 there): a non-zero value on such a wall fails the item instead of being dropped. 0 is accepted." },
                         "structureType": {
                             "$ref": "#/WallStructureType"
                         },
@@ -15551,7 +16714,7 @@ var gCommands = [{
             },{
                 "name": "ModifySlabs",
                 "version": "1.4.0",
-                "description": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.",
+                "description": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads (contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). edgeTrim sets the Edge Angle (Vertical or CustomAngle) of every edge of the slab, edgeTrims that of each edge, and edgeSideMaterials the custom surface of each edge, in the order GetDetailsOfElements reports them; they cannot be combined with polygonOutline or holes. A polygonOutline or holes change keeps the Edge Angle and the custom surface of each edge that lies on an edge of the old polygon (also both parts of a split edge), and with the same point counts that of the edge with the same index (moved points); new edges are Vertical with the slab's side surface. Not written: the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -15580,7 +16743,7 @@ var gCommands = [{
                             "type": "array",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3,
-                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed."
+                            "description": "Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed. The Edge Angle and the custom surface of an edge are kept when the new edge lies on an old one (an unchanged or split edge), or, with the same point counts as before, from the edge with the same index (moved points); other edges are Vertical with the slab's side surface."
                         },
                         "polygonArcs": {
                             "type": "array",
@@ -15634,7 +16797,7 @@ var gCommands = [{
             },{
                 "name": "ModifyColumns",
                 "version": "1.4.0",
-                "description": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. Not written: the cut fill pens before Archicad 27.",
+                "description": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Also writes the floor plan display settings GetDetailsOfElements reads, under the same names: story visibility, display option, view depth, and the pens and line types of the contour, veneer, uncut, overhead and hidden lines, and the core symbol pen; each is read back after the change, and one Archicad did not take fails the item. The segments list writes a given column segment in the shape GetDetailsOfElements returns it: its extrusion and ends surfaces, veneer, cross section, taper and length. A column Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason. Not written: the cut fill pens before Archicad 27.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -15681,6 +16844,9 @@ var gCommands = [{
                         "veneerLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the veneer lines of the column." },
                         "veneerLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the veneer lines of the column." },
                         "coreSymbolPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the core symbol lines (slash, X or crosshair) of the column." },
+                        "coreSymbolType": { "$ref": "#/ColumnCoreSymbolType" },
+                        "coreSymbolPar1": { "type": "number", "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol. A negative value fails the item and changes nothing." },
+                        "coreSymbolPar2": { "type": "number", "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol. A negative value fails the item and changes nothing." },
                         "belowViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the uncut lines of the column." },
                         "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines of the column." },
                         "aboveViewLinePen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Pen of the overhead lines of the column." },
@@ -15915,7 +17081,7 @@ var gCommands = [{
             },{
                 "name": "ModifyRoofs",
                 "version": "1.4.0",
-                "description": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+                "description": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, its holes (also on their own), level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes), edgeSideMaterials (the custom surface of each edge of the polygon, on a multi-plane roof of its contour; read back after writing), edgeTypes (the Edge Type of each polygon edge, used by schedules; on a multi-plane roof of its contour, read back after writing) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang, pivotEdges, contourPolygon and the segmentation of curved pivot edges (segmentType, segmentsByArc, segmentsByCircle) only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs; contourPolygon writes the contour on its own (Manual overhang) without moving the pivot polygon, and the roof is read back to check it. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -15985,6 +17151,10 @@ var gCommands = [{
                             "minimum": 3,
                             "description": "Multi-plane roofs only: the number of segments of a whole circle with segmentType SegmentsByCircle. Written as segmentType is."
                         },
+                        "fitSkylightToCurve": {
+                            "type": "boolean",
+                            "description": "Multi-plane roofs only: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments, as GetDetailsOfElements reports it. Moves neither the pivot polygon nor the contour; the roof is read back and the item fails when Archicad did not apply it."
+                        },
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
@@ -16007,7 +17177,7 @@ var gCommands = [{
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline or holes.",
+                            "description": "The custom surface of each edge of the roof's polygon (single-plane roofs) or contour (multi-plane roofs, the polygonOutline and holes of GetDetailsOfElements, not the pivot polygon), one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. The roof is read back after writing, and the item fails when an edge does not have the surface given for it. Cannot be combined with polygonOutline, holes or contourPolygon, nor, on a multi-plane roof, with eavesOverhang, pivotEdges, segmentType, segmentsByArc or segmentsByCircle, which make the contour again.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
@@ -16051,7 +17221,7 @@ var gCommands = [{
                         },
                         "edgeTypes": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline or holes.",
+                            "description": "The Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges; on a multi-plane roof of its contour (GetDetailsOfElements' polygonOutline, the edges Archicad makes from the pivot polygon and the eaves overhang), not of the pivot polygon. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts; on a multi-plane roof the pivot polygon, pivotEdges and the edge surfaces are sent back unchanged and the edge types are read back after writing. Cannot be combined with polygonOutline, holes or contourPolygon, nor on a multi-plane roof with eavesOverhang, pivotEdges or the segmentation, which make the contour again.",
                             "items": {
                                 "$ref": "#/RoofEdgeType"
                             }
@@ -16088,7 +17258,7 @@ var gCommands = [{
             },{
                 "name": "ModifyShells",
                 "version": "1.8.0",
-                "description": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+                "description": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), the profile, axis, revolution, begin, slant and shear angles and segments of revolved Shells, and the two profiles, their planes and the morphing rule of ruled Shells (keeping their GUID and base plane), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -16141,7 +17311,67 @@ var gCommands = [{
                         },
                         "profile": {
                             "$ref": "#/ShellProfile",
-                            "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
+                            "description": "The new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. It replaces the first profile polyline; the GUID, the base plane, the extrusion, the axis, the profile planes, the thickness and the cut contours are kept."
+                        },
+                        "secondProfile": {
+                            "$ref": "#/ShellProfile",
+                            "description": "Ruled shells only: the new second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it and GetDetailsOfElements returns it. The first profile and both planes are kept unless given too."
+                        },
+                        "profilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the first profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the plane, the three axes (all together) turn it. The profile keeps its coordinates in the plane."
+                        },
+                        "secondProfilePlane": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Ruled shells only: the new plane of the second profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change, as for profilePlane."
+                        },
+                        "morphingRule": {
+                            "type": "string",
+                            "enum": [ "Paired", "Smooth" ],
+                            "description": "Ruled shells only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                        },
+                        "axis": {
+                            "$ref": "#/CoordinateSystem3D",
+                            "description": "Revolved shells only: the new coordinate system whose Z axis the profile is turned around, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change: 'origin' alone moves the axis, the three axes (all together) turn it. The profile is kept."
+                        },
+                        "revolutionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "maximum": 6.283185307179587,
+                            "description": "Revolved shells only: the new angle the profile is turned through, in radians, at most 2*pi (a full turn)."
+                        },
+                        "beginAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new angle the revolution starts at, in radians."
+                        },
+                        "slantAngle": {
+                            "type": "number",
+                            "description": "Revolved shells only: the new slant of the profile, in radians."
+                        },
+                        "distortionAngle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 3.141592653589793,
+                            "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
+                        },
+                        "segmentType": {
+                            "type": "string",
+                            "enum": [ "ByCircle", "ByArc" ],
+                            "description": "Revolved shells only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+                        },
+                        "segmentsByCircle": {
+                            "type": "integer",
+                            "minimum": 3,
+                            "description": "Revolved shells only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+                        },
+                        "segmentsByArc": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Revolved shells only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+                        },
+                        "segmentedSurfaces": {
+                            "type": "boolean",
+                            "description": "Revolved shells only: whether the revolved surface is broken into planes along the revolution arc."
                         },
                         "cutBodyType": {
                             "type": "string",
@@ -16220,7 +17450,7 @@ var gCommands = [{
             },{
                 "name": "ModifyRailings",
                 "version": "2.0.0",
-                "description": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the inner posts (double post offset, post count, vertical and horizontal position), panels (visible, frame) and baluster sets (frame, distribution) of a segment by their index among that segment's components of the kind, and the posts of a node (vertical position) by their index among that node's posts. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
+                "description": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns, and the top rail (visible), rails (visible, relative, horizontal offset, height) and handrails (visible, doubleHandrail, horizontal offset, height) of a segment by their index among that segment's rails and handrails, the pattern of a segment (segments[].pattern: the models of its inner posts, panels and baluster sets and its distribution, which the inner posts, panels and baluster sets the railing has then follow) and the post model of a node (nodes[].post: vertical position). Archicad generates posts, inner posts, panels and baluster sets from these models; a change to a single one of them (innerPosts, panels, balusterSets, posts, by index) is tried, and on Archicad 29 it is refused with a message that names the model to change instead. On Archicad 29 every segment of a new railing follows the pattern of segment 0. The reference line, the other segments, nodes and components and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -16288,6 +17518,14 @@ var gCommands = [{
                                     "referenceLineLocation": {
                                         "$ref": "#/RailingReferenceLineLocation",
                                         "description": "The new location of this segment relative to the reference line. Applied before lateralOffset."
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether this segment is shown (API_RailingSegmentType::visible), as GetDetailsOfElements reads it."
+                                    },
+                                    "verticalOffset": {
+                                        "type": "number",
+                                        "description": "The new vertical offset of this segment (API_RailingSegmentType::zOffset), as GetDetailsOfElements reads it."
                                     },
                                     "toprail": {
                                         "type": "object",
@@ -16453,6 +17691,67 @@ var gCommands = [{
                                                 "index"
                                             ]
                                         }
+                                    },
+                                    "pattern": {
+                                        "type": "object",
+                                        "description": "Changes to the railing pattern of this segment (API_RailingSegmentType::defPattern), applied after balusterSets: the models of its inner posts, panels and baluster sets and its distribution. The model is written, then the inner posts, panels and baluster sets the railing already has are changed through the railing's memo, and each of them is read back. Archicad 29 does not take a change to a single one of them (innerPosts, panels, balusterSets), and makes every segment of a railing follow the pattern of its first segment: a pattern change of segment 0 reaches every segment, one of another segment is not kept and is reported as a failure (confirmed on Archicad 29 build 5101).",
+                                        "properties": {
+                                            "distribution": {
+                                                "$ref": "#/RailingDistributionChange",
+                                                "description": "How the pattern repeats along the segment (API_RailingPatternType::distribution)."
+                                            },
+                                            "innerPost": {
+                                                "type": "object",
+                                                "description": "The inner post model of the pattern (API_RailingPatternType::defInnerPost).",
+                                                "properties": {
+                                                    "doublePostOffset": {
+                                                        "type": "number",
+                                                        "description": "The offset between the two posts of a double inner post (API_RailingInnerPostType::doublePostOffset)."
+                                                    },
+                                                    "postCount": {
+                                                        "type": "integer",
+                                                        "minimum": 1,
+                                                        "maximum": 2,
+                                                        "description": "The number of posts in each inner post, 1 or 2 (API_RailingInnerPostType::postNum)."
+                                                    },
+                                                    "verticalPosition": {
+                                                        "$ref": "#/RailingVerticalPositionChange"
+                                                    },
+                                                    "horizontalPosition": {
+                                                        "$ref": "#/RailingHorizontalPositionChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "panel": {
+                                                "type": "object",
+                                                "description": "The panel model of the pattern (API_RailingPatternType::defPanel).",
+                                                "properties": {
+                                                    "visible": {
+                                                        "type": "boolean",
+                                                        "description": "Whether the panels are shown (API_RailingPanelType::visible)."
+                                                    },
+                                                    "frame": {
+                                                        "$ref": "#/RailingFrameChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            },
+                                            "balusterSet": {
+                                                "type": "object",
+                                                "description": "The baluster set model of the pattern (API_RailingPatternType::defBalusterSet).",
+                                                "properties": {
+                                                    "frame": {
+                                                        "$ref": "#/RailingFrameChange"
+                                                    },
+                                                    "distribution": {
+                                                        "$ref": "#/RailingDistributionChange"
+                                                    }
+                                                },
+                                                "additionalProperties": false
+                                            }
+                                        },
+                                        "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false,
@@ -16484,6 +17783,26 @@ var gCommands = [{
                                         "type": "boolean",
                                         "description": "True continues the pattern of the segments across the node, false crops the segments at it (API_RailingNodeType::unifyPatterns)."
                                     },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether this node is shown (API_RailingNodeType::visible), as GetDetailsOfElements reads it."
+                                    },
+                                    "tiltedPost": {
+                                        "type": "boolean",
+                                        "description": "Whether the node's post follows the slope of the segments (API_RailingNodeType::tiltedPost)."
+                                    },
+                                    "autoConnectionOffset": {
+                                        "type": "boolean",
+                                        "description": "Whether Archicad sets the connection offset of the rails at the node (API_RailingNodeType::autoConnectionOffset). Give false with connectionOffset to set it yourself."
+                                    },
+                                    "connectionOffset": {
+                                        "type": "number",
+                                        "description": "The new connection offset of the rails at the node (API_RailingNodeType::connectionOffset)."
+                                    },
+                                    "endingOffset": {
+                                        "type": "number",
+                                        "description": "The new ending offset of the rails at the node (API_RailingNodeType::endingOffset)."
+                                    },
                                     "posts": {
                                         "type": "array",
                                         "description": "Changes to the posts of this node (API_RailingPostType), applied after the fields of the node. Only the given fields of the given posts change.",
@@ -16505,6 +17824,19 @@ var gCommands = [{
                                                 "verticalPosition"
                                             ]
                                         }
+                                    },
+                                    "post": {
+                                        "type": "object",
+                                        "description": "Changes to the post model of this node (API_RailingNodeType::defPost), applied after posts. Archicad generates the posts of a node from it; Archicad 29 does not take a change to a single post (posts) and regenerates it from this model (confirmed on Archicad 29 build 5101).",
+                                        "properties": {
+                                            "verticalPosition": {
+                                                "$ref": "#/RailingVerticalPositionChange"
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "verticalPosition"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false,
@@ -16545,6 +17877,10 @@ var gCommands = [{
                         },
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
+                        },
+                        "origin": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement as GetDetailsOfElements reads it (origin, z absolute), the same as coordinates, so an element read can be sent back. Ignored when coordinates is given."
                         },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
@@ -16618,6 +17954,10 @@ var gCommands = [{
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
                         },
+                        "origin": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "The new placement as GetDetailsOfElements reads it (origin, z absolute), the same as coordinates, so an element read can be sent back. Ignored when coordinates is given."
+                        },
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
                         },
@@ -16682,7 +18022,7 @@ var gCommands = [{
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content (one paragraph per line, as SetDetailsOfElements does), and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -16690,6 +18030,10 @@ var gCommands = [{
                         "coordinate": {
                             "$ref": "#/Coordinate3D",
                             "description": "The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted."
+                        },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new placement position as GetDetailsOfElements reads it (position), so a text read can be sent back: the same as coordinate without z, so the text stays on its floor (floorIndex still moves it). Ignored when coordinate is given."
                         },
                         "floorIndex": {
                             "type": "integer",
@@ -16705,7 +18049,7 @@ var gCommands = [{
                         "width": {
                             "type": "number",
                             "minimum": 0.0,
-                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements with the same key (width, 0 when word wrap is off), and as style.boxWidth with style.nonBreaking false."
                         }
                     },
                     "additionalProperties": false,
@@ -16740,7 +18084,7 @@ var gCommands = [{
                         "elementId": { "$ref": "#/ElementId" },
                         "position": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is."
+                            "description": "Where the anchor point of the picture is moved to, in model units (on a layout in layout units). When omitted, the anchor point stays where it is. GetDetailsOfElements reads it back with the same key, so the position read can be sent back."
                         },
                         "anchorPoint": {
                             "$ref": "#/PictureAnchorPoint",
@@ -16806,7 +18150,7 @@ var gCommands = [{
         "properties": {
             "labelsWithDetails": {
                 "type": "array",
-                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
+                "description": "Array of Label elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. The label's class (Text/Symbol) cannot be changed after creation. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content (one paragraph per line), which makes the label's text auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run label applies that style to every run; the other style fields leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -17038,9 +18382,8 @@ var gCommands = [{
                             "description": "The frame class (classID) of the frame: 0 to 3 for the built-in classes, 4 and up for the frame classes of the owner curtain wall."
                         },
                         "type": {
-                            "type": "string",
-                            "enum": ["Invisible", "GDL", "InvisibleConnectedTurning", "InvisibleConnectedStill"],
-                            "description": "The type of the frame (API_CWFrameObjectTypeID)."
+                            "$ref": "#/CurtainWallFrameObjectType",
+                            "description": "The object type of the frame (API_CWFrameObjectTypeID), which GetDetailsOfElements reads as objectType. Not the frame class that GetDetailsOfElements reads as type: that one is classIndex here."
                         }
                     },
                     "additionalProperties": false,
@@ -17084,7 +18427,7 @@ var gCommands = [{
             },{
                 "name": "ModifyStairs",
                 "version": "2.0.0",
-                "description": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown; these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders, the break marks, lines and fills of the floor plan symbol, and the headroom; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
+                "description": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) and the line type, pen and symbol fill overrides, and the line types, pens and fills of the structure symbols per structure type and view (structureSymbols) and of the monolithic structure per view and visible or hidden part (monolithStructureSymbols), and which structures, fills and monolithic parts are shown on each range of the relevant stories, per view (structureVisibilityOnStories); these are read back, and one Archicad did not apply is reported as an error. CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. A given going (treadDepth) is pinned in the Rules and Standards as CreateStairs pins it, before the given rules are written. Not written by this command: the baseline with its landings and winders; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API; the boundaries and the walking lines GetDetailsOfElements reads, which Archicad lays out itself from the baseline and the flight width and which the API cannot write (here, in CreateStairs and in RecreateStairs an item that gives one is refused with an error that says so).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -17103,6 +18446,7 @@ var gCommands = [{
                         "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. Archicad does not return the link when the stair is read, so GetDetailsOfElements does not report it; read the resulting totalHeight back instead." },
                         "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
                         "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs and ModifyStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that. An unknown key is refused, and ModifyStairs reads the given rules back and reports one Archicad did not apply as an error." },
+                        "headroom": { "$ref": "#/StairHeadroom", "description": "The headroom of the stair (Stair Settings > Headroom): only the given fields are written, the others are kept. An unknown key is refused, and ModifyStairs reads the given fields back and reports one Archicad did not apply as an error." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -17110,6 +18454,7 @@ var gCommands = [{
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
                         "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
                         "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
                         "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
@@ -17117,13 +18462,29 @@ var gCommands = [{
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
                         "structureVisibility": { "type": "boolean", "description": "Whether the structure of the stair is shown." },
                         "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
-                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout." },
-                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
+                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of reflectedCeilingPlanLayout." },
+                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on, its visible components, the symbol on each story, the break line and the line type, pen and fill overrides. Independent of floorPlanLayout." },
+                        "structureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the structure symbol, per structure type (UnderStructure, Stringer) and view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureSymbolSettings" }
+                        },
+                        "monolithStructureSymbols": {
+                            "type": "array",
+                            "description": "The line types, pens and fills of the monolithic structure's symbol, per view (FloorPlan, CeilingPlan) and part (Visible, Hidden), with the keys GetDetailsOfElements returns. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairMonolithStructureSymbolSettings" }
+                        },
+                        "structureVisibilityOnStories": {
+                            "type": "array",
+                            "description": "Which structure symbols are shown on which of the stair's relevant stories, per view (FloorPlan, CeilingPlan), with the keys GetDetailsOfElements returns: whether one representation is used on every story, and per story range the visible structures, fills and monolithic parts. Only the given fields of the given items are changed; ModifyStairs reads them back and reports one Archicad did not apply as an error.",
+                            "items": { "$ref": "#/StairStructureVisibilitySettings" }
+                        },
                         "treads": {
                             "type": "array",
-                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in treads.",
                             "items": {
                                 "type": "object",
+                                "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the treads are present." },
@@ -17139,9 +18500,10 @@ var gCommands = [{
                         },
                         "risers": {
                             "type": "array",
-                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
+                            "description": "The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed. GetDetailsOfElements reads them back in risers.",
                             "items": {
                                 "type": "object",
+                                "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
                                 "properties": {
                                     "role": { "type": "string", "enum": ["Run", "Landing"], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
                                     "visible": { "type": "boolean", "description": "Whether the risers are present." },
@@ -17157,7 +18519,7 @@ var gCommands = [{
                         },
                         "structures": {
                             "type": "array",
-                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.",
+                            "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair, with the keys GetDetailsOfElements reads in structures. Only the given fields of the given parts and sides are changed. ModifyStairs reads the given monolith and sideStair data back and reports a value Archicad did not apply as an error.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -17167,12 +18529,19 @@ var gCommands = [{
                                     "structureType": { "type": "string", "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport"], "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered." },
                                     "bottomType": { "type": "string", "enum": ["Stepped", "Flat", "Smooth"], "description": "The shape of the underside of the structure." },
                                     "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the structure." },
-                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." }
+                                    "horizontalThickness": { "type": "number", "minimum": 0.0, "description": "The horizontal thickness of the structure." },
+                                    "monolith": { "$ref": "#/StairMonolithStructureSettings", "description": "The monolith data of the structure: only for a Monolith structure (its structureType, given in the same item or already set), refused otherwise." },
+                                    "sideStair": { "$ref": "#/StairSideStructureSettings", "description": "The stringer data of the structure: only for a Side structure (its structureType, given in the same item or already set), refused otherwise." }
                                 },
                                 "additionalProperties": false,
                                 "required": ["role", "side"]
                             }
-                        }
+                        },
+                        "leftBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the left boundary of the stair. An item with it is refused." },
+                        "rightBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the right boundary of the stair. An item with it is refused." },
+                        "walkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the walking line of the stair. An item with it is refused." },
+                        "customWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the custom walking line of the stair. An item with it is refused." },
+                        "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -17191,9 +18560,117 @@ var gCommands = [{
         "required": ["executionResults"]
     }
             },{
+                "name": "RecreateCurtainWalls",
+                "version": "2.0.1",
+                "description": "Recreates Curtain Wall elements on a new reference line with more or fewer segments, as CreateCurtainWalls takes it, because ModifyCurtainWalls can only keep the number of segments; or with a new height or slant angle, which Archicad does not apply to an existing slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29). Without coordinates the old reference line is kept. The new curtain wall is created with the old one as templateElementId, so it gets its frame and panel classes, pattern, surfaces, boundary and corner frames, height, home story and base, layer and slant angle, unless height or angle is given; it also gets its Element ID, renovation status, classifications, element categories, property values, solid element operations and trims, and the old curtain wall is then deleted. Each curtain wall is recreated in its own undo step, and when any step fails nothing is changed for that curtain wall. The result lists what could not be carried over (labels, dimensions, group). Frames and panels changed one by one on the old curtain wall are generated again from its classes and pattern, as when it is drawn again in Archicad.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "curtainWalls": {
+                "type": "array",
+                "description": "The curtain walls to recreate on a new reference line, with a new height or with a new slant. Give at least one of coordinates, height and angle.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The curtain wall to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "Optional new reference line on the floor plan, as CreateCurtainWalls takes it: one segment per pair of consecutive points, so more or fewer points than the old curtain wall has add or remove segments. A slanted curtain wall needs exactly 2 points. When omitted, the old curtain wall's reference line is kept, the points GetDetailsOfElements returns as its referenceLine.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "height": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Optional new height, as CreateCurtainWalls takes it: the vertical height, also of a slanted curtain wall. When omitted, the old curtain wall's height is kept. Archicad does not apply a new height to a slanted curtain wall through ACAPI_Element_Change (seen in Archicad 29), so it is given here."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "exclusiveMaximum": 180.0,
+                            "description": "Optional new slant angle in degrees, as CreateCurtainWalls takes it and GetDetailsOfElements returns it: 90 is vertical, less than 90 leans to the left of the reference line (seen from its first point), more than 90 to the right. The vertical height and the elevation of the reference line are kept. A slanted curtain wall needs a reference line of exactly 2 points. When omitted, the old curtain wall's slant is kept. Archicad does not change the slant of an existing curtain wall through ACAPI_Element_Change, so it is given here."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["curtainWalls"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input curtain wall: the new curtain wall, or an error. After an error nothing was changed for that curtain wall. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateRailings",
+                "version": "2.0.1",
+                "description": "Recreates Railing elements on a new reference line - with more or fewer nodes and segments, in 2D as CreateRailings takes it or with an elevation per node and arcs as CreateRailingsFromPolyline takes it - because the Archicad API cannot change the reference line of an existing railing. The new railing is created with the old one as templateElementId, so it gets its node and segment settings, posts, rails, handrails, toprails, panels and balusters, story visibility, pens, layer, home story and bottom offset; it also gets its Element ID, renovation status, classifications, element categories, property values, solid element operations and trims, and the old railing is then deleted. Each railing is recreated in its own undo step, and when any step fails nothing is changed for that railing. The result lists what could not be carried over (labels, dimensions, group). Settings given to single segments, nodes or posts of the old railing are not carried over: the new ones are generated from the railing's defaults, as when it is drawn again in Archicad.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "railings": {
+                "type": "array",
+                "description": "The railings to recreate on a new reference line.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The railing to recreate."
+                        },
+                        "coordinates": {
+                            "type": "array",
+                            "description": "The new reference line on the floor plan, as CreateRailings takes it: one node per point, one segment per pair of consecutive points. The railing keeps its bottom offset. Give this or polylineCoordinates.",
+                            "items": { "$ref": "#/Coordinate2D" },
+                            "minItems": 2
+                        },
+                        "polylineCoordinates": {
+                            "type": "array",
+                            "description": "The new reference line with an elevation per node, as CreateRailingsFromPolyline takes it (z relative to the railing's home story). Give this or coordinates.",
+                            "items": { "$ref": "#/Coordinate3D" },
+                            "minItems": 2
+                        },
+                        "polylineArcs": {
+                            "type": "array",
+                            "description": "Optional arc segments of polylineCoordinates, as CreateRailingsFromPolyline takes them.",
+                            "items": { "$ref": "#/PolyArc" }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["railings"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input railing: the new railing, or an error. After an error nothing was changed for that railing. Its labels are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group. The link of a railing to the slab or stair it was placed on cannot be read through the Archicad API, so it is not listed in notCarriedOver: the new railing has none."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
                 "name": "RecreateStairs",
                 "version": "2.0.1",
-                "description": "Recreates Stair elements on a new baseline (with its landings and winders, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in).",
+                "description": "Recreates Stair elements on a new baseline (with its landings, winders and curved edges, as CreateStairs takes it), because the Archicad API cannot change the baseline of an existing stair. The new stair gets the old one's settings (everything ModifyStairs writes, its baseline position, rules and top link), Element ID, layer, home story and base offset, renovation status, classifications, element categories and property values, and its solid element operations (on Archicad 27 without their link flags, which the API cannot read there) and roof or shell trims; the old stair is then deleted. Each stair is recreated in its own undo step, and when any step fails nothing is changed for that stair. The new stair has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (associative labels, dimensions of the current database that measured the old stair, and the group it was in). Archicad lays out the boundaries and the walking lines of the new stair again from its baseline and flight width, so boundaries or a walking line edited by hand on the old stair are not carried over; the API cannot write them, so an item that gives one is refused and the stair is left as it was.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -17222,7 +18699,17 @@ var gCommands = [{
                             "type": "array",
                             "description": "Optional. The turn at each point of the new baseline (baseLinePoints.length items), as in CreateStairs.",
                             "items": { "$ref": "#/StairBaseLineVertex" }
-                        }
+                        },
+                        "baseLineArcs": {
+                            "type": "array",
+                            "description": "Optional. The curved edges of the new baseline, as in CreateStairs and as GetDetailsOfElements returns them (0-based indices, endIndex = begIndex + 1). Without it every edge of the new baseline is straight, also when the old stair was curved.",
+                            "items": { "$ref": "#/PolyArc" }
+                        },
+                        "leftBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the left boundary of the stair. An item with it is refused." },
+                        "rightBoundary": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the right boundary of the stair. An item with it is refused." },
+                        "walkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the walking line of the stair. An item with it is refused." },
+                        "customWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the custom walking line of the stair. An item with it is refused." },
+                        "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId", "baseLinePoints"]
@@ -17236,50 +18723,239 @@ var gCommands = [{
         "type": "object",
         "properties": {
             "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input stair: the new stair, or an error. After an error nothing was changed for that stair. Labels of the old stair are deleted with it; dimensions measuring it lose those witness points or are deleted."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateWindows",
+                "version": "2.0.1",
+                "description": "Recreates Window elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a window into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). The new window is created as CreateWindows creates one, from the Window tool defaults with the tool's marker, with the old window's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_WindowType), library part and GDL parameters, layer and renovation status; its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old window's Element ID, classifications, element categories and property values, and the old window is then deleted. Each window is recreated in its own undo step, and when any step fails nothing is changed for that window. The new window has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old window, group).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "windows": {
                 "type": "array",
-                "description": "One item per input stair: the new stair, or an error. After an error nothing was changed for that stair.",
+                "description": "The windows to recreate in another wall.",
                 "items": {
-                    "oneOf": [
-                        {
-                            "type": "object",
-                            "properties": {
-                                "oldElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The stair that was deleted."
-                                },
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The new stair."
-                                },
-                                "notCarriedOver": {
-                                    "type": "array",
-                                    "description": "What was linked to the old stair and could not be moved to the new one. Labels of the stair are deleted with it; dimensions measuring it lose those witness points or are deleted. Only the dimensions of the current database (the active window) are listed.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "relation": {
-                                                "type": "string",
-                                                "enum": ["Label", "Dimension", "LevelDimension", "Group"],
-                                                "description": "Label: an associative label of the old stair. Dimension, LevelDimension: a dimension that measured the old stair. Group: the old stair was in a group; the new one is not."
-                                            },
-                                            "elementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The label or dimension, as it was before the old stair was deleted. Not given for Group."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": ["relation"]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["oldElementId", "elementId", "notCarriedOver"]
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The window to recreate."
                         },
-                        {
-                            "$ref": "#/ErrorItem"
+                        "ownerWallId": {
+                            "$ref": "#/ElementId",
+                            "description": "The wall to place the new window in, as CreateWindows takes it: a wall that is not polygonal. It may also be the window's own wall."
+                        },
+                        "centerOffset": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "description": "Optional position of the center of the new window along the wall, from the wall's beginning (API_WindowType::objLoc), as CreateWindows and ModifyWindows take it and GetDetailsOfElements returns it. When omitted, the old window's centerOffset is kept."
                         }
-                    ]
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerWallId"]
                 }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["windows"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input window: the new window, or an error. After an error nothing was changed for that window. Labels of the old window are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateDoors",
+                "version": "2.0.1",
+                "description": "Recreates Door elements in another wall (ownerWallId, optionally at a new centerOffset along it), because Archicad does not move a door into another wall through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). The new door is created as CreateDoors creates one, from the Door tool defaults with the tool's marker, with the old door's settings (size, sill, anchor, reveal, sides, pens, line types, surfaces and the rest of API_DoorType), library part and GDL parameters, layer and renovation status; its marker gets the old marker's parameters when both are of the same marker library part. It also gets the old door's Element ID, classifications, element categories and property values, and the old door is then deleted. Each door is recreated in its own undo step, and when any step fails nothing is changed for that door. The new door has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old door, group).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "doors": {
+                "type": "array",
+                "description": "The doors to recreate in another wall.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The door to recreate."
+                        },
+                        "ownerWallId": {
+                            "$ref": "#/ElementId",
+                            "description": "The wall to place the new door in, as CreateDoors takes it: a wall that is not polygonal. It may also be the door's own wall."
+                        },
+                        "centerOffset": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "description": "Optional position of the center of the new door along the wall, from the wall's beginning (API_WindowType::objLoc), as CreateDoors and ModifyDoors take it and GetDetailsOfElements returns it. When omitted, the old door's centerOffset is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerWallId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["doors"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input door: the new door, or an error. After an error nothing was changed for that door. Labels of the old door are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateSkylights",
+                "version": "2.0.1",
+                "description": "Recreates Skylight elements on another roof or shell (ownerId, optionally at a new anchorPosition on it), because Archicad does not move a skylight onto another roof or shell through ACAPI_Element_Change: it keeps its owner (seen in Archicad 29). The new skylight is created as CreateSkylights creates one, from the Skylight tool defaults, with the old skylight's settings (size, anchor point, fix mode, azimuth, pens, line types, surfaces and the rest of API_SkylightType), library part and GDL parameters, layer and renovation status; Archicad sets its plane, level and elevation angle from the new owner. It also gets the old skylight's Element ID, classifications, element categories and property values, and the old skylight is then deleted. Each skylight is recreated in its own undo step, and when any step fails nothing is changed for that skylight. The new skylight has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old skylight, group).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "skylights": {
+                "type": "array",
+                "description": "The skylights to recreate on another roof or shell.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The skylight to recreate."
+                        },
+                        "ownerId": {
+                            "$ref": "#/ElementId",
+                            "description": "The roof (single- or multi-plane) or shell to place the new skylight in, as CreateSkylights takes it. It may also be the skylight's own roof or shell."
+                        },
+                        "anchorPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Optional global XY coordinates of the new skylight's anchor point, as CreateSkylights and ModifySkylights take them and GetDetailsOfElements returns them. Archicad places the skylight on its owner at this point, so it has to lie on the new owner. When omitted, the old skylight's anchorPosition is kept."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "ownerId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["skylights"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input skylight: the new skylight, or an error. After an error nothing was changed for that skylight. Labels of the old skylight are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateZones",
+                "version": "2.0.1",
+                "description": "Recreates automatic Zone elements as manual zones (makeManual), because Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). The new manual zone has the polygon the old zone has now (with its arcs and holes, as GetDetailsOfElements returns it), so it no longer follows its boundaries when the zones are updated; it gets the old zone's category, name, number, stamp library part, stamp position and stamp parameters, levels, contour, cover fill, surface and the rest of API_ZoneType, layer and renovation status, and its Element ID, classifications, element categories and property values. The old zone is deleted first, since a new zone with its polygon would overlap it; a new zone that would overlap another zone of the story is refused, as CreateZones refuses it, unless allowOverlap is true. Each zone is recreated in its own undo step, and when any step fails nothing is changed for that zone. The new zone has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (labels, dimensions of the current database that measured the old zone, group).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "zones": {
+                "type": "array",
+                "description": "The zones to recreate as manual zones.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The automatic zone to recreate."
+                        },
+                        "makeManual": {
+                            "type": "boolean",
+                            "description": "Must be true: the new zone is a manual zone (isManual in GetDetailsOfElements) with the polygon the old zone has now (its polygonOutline, polygonArcs and holes), so it no longer follows its boundaries when the zones are updated. Archicad does not turn an automatic zone into a manual one through ACAPI_Element_Change (seen in Archicad 29). A zone that is manual already is refused, as there is nothing to change."
+                        },
+                        "allowOverlap": {
+                            "type": "boolean",
+                            "description": "Optional, defaults to false. As in CreateZones: a new zone that would overlap another zone of the same story (not the old zone, which is deleted first) fails with an error naming that zone, instead of risking Archicad's modal overlap warning, which blocks the API. Set it to true to create the zone anyway; the dialog may then appear."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "makeManual"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["zones"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input zone: the new manual zone, or an error. After an error nothing was changed for that zone. Labels of the old zone are deleted with it, dimensions measuring it lose those witness points or are deleted, and it leaves its group."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    }
+            },{
+                "name": "RecreateAngleDimensions",
+                "version": "2.0.1",
+                "description": "Recreates Angle Dimension elements on new lines with a new arc position (firstLine, secondLine and arcPosition, as CreateAngleDimensions takes them), because Archicad does not move the lines or the arc of an angle dimension through ACAPI_Element_Change (seen in Archicad 29). The new angle dimension is static, as CreateAngleDimensions creates it, and is created in the current database, where the old one has to be. It gets the old one's settings (pen, inner or outer arc, markers, witness lines, text pen, size, font, style, position and direction, custom text and the rest of API_AngleDimensionType), layer, story and renovation status, and its classifications, element categories and property values, and its Element ID where Archicad gives angle dimensions one (Archicad 29 refuses an Element ID on them, so there is none to carry); the text goes back to its automatic place on the new arc. The old angle dimension is then deleted. Each angle dimension is recreated in its own undo step, and when any step fails nothing is changed for it. The new angle dimension has a new GUID: the result maps the old GUID to the new one and lists what could not be carried over (the group it was in).",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "angleDimensions": {
+                "type": "array",
+                "description": "The angle dimensions to recreate on new lines, with a new arc position.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The angle dimension to recreate. It has to be in the current database (the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active), where the new one is created."
+                        },
+                        "firstLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new first measured line, as CreateAngleDimensions takes it."
+                        },
+                        "secondLine": {
+                            "$ref": "#/AngleDimensionLine",
+                            "description": "The new second measured line, as CreateAngleDimensions takes it. It must not be parallel to the first one."
+                        },
+                        "arcPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "A point the new dimension arc passes through, as CreateAngleDimensions takes it: its distance from the intersection of the two lines is the radius of the arc, and the side it lies on chooses which of the angles between the lines is measured."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "firstLine", "secondLine", "arcPosition"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["angleDimensions"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "results": {
+                "$ref": "#/RecreatedElementsOrErrors",
+                "description": "One item per input angle dimension: the new angle dimension, or an error. After an error nothing was changed for that angle dimension. The old one leaves its group."
             }
         },
         "additionalProperties": false,
@@ -17314,7 +18990,7 @@ var gCommands = [{
             },{
                 "name": "ModifyZones",
                 "version": "1.8.0",
-                "description": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
+                "description": "Modifies Zone elements: name, number, category, zone stamp, stamp pen, height, base offset, top link, floor thickness, letter size (roomLSize, in millimetres), contour line, cover fill, 3D surface (one surface on all sides, or the surfaces of the bounding walls), polygon display (gross or net) and area reduction - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. geometry replaces the polygon (outline, arcs and holes) of a manual zone in place, so the zone keeps its GUID, properties and other settings; a new polygon that would overlap another zone on the same story is refused unless allowOverlap is true. The reference point of an automatic zone cannot be changed here (SetDetailsOfElements moves it).",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -17336,6 +19012,7 @@ var gCommands = [{
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
                         "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
+                        "roomLSize": { "type": "number", "exclusiveMinimum": 0.0, "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks." },
                         "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
                         "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." },
                         "surface": { "$ref": "#/ZoneSurface", "description": "3D surface of the zone (the Model panel). Only the given fields are changed." },
@@ -17548,7 +19225,7 @@ var gCommands = [{
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that, plus the elements listed in elementsToObserve. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {\"type\": ..., ...}, where type is \"Drag\" (with displacement: {\"x\", \"y\", \"z\"}), \"Elevate\" (with displacement, only z is not 0), \"Rotate\" (with origin: {\"x\", \"y\"} and angle, in radians, counterclockwise), \"Mirror\" (with origin, a point of the mirror axis, and axisDirection: {\"x\", \"y\"}, its unit vector), \"Resize\" (with origin and ratio), \"Stretch\", \"VerticalStretch\", \"PreservedHeightStretch\", \"PreservedDirectionStretch\" or \"General\"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve and elementsToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: one element at a time (the Archicad API has no call for many elements or a whole type), about 10 elements per second on a large project, and the time grows faster than the number of elements. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types, or list the elements with elementsToObserve, on large projects."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that, plus the elements listed in elementsToObserve. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs, ModifyPolylines, ModifyHatches, ModifyChangeMarkers), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {\"type\": ..., ...}, where type is \"Drag\" (with displacement: {\"x\", \"y\", \"z\"}), \"Elevate\" (with displacement, only z is not 0), \"Rotate\" (with origin: {\"x\", \"y\"} and angle, in radians, counterclockwise), \"Mirror\" (with origin, a point of the mirror axis, and axisDirection: {\"x\", \"y\"}, its unit vector), \"Resize\" (with origin and ratio), \"Stretch\", \"VerticalStretch\", \"PreservedHeightStretch\", \"PreservedDirectionStretch\" or \"General\"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve and elementsToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: one element at a time (the Archicad API has no call for many elements or a whole type), about 10 elements per second on a large project, and the time grows faster than the number of elements. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types, or list the elements with elementsToObserve, on large projects."
             },
             "elementTypesToObserve": {
                 "type": "array",
@@ -19653,6 +21330,71 @@ var gCommands = [{
             "propertyValuesForElements": {
                 "$ref": "#/PropertyValuesOrErrorArray",
                 "description": "The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValuesForElements"
+        ]
+    }
+            },{
+                "name": "GetTypedPropertyValuesOfElements",
+                "version": "2.0.1",
+                "description": "Returns the property values of the elements in JSON's own types instead of display text: numbers, integers, booleans, strings, lists of them, and the chosen options of an option set as their identifiers (a list for a multiple choice). Each value comes with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum, multiEnum), its status (normal, userUndefined or notAvailable) and isDefault, in the PropertyValueDetails shape of Graphisoft's API. Measured values are in SI units (meters, square meters, cubic meters, radians) whatever the project's working units and language, and an option is named by its nonLocalizedValue when it has one. A property that is not found, cannot be evaluated for the element or has a Guid value gets an error item.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "properties": {
+                "$ref": "#/PropertyIds"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "properties"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "propertyValuesForElements": {
+                "type": "array",
+                "description": "One item per given element, in their order: the values of the element's properties, or an error for an element that was not found.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "propertyValues": {
+                                    "type": "array",
+                                    "description": "One item per given property, in their order: the typed value, or an error for a property that was not found, could not be evaluated for the element or has no typed form.",
+                                    "items": {
+                                        "type": "object",
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/TypedPropertyValue"
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "propertyValues"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
             }
         },
         "additionalProperties": false,
@@ -27378,7 +29120,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartScripts",
                 "version": "1.7.3",
-                "description": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
+                "description": "Sets and deletes the master, parameter, 2D, 3D, properties, interface and forward and backward migration scripts of loaded library parts. Only the given scripts are changed; an empty script makes the section empty, deleteScripts removes it. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27410,7 +29152,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartMetadata",
                 "version": "1.8.0",
-                "description": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. Available from Archicad 28.",
+                "description": "Sets the author, keywords, license, license version, password and the placeable, UI default, subtype and hierarchical pages flags of loaded library parts. Only the given fields are changed. A library part that is not editable (e.g. a part of a library package or a read-only library) is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27490,7 +29232,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartPictures",
                 "version": "1.8.0",
-                "description": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+                "description": "Deletes the preview picture, the GDL pictures (and from Archicad 29 their dark variants) or the 2D symbol of a loaded library part, or copies the 2D symbol from another library part. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27585,7 +29327,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartCustomSection",
                 "version": "1.8.0",
-                "description": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+                "description": "Creates, replaces or deletes a custom section of a loaded library part. The content is given as base64. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27930,7 +29672,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartPictureImages",
                 "version": "2.0.0",
-                "description": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
+                "description": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27974,7 +29716,7 @@ var gCommands = [{
             },{
                 "name": "SetLibraryPartParameters",
                 "version": "2.0.0",
-                "description": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.",
+                "description": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. A part of the embedded library that Archicad does not report editable, as in a saved project, is changed in a temporary copy that then replaces it, keeping its main GUID, and the libraries are reloaded. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -27986,7 +29728,7 @@ var gCommands = [{
                     "properties": {
                         "name": {
                             "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. A part of a local library folder is changed in its file, and the libraries are reloaded after the call; a part of the embedded library only when Archicad reports it editable. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. When Archicad does not let the loaded part be modified, as in a saved project, a part of a local library folder is changed in its file, and a part of the embedded library in a temporary copy that then replaces it, keeping its main GUID; the libraries are reloaded after the call. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
                         },
                         "parameters": {
     "type": "array",
@@ -28138,7 +29880,7 @@ var gCommands = [{
             },{
                 "name": "GetLibraryPartFileInfo",
                 "version": "2.0.0",
-                "description": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.",
+                "description": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype, its master, parameter, 2D, 3D and properties scripts, and, with includeParameters, its parameters with their default values and descriptions (in the format of GetLibraryPartParameterValues). Password protected parts need their password. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -28160,6 +29902,10 @@ var gCommands = [{
             "password": {
                 "type": "string",
                 "description": "The password of password protected library parts. Reading a script of a protected part without the right password is an error for that file."
+            },
+            "includeParameters": {
+                "type": "boolean",
+                "description": "Also returns the parameters of each file with their default values and descriptions, in the format of GetLibraryPartParameterValues. Default is false, so a caller that only wants the scripts gets them even when the parameters of a file cannot be read."
             }
         },
         "additionalProperties": false,
@@ -29218,7 +30964,7 @@ var gCommands = [{
             "commands": [{
                 "name": "PublishPublisherSet",
                 "version": "0.1.0",
-                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published.",
+                "description": "Performs a publish operation on the currently opened project. Only the given publisher set will be published. The command answers when Archicad's API reports the publishing done; for a local or LAN output folder the answer names the folder and lists the files created or changed in it (writtenFiles). A large set can take minutes, so give the call a long enough timeout. The output format of each item is the one set in the publisher set: Archicad's API cannot choose it per call.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -29234,7 +30980,7 @@ var gCommands = [{
             },
             "selectedNavigatorItemIds": {
                 "$ref": "#/NavigatorItemIds",
-                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{\"navigatorItemId\": {\"guid\": \"6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162\"}}], not [{\"guid\": \"...\"}]."
             }
         },
         "additionalProperties": false,
@@ -29242,7 +30988,24 @@ var gCommands = [{
             "publisherSetName"
         ]
     },
-                "outputScheme": null
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "outputFolder": {
+                "type": "string",
+                "description": "The local or LAN folder the set was published to: outputPath, else the path saved in the publisher set. Absent when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server)."
+            },
+            "writtenFiles": {
+                "type": "array",
+                "description": "Full paths of the files in outputFolder and its subfolders that were created or changed while the command ran, as found when Archicad reported the publishing finished. Absent when outputFolder is absent or holds more than 20000 files and folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    }
             },{
                 "name": "GetPublisherSets",
                 "version": "2.0.0",
@@ -29568,7 +31331,8 @@ var gCommands = [{
                         "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
                         "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
                         "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
-                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the new viewpoint (API_DetailType::constructionElementsOnly). Default is that of the tool defaults." }
                     },
                     "additionalProperties": false,
                     "required": ["clipPolygon"]
@@ -29615,7 +31379,8 @@ var gCommands = [{
                         "angle": { "type": "number", "description": "Rotation of the marker symbol in radians. Default is that of the tool defaults." },
                         "name": { "type": "string", "description": "Name of the new viewpoint. Default is that of the tool defaults." },
                         "id": { "type": "string", "description": "Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults." },
-                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." }
+                        "floorIndex": { "type": "integer", "description": "Story of the marker when it is placed on a floor plan. Default is the current story." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the new viewpoint (API_DetailType::constructionElementsOnly). Default is that of the tool defaults." }
                     },
                     "additionalProperties": false,
                     "required": ["clipPolygon"]
@@ -29638,7 +31403,7 @@ var gCommands = [{
             },{
                 "name": "ModifyDetailMarkers",
                 "version": "2.0.0",
-                "description": "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.",
+                "description": "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen, and 'Copy construction elements only' of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -29665,6 +31430,7 @@ var gCommands = [{
                         "lineTypeIndex": { "type": "integer", "minimum": 1, "description": "Attribute index of the new line type of the boundary (API_DetailType::ltypeInd)." },
                         "angle": { "type": "number", "description": "The new rotation of the marker symbol, in radians (API_DetailType::angle)." },
                         "isHorizontalMarker": { "type": "boolean", "description": "Whether the marker symbol is always horizontal (API_DetailType::horizontalMarker)." },
+                        "constructionElementsOnly": { "type": "boolean", "description": "Copy construction elements only (API_DetailType::constructionElementsOnly), as GetDetailsOfElements returns it." },
                         "markerPenIndex": { "type": "integer", "minimum": 1, "maximum": 255, "description": "The new pen of the marker symbol, the library part placed as the marker (its markerId in GetDetailsOfElements)." }
                     },
                     "additionalProperties": false,
@@ -29830,6 +31596,79 @@ var gCommands = [{
         "required": ["subsetSettings"]
     }
             },{
+                "name": "ChangeLayoutSubsetSettings",
+                "version": "2.0.1",
+                "description": "Changes the settings of existing Layout Book subsets (name, ID prefix, numbering style, start at, ...), the fields of CreateLayoutSubset; the ones not given keep their value. The Archicad API can neither change the settings of a subset nor delete one, so a new subset is created with the changed settings right after the old one, and the old one's layouts and subsets are moved into it in their order; when a move fails, the ones moved before are moved back. The old subset is left empty, and its id is returned with the new one's: delete it in Archicad. These navigator functions are not undoable.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "subsets": {
+                "type": "array",
+                "description": "The Layout Book subsets to change, each with the settings to change.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId",
+                            "description": "The subset to change, from GetNavigatorItemTree or CreateLayoutSubset."
+                        },
+                        "settings": {
+                            "$ref": "#/LayoutSubsetSettingsData",
+                            "description": "The settings to change. The ones not given keep the value the subset has."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "navigatorItemId",
+                        "settings"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "subsets"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "subsets": {
+                "type": "array",
+                "description": "One item per input subset, in the same order: the subset that now has the settings and the layouts, and the old subset, left empty, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "navigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The new subset, with the new settings, holding the layouts and subsets of the old one in their order, right after the old one in the Layout Book."
+                                },
+                                "oldNavigatorItemId": {
+                                    "$ref": "#/NavigatorItemId",
+                                    "description": "The old subset, now empty. The Archicad API cannot delete a subset: delete it in Archicad."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "navigatorItemId",
+                                "oldNavigatorItemId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "subsets"
+        ]
+    }
+            },{
                 "name": "CreateDrawings",
                 "version": "1.4.0",
                 "description": "Creates Drawing elements on the specified or active layout from navigator items.",
@@ -29854,7 +31693,7 @@ var gCommands = [{
                         },
                         "position": {
                             "$ref": "#/Coordinate2D",
-                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin): a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
+                            "description": "Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin), also when the source view stores its zoom: a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown."
                         },
                         "scale": {
                             "type": "number",
@@ -30266,6 +32105,11 @@ var gCommands = [{
                             "modelViewOptions": {
                                 "type": "object",
                                 "description": "The fields of API_ModelViewOptions stored in the combination, with the curtainWall, stair and railing parts as nested objects: the same fields as viewOptions.modelViewOptions of GetViewOptions. Values are the numeric API constants; attribute indices are plain integers.",
+                                "properties": {
+                                    "railing": {
+                                        "$ref": "#/RailingModelViewOptions"
+                                    }
+                                },
                                 "additionalProperties": true
                             },
                             "gdlOptions": {
@@ -30372,7 +32216,7 @@ var gCommands = [{
             },{
                 "name": "SetViewOptions",
                 "version": "1.8.0",
-                "description": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply.",
+                "description": "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply. The options are read back, and a given field Archicad did not keep (with an index, a given on-screen view option) fails the call with the value it kept; the fields Archicad kept stay changed. Archicad 29 does not keep the railing components shown in the floor plan (modelViewOptions.railing, railing2DDisplayComp*) changed this way, so such a change is reported as not kept; GetViewOptions reads them.",
                 "inputScheme": {
     "type": "object",
     "properties": {
@@ -32573,7 +34417,7 @@ var gCommands = [{
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is; in a rotated window the whole box is shown, so the shown area is larger than the box."
             }
         },
         "additionalProperties": false,
@@ -32649,7 +34493,7 @@ var gCommands = [{
             },{
                 "name": "ModifySections",
                 "version": "2.0.0",
-                "description": "Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show. GetDetailsOfElements reads those of a Section back as name and idStr.",
+                "description": "Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show, and moves their section line (startCoordinate, endCoordinate) and depth line (depth, only with the horizontal range Limited, which SetSectionsAndElevationsDetails sets). GetDetailsOfElements reads them back as name, idStr, startCoordinate, endCoordinate and depth.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -32660,7 +34504,10 @@ var gCommands = [{
                     "properties": {
                         "elementId": { "$ref": "#/ElementId", "description": "A Section or an Elevation." },
                         "name": { "type": "string", "description": "The new name, shown in the Project Map." },
-                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." }
+                        "id": { "type": "string", "description": "The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker." },
+                        "startCoordinate": { "$ref": "#/Coordinate2D", "description": "The new start point of the section line. Only a straight marker (a section line of 2 points, as CreateSections and CreateElevations make) can be moved. The depth line and the marked distant area line keep their distance from it." },
+                        "endCoordinate": { "$ref": "#/Coordinate2D", "description": "The new end point of the section line, as startCoordinate. The view looks to the side the depth line was on." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0, "description": "The new distance of the depth line from the section line, on the side it is on. GetDetailsOfElements reads it back as depth. Only applies when the element's horizontalRange is Limited (SetSectionsAndElevationsDetails); refused otherwise." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -32786,6 +34633,39 @@ var gCommands = [{
         },
         "additionalProperties": false,
         "required": ["elementsWithDetails"]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    }
+            },{
+                "name": "SetInteriorElevationsDetails",
+                "version": "2.0.1",
+                "description": "Sets settings of the given Interior Elevation elements: the stories they are shown on, the common marker's visibility, pen, font and sizes, and for each segment, chosen by its index in GetDetailsOfElements' segments, its name, reference ID and the segment settings of SetSectionsAndElevationsDetails. The element keeps its GUID and its segments keep their viewpoints. A bad segment entry changes nothing on that element, and a change Archicad does not keep (read back after the change) fails the item with the fields it did not apply.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "interiorElevationsWithDetails": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },
+                        "details": { "$ref": "#/InteriorElevationSettableDetails" }
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId", "details"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["interiorElevationsWithDetails"]
     },
                 "outputScheme": {
         "type": "object",
@@ -34100,7 +35980,7 @@ var gCommands = [{
             },{
                 "name": "CreateChangeMarkers",
                 "version": "2.0.1",
-                "description": "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults. GetDetailsOfElements reads the markers back.",
+                "description": "Creates Change Markers (revision clouds) in the database of the active window, each with a cloud polygon, its marker components, the position it points to and the position of its marker head. A marker can be linked to an existing Change by its ID, or create a new Change with an ID and a description (createChange): the Archicad API creates Changes only this way. The marker head uses the Change Marker tool defaults, with the angle and always-horizontal setting given (angle, horizontalMarker). ModifyChangeMarkers takes the same settings. GetDetailsOfElements reads the markers back.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -34120,7 +36000,28 @@ var gCommands = [{
                         },
                         "markerComponent": {
                             "$ref": "#/ChangeMarkerComponent",
-                            "description": "Which parts the marker shows. Default: HeadAndCloud."
+                            "description": "Which parts the marker shows. A new marker gets HeadAndCloud when it is left out."
+                        },
+                        "changeId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). A new marker created without it is not linked to any Change."
+                        },
+                        "createChange": {
+                            "type": "boolean",
+                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
+                        },
+                        "changeDescription": {
+                            "type": "string",
+                            "description": "The description (short name) of the new Change. Only with createChange: the description of an existing Change cannot be changed."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The rotation angle of the marker head in radians (API_ChangeMarkerType::angle), as GetDetailsOfElements returns it. A new marker gets the angle of the Change Marker tool defaults when it is left out."
+                        },
+                        "horizontalMarker": {
+                            "type": "boolean",
+                            "description": "Whether the marker head is always horizontal (API_ChangeMarkerType::horizontalMarker), as GetDetailsOfElements returns it. A new marker gets the setting of the Change Marker tool defaults when it is left out."
                         },
                         "position": {
                             "$ref": "#/Coordinate2D",
@@ -34129,19 +36030,6 @@ var gCommands = [{
                         "markerPosition": {
                             "$ref": "#/Coordinate2D",
                             "description": "The position of the marker head. Default: position."
-                        },
-                        "changeId": {
-                            "type": "string",
-                            "minLength": 1,
-                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). When omitted, the marker is not linked to any Change."
-                        },
-                        "createChange": {
-                            "type": "boolean",
-                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
-                        },
-                        "changeDescription": {
-                            "type": "string",
-                            "description": "The description (short name) of the new Change. Only with createChange."
                         },
                         "layerIndex": {
                             "type": "integer",
@@ -34172,6 +36060,81 @@ var gCommands = [{
         "required": [
             "elements"
         ]
+    }
+            },{
+                "name": "ModifyChangeMarkers",
+                "version": "2.0.1",
+                "description": "Changes existing Change Markers (revision clouds) with the keys CreateChangeMarkers takes and GetDetailsOfElements returns: the Change the marker is linked to (an existing Change by its ID, a new Change made with createChange, or no Change with linkType Unlinked), the marker components, the angle and always-horizontal setting of the marker head, the position of the marker head (markerPosition), and the point a marker without a cloud polygon points to (position). Only the given settings are changed. The cloud polygon cannot be changed, as Archicad keeps it: delete the marker and create it again. The marker is read back, so a value Archicad did not keep is reported as a failure.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "changeMarkersWithDetails": {
+                "type": "array",
+                "description": "The Change Markers to change, in the database of the active window, each with the settings to change. Only the given settings are changed; the keys are those CreateChangeMarkers takes and GetDetailsOfElements returns. The cloud polygon cannot be changed: besides the settings, ACAPI_Element_Change only changes the position of a marker without a polygon, so delete the marker and create it again with CreateChangeMarkers for a new polygon.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "markerComponent": {
+                            "$ref": "#/ChangeMarkerComponent",
+                            "description": "Which parts the marker shows. A new marker gets HeadAndCloud when it is left out."
+                        },
+                        "changeId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). A new marker created without it is not linked to any Change."
+                        },
+                        "createChange": {
+                            "type": "boolean",
+                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
+                        },
+                        "changeDescription": {
+                            "type": "string",
+                            "description": "The description (short name) of the new Change. Only with createChange: the description of an existing Change cannot be changed."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The rotation angle of the marker head in radians (API_ChangeMarkerType::angle), as GetDetailsOfElements returns it. A new marker gets the angle of the Change Marker tool defaults when it is left out."
+                        },
+                        "horizontalMarker": {
+                            "type": "boolean",
+                            "description": "Whether the marker head is always horizontal (API_ChangeMarkerType::horizontalMarker), as GetDetailsOfElements returns it. A new marker gets the setting of the Change Marker tool defaults when it is left out."
+                        },
+                        "linkType": {
+                            "type": "string",
+                            "enum": ["Linked", "Unlinked"],
+                            "description": "Unlinked removes the link of the marker to its Change (the Change stays in the project); it cannot be given with changeId or createChange. Linked links the marker to the Change of changeId, which it needs; changeId alone does the same."
+                        },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new point the Change Marker points to. Only for a marker without a cloud polygon, the only case in which Archicad takes it (ACAPI_Element_Change); every marker CreateChangeMarkers makes has a polygon, so it is refused for those."
+                        },
+                        "markerPosition": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new position of the marker head, as CreateChangeMarkers takes it. Refused for a marker without a head (markerComponent CloudOnly)."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "changeMarkersWithDetails"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
     }
             }]
         },{
@@ -35117,6 +37080,28 @@ var gCommands = [{
     },
                 "outputScheme": {
         "$ref": "#/ExecutionResult"
+    }
+            },{
+                "name": "GetDefaultDesignOption",
+                "version": "2.0.1",
+                "description": "Retrieves which design option, or the Main Model, is the default that new elements go to. The Archicad API has no function for it, so in a project with design options the command creates a temporary slab in the floor plan, reads its design option, moves it to the Main Model and deletes it (without design options the answer is the Main Model and nothing is created). Archicad puts a new element into the default design option only when the undo step that created it ends, so this takes two undo steps, creating and removing the slab, which together leave the project as it was. Needs a window where design options can be edited. Available from Archicad 29.",
+                "inputScheme": null,
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "isMainModel": {
+                "type": "boolean",
+                "description": "True when new elements go to the Main Model, false when they go to designOption."
+            },
+            "designOption": {
+                "$ref": "#/DesignOptionDetails",
+                "description": "The default design option, which new elements go to. Only present when isMainModel is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isMainModel"
+        ]
     }
             },{
                 "name": "ReorderDesignOptionSets",
@@ -36363,7 +38348,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPRoutingElements",
                 "version": "1.5.6",
-                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions. Available from Archicad 28.",
+                "description": "Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions, and the node positions with the key ModifyMEPRoutingElements writes them with. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -37878,7 +39863,7 @@ var gCommands = [{
             },{
                 "name": "GetMEPElementDetails",
                 "version": "1.8.0",
-                "description": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.",
+                "description": "Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions; the width and height of flexible segments, and the anchor point, orientation, library part and (from Archicad 30) size of the elements ModifyMEPElements places, with the keys it writes them with. Available from Archicad 28.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -38361,7 +40346,7 @@ var gCommands = [{
             },{
                 "name": "SetAnalyticalVisibilitySettings",
                 "version": "1.8.0",
-                "description": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. Available from Archicad 26.",
+                "description": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. The settings are read back, and a given field Archicad did not keep is reported as an error with the value it kept. Available from Archicad 26.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -38381,7 +40366,7 @@ var gCommands = [{
             },{
                 "name": "GetAnalyticalMemberTypesOfElements",
                 "version": "1.8.0",
-                "description": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements.",
+                "description": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements from the Complementary Project, the structural analysis project exchanged with Archicad. Without a Complementary Project every element reads Unknown. An element that does not exist gets an error item.",
                 "inputScheme": {
         "type": "object",
         "properties": {
@@ -38399,7 +40384,7 @@ var gCommands = [{
         "properties": {
             "memberTypesOfElements": {
                 "type": "array",
-                "description": "The analytical member type of each element, in the order of the input. An element the type cannot be got for is represented by an error object.",
+                "description": "The analytical member type of each element, in the order of the input, as the Complementary Project (the structural analysis project exchanged with Archicad) gives it: Unknown for every element when the project has none. An element that does not exist, or whose type cannot be got, is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -39775,20 +41760,7 @@ var gCommands = [{
                 "type": "array",
                 "description": "The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "trimmingElementId": {
-                            "$ref": "#/ElementId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "trimmingElementId"
-                    ]
+                    "$ref": "#/ElementTrimPair"
                 }
             },
             "dryRun": {
@@ -39809,6 +41781,40 @@ var gCommands = [{
             "executionResults": {
                 "$ref": "#/DeletionExecutionResults",
                 "description": "One result for each input pair, in the order of the input. On a dry run a pair whose element is trimmed by the trimming element gets wouldDelete."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    }
+            },{
+                "name": "RemoveElementTrimDirection",
+                "version": "2.0.1",
+                "description": "Removes one direction of a trim: the trim of an element by a roof or shell, keeping the other direction when the two trim each other (two roofs or shells). The Archicad API can only remove both directions at once, so the command reads the other direction and its trim type, removes the trim and trims the other direction again, in one undo step, and reads the result back. A pair whose element is not trimmed by its trimming element fails without changing anything; when Archicad fails to remove or trim again, the whole call is undone.",
+                "inputScheme": {
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "Per pair, the trim of elementId by trimmingElementId is removed. When trimmingElementId is trimmed by elementId too (two roofs or shells trimming each other), that other direction is kept, with its trim type. The pairs are done in order, each on the trims the pairs before it left, so the two pairs of two roofs remove both directions.",
+                "items": {
+                    "$ref": "#/ElementTrimPair"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    },
+                "outputScheme": {
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each input pair, in the order of the input. A pair whose element is not trimmed by its trimming element fails and changes nothing. When Archicad fails to remove a trim or to trim the kept direction again, the whole call is undone and every pair fails, the pair that failed with the reason."
             }
         },
         "additionalProperties": false,

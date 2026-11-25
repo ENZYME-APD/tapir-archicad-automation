@@ -1,0 +1,164 @@
+{
+  "title": "RecreateCurtainWalls gives a slanted curtain wall a new height and a vertical one a slant, keeping their reference line, base and Element ID",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "a curtain wall S at 60 degrees, 3 m high, and a vertical one V, 3 m high",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 990.0, "y": 1000.0 }, { "x": 996.0, "y": 1000.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0,
+            "id": "CHK-RECREATE-CW-SLANT",
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 990.0, "y": 1010.0 }, { "x": 996.0, "y": 1010.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "id": "CHK-RECREATE-CW-VERTICAL",
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid", "v": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slanted curtain wall S created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "vertical curtain wall V created" }
+      ]
+    },
+    {
+      "id": "the segment of S before",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "ss": "subelements[0].cWallSegments[0].elementId.guid" }
+    },
+    {
+      "id": "where the segment of S starts",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ss}" } } ] },
+      "save": {
+        "sbx": "detailsOfElements[0].details.begCoordinate.x",
+        "sby": "detailsOfElements[0].details.begCoordinate.y",
+        "sbz": "detailsOfElements[0].details.begCoordinate.z"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 3.0, "name": "S is 3 m high before" }
+      ]
+    },
+    {
+      "id": "S 4 m high and V at 75 degrees, both without coordinates",
+      "command": "RecreateCurtainWalls",
+      "params": {
+        "curtainWalls": [
+          { "elementId": { "guid": "${s}" }, "height": 4.0 },
+          { "elementId": { "guid": "${v}" }, "angle": 75.0 }
+        ]
+      },
+      "save": { "ns": "results[0].elementId.guid", "nv": "results[1].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new curtain wall S created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${s}", "name": "the old S is named" },
+        { "path": "results[1].elementId.guid", "exists": true, "name": "new curtain wall V created" },
+        { "path": "results[1].oldElementId.guid", "eq": "${v}", "name": "the old V is named" }
+      ]
+    },
+    {
+      "id": "the new curtain walls",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } }, { "elementId": { "guid": "${nv}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-CW-SLANT", "name": "S keeps its Element ID" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 60.0, "name": "S keeps its 60 degrees" },
+        { "path": "detailsOfElements[0].details.height", "approx": 4.0, "name": "S is 4 m high now" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "S keeps a reference line of 2 points" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 990.0, "name": "S reference line still starts at x 990" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 1000.0, "name": "S reference line still starts at y 1000" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 996.0, "name": "S reference line still ends at x 996" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].y", "approx": 1000.0, "name": "S reference line still ends at y 1000" },
+        { "path": "detailsOfElements[1].id", "eq": "CHK-RECREATE-CW-VERTICAL", "name": "V keeps its Element ID" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 75.0, "name": "V is slanted at 75 degrees now" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "V keeps its vertical height of 3 m" },
+        { "path": "detailsOfElements[1].details.referenceLine[0].x", "approx": 990.0, "name": "V reference line still starts at x 990" },
+        { "path": "detailsOfElements[1].details.referenceLine[0].y", "approx": 1010.0, "name": "V reference line still starts at y 1010" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].x", "approx": 996.0, "name": "V reference line still ends at x 996" }
+      ]
+    },
+    {
+      "id": "segments of the new curtain walls",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } }, { "elementId": { "guid": "${nv}" } } ] },
+      "save": { "nss": "subelements[0].cWallSegments[0].elementId.guid", "nvs": "subelements[1].cWallSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 1, "name": "S has one segment" },
+        { "path": "subelements[1].cWallSegments", "len": 1, "name": "V has one segment" }
+      ]
+    },
+    {
+      "id": "extrusion and base of the new segments",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nss}" } }, { "elementId": { "guid": "${nvs}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.extrusionVector.z", "approx": 4.0, "name": "S segment is 4 m high" },
+        { "path": "detailsOfElements[0].details.extrusionVector.y", "approx": 2.3094011, "name": "S segment still leans at 60 degrees: 4 / tan 60 to the left" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": "${sbx}", "name": "S segment starts where it started (x)" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": "${sby}", "name": "S segment starts where it started (y)" },
+        { "path": "detailsOfElements[0].details.begCoordinate.z", "approx": "${sbz}", "name": "S segment starts at the same height" },
+        { "path": "detailsOfElements[1].details.extrusionVector.z", "approx": 3.0, "name": "V segment is still 3 m high" },
+        { "path": "detailsOfElements[1].details.extrusionVector.y", "approx": 0.8038476, "name": "V segment leans 3 / tan 75 to the left" }
+      ]
+    },
+    {
+      "id": "the old curtain walls are gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } }, { "elementId": { "guid": "${v}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old S was deleted" },
+        { "path": "detailsOfElements[1].error.code", "exists": true, "name": "the old V was deleted" }
+      ]
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateCurtainWalls",
+      "params": {
+        "curtainWalls": [
+          { "elementId": { "guid": "${ns}" } },
+          { "elementId": { "guid": "${nv}" }, "angle": 60.0, "coordinates": [ { "x": 990.0, "y": 1010.0 }, { "x": 996.0, "y": 1010.0 }, { "x": 996.0, "y": 1014.0 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "nothing to change refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a slant on a bent reference line refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } }, { "elementId": { "guid": "${nv}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 4.0, "name": "S is still there, 4 m high" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 75.0, "name": "V is still there, at 75 degrees" },
+        { "path": "detailsOfElements[1].details.referenceLine", "len": 2, "name": "V keeps its 2 points" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nv}" } } ] } }
+  ]
+}

@@ -1,0 +1,2914 @@
+{
+ "version": 1,
+ "groups": [
+  "Application Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetAddOnVersion",
+   "group": "Application Commands",
+   "version": "0.1.0",
+   "description": "Retrieves the version of the Tapir Additional JSON Commands Add-On.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "version": {
+      "type": "string",
+      "description": "Version number in the form of \"1.1.1\".",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "version"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAddOnVersionComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetAddOnVersion.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetAddOnVersion.py",
+    "description": "Prints the version of the Tapir Add-On with GetAddOnVersion.",
+    "code": "\"\"\"Prints the version of the Tapir Add-On with GetAddOnVersion.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAddOnVersion'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAddOnVersion"
+  },
+  {
+   "name": "GetCommands",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "commands": {
+      "type": "array",
+      "description": "Every command of the Tapir Add-On, in the order of the command reference.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "name": {
+         "type": "string",
+         "description": "The name of the command.",
+         "minLength": 1
+        },
+        "group": {
+         "type": "string",
+         "description": "The name of the command group, e.g. \"Application Commands\".",
+         "minLength": 1
+        },
+        "version": {
+         "type": "string",
+         "description": "The Tapir version the command was introduced in, in the form of \"1.1.1\".",
+         "minLength": 1
+        },
+        "description": {
+         "type": "string",
+         "description": "The description of the command, as in the command reference."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "name",
+        "group",
+        "version",
+        "description"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "commands"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetCommandsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetCommands.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCommands.py",
+    "description": "Lists the commands of the Tapir Add-On with GetCommands and checks that a command exists before calling it.",
+    "code": "\"\"\"Lists the commands of the Tapir Add-On with GetCommands and checks that a command exists before calling it.\"\"\"\nimport aclib\n\ncommands = {command['name'] : command for command in aclib.RunTapirCommand ('GetCommands')['commands']}\n\nif 'GetAddOnVersion' in commands:\n    aclib.PrintJson (commands['GetAddOnVersion'])\n    aclib.PrintJson (aclib.RunTapirCommand ('GetAddOnVersion'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCommands"
+  },
+  {
+   "name": "GetArchicadLocation",
+   "group": "Application Commands",
+   "version": "0.1.0",
+   "description": "Retrieves the location of the currently running Archicad executable.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "archicadLocation": {
+      "type": "string",
+      "description": "The location of the Archicad executable in the filesystem.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "archicadLocation"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetArchicadLocationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetArchicadLocation.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadLocation.py",
+    "description": "Prints where the running Archicad executable is, with GetArchicadLocation.",
+    "code": "\"\"\"Prints where the running Archicad executable is, with GetArchicadLocation.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetArchicadLocation'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetArchicadLocation"
+  },
+  {
+   "name": "GetArchicadReleaseInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "mainVersion": {
+      "type": "integer",
+      "description": "The main version of the running Archicad, e.g. 29."
+     },
+     "releaseVersion": {
+      "type": "integer",
+      "description": "The release (update) version of the running Archicad."
+     },
+     "buildNumber": {
+      "type": "integer",
+      "description": "The build number of the running Archicad."
+     },
+     "caption": {
+      "type": "string",
+      "description": "The caption of the Archicad application window. Missing when Archicad does not report it."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "mainVersion",
+     "releaseVersion",
+     "buildNumber"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetArchicadReleaseInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetArchicadReleaseInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadReleaseInfo.py",
+    "description": "Prints the version, release and build number of the running Archicad with GetArchicadReleaseInfo.",
+    "code": "\"\"\"Prints the version, release and build number of the running Archicad with GetArchicadReleaseInfo.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetArchicadReleaseInfo'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetArchicadReleaseInfo"
+  },
+  {
+   "name": "GetArchicadLicenseInfo",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "licenseType": {
+      "type": "string",
+      "enum": [
+       "Full",
+       "Education",
+       "Trial",
+       "Demo",
+       "Start",
+       "BIMcloudTeamClient"
+      ],
+      "description": "The kind of license Archicad runs on, read from protectionMode: Trial, Demo, Education (an education license with or without a key), BIMcloudTeamClient, Start (the Start edition), otherwise Full."
+     },
+     "protectionMode": {
+      "type": "integer",
+      "description": "The raw protection mode bit mask reported by Archicad (the APIPROT_*_MASK bits of the Archicad API)."
+     },
+     "licenseFlags": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "enum": [
+        "Site",
+        "NotForResale",
+        "School",
+        "PayPerUse",
+        "Network",
+        "Teamwork",
+        "Education",
+        "Start",
+        "Solo",
+        "LiveSubscription",
+        "OEM",
+        "SSA",
+        "EducationWithoutKey",
+        "Demo",
+        "Trial",
+        "BIMcloudTeamClient"
+       ]
+      },
+      "description": "The bits set in protectionMode, by name: Site (more licenses), NotForResale, School, PayPerUse, Network (network licensing), Teamwork (Teamwork functionality is on), Education (education key), Start (Start edition), Solo (SOLO edition), LiveSubscription, OEM (Archicad 27 or later), SSA (SSA license, Archicad 25 only), and without a hardware or software key EducationWithoutKey, Demo, Trial and BIMcloudTeamClient."
+     },
+     "ssaLevel": {
+      "type": "string",
+      "enum": [
+       "NoSSA",
+       "SSA",
+       "Forward"
+      ],
+      "description": "The highest Software Service Agreement (SSA) level the license has: NoSSA, SSA or Forward. A script needing a level checks that this is at least that level, in this order. Missing in Archicad 25, which cannot report it."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "licenseType",
+     "protectionMode",
+     "licenseFlags"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetArchicadLicenseInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetArchicadLicenseInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadLicenseInfo.py",
+    "description": "Prints the license type, the license flags and the SSA level of the running Archicad with GetArchicadLicenseInfo, then warns when the license is not a full one. The SSA level is not reported in Archicad 25.",
+    "code": "\"\"\"Prints the license type, the license flags and the SSA level of the running Archicad with GetArchicadLicenseInfo,\nthen warns when the license is not a full one.\n\nThe SSA level is not reported in Archicad 25.\n\"\"\"\nimport aclib\n\nlicenseInfo = aclib.RunTapirCommand ('GetArchicadLicenseInfo')\naclib.PrintJson (licenseInfo)\n\nif licenseInfo and licenseInfo['licenseType'] != 'Full':\n    print (f\"Warning: Archicad runs on a {licenseInfo['licenseType']} license.\")\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetArchicadLicenseInfo"
+  },
+  {
+   "name": "GetPrinterInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes).",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "printArea": {
+      "$ref": "#/PrinterPrintArea"
+     },
+     "grid": {
+      "type": "boolean",
+      "description": "Whether the grid is printed."
+     },
+     "fixText": {
+      "type": "boolean",
+      "description": "Whether text is printed in fixed size."
+     },
+     "scale": {
+      "type": "integer",
+      "description": "The print scale."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "printArea",
+     "grid",
+     "fixText",
+     "scale"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPrinterInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetPrinterInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPrinterInfo.py",
+    "description": "Prints Archicad's current print settings (area, grid, text size, scale) with GetPrinterInfo.",
+    "code": "\"\"\"Prints Archicad's current print settings (area, grid, text size, scale) with GetPrinterInfo.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPrinterInfo'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPrinterInfo"
+  },
+  {
+   "name": "GetPrinterAndPlotterInfo",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the printer selected in Archicad, with its name and orientation, and the selected plotter, with its name and model.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "printer": {
+      "type": "object",
+      "description": "The printer selected in Archicad, or an error when it cannot be read.",
+      "oneOf": [
+       {
+        "$ref": "#/PrinterInfo"
+       },
+       {
+        "$ref": "#/ErrorItem"
+       }
+      ]
+     },
+     "plotter": {
+      "type": "object",
+      "description": "The plotter selected in Archicad, or an error when it cannot be read.",
+      "oneOf": [
+       {
+        "$ref": "#/PlotterInfo"
+       },
+       {
+        "$ref": "#/ErrorItem"
+       }
+      ]
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "printer",
+     "plotter"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPrinterAndPlotterInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetPrinterAndPlotterInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPrinterAndPlotterInfo.py",
+    "description": "Prints the printer and the plotter selected in Archicad with GetPrinterAndPlotterInfo.",
+    "code": "\"\"\"Prints the printer and the plotter selected in Archicad with GetPrinterAndPlotterInfo.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPrinterAndPlotterInfo'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPrinterAndPlotterInfo"
+  },
+  {
+   "name": "QuitArchicad",
+   "group": "Application Commands",
+   "version": "0.1.0",
+   "description": "Performs a quit operation on the currently running Archicad instance.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "QuitArchicadComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/QuitArchicad.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/QuitArchicad.py",
+    "description": "Quits the running Archicad with QuitArchicad. Quits Archicad. Save the project first.",
+    "code": "\"\"\"Quits the running Archicad with QuitArchicad.\n\nQuits Archicad. Save the project first.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('QuitArchicad'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#QuitArchicad"
+  },
+  {
+   "name": "GetPointFromUser",
+   "group": "Application Commands",
+   "version": "1.5.9",
+   "description": "Asks the designer to click a point in the current window and returns it. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; the call fails when the input is cancelled.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "prompt": {
+      "type": "string",
+      "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+     },
+     "snapFilter": {
+      "$ref": "#/SnapFilter",
+      "description": "Which points and lines of the elements the cursor snaps to. Default: Archicad's usual snapping."
+     },
+     "constraint": {
+      "$ref": "#/InputConstraint",
+      "description": "Constrains the click, for example to a fixed X coordinate or to a direction. Default: no constraint."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "position": {
+      "$ref": "#/Coordinate3D",
+      "description": "The clicked point in the project's coordinates."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "position"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPointFromUserComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetPointFromUser.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPointFromUser.py",
+    "description": "Asks the user to click a point in the current window with GetPointFromUser and prints it. Waits for a click in Archicad; Escape cancels the input and the command fails. The optional snapFilter makes the cursor snap only to the end points and reference lines of walls.",
+    "code": "\"\"\"Asks the user to click a point in the current window with GetPointFromUser and prints it.\n\nWaits for a click in Archicad; Escape cancels the input and the command fails. The optional\nsnapFilter makes the cursor snap only to the end points and reference lines of walls.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPointFromUser', {\n    'prompt': 'Click a point on a wall',\n    'snapFilter': {'base': 'None', 'include': ['Wall', 'WallOn']}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPointFromUser"
+  },
+  {
+   "name": "ModelToScreen",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Converts model coordinates to pixel positions local to the current Archicad view window (not global desktop coordinates), using the current window's size, drawing scale and zoom. In a 3D window the coordinates are projected with the current camera; in other windows z is disregarded. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "coordinates": {
+      "type": "array",
+      "description": "Model coordinates in the current database (meters). In a 3D window they are projected with the current camera; in other windows z is disregarded.",
+      "items": {
+       "$ref": "#/Coordinate3D"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "coordinates"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "screenPoints": {
+      "type": "array",
+      "description": "One item per input coordinate, in the same order: the pixel position local to the current Archicad view window (not global desktop coordinates), or an error.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/ScreenPoint"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "screenPoints"
+    ]
+   },
+   "grasshopperComponents": [
+    "ModelToScreenComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ModelToScreen.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ModelToScreen.py",
+    "description": "Converts two model points to pixel positions of the current view window with ModelToScreen. The pixels depend on the window's size, scale and zoom. Requires Archicad 29 or later.",
+    "code": "\"\"\"Converts two model points to pixel positions of the current view window with ModelToScreen.\n\nThe pixels depend on the window's size, scale and zoom. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('ModelToScreen', {\n    'coordinates': [\n        {'x': 0.0, 'y': 0.0, 'z': 0.0},\n        {'x': 5.0, 'y': 3.0, 'z': 0.0}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ModelToScreen"
+  },
+  {
+   "name": "ScreenToModel",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Converts pixel positions local to the current Archicad view window to 2D model coordinates of the current database, using the current window's size, drawing scale and zoom. It is a 2D mapping: it does not reconstruct a 3D point, and several model coordinates can map to the same pixel.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "screenPoints": {
+      "type": "array",
+      "description": "Pixel positions local to the current Archicad view window (not global desktop coordinates).",
+      "items": {
+       "$ref": "#/ScreenPointInput"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "screenPoints"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "coordinates": {
+      "type": "array",
+      "description": "One item per input screen point, in the same order: the 2D model coordinate in the current database (meters), or an error. This is a 2D mapping: it does not reconstruct a 3D point, and in a 3D window the result is not a point of the model.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/Coordinate2D"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "coordinates"
+    ]
+   },
+   "grasshopperComponents": [
+    "ScreenToModelComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ScreenToModel.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ScreenToModel.py",
+    "description": "Converts two pixel positions of the current view window to model coordinates with ScreenToModel. The result depends on the window's size, scale and zoom.",
+    "code": "\"\"\"Converts two pixel positions of the current view window to model coordinates with ScreenToModel.\n\nThe result depends on the window's size, scale and zoom.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('ScreenToModel', {\n    'screenPoints': [\n        {'h': 0, 'v': 0},\n        {'h': 200, 'v': 100}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ScreenToModel"
+  },
+  {
+   "name": "GetElementFromUser",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "prompt": {
+      "type": "string",
+      "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+     },
+     "elementTypes": {
+      "type": "array",
+      "description": "Only an element of one of these types is accepted. A click on empty space or on an element of another type asks for the click again. Default: any element.",
+      "items": {
+       "$ref": "#/ElementType"
+      }
+     },
+     "snapFilter": {
+      "$ref": "#/SnapFilter",
+      "description": "Which points and lines of the elements the cursor snaps to, for example only the points and edges of the element types asked for. Default: Archicad's usual snapping."
+     },
+     "constraint": {
+      "$ref": "#/InputConstraint",
+      "description": "Constrains every click, for example to a fixed X coordinate or to a direction. Default: no constraint."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementId": {
+      "$ref": "#/ElementId",
+      "description": "The clicked element. In a section or elevation window it is the model element the section element was cut from."
+     },
+     "elementType": {
+      "type": "string",
+      "description": "The type of the clicked element (one of the ElementType values, or Unknown)."
+     },
+     "position": {
+      "$ref": "#/Coordinate3D",
+      "description": "The clicked point in the project's coordinates, as GetPointFromUser returns it."
+     },
+     "elementPosition": {
+      "$ref": "#/Coordinate3D",
+      "description": "The coordinate of the clicked part of the element (e.g. its node or hotspot), when Archicad gives one for it."
+     },
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the input was cancelled with Escape; no other field is returned then."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "grasshopperComponents": [
+    "GetElementFromUserComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetElementFromUser.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetElementFromUser.py",
+    "description": "Asks the user to click a wall or a column with GetElementFromUser and prints its id, type and the clicked point. Waits for a click in Archicad; Escape returns cancelled. The optional snapFilter makes the cursor snap only to the points and lines of walls and columns.",
+    "code": "\"\"\"Asks the user to click a wall or a column with GetElementFromUser and prints its id, type and the clicked point.\n\nWaits for a click in Archicad; Escape returns cancelled. The optional snapFilter makes the cursor\nsnap only to the points and lines of walls and columns.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementFromUser', {\n    'prompt': 'Click a wall or a column',\n    'elementTypes': ['Wall', 'Column'],\n    'snapFilter': {'include': ['Wall', 'WallOn', 'Column', 'ColumnOn']}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementFromUser"
+  },
+  {
+   "name": "GetCurrentTool",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "description": "The tool active in the Toolbox, in the form SetCurrentTool accepts. Empty when the active tool makes no element, e.g. the Arrow or the Marquee.",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+     },
+     "variation": {
+      "type": "string",
+      "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+      "minLength": 1,
+      "maxLength": 4
+     },
+     "classId": {
+      "type": "string",
+      "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "grasshopperComponents": [
+    "GetCurrentToolComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetCurrentTool.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCurrentTool.py",
+    "description": "Gets the tool active in the Toolbox with GetCurrentTool. The result (element type, variation, class id) can be given to SetCurrentTool as it is. It is empty when the Arrow or the Marquee is active.",
+    "code": "\"\"\"Gets the tool active in the Toolbox with GetCurrentTool.\n\nThe result (element type, variation, class id) can be given to SetCurrentTool as it is. It is empty\nwhen the Arrow or the Marquee is active.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('GetCurrentTool')\n\nif result:\n    aclib.PrintJson (result)\nelse:\n    print ('The active tool makes no element (Arrow or Marquee).')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCurrentTool"
+  },
+  {
+   "name": "SetCurrentTool",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command.",
+   "inputSchema": {
+    "type": "object",
+    "description": "The tool to activate, in the form GetCurrentTool and GetToolboxItems return. An empty object activates the Arrow.",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+     },
+     "variation": {
+      "type": "string",
+      "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+      "minLength": 1,
+      "maxLength": 4
+     },
+     "classId": {
+      "type": "string",
+      "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetCurrentToolComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/SetCurrentTool.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/SetCurrentTool.py",
+    "description": "Activates the Wall tool with SetCurrentTool, then the Door tool, then restores the tool that was active. Archicad switches the tool once it processes its events, so it may take a moment to show in the Toolbox. An empty input activates the Arrow.",
+    "code": "\"\"\"Activates the Wall tool with SetCurrentTool, then the Door tool, then restores the tool that was active.\n\nArchicad switches the tool once it processes its events, so it may take a moment to show in the Toolbox.\nAn empty input activates the Arrow.\n\"\"\"\nimport aclib\n\noriginal = aclib.RunTapirCommand ('GetCurrentTool')\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCurrentTool', {'elementType': 'Wall'}))\naclib.PrintJson (aclib.RunTapirCommand ('SetCurrentTool', {'elementType': 'Door'}))\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCurrentTool', original))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetCurrentTool"
+  },
+  {
+   "name": "GetToolboxItems",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "includeHidden": {
+      "type": "boolean",
+      "description": "Also list the tools that have no icon in the Toolbox but can be active, e.g. the Slab Accessory. Default: false."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "toolboxItems": {
+      "type": "array",
+      "description": "The tools installed in the Toolbox, the tools of add-ons included, each in the form SetCurrentTool accepts.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementType": {
+         "$ref": "#/ElementType",
+         "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+        },
+        "variation": {
+         "type": "string",
+         "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+         "minLength": 1,
+         "maxLength": 4
+        },
+        "classId": {
+         "type": "string",
+         "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+         "format": "uuid",
+         "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementType"
+       ]
+      }
+     },
+     "currentTool": {
+      "type": "object",
+      "description": "The tool active in the Toolbox, as GetCurrentTool returns it. Empty for the Arrow and the Marquee.",
+      "properties": {
+       "elementType": {
+        "$ref": "#/ElementType",
+        "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+       },
+       "variation": {
+        "type": "string",
+        "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+        "minLength": 1,
+        "maxLength": 4
+       },
+       "classId": {
+        "type": "string",
+        "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+        "format": "uuid",
+        "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+       }
+      },
+      "additionalProperties": false,
+      "required": []
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "toolboxItems",
+     "currentTool"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetToolboxItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetToolboxItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetToolboxItems.py",
+    "description": "Lists the tools of the Toolbox with GetToolboxItems, the tools of add-ons included, and the active tool. Each item can be given to SetCurrentTool as it is. includeHidden also lists the tools without an icon, e.g. the Slab Accessory.",
+    "code": "\"\"\"Lists the tools of the Toolbox with GetToolboxItems, the tools of add-ons included, and the active tool.\n\nEach item can be given to SetCurrentTool as it is. includeHidden also lists the tools without an icon,\ne.g. the Slab Accessory.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('GetToolboxItems', {'includeHidden': False})\n\nfor item in result['toolboxItems']:\n    print (item)\nprint ('Active tool:', result['currentTool'] or 'Arrow or Marquee')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetToolboxItems"
+  },
+  {
+   "name": "GetLineFromUser",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Waits for the user to input a line in the active Archicad window and returns start and end coordinates.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "startPrompt": {
+      "type": "string",
+      "description": "Prompt for selecting the line start point.",
+      "default": "Click the start point of the line"
+     },
+     "endPrompt": {
+      "type": "string",
+      "description": "Prompt for selecting the line end point.",
+      "default": "Click the end point of the line"
+     },
+     "showRubberLineFeedback": {
+      "type": "boolean",
+      "description": "If true, draws a unit-square rubber feedback around the cursor while input is active.",
+      "default": true
+     },
+     "snapFilter": {
+      "$ref": "#/SnapFilter",
+      "description": "Which points and lines of the elements the cursor snaps to, for both points. Default: Archicad's usual snapping."
+     },
+     "constraint": {
+      "$ref": "#/InputConstraint",
+      "description": "Constrains the end point, for example to a direction from the start point (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True if the user cancelled the input (ESC)."
+     },
+     "startPoint": {
+      "$ref": "#/Coordinate3D",
+      "description": "The start point of the line."
+     },
+     "endPoint": {
+      "$ref": "#/Coordinate3D",
+      "description": "The end point of the line. It is only valid if cancelled is false."
+     }
+    }
+   },
+   "grasshopperComponents": [
+    "GetLineFromUserComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetLineFromUser.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetLineFromUser.py",
+    "description": "Asks the user to draw a line in the current window with GetLineFromUser and prints its end points. Waits for two clicks in Archicad; Escape returns cancelled. The optional snapFilter makes the cursor snap only to points (end points, vertices, hotspots), not to edges, and never to hatches. The optional constraint keeps the end point on the horizontal line through the start point (angle 0 measured from the last clicked point), so the line is always horizontal.",
+    "code": "\"\"\"Asks the user to draw a line in the current window with GetLineFromUser and prints its end points.\n\nWaits for two clicks in Archicad; Escape returns cancelled. The optional snapFilter makes the\ncursor snap only to points (end points, vertices, hotspots), not to edges, and never to hatches.\nThe optional constraint keeps the end point on the horizontal line through the start point\n(angle 0 measured from the last clicked point), so the line is always horizontal.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetLineFromUser', {\n    'startPrompt': 'Click the start point of the line',\n    'endPrompt': 'Click the end point of the horizontal line',\n    'snapFilter': {'base': 'Nodes', 'exclude': ['Hatch']},\n    'constraint': {'type': 'Angle', 'value': 0.0, 'fromLastPoint': True}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetLineFromUser"
+  },
+  {
+   "name": "GetArcFromUser",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "centerPrompt": {
+      "type": "string",
+      "description": "Prompt for clicking the center of the arc. Single-byte text: the control box takes a char field.",
+      "default": "Click the center of the arc"
+     },
+     "startPrompt": {
+      "type": "string",
+      "description": "Prompt for clicking the start point of the arc, which also sets its radius.",
+      "default": "Click the start point of the arc"
+     },
+     "endPrompt": {
+      "type": "string",
+      "description": "Prompt for clicking the end point of the arc. Archicad draws the arc while the cursor moves; the direction the cursor goes around the center decides whether the arc is clockwise.",
+      "default": "Click the end point of the arc"
+     },
+     "showRubberArcFeedback": {
+      "type": "boolean",
+      "description": "If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.",
+      "default": true
+     },
+     "snapFilter": {
+      "$ref": "#/SnapFilter",
+      "description": "Which points and lines of the elements the cursor snaps to for the center and the start point. Archicad's arc input has no snap filter, so the end point snaps as usual. Default: Archicad's usual snapping."
+     },
+     "constraint": {
+      "$ref": "#/InputConstraint",
+      "description": "Constrains every click: the center, the start point and the end point. With fromLastPoint the start point is measured from the center (type Distance fixes the radius, type Angle the direction of the start point) and the end point from the start point. Default: no constraint."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True if the user cancelled the input (Escape); no other field is returned then."
+     },
+     "center": {
+      "$ref": "#/Coordinate3D",
+      "description": "The center of the arc."
+     },
+     "radius": {
+      "type": "number",
+      "description": "The radius of the arc: the distance of the start point from the center in the x-y plane."
+     },
+     "startAngle": {
+      "type": "number",
+      "description": "The direction of the start point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+     },
+     "endAngle": {
+      "type": "number",
+      "description": "The direction of the end point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+     },
+     "arcAngle": {
+      "type": "number",
+      "description": "The angle the arc turns through from its start to its end, in radians: positive (up to 2*pi) for a counterclockwise arc, negative (down to -2*pi) for a clockwise one."
+     },
+     "clockwise": {
+      "type": "boolean",
+      "description": "True if the arc was drawn clockwise from its start to its end."
+     },
+     "startPoint": {
+      "$ref": "#/Coordinate3D",
+      "description": "The start point of the arc, as clicked."
+     },
+     "endPoint": {
+      "$ref": "#/Coordinate3D",
+      "description": "The end point of the arc: the point of its circle in the direction of the third click (its z is the clicked z)."
+     }
+    },
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetArcFromUserComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetArcFromUser.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArcFromUser.py",
+    "description": "Asks the user to draw an arc in the current window with GetArcFromUser and prints its center, radius and angles. Waits for three clicks in Archicad (center, start point, end point); Escape returns cancelled. The optional snapFilter makes the center and the start point snap only to points (end points, vertices, hotspots), not to edges, and never to hatches; the end point snaps as usual. The optional constraint keeps every click at the height 0 (type Z), which matters in the 3D window.",
+    "code": "\"\"\"Asks the user to draw an arc in the current window with GetArcFromUser and prints its center, radius and angles.\n\nWaits for three clicks in Archicad (center, start point, end point); Escape returns cancelled.\nThe optional snapFilter makes the center and the start point snap only to points (end points,\nvertices, hotspots), not to edges, and never to hatches; the end point snaps as usual. The\noptional constraint keeps every click at the height 0 (type Z), which matters in the 3D window.\n\"\"\"\nimport aclib\n\naclib.raiseOnError = True\naclib.RequireTapir ('1.8.1')\naclib.PrintJson (aclib.RunTapirCommand ('GetArcFromUser', {\n    'centerPrompt': 'Click the center of the arc',\n    'startPrompt': 'Click the start point of the arc',\n    'endPrompt': 'Click the end point of the arc',\n    'snapFilter': {'base': 'Nodes', 'exclude': ['Hatch']},\n    'constraint': {'type': 'Z', 'value': 0.0}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetArcFromUser"
+  },
+  {
+   "name": "GetPolygonFromUser",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "startPrompt": {
+      "type": "string",
+      "description": "Prompt for selecting the polygon start point.",
+      "default": "Click the start point of the polygon"
+     },
+     "prompt": {
+      "type": "string",
+      "description": "Prompt shown while placing the remaining polygon nodes.",
+      "default": "Click polygon nodes and finish the input"
+     },
+     "method": {
+      "$ref": "#/PolygonInputMethod"
+     },
+     "snapFilter": {
+      "$ref": "#/SnapFilter",
+      "description": "Which points and lines of the elements the cursor snaps to for the start point. Archicad's polygon input has no snap filter, so the other nodes snap as usual. Default: Archicad's usual snapping."
+     },
+     "constraint": {
+      "$ref": "#/InputConstraint",
+      "description": "Constrains the nodes after the start point, for example to a direction from the previous node (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True if the user cancelled the input (ESC)."
+     },
+     "points": {
+      "type": "array",
+      "items": {
+       "$ref": "#/Coordinate2D"
+      }
+     },
+     "arcs": {
+      "type": "array",
+      "items": {
+       "$ref": "#/PolyArc"
+      }
+     }
+    },
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPolygonFromUserComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetPolygonFromUser.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPolygonFromUser.py",
+    "description": "Asks the user to draw a polygon in the current window with GetPolygonFromUser and prints its points and arcs. Waits for the polygon input in Archicad (a double click or Enter finishes it); Escape returns cancelled. The optional snapFilter makes the first corner snap only to the corners of zones; the other corners snap as usual.",
+    "code": "\"\"\"Asks the user to draw a polygon in the current window with GetPolygonFromUser and prints its points and arcs.\n\nWaits for the polygon input in Archicad (a double click or Enter finishes it); Escape returns cancelled.\nThe optional snapFilter makes the first corner snap only to the corners of zones; the other corners\nsnap as usual.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPolygonFromUser', {\n    'startPrompt': 'Click the first corner of the polygon on a zone corner',\n    'prompt': 'Click the other corners, double click to finish',\n    'method': 'General',\n    'snapFilter': {'include': ['Zone']}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPolygonFromUser"
+  },
+  {
+   "name": "GetMagicWandSettings",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "curveApproximation": {
+      "type": "string",
+      "enum": [
+       "SegmentsAlongArcs",
+       "SegmentsAlongCircles",
+       "DeviationFromCurves",
+       "SegmentLength",
+       "Unknown"
+      ],
+      "description": "How the Magic Wand approximates curves with straight segments: a fixed number of segments along arcs or along full circles (segmentCount), segments that deviate from the curve by at most maxDeviation, or segments of segmentLength. Unknown for a mode this version of Tapir does not know."
+     },
+     "segmentCount": {
+      "type": "integer",
+      "description": "The number of segments along an arc or circle, used by SegmentsAlongArcs and SegmentsAlongCircles."
+     },
+     "maxDeviation": {
+      "type": "number",
+      "description": "The largest distance of the segments from the curve, in meters, used by DeviationFromCurves."
+     },
+     "segmentLength": {
+      "type": "number",
+      "description": "The length of the segments, in meters, used by SegmentLength."
+     },
+     "traceMethod": {
+      "type": "string",
+      "enum": [
+       "Linear",
+       "BestMatch",
+       "Unknown"
+      ],
+      "description": "How curves are traced: Linear traces them with straight segments as set above, BestMatch with the curves that match them best. Unknown for a method this version of Tapir does not know."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "curveApproximation",
+     "segmentCount",
+     "maxDeviation",
+     "segmentLength",
+     "traceMethod"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetMagicWandSettingsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetMagicWandSettings.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetMagicWandSettings.py",
+    "description": "Prints the Magic Wand settings (how curves are approximated with segments, and the trace method) with GetMagicWandSettings.",
+    "code": "\"\"\"Prints the Magic Wand settings (how curves are approximated with segments, and the trace method) with GetMagicWandSettings.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetMagicWandSettings'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetMagicWandSettings"
+  },
+  {
+   "name": "ConvertImages",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Converts base64 encoded images from one image format to another with Archicad's own image converters, for example a PNG preview image to JPEG. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. The output is aligned with the input array of images. Changes nothing in the project.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "images": {
+      "type": "array",
+      "description": "The images to convert.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "image": {
+         "type": "string",
+         "description": "The base64 encoded image, for example a previewImage returned by GetElementPreviewImage."
+        },
+        "inputFormat": {
+         "type": "string",
+         "description": "The format of the image: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can read (for example image/x-targa)."
+        },
+        "outputFormat": {
+         "type": "string",
+         "description": "The format to convert the image to: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can write."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "image",
+        "inputFormat",
+        "outputFormat"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "images"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "images": {
+      "type": "array",
+      "description": "The converted images in the order of the input, or an error.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "image": {
+           "type": "string",
+           "description": "The base64 encoded converted image."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "image"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "images"
+    ]
+   },
+   "grasshopperComponents": [
+    "ConvertImagesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ConvertImages.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ConvertImages.py",
+    "description": "ConvertImages converts base64 encoded images with Archicad's own converters. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. Here the PNG preview image of an element is converted to JPEG, and to a MIME type format.",
+    "code": "\"\"\"ConvertImages converts base64 encoded images with Archicad's own converters. The formats are Bitmap, GIF,\nTIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. Here the PNG preview image\nof an element is converted to JPEG, and to a MIME type format.\n\"\"\"\nimport base64\nimport aclib\n\nelements = aclib.RunTapirCommand ('GetAllElements')['elements']\nif not elements:\n    print ('No elements in the project.')\n    raise SystemExit (0)\n\npreview = aclib.RunTapirCommand ('GetElementPreviewImage', {\n    'elementId': elements[0]['elementId'],\n    'imageType': '3D',\n    'format': 'png',\n    'width': 128,\n    'height': 128\n})\nif 'previewImage' not in preview:\n    print ('No preview image: {}'.format (preview))\n    raise SystemExit (0)\n\nresult = aclib.RunTapirCommand ('ConvertImages', {\n    'images': [\n        {'image': preview['previewImage'], 'inputFormat': 'PNG', 'outputFormat': 'JPEG'},\n        {'image': preview['previewImage'], 'inputFormat': 'image/png', 'outputFormat': 'image/tiff'},\n        {'image': 'bm90IGFuIGltYWdl', 'inputFormat': 'PNG', 'outputFormat': 'GIF'}\n    ]\n})\n\nfor converted in result['images']:\n    if 'error' in converted:\n        print ('Error: {}'.format (converted['error']['message']))\n        continue\n    data = base64.b64decode (converted['image'])\n    print ('{} bytes, starting with {}'.format (len (data), data[:4]))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ConvertImages"
+  },
+  {
+   "name": "GetCurrentWindowType",
+   "group": "Application Commands",
+   "version": "1.0.7",
+   "description": "Returns the type of the current (active) window and, when it has one, the databaseId of the database it shows, which ChangeWindow takes to bring the window back after a script switched to another one. The saved view (View Map item) the window was opened from is not returned, as Archicad does not tell which one it was.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "currentWindowType": {
+      "$ref": "#/WindowType"
+     },
+     "databaseId": {
+      "$ref": "#/DatabaseId",
+      "description": "The database shown in the current (active) window, the same id GetDatabases and GetContainingDatabases return. Pass it to ChangeWindow to bring this window back. Missing when the window has no database of its own that can be identified, for example a report, a rendering or a custom add-on window. The saved view (View Map item) the window was opened from is not returned: Archicad does not tell which one it was, and several saved views can show the same database."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "currentWindowType"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetCurrentWindowTypeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetCurrentWindowType.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCurrentWindowType.py",
+    "description": "Prints the type and the database id of the current window with GetCurrentWindowType.",
+    "code": "\"\"\"Prints the type and the database id of the current window with GetCurrentWindowType.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetCurrentWindowType'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCurrentWindowType"
+  },
+  {
+   "name": "GetCurrentWindowDrawingScale",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Returns the drawing scale of the current (active) window, the scale shown in the bottom bar, as its denominator: 100.0 for 1:100, 20.0 for 1:20. Unlike GetViewSettings it needs no saved view. It reads the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts always return 1.0.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "scale": {
+      "type": "number",
+      "description": "The denominator of the drawing scale of the current window: 100.0 for 1:100, 20.0 for 1:20. Always 1.0 for layouts."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "scale"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetCurrentWindowDrawingScaleComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetCurrentWindowDrawingScale.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCurrentWindowDrawingScale.py",
+    "description": "Prints the drawing scale of the current window (100.0 for 1:100) with GetCurrentWindowDrawingScale.",
+    "code": "\"\"\"Prints the drawing scale of the current window (100.0 for 1:100) with GetCurrentWindowDrawingScale.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetCurrentWindowDrawingScale'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCurrentWindowDrawingScale"
+  },
+  {
+   "name": "SetCurrentWindowDrawingScale",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Changes the drawing scale of the current (active) window, the scale shown in the bottom bar, to the given denominator: 100 for 1:100. It changes the scale of the current database: the floor plan, a section, elevation, interior elevation, detail, worksheet or 3D document window, each of which has its own. Layouts are always 1:1 and are rejected. The scale must be between 1 and 30000. The change is undoable.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "scale": {
+      "type": "number",
+      "description": "The denominator of the new drawing scale: 100 for 1:100, 20 for 1:20. Archicad accepts scales between 1 and 30000."
+     },
+     "rebuild": {
+      "type": "boolean",
+      "description": "Rebuild the window after the scale changed (the API's zoom flag). Default: false.",
+      "default": false
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "scale"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetCurrentWindowDrawingScaleComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/SetCurrentWindowDrawingScale.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/SetCurrentWindowDrawingScale.py",
+    "description": "Sets the drawing scale of the current window to 1:50 with SetCurrentWindowDrawingScale, then restores it. Needs a window other than a layout (layouts are always 1:1).",
+    "code": "\"\"\"Sets the drawing scale of the current window to 1:50 with SetCurrentWindowDrawingScale, then restores it.\n\nNeeds a window other than a layout (layouts are always 1:1).\n\"\"\"\nimport aclib\n\noriginalScale = aclib.RunTapirCommand ('GetCurrentWindowDrawingScale')['scale']\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': 50}))\naclib.RunTapirCommand ('GetCurrentWindowDrawingScale')\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCurrentWindowDrawingScale', {'scale': originalScale, 'rebuild': True}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetCurrentWindowDrawingScale"
+  },
+  {
+   "name": "ChangeWindow",
+   "group": "Application Commands",
+   "version": "1.3.1",
+   "description": "Changes the current (active) window to the given window. A databaseId on its own is enough; the window type is taken from the database. The databaseId of a worksheet or detail whose window was never opened opens its Project Map item instead (from Archicad 27). With windowType 'FloorPlan' and a storyIndex it also activates that story on the floor plan. windowType 'Report' on its own opens the Session Report window (from Archicad 26); its text cannot be read through the Archicad API.",
+   "inputSchema": {
+    "$ref": "#/NavigatorItemIdOrDatabaseIdAndWindowType"
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ChangeWindowComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ChangeWindow.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ChangeWindow.py",
+    "description": "Switches to the floor plan of the lowest story with ChangeWindow, then back to the window that was open.",
+    "code": "\"\"\"Switches to the floor plan of the lowest story with ChangeWindow, then back to the window that was open.\"\"\"\nimport aclib\n\ncurrent = aclib.RunTapirCommand ('GetCurrentWindowType')\nfirstStory = aclib.RunTapirCommand ('GetStories')['firstStory']\n\naclib.PrintJson (aclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan', 'storyIndex': firstStory}))\n\nif 'databaseId' in current:\n    aclib.PrintJson (aclib.RunTapirCommand ('ChangeWindow', {'databaseId': current['databaseId']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ChangeWindow"
+  },
+  {
+   "name": "GetContainingDatabases",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Returns the database (window type, database id and name) that contains each of the given elements, from any database, not only the current one. Pass the windowType and databaseId to ChangeWindow to open it, for example to find an element placed on a layout.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "databases": {
+      "type": "array",
+      "description": "The database of each element, in the order of the input elements. Pass windowType and databaseId to ChangeWindow to open it.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ContainingDatabase"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "databases"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetContainingDatabasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetContainingDatabases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetContainingDatabases.py",
+    "description": "Prints the database (window type, id and name) that contains each of the first two walls, with GetContainingDatabases. Needs at least one Wall.",
+    "code": "\"\"\"Prints the database (window type, id and name) that contains each of the first two walls, with GetContainingDatabases.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunCommand ('API.GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetContainingDatabases', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetContainingDatabases"
+  },
+  {
+   "name": "CloseWindows",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Closes the windows of the given databases (for example layouts, sections or details opened earlier with ChangeWindow), with one execution result per window; a window Archicad cannot close gets a failed result. Requires Archicad 27 or later.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "windows": {
+      "type": "array",
+      "description": "The windows to close.",
+      "items": {
+       "$ref": "#/WindowToClose"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "windows"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "CloseWindowsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/CloseWindows.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/CloseWindows.py",
+    "description": "Opens the first layout, goes back to the floor plan and closes the layout's window with CloseWindows. Needs at least one Layout. Requires Archicad 27 or later.",
+    "code": "\"\"\"Opens the first layout, goes back to the floor plan and closes the layout's window with CloseWindows.\n\nNeeds at least one Layout. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nlayouts = aclib.RunTapirCommand ('GetDatabases', {'types': ['Layout']})['databases']\nif not layouts:\n    raise SystemExit ('No layout in the project.')\nlayoutId = layouts[0]['databaseId']\n\naclib.RunTapirCommand ('ChangeWindow', {'databaseId': layoutId})\naclib.RunTapirCommand ('ChangeWindow', {'windowType': 'FloorPlan'})\n\naclib.PrintJson (aclib.RunTapirCommand ('CloseWindows', {\n    'windows': [\n        {'databaseId': layoutId, 'windowType': 'Layout'}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CloseWindows"
+  },
+  {
+   "name": "RebuildCurrentDatabase",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Rebuilds the current database, the one the API works on (see ChangeWindow). Requires Archicad 27 or later.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "RebuildCurrentDatabaseComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/RebuildCurrentDatabase.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/RebuildCurrentDatabase.py",
+    "description": "Rebuilds the current database with RebuildCurrentDatabase. Requires Archicad 27 or later.",
+    "code": "\"\"\"Rebuilds the current database with RebuildCurrentDatabase.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('RebuildCurrentDatabase'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RebuildCurrentDatabase"
+  },
+  {
+   "name": "DeleteGhostRecords",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Deletes the trace (ghost) record of each given parent database, which removes the trace reference shown in that database's window. A database without a trace reference gets a failed execution result. Not undoable.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "databases": {
+      "$ref": "#/Databases",
+      "description": "The parent databases whose trace (ghost) record is deleted, as returned by GetDatabaseIdFromNavigatorItemId or GetContainingDatabases."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "databases"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteGhostRecordsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/DeleteGhostRecords.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/DeleteGhostRecords.py",
+    "description": "Deletes the trace reference (ghost) of the first section with DeleteGhostRecords. Needs at least one Section; one without a trace reference gets a failed result. Not undoable.",
+    "code": "\"\"\"Deletes the trace reference (ghost) of the first section with DeleteGhostRecords.\n\nNeeds at least one Section; one without a trace reference gets a failed result. Not undoable.\n\"\"\"\nimport aclib\n\nsections = aclib.RunTapirCommand ('GetDatabases', {'types': ['Section']})['databases'][:1]\nif not sections:\n    raise SystemExit ('No section in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteGhostRecords', {\n    'databases': [{'databaseId': sections[0]['databaseId']}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteGhostRecords"
+  },
+  {
+   "name": "GetUserGSID",
+   "group": "Application Commands",
+   "version": "1.5.6",
+   "description": "Get the current registered User-GSID and OrganizationsID. Requires Archicad 27 or later.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "userId": {
+      "type": "string",
+      "description": "The stable GSID User ID of the logged-in user."
+     },
+     "organizationIds": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "The list of organization IDs the user belongs to. Empty if not part of any organization or if the information cannot be retrieved."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "userId"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetUserGSIDComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetUserGSID.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetUserGSID.py",
+    "description": "Prints the Graphisoft ID of the signed-in user and their organizations with GetUserGSID. Requires Archicad 27 or later.",
+    "code": "\"\"\"Prints the Graphisoft ID of the signed-in user and their organizations with GetUserGSID.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetUserGSID'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetUserGSID"
+  },
+  {
+   "name": "ShowAlert",
+   "group": "Application Commands",
+   "version": "1.5.6",
+   "description": "Display a dialog with up to three buttons.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "alertType": {
+      "type": "string",
+      "enum": [
+       "information",
+       "warning",
+       "error"
+      ],
+      "description": "The type of the alert dialog."
+     },
+     "title": {
+      "type": "string",
+      "description": "The title of the alert dialog."
+     },
+     "message": {
+      "type": "string",
+      "description": "The main message text."
+     },
+     "subMessage": {
+      "type": "string",
+      "description": "Optional smaller sub-message text below the main message."
+     },
+     "button1": {
+      "type": "string",
+      "description": "Label for the first (default) button."
+     },
+     "button2": {
+      "type": "string",
+      "description": "Label for the second button (e.g. Cancel)."
+     },
+     "button3": {
+      "type": "string",
+      "description": "Label for the optional third button."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "alertType",
+     "title",
+     "message",
+     "button1"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "clickedButton": {
+      "type": "integer",
+      "description": "Index of the button the user clicked: 1 = button1, 2 = button2, 3 = button3."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "clickedButton"
+    ]
+   },
+   "grasshopperComponents": [
+    "ShowAlertComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ShowAlert.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ShowAlert.py",
+    "description": "Shows a warning dialog with two buttons in Archicad with ShowAlert and prints which one was clicked. Waits until the user clicks a button.",
+    "code": "\"\"\"Shows a warning dialog with two buttons in Archicad with ShowAlert and prints which one was clicked.\n\nWaits until the user clicks a button.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('ShowAlert', {\n    'alertType': 'warning',\n    'title': 'Tapir',\n    'message': 'Some elements will be modified.',\n    'subMessage': 'Click Continue to go on.',\n    'button1': 'Continue',\n    'button2': 'Cancel'\n})\n\nprint ('Continue' if result['clickedButton'] == 1 else 'Cancel')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ShowAlert"
+  },
+  {
+   "name": "ShowNotificationBubble",
+   "group": "Application Commands",
+   "version": "2.0.0",
+   "description": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Optionally it gets a large icon, is shown at most a given number of times, or is turned off, until the user runs 'Enable all informational messages'. Returns the bubble's settings read back from Archicad. Requires Archicad 29 or later.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "message": {
+      "type": "string",
+      "description": "The text of the notification bubble.",
+      "minLength": 1
+     },
+     "icon": {
+      "type": "string",
+      "enum": [
+       "none",
+       "information",
+       "warning",
+       "error"
+      ],
+      "description": "The icon shown in the bubble. Default: information."
+     },
+     "timeoutMilliseconds": {
+      "type": "integer",
+      "description": "How long the bubble stays, in milliseconds. Default: Archicad's default, 1000 (1 second).",
+      "minimum": 1,
+      "maximum": 4294967295
+     },
+     "coordinate": {
+      "$ref": "#/Coordinate3D",
+      "description": "The model coordinate in the current database (meters) where the bubble is shown, converted like ModelToScreen does: in a 3D window it is projected with the current camera, in other windows z is disregarded. Do not give it together with screenPoint. When neither is given, the bubble is shown at the center of the current view in 2D windows and at the project's local origin otherwise."
+     },
+     "screenPoint": {
+      "type": "object",
+      "description": "The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.",
+      "properties": {
+       "h": {
+        "type": "integer",
+        "description": "Horizontal pixel position from the left edge of the view window.",
+        "minimum": -32768,
+        "maximum": 32767
+       },
+       "v": {
+        "type": "integer",
+        "description": "Vertical pixel position from the top edge of the view window.",
+        "minimum": -32768,
+        "maximum": 32767
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "h",
+       "v"
+      ]
+     },
+     "offset": {
+      "type": "object",
+      "description": "Moves the bubble from its position by this many pixels.",
+      "properties": {
+       "h": {
+        "type": "integer",
+        "description": "Horizontal offset in pixels, positive to the right.",
+        "minimum": -32768,
+        "maximum": 32767
+       },
+       "v": {
+        "type": "integer",
+        "description": "Vertical offset in pixels, positive downwards.",
+        "minimum": -32768,
+        "maximum": 32767
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "h",
+       "v"
+      ]
+     },
+     "largeIcon": {
+      "type": "string",
+      "enum": [
+       "information",
+       "warning",
+       "error"
+      ],
+      "description": "The icon shown instead of icon when the \"Use large alert cues\" option is on in Work Environment. Not set by default."
+     },
+     "redrawCountLimit": {
+      "type": "integer",
+      "description": "Shows the bubble at most this many times. After that it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. Not set by default.",
+      "minimum": 1,
+      "maximum": 4294967295
+     },
+     "disabled": {
+      "type": "boolean",
+      "description": "True turns the bubble off instead of showing it: it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. False (the default) changes nothing."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "message"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "description": "The settings of the bubble after the call, read back from Archicad.",
+    "properties": {
+     "text": {
+      "type": "string",
+      "description": "The text of the bubble. Missing when it has none."
+     },
+     "icon": {
+      "type": "string",
+      "enum": [
+       "none",
+       "information",
+       "warning",
+       "error",
+       "other"
+      ],
+      "description": "The icon of the bubble."
+     },
+     "largeIcon": {
+      "type": "string",
+      "enum": [
+       "none",
+       "information",
+       "warning",
+       "error",
+       "other"
+      ],
+      "description": "The icon shown when the \"Use large alert cues\" option is on in Work Environment."
+     },
+     "offset": {
+      "type": "object",
+      "description": "The offset of the bubble from its position, in pixels.",
+      "properties": {
+       "h": {
+        "type": "integer"
+       },
+       "v": {
+        "type": "integer"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "h",
+       "v"
+      ]
+     },
+     "timeoutMilliseconds": {
+      "type": "integer",
+      "description": "How long the bubble stays, in milliseconds."
+     },
+     "redrawCountLimit": {
+      "type": "integer",
+      "description": "How many times the bubble is shown at most. Missing when it has no limit."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "icon",
+     "largeIcon",
+     "offset",
+     "timeoutMilliseconds"
+    ]
+   },
+   "grasshopperComponents": [
+    "ShowNotificationBubbleComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/ShowNotificationBubble.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ShowNotificationBubble.py",
+    "description": "Shows a non-blocking notification bubble in Archicad with ShowNotificationBubble and prints the bubble's settings. Unlike ShowAlert, the script and the user go on at once; the bubble disappears after the timeout. Without a coordinate or screenPoint it is shown at the center of the current 2D view. largeIcon is used when \"Use large alert cues\" is on in Work Environment. The response is the bubble's text, icons, offset, timeout and redraw count limit as Archicad reports them. redrawCountLimit and disabled (not used here) stop the bubble from appearing until the user runs 'Enable all informational messages'. Requires Archicad 29 or later.",
+    "code": "\"\"\"Shows a non-blocking notification bubble in Archicad with ShowNotificationBubble and prints the bubble's settings.\n\nUnlike ShowAlert, the script and the user go on at once; the bubble disappears after the timeout.\nWithout a coordinate or screenPoint it is shown at the center of the current 2D view. largeIcon is used\nwhen \"Use large alert cues\" is on in Work Environment. The response is the bubble's text, icons, offset,\ntimeout and redraw count limit as Archicad reports them. redrawCountLimit and disabled (not used here)\nstop the bubble from appearing until the user runs 'Enable all informational messages'.\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('ShowNotificationBubble', {\n    'message': 'Tapir: the script has finished.',\n    'icon': 'information',\n    'timeoutMilliseconds': 3000,\n    'largeIcon': 'information'\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ShowNotificationBubble"
+  },
+  {
+   "name": "GetSpecialFolders",
+   "group": "Application Commands",
+   "version": "1.5.6",
+   "description": "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "folderTypes": {
+      "type": "array",
+      "description": "The types of the special folders to retrieve.",
+      "items": {
+       "$ref": "#/SpecialFolderType"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folderTypes"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "folderPaths": {
+      "$ref": "#/SpecialFolderPathsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "folderPaths"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetSpecialFoldersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetSpecialFolders.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetSpecialFolders.py",
+    "description": "Prints the paths of Archicad's preferences, temporary and templates folders with GetSpecialFolders.",
+    "code": "\"\"\"Prints the paths of Archicad's preferences, temporary and templates folders with GetSpecialFolders.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetSpecialFolders', {\n    'folderTypes': ['ApplicationPrefs', 'Temporary', 'Templates']\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetSpecialFolders"
+  },
+  {
+   "name": "GetEditModeState",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Tells whether Archicad is in a hierarchical editing mode (curtain wall, stair, beam or column editing), and which element is being edited. Read only: it never enters, leaves or cancels an editing mode. Commands that modify the project can fail while such a mode is active. The overall inEditMode flag requires Archicad 29 or later; the command requires Archicad 27 or later.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "inEditMode": {
+      "type": "boolean",
+      "description": "True when Archicad is in any hierarchical editing mode (curtain wall, stair, railing, beam, column, MEP elements, etc.). Only returned from Archicad 29."
+     },
+     "curtainWall": {
+      "$ref": "#/EditModeStateItem",
+      "description": "Curtain wall editing mode."
+     },
+     "stair": {
+      "$ref": "#/EditModeStateItem",
+      "description": "Stair editing mode."
+     },
+     "beam": {
+      "$ref": "#/EditModeStateItem",
+      "description": "Beam editing mode."
+     },
+     "column": {
+      "$ref": "#/EditModeStateItem",
+      "description": "Column editing mode."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "curtainWall",
+     "stair",
+     "beam",
+     "column"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetEditModeStateComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetEditModeState.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetEditModeState.py",
+    "description": "Prints whether Archicad is in curtain wall, stair, beam or column editing mode with GetEditModeState. Requires Archicad 27 or later (the overall inEditMode flag needs Archicad 29).",
+    "code": "\"\"\"Prints whether Archicad is in curtain wall, stair, beam or column editing mode with GetEditModeState.\n\nRequires Archicad 27 or later (the overall inEditMode flag needs Archicad 29).\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetEditModeState'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetEditModeState"
+  },
+  {
+   "name": "GetArchicadVisibility",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Returns whether the Archicad application is shown or hidden. Supported on Windows only; on macOS it returns an error.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "isVisible": {
+      "type": "boolean",
+      "description": "True when the Archicad application is shown, false when it is hidden."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "isVisible"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetArchicadVisibilityComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetArchicadVisibility.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadVisibility.py",
+    "description": "Prints whether the Archicad application is shown or hidden with GetArchicadVisibility. Windows only; on macOS it returns an error.",
+    "code": "\"\"\"Prints whether the Archicad application is shown or hidden with GetArchicadVisibility.\n\nWindows only; on macOS it returns an error.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetArchicadVisibility'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetArchicadVisibility"
+  },
+  {
+   "name": "SetArchicadVisibility",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Hides or shows the Archicad application, e.g. to keep it out of the way while a batch runs. A script that hides Archicad must show it again, also when the script fails (e.g. in a finally block). Supported on Windows only; on macOS it returns an error.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "isVisible": {
+      "type": "boolean",
+      "description": "True shows the Archicad application, false hides it."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "isVisible"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetArchicadVisibilityComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/SetArchicadVisibility.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/SetArchicadVisibility.py",
+    "description": "Hides Archicad for two seconds with SetArchicadVisibility, then shows it again. Windows only; on macOS it returns an error.",
+    "code": "\"\"\"Hides Archicad for two seconds with SetArchicadVisibility, then shows it again.\n\nWindows only; on macOS it returns an error.\n\"\"\"\nimport time\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': False}))\naclib.RunTapirCommand ('GetArchicadVisibility')\ntime.sleep (2)\n\naclib.PrintJson (aclib.RunTapirCommand ('SetArchicadVisibility', {'isVisible': True}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetArchicadVisibility"
+  },
+  {
+   "name": "RunActionCenterChecks",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Runs the given checks of the Action Center (by default the hotlink check). A successful result means the check ran, not that nothing was found: Archicad does not report the outcome to the caller, it shows the Action Center tab when the check found an issue.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "checks": {
+      "type": "array",
+      "description": "The Action Center checks to run, in this order. Omitted means [\"Hotlinks\"]. \"Hotlinks\" is available on every Archicad version; \"All\", \"Libraries\", \"Drawings\" and \"Licenses\" only on Archicad 25, later versions return an error for them in their execution result.",
+      "items": {
+       "$ref": "#/ActionCenterCheck"
+      },
+      "minItems": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RunActionCenterChecksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/RunActionCenterChecks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/RunActionCenterChecks.py",
+    "description": "Runs the hotlink and library checks of the Action Center with RunActionCenterChecks. Archicad shows the Action Center tab when a check finds an issue; the result only says the check ran.",
+    "code": "\"\"\"Runs the hotlink and library checks of the Action Center with RunActionCenterChecks.\n\nArchicad shows the Action Center tab when a check finds an issue; the result only says the check ran.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('RunActionCenterChecks', {'checks': ['Hotlinks', 'Libraries']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RunActionCenterChecks"
+  },
+  {
+   "name": "RedrawCurrentDatabase",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Redraws the current database, even when its window is in the background. Only the visible region of its window is updated.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "RedrawCurrentDatabaseComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/RedrawCurrentDatabase.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/RedrawCurrentDatabase.py",
+    "description": "Redraws the current database with RedrawCurrentDatabase.",
+    "code": "\"\"\"Redraws the current database with RedrawCurrentDatabase.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('RedrawCurrentDatabase'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RedrawCurrentDatabase"
+  },
+  {
+   "name": "GetProductVersionInfo",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Retrieves the version information of the running Archicad: build number, language code, product family and version text, plus the product name, product type, main/update/hotfix versions, the available domains (Architecture, MEP) and the CEIP project identifier of the open project from Archicad 29. Requires Archicad 28 or later.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "productName": {
+      "type": "string",
+      "description": "The name of the product. Archicad 29 or later."
+     },
+     "productType": {
+      "type": "string",
+      "description": "The Graphisoft product type. Archicad 29 or later."
+     },
+     "productFamilyId": {
+      "type": "string",
+      "description": "The identifier of the product family."
+     },
+     "languageCode": {
+      "type": "string",
+      "description": "The Graphisoft language code of the running Archicad (for example INT, GER)."
+     },
+     "buildNumber": {
+      "type": "integer",
+      "description": "The build number of the running Archicad."
+     },
+     "versionString": {
+      "type": "string",
+      "description": "The full version of the running Archicad as text."
+     },
+     "mainVersion": {
+      "type": "string",
+      "description": "The main version, as text. Archicad 29 or later."
+     },
+     "updateVersion": {
+      "type": "string",
+      "description": "The update version, as text. Archicad 29 or later."
+     },
+     "hotfixVersion": {
+      "type": "string",
+      "description": "The hotfix version, as text. Archicad 29 or later."
+     },
+     "versionNumbers": {
+      "type": "array",
+      "items": {
+       "type": "integer"
+      },
+      "description": "The three parts of the version number. Archicad 28 only."
+     },
+     "availableDomains": {
+      "type": "array",
+      "items": {
+       "$ref": "#/ProductDomain"
+      },
+      "description": "The domains available in the running Archicad. Archicad 29 or later."
+     },
+     "ceipProjectId": {
+      "type": "string",
+      "description": "The CEIP project identifier of the open project. Left out when no saved project is open. Archicad 29 or later."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "productFamilyId",
+     "languageCode",
+     "buildNumber",
+     "versionString"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetProductVersionInfoComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetProductVersionInfo.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetProductVersionInfo.py",
+    "description": "Prints the build number, language, product name and version of the running Archicad with GetProductVersionInfo. Requires Archicad 28 or later.",
+    "code": "\"\"\"Prints the build number, language, product name and version of the running Archicad with GetProductVersionInfo.\n\nRequires Archicad 28 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetProductVersionInfo'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetProductVersionInfo"
+  },
+  {
+   "name": "Get3DCutawayStatus",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Returns whether 3D Cutaway is on and whether the cutting planes are shown in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cutawayEnabled": {
+      "type": "boolean",
+      "description": "Whether 3D Cutaway is on in the 3D window."
+     },
+     "cuttingPlanesVisible": {
+      "type": "boolean",
+      "description": "Whether the cutting planes are shown in the 3D window."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cutawayEnabled",
+     "cuttingPlanesVisible"
+    ]
+   },
+   "grasshopperComponents": [
+    "Get3DCutawayStatusComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/Get3DCutawayStatus.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/Get3DCutawayStatus.py",
+    "description": "Prints whether 3D Cutaway is on and the cutting planes are shown, with Get3DCutawayStatus. In Archicad 25-27 the 3D window may need to be open.",
+    "code": "\"\"\"Prints whether 3D Cutaway is on and the cutting planes are shown, with Get3DCutawayStatus.\n\nIn Archicad 25-27 the 3D window may need to be open.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('Get3DCutawayStatus'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#Get3DCutawayStatus"
+  },
+  {
+   "name": "Set3DCutawayStatus",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Turns 3D Cutaway on or off and shows or hides the cutting planes in the 3D window. In Archicad 25-27 the 3D window may need to be open.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "cutawayEnabled": {
+      "type": "boolean",
+      "description": "Turns 3D Cutaway on or off. Left unchanged when omitted."
+     },
+     "cuttingPlanesVisible": {
+      "type": "boolean",
+      "description": "Shows or hides the cutting planes. Left unchanged when omitted."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "Set3DCutawayStatusComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/Set3DCutawayStatus.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/Set3DCutawayStatus.py",
+    "description": "Turns 3D Cutaway on with Set3DCutawayStatus, reads it back, then restores the original state. In Archicad 25-27 the 3D window may need to be open.",
+    "code": "\"\"\"Turns 3D Cutaway on with Set3DCutawayStatus, reads it back, then restores the original state.\n\nIn Archicad 25-27 the 3D window may need to be open.\n\"\"\"\nimport aclib\n\noriginal = aclib.RunTapirCommand ('Get3DCutawayStatus')\n\naclib.PrintJson (aclib.RunTapirCommand ('Set3DCutawayStatus', {'cutawayEnabled': True, 'cuttingPlanesVisible': True}))\naclib.RunTapirCommand ('Get3DCutawayStatus')\n\naclib.PrintJson (aclib.RunTapirCommand ('Set3DCutawayStatus', {\n    'cutawayEnabled': original['cutawayEnabled'],\n    'cuttingPlanesVisible': original['cuttingPlanesVisible']\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#Set3DCutawayStatus"
+  },
+  {
+   "name": "SetDialogAutoClose",
+   "group": "Application Commands",
+   "version": "1.7.3",
+   "description": "Turns the dialog auto close on or off. While it is on, Archicad closes the dialogs it would show with their default button instead of waiting for the user, so automation is not blocked by them. To have it on already while Archicad opens a project (before any command can be sent), set the TAPIR_DIALOG_AUTOCLOSE environment variable to true for the Archicad process before starting it.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "enabled": {
+      "type": "boolean",
+      "description": "True turns the dialog auto close on: Archicad closes the dialogs it would show with their default button instead of waiting for the user. False turns it off."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "enabled"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetDialogAutoCloseComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/SetDialogAutoClose.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/SetDialogAutoClose.py",
+    "description": "Turns the dialog auto close on with SetDialogAutoClose, reads it back, then restores the original state. While it is on, Archicad closes its dialogs with their default button instead of waiting for the user.",
+    "code": "\"\"\"Turns the dialog auto close on with SetDialogAutoClose, reads it back, then restores the original state.\n\nWhile it is on, Archicad closes its dialogs with their default button instead of waiting for the user.\n\"\"\"\nimport aclib\n\noriginal = aclib.RunTapirCommand ('GetDialogAutoClose')['enabled']\n\naclib.PrintJson (aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': True}))\naclib.RunTapirCommand ('GetDialogAutoClose')\n\naclib.PrintJson (aclib.RunTapirCommand ('SetDialogAutoClose', {'enabled': original}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetDialogAutoClose"
+  },
+  {
+   "name": "GetDialogAutoClose",
+   "group": "Application Commands",
+   "version": "1.8.0",
+   "description": "Tells whether the dialog auto close is on, the same state SetDialogAutoClose writes, so a script can restore it afterwards. The state belongs to the running Archicad process: it is off when Archicad starts (unless the TAPIR_DIALOG_AUTOCLOSE environment variable is true), it stays as last set until Archicad quits, and it is shared by every add-on and script in that Archicad.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "enabled": {
+      "type": "boolean",
+      "description": "Whether the dialog auto close is on: true while Archicad closes the dialogs it would show with their default button instead of waiting for the user. This is the same state SetDialogAutoClose writes."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "enabled"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDialogAutoCloseComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Application/GetDialogAutoClose.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetDialogAutoClose.py",
+    "description": "Prints whether the dialog auto close is on with GetDialogAutoClose.",
+    "code": "\"\"\"Prints whether the dialog auto close is on with GetDialogAutoClose.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetDialogAutoClose'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDialogAutoClose"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "EditModeStateItem": {
+   "type": "object",
+   "description": "The state of one hierarchical editing mode.",
+   "properties": {
+    "inEditMode": {
+     "type": "boolean",
+     "description": "True when Archicad is in this editing mode."
+    },
+    "elementId": {
+     "$ref": "#/ElementId",
+     "description": "The element being edited. Only returned when inEditMode is true and Archicad reports the edited element."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "inEditMode"
+   ]
+  },
+  "PrinterInfo": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the selected printer."
+    },
+    "portrait": {
+     "type": "boolean",
+     "description": "The selected orientation: true for portrait, false for landscape."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "portrait"
+   ]
+  },
+  "PlotterInfo": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the selected plotter."
+    },
+    "model": {
+     "type": "string",
+     "description": "The model of the selected plotter."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "model"
+   ]
+  },
+  "WindowToClose": {
+   "type": "object",
+   "properties": {
+    "databaseId": {
+     "$ref": "#/DatabaseId",
+     "description": "The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it."
+    },
+    "windowType": {
+     "$ref": "#/WindowType",
+     "description": "Optional. When given, the window is only closed when its database is of this type."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "databaseId"
+   ]
+  },
+  "ActionCenterCheck": {
+   "type": "string",
+   "enum": [
+    "Hotlinks",
+    "All",
+    "Libraries",
+    "Drawings",
+    "Licenses"
+   ]
+  },
+  "ProductDomain": {
+   "type": "string",
+   "enum": [
+    "Architecture",
+    "MEP"
+   ]
+  },
+  "PolygonInputMethod": {
+   "type": "string",
+   "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
+   "enum": [
+    "General",
+    "Rect",
+    "RotRect",
+    "Polyline"
+   ],
+   "default": "General"
+  },
+  "ScreenPoint": {
+   "type": "object",
+   "properties": {
+    "h": {
+     "type": "integer",
+     "description": "Horizontal pixel position from the left edge of the view window."
+    },
+    "v": {
+     "type": "integer",
+     "description": "Vertical pixel position from the top edge of the view window."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "h",
+    "v"
+   ]
+  },
+  "ScreenPointInput": {
+   "type": "object",
+   "properties": {
+    "h": {
+     "type": "integer",
+     "description": "Horizontal pixel position from the left edge of the view window.",
+     "minimum": -32768,
+     "maximum": 32767
+    },
+    "v": {
+     "type": "integer",
+     "description": "Vertical pixel position from the top edge of the view window.",
+     "minimum": -32768,
+     "maximum": 32767
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "h",
+    "v"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "PolyArc": {
+   "type": "object",
+   "description": "Representation of an arc segment of a two dimensional polygon/polyline.",
+   "properties": {
+    "begIndex": {
+     "type": "integer",
+     "description": "Node index of one end point of the arc."
+    },
+    "endIndex": {
+     "type": "integer",
+     "description": "Node index of the other end point of the arc."
+    },
+    "arcAngle": {
+     "type": "number",
+     "description": "Angle of the arc; it is positive, if the arc is on the right-hand side of the straight segment."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "begIndex",
+    "endIndex",
+    "arcAngle"
+   ]
+  },
+  "SnapFilter": {
+   "type": "object",
+   "description": "Which points and lines of the elements the cursor snaps to while the designer clicks (Archicad's neig filter). Without it, the cursor snaps as usual.",
+   "properties": {
+    "base": {
+     "type": "string",
+     "description": "What the cursor snaps to before include and exclude are applied: All = everything, None = nothing, Edges = only the lines and edges of the elements, Nodes = only their points (end points, vertices, hotspots). Default: None when include is given, otherwise All.",
+     "enum": [
+      "All",
+      "None",
+      "Edges",
+      "Nodes"
+     ]
+    },
+    "include": {
+     "type": "array",
+     "description": "The cursor also snaps to these.",
+     "items": {
+      "$ref": "#/SnapType"
+     }
+    },
+    "exclude": {
+     "type": "array",
+     "description": "The cursor does not snap to these. Applied after include.",
+     "items": {
+      "$ref": "#/SnapType"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": []
+  },
+  "SnapType": {
+   "type": "string",
+   "description": "A kind of point or line the cursor can snap to. An element type name means the element's points (end points, vertices, corners, hotspots); with On it means its lines and edges (for walls the reference line). Hotspot is a hotspot element, Text the corners of a text, Label the points of a label, Dimension a dimension point and DimensionOn the dimension line.",
+   "enum": [
+    "Wall",
+    "WallOn",
+    "Column",
+    "ColumnOn",
+    "Beam",
+    "BeamOn",
+    "Window",
+    "WindowOn",
+    "Door",
+    "DoorOn",
+    "Object",
+    "ObjectOn",
+    "Slab",
+    "SlabOn",
+    "Roof",
+    "RoofOn",
+    "Mesh",
+    "MeshOn",
+    "Shell",
+    "ShellOn",
+    "Morph",
+    "MorphOn",
+    "Skylight",
+    "SkylightOn",
+    "CurtainWall",
+    "CurtainWallOn",
+    "Stair",
+    "StairOn",
+    "Railing",
+    "RailingOn",
+    "Zone",
+    "ZoneOn",
+    "Hatch",
+    "HatchOn",
+    "Line",
+    "LineOn",
+    "PolyLine",
+    "PolyLineOn",
+    "Arc",
+    "ArcOn",
+    "Circle",
+    "CircleOn",
+    "Spline",
+    "SplineOn",
+    "Hotspot",
+    "Text",
+    "Label",
+    "Dimension",
+    "DimensionOn"
+   ]
+  },
+  "InputConstraint": {
+   "type": "object",
+   "description": "Archicad's drawing constraint for the clicks of a Get...FromUser command: the cursor can only move along it, as when a coordinate is locked in the Tracker. It is dissolved when the command returns, also on Escape and on errors.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "description": "What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).",
+     "enum": [
+      "X",
+      "Y",
+      "Z",
+      "Angle",
+      "Distance"
+     ]
+    },
+    "value": {
+     "type": "number",
+     "description": "The fixed value: a coordinate or distance in meters, or for Angle an angle in radians, counterclockwise from the X axis."
+    },
+    "fromLastPoint": {
+     "type": "boolean",
+     "description": "If true, the value is measured from the last clicked point (Archicad's local origin), otherwise from the project origin.",
+     "default": false
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "value"
+   ]
+  },
+  "Coordinate2D": {
+   "type": "object",
+   "description": "2D coordinate.",
+   "properties": {
+    "x": {
+     "type": "number",
+     "description": "X value of the coordinate."
+    },
+    "y": {
+     "type": "number",
+     "description": "Y value of the coordinate."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "x",
+    "y"
+   ]
+  },
+  "Coordinate3D": {
+   "type": "object",
+   "description": "3D coordinate.",
+   "properties": {
+    "x": {
+     "type": "number",
+     "description": "X value of the coordinate."
+    },
+    "y": {
+     "type": "number",
+     "description": "Y value of the coordinate."
+    },
+    "z": {
+     "type": "number",
+     "description": "Z value of the coordinate."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "x",
+    "y",
+    "z"
+   ]
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "ElementType": {
+   "type": "string",
+   "description": "The type of an element.",
+   "enum": [
+    "Wall",
+    "Column",
+    "Beam",
+    "Window",
+    "Door",
+    "Object",
+    "Lamp",
+    "Slab",
+    "Roof",
+    "Mesh",
+    "Dimension",
+    "RadialDimension",
+    "LevelDimension",
+    "AngleDimension",
+    "Text",
+    "Label",
+    "Zone",
+    "Hatch",
+    "Line",
+    "PolyLine",
+    "Arc",
+    "Circle",
+    "Spline",
+    "Hotspot",
+    "CutPlane",
+    "Camera",
+    "CamSet",
+    "Group",
+    "SectElem",
+    "Drawing",
+    "Picture",
+    "Detail",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Hotlink",
+    "CurtainWall",
+    "CurtainWallSegment",
+    "CurtainWallFrame",
+    "CurtainWallPanel",
+    "CurtainWallJunction",
+    "CurtainWallAccessory",
+    "Shell",
+    "Skylight",
+    "Morph",
+    "ChangeMarker",
+    "Stair",
+    "Riser",
+    "Tread",
+    "StairStructure",
+    "Railing",
+    "RailingToprail",
+    "RailingHandrail",
+    "RailingRail",
+    "RailingPost",
+    "RailingInnerPost",
+    "RailingBaluster",
+    "RailingPanel",
+    "RailingSegment",
+    "RailingNode",
+    "RailingBalusterSet",
+    "RailingPattern",
+    "RailingToprailEnd",
+    "RailingHandrailEnd",
+    "RailingRailEnd",
+    "RailingToprailConnection",
+    "RailingHandrailConnection",
+    "RailingRailConnection",
+    "RailingEndFinish",
+    "BeamSegment",
+    "ColumnSegment",
+    "Opening",
+    "Unknown"
+   ]
+  },
+  "WindowType": {
+   "type": "string",
+   "description": "The type of a window.",
+   "enum": [
+    "FloorPlan",
+    "Section",
+    "Details",
+    "3DModel",
+    "Layout",
+    "Drawing",
+    "CustomText",
+    "CustomDraw",
+    "MasterLayout",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Report",
+    "3DDocument",
+    "External3D",
+    "Movie3D",
+    "MovieRendering",
+    "Rendering",
+    "ModelCompare",
+    "Interactive Schedule",
+    "Unknown"
+   ]
+  },
+  "NavigatorItemIdOrDatabaseIdAndWindowType": {
+   "description": "Identifies the window to change to. Either a navigatorItemId on its own (the navigator item's saved view settings are applied), or a windowType optionally narrowed to a specific databaseId, or a databaseId on its own (its window type is resolved automatically).",
+   "oneOf": [
+    {
+     "$ref": "#/NavigatorItemIdArrayItem"
+    },
+    {
+     "$ref": "#/DatabaseIdAndWindowType"
+    }
+   ]
+  },
+  "DatabaseIdAndWindowType": {
+   "anyOf": [
+    {
+     "$ref": "#/DatabaseByWindowType"
+    },
+    {
+     "$ref": "#/DatabaseById"
+    }
+   ]
+  },
+  "NavigatorItemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "navigatorItemId": {
+     "$ref": "#/NavigatorItemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "navigatorItemId"
+   ]
+  },
+  "NavigatorItemId": {
+   "type": "object",
+   "description": "The identifier of a navigator item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Databases": {
+   "type": "array",
+   "description": "A list of Archicad databases.",
+   "items": {
+    "$ref": "#/DatabaseIdArrayItem"
+   }
+  },
+  "DatabaseIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "databaseId": {
+     "$ref": "#/DatabaseId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "databaseId"
+   ]
+  },
+  "DatabaseId": {
+   "type": "object",
+   "description": "The identifier of a database",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "SpecialFolderType": {
+   "type": "string",
+   "description": "The type of a special folder of the running Archicad.",
+   "enum": [
+    "ApplicationPrefs",
+    "GraphisoftPrefs",
+    "GraphisoftHome",
+    "Cache",
+    "Data",
+    "UserDocuments",
+    "Temporary",
+    "Application",
+    "Defaults",
+    "WebObjects",
+    "Templates",
+    "Help",
+    "EmbeddedProjectLibrary",
+    "EmbeddedProjectLibraryHotlink",
+    "ProjectPreviews"
+   ]
+  },
+  "SpecialFolderPath": {
+   "type": "object",
+   "properties": {
+    "path": {
+     "type": "string",
+     "description": "The path of the special folder in the filesystem."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "path"
+   ]
+  },
+  "SpecialFolderPathOrError": {
+   "type": "object",
+   "description": "The path of a special folder or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/SpecialFolderPath"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "SpecialFolderPathsOrErrors": {
+   "type": "array",
+   "description": "A list of special folder paths or errors.",
+   "items": {
+    "$ref": "#/SpecialFolderPathOrError"
+   }
+  },
+  "PrinterPrintArea": {
+   "type": "string",
+   "description": "The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.",
+   "enum": [
+    "currentView",
+    "entireDrawing",
+    "marquee",
+    "unknown"
+   ]
+  },
+  "DatabaseByWindowType": {
+   "type": "object",
+   "properties": {
+    "windowType": {
+     "$ref": "#/WindowType"
+    },
+    "databaseId": {
+     "$ref": "#/DatabaseId",
+     "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
+    },
+    "storyIndex": {
+     "type": "integer",
+     "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "windowType"
+   ],
+   "description": "Selects a database by window type; a database ID may also be supplied."
+  },
+  "DatabaseById": {
+   "type": "object",
+   "properties": {
+    "windowType": {
+     "$ref": "#/WindowType"
+    },
+    "databaseId": {
+     "$ref": "#/DatabaseId",
+     "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
+    },
+    "storyIndex": {
+     "type": "integer",
+     "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "databaseId"
+   ],
+   "description": "Selects a database by ID; a window type may also be supplied."
+  },
+  "ContainingDatabase": {
+   "type": "object",
+   "properties": {
+    "databaseId": {
+     "$ref": "#/DatabaseId"
+    },
+    "windowType": {
+     "$ref": "#/WindowType"
+    },
+    "name": {
+     "type": "string",
+     "description": "The name of the database (for example the name of the layout). Empty for databases without a name, like the floor plan."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "databaseId",
+    "windowType",
+    "name"
+   ]
+  }
+ }
+}

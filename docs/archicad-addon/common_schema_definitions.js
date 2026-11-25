@@ -174,6 +174,22 @@ var gSchemaDefinitions = {
             }
         ]
     },
+    "ElementTrimPair": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "trimmingElementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "trimmingElementId"
+        ]
+    },
     "MergedElements": {
         "type": "object",
         "description": "The elements merged with one element.",
@@ -371,6 +387,13 @@ var gSchemaDefinitions = {
                 "type": "array",
                 "items": {
                     "$ref": "#/MEPRoutingNodeDetails"
+                }
+            },
+            "nodePositions": {
+                "type": "array",
+                "description": "The position of every node, in the order of nodes: the key ModifyMEPRoutingElements writes the node positions with, so they can be sent back. The other settings ModifyMEPRoutingElements applies to all segments or all nodes are read per segment (segments) and per node (nodes), with the same keys.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
                 }
             }
         },
@@ -1248,6 +1271,11 @@ var gSchemaDefinitions = {
             "modelViewOptions": {
                 "type": "object",
                 "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions"
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
@@ -1264,16 +1292,42 @@ var gSchemaDefinitions = {
     },
     "ViewOptionsUpdate": {
         "type": "object",
-        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.",
+        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well. The options are read back, and a given field Archicad did not keep fails the call with the value it kept.",
         "properties": {
             "modelViewOptions": {
                 "type": "object",
+                "properties": {
+                    "railing": {
+                        "$ref": "#/RailingModelViewOptions",
+                        "description": "The railing options to change; the ones left out keep their value. Archicad 29 does not keep the railing2DDisplayComp* fields, which SetViewOptions then reports."
+                    }
+                },
                 "additionalProperties": true
             },
             "onScreenViewOptions": {
                 "type": "object",
                 "additionalProperties": true
             }
+        },
+        "additionalProperties": false
+    },
+    "RailingModelViewOptions": {
+        "type": "object",
+        "description": "The railing options of the model view options (API_RailingModelViewOptions; Model View Options > Railing Options), every field by its API name: the railing components shown in the floor plan and the schematic 3D display. GetViewOptions and GetModelViewOptionDetails return all of them; SetViewOptions takes any of them and reads them back. Archicad 29 does not keep the railing2DDisplayComp* fields changed through ACAPI_Navigator_ChangeViewOptions, so SetViewOptions reports such a change as not kept.",
+        "properties": {
+            "railing3DDetailLevel": { "type": "integer", "description": "The detail level of railings in the 3D display, the numeric API constant." },
+            "railing2DDisplayCompPosts": { "type": "boolean", "description": "Whether the posts are shown in the floor plan." },
+            "railing2DDisplayCompTopRail": { "type": "boolean", "description": "Whether the top rails are shown in the floor plan." },
+            "railing2DDisplayCompHandrails": { "type": "boolean", "description": "Whether the handrails are shown in the floor plan." },
+            "railing2DDisplayCompRails": { "type": "boolean", "description": "Whether the rails are shown in the floor plan." },
+            "railing2DDisplayCompInnerPosts": { "type": "boolean", "description": "Whether the inner posts are shown in the floor plan." },
+            "railing2DDisplayCompBalusters": { "type": "boolean", "description": "Whether the balusters are shown in the floor plan." },
+            "railing2DDisplayCompPanels": { "type": "boolean", "description": "Whether the panels are shown in the floor plan." },
+            "railingSchemeSurfaceIndex": { "type": "integer", "description": "The index of the surface used by the schematic 3D display." },
+            "railingSchemeCutLineIndex": { "type": "integer", "description": "The index of the line type of the cut lines of the schematic 3D display." },
+            "railingSchemeCutLinePenIndex": { "type": "integer", "description": "The pen of the cut lines of the schematic 3D display." },
+            "railingSchemeUncutLineIndex": { "type": "integer", "description": "The index of the line type of the uncut lines of the schematic 3D display." },
+            "railingSchemeUncutLinePenIndex": { "type": "integer", "description": "The pen of the uncut lines of the schematic 3D display." }
         },
         "additionalProperties": false
     },
@@ -4543,6 +4597,33 @@ var gSchemaDefinitions = {
         "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
         "enum": [ true ]
     },
+    "ElementFieldValue": {
+        "description": "The value of a field of an element's struct in the Archicad API, by the field's kind (see GetElementFieldDefinitions): a number, an integer, a boolean or a string, or for an optional pen or attribute (kinds OverriddenPen and OverriddenAttribute) an object with hasValue and value.",
+        "anyOf": [
+            {
+                "type": [ "number", "integer", "boolean", "string" ]
+            },
+            {
+                "$ref": "#/ElementFieldOptionalValue"
+            }
+        ]
+    },
+    "ElementFieldOptionalValue": {
+        "type": "object",
+        "description": "An optional pen or attribute of an element's struct (API_OverriddenPen or API_OverriddenAttribute in the Archicad API, e.g. cutFillPen or refMat of a wall, leftMaterial of a beam segment): value is used only when hasValue is true; otherwise the element uses its own setting (e.g. the pen or the surface of its building material). In SetElementFields and SetFieldsOfElementDefaults a member left out keeps its value, and a value given without hasValue sets hasValue to true.",
+        "properties": {
+            "hasValue": {
+                "type": "boolean",
+                "description": "Whether value replaces the element's own setting."
+            },
+            "value": {
+                "type": "integer",
+                "description": "The pen index (OverriddenPen) or the attribute index (OverriddenAttribute, e.g. of a surface). It means nothing while hasValue is false."
+            }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+    },
     "WouldDeleteExecutionResult": {
         "type": "object",
         "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
@@ -5065,6 +5146,16 @@ var gSchemaDefinitions = {
             "ToFloorPlanRange",
             "ToAbsoluteLimit",
             "EntireElement"
+        ]
+    },
+    "ColumnCoreSymbolType": {
+        "type": "string",
+        "description": "Core symbol of a column in the floor plan (API_ColumnType::coreSymbolType): Plain (no symbol), Slash, X or CrossHair.",
+        "enum": [
+            "Plain",
+            "Slash",
+            "X",
+            "CrossHair"
         ]
     },
     "ElemProjectionMode": {
@@ -6522,7 +6613,7 @@ var gSchemaDefinitions = {
             },
             "floorIndex": {
                 "type": "integer",
-                "description": "The story to place the interior elevation on. Defaults to the current story."
+                "description": "The story to place the interior elevation on. Defaults to the current story. Archicad places an interior elevation on the active story, so for another story that story is activated while the interior elevation is created, and the previously active one is put back afterwards."
             }
         },
         "additionalProperties": false,
@@ -7508,6 +7599,24 @@ var gSchemaDefinitions = {
             {
                 "$ref": "#/UserUndefinedPropertyValue"
             }
+        ]
+    },
+    "TypedPropertyValue": {
+        "type": "object",
+        "description": "The value of a property for one element in JSON's own types, as GetTypedPropertyValuesOfElements returns it: a number, an integer, a string, a boolean, an array of them, or the identifiers of the chosen options of an option set, with the property's type and status next to it.",
+        "properties": {
+            "propertyValue": {
+                "$ref": "#/PropertyValueDetails",
+                "description": "The value with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum or multiEnum) and its status: normal with a value, userUndefined (the user set it to Undefined, no value) or notAvailable (the property is not available for the element, no value). Measured values are in SI units: meters, square meters, cubic meters and radians, whatever the project's working units. An option is named by its nonLocalizedValue when it has one, else by its displayValue."
+            },
+            "isDefault": {
+                "type": "boolean",
+                "description": "Whether the value comes from the property's default value rather than one set for the element. Left out for a notAvailable value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValue"
         ]
     },
     "PropertyValueDetails": {
@@ -10014,7 +10123,7 @@ var gSchemaDefinitions = {
             },
             "dimensionStyle": {
                 "type": "string",
-                "description": "The name of the dimension style. If empty, the view has custom dimension style."
+                "description": "The name of the dimension style (a dimension standard of Options > Project Preferences > Dimensions, as GetDimensionStandards lists them). If empty, the view has custom dimension style. GetViewSettings returns the name the view stores as it is: Archicad does not check it against the project's dimension standards, so it can name one that GetDimensionStandards does not list, e.g. a standard that was renamed or deleted after the view was saved. It is valid data only when saveFlags.dimensions is true; otherwise the view does not store dimension settings and the name may be a leftover. Use FindDimensionStandard to tell whether the name exists in the project (it fails when it does not)."
             },
             "penSetName": {
                 "type": "string",
@@ -10062,7 +10171,7 @@ var gSchemaDefinitions = {
                     },
                     "dimensions": {
                         "type": "boolean",
-                        "description": "Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty)."
+                        "description": "Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty). When false, dimensionStyle is not valid data."
                     },
                     "penSet": {
                         "type": "boolean",
@@ -10144,7 +10253,7 @@ var gSchemaDefinitions = {
         "properties": {
             "zoom": {
                 "$ref": "#/Zoom",
-                "description": "The current zoom parameters."
+                "description": "The current zoom parameters. In a rotated window (rotation is not 0) the box is in the window's own rotated frame, as Archicad stores it, not in model coordinates."
             },
             "rotation": {
                 "type": "number",
@@ -10826,6 +10935,10 @@ var gSchemaDefinitions = {
                 "type": "integer",
                 "description": "Multi-plane: the number of segments of a whole circle when segmentType is SegmentsByCircle."
             },
+            "fitSkylightToCurve": {
+                "type": "boolean",
+                "description": "Multi-plane: whether skylights are placed tangentially to the curved surfaces of the roof rather than parallel to its individual segments (fitSkylightToCurve of API_PolyRoofData). ModifyRoofs and CreateRoofs write it."
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
@@ -10844,7 +10957,7 @@ var gSchemaDefinitions = {
             },
             "edgeSideMaterials": {
                 "type": "array",
-                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifyRoofs takes the same list for single-plane roofs.",
+                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. For a multi-plane roof these are the edges of its contour (polygonOutline), not of the pivot polygon. ModifyRoofs takes the same list for single-plane and multi-plane roofs.",
                 "items": {
                     "$ref": "#/OverriddenMaterial"
                 }
@@ -10858,7 +10971,7 @@ var gSchemaDefinitions = {
             },
             "edgeTypes": {
                 "type": "array",
-                "description": "Single-plane roofs only: the Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.",
+                "description": "The Edge Type of each edge of the roof's polygon (Custom Edge Settings), which schedules use, e.g. to list the length of the Eaves or Gable edges. On a multi-plane roof these are the edges of its contour (polygonOutline, which Archicad makes from the pivot polygon and the eaves overhang), which do not map one to one onto pivotEdges. In the order of edgeSideMaterials and edgeTrims: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. It does not change the geometry of the roof. ModifyRoofs takes the same list.",
                 "items": {
                     "$ref": "#/RoofEdgeType"
                 }
@@ -11037,11 +11150,61 @@ var gSchemaDefinitions = {
             },
             "basePlane": {
                 "$ref": "#/CoordinateSystem3D",
-                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profiles, the extrusion start and vector, the axis and the profile planes are given in it."
             },
             "profile": {
                 "$ref": "#/ShellProfile",
-                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+                "description": "The profile polyline, as CreateShells takes it. Extruded: in the plane across the extrusion (x horizontal, y up). Revolved: in the base plane's XY plane. Ruled: the first profile, in the XY plane of profilePlane. Only the first polyline of the profile is returned."
+            },
+            "axis": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates (API_RevolvedShellData::axisBase), as CreateShells takes it."
+            },
+            "revolutionAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the profile is turned through, in radians."
+            },
+            "beginAngle": {
+                "type": "number",
+                "description": "Revolved only: the angle the revolution starts at, in radians (API_RevolvedShellData::begAngle)."
+            },
+            "distortionAngle": {
+                "type": "number",
+                "description": "Revolved only: shear of the revolution, in radians; pi/2 is no shear."
+            },
+            "segmentType": {
+                "type": "string",
+                "enum": [ "ByCircle", "ByArc" ],
+                "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+            },
+            "segmentsByCircle": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments a full circle is resolved into, used when segmentType is ByCircle."
+            },
+            "segmentsByArc": {
+                "type": "integer",
+                "description": "Revolved only: the number of segments the revolution arc is resolved into, used when segmentType is ByArc."
+            },
+            "segmentedSurfaces": {
+                "type": "boolean",
+                "description": "Revolved only: whether the revolved surface is broken into planes along the revolution arc."
+            },
+            "profilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of profile, in base plane coordinates (API_RuledShellData::plane1), as CreateShells takes it."
+            },
+            "secondProfile": {
+                "$ref": "#/ShellProfile",
+                "description": "Ruled only: the second profile polyline, in the XY plane of secondProfilePlane, as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "secondProfilePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Ruled only: the plane of secondProfile, in base plane coordinates (API_RuledShellData::plane2), as CreateShells takes it."
+            },
+            "morphingRule": {
+                "type": "string",
+                "enum": [ "Paired", "Smooth" ],
+                "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
             },
             "extrusionStart": {
                 "$ref": "#/Coordinate3D",
@@ -11069,7 +11232,7 @@ var gSchemaDefinitions = {
             },
             "slantAngle": {
                 "type": "number",
-                "description": "Extruded only: slant of the extrusion vector, in radians."
+                "description": "Extruded and Revolved: slant of the extrusion vector or of the profile, in radians."
             }
         },
         "additionalProperties": false,
@@ -11292,6 +11455,17 @@ var gSchemaDefinitions = {
                 "type": "integer",
                 "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
             },
+            "coreSymbolType": {
+                "$ref": "#/ColumnCoreSymbolType"
+            },
+            "coreSymbolPar1": {
+                "type": "number",
+                "description": "Length of the crosshair outside the column's contour line, used by the CrossHair core symbol."
+            },
+            "coreSymbolPar2": {
+                "type": "number",
+                "description": "Distance of the crosshair from the column's centre, used by the CrossHair core symbol."
+            },
             "belowViewLinePen": {
                 "type": "integer",
                 "description": "Pen of the uncut lines of the column."
@@ -11348,6 +11522,10 @@ var gSchemaDefinitions = {
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "veneer": {
+                "$ref": "#/ColumnVeneer",
+                "description": "The veneer of the first segment, the key ModifyColumns and CreateColumns write to all segments, so it can be sent back as it is read. Each segment's own veneer is in segments."
             },
             "segments": {
                 "type": "array",
@@ -11941,6 +12119,10 @@ var gSchemaDefinitions = {
                 "type": "boolean",
                 "description": "Side (detail/worksheet) window is opened?"
             },
+            "constructionElementsOnly": {
+                "type": "boolean",
+                "description": "Copy construction elements only: whether only the construction elements of the cut out area are copied into the detail/worksheet (API_DetailType::constructionElementsOnly)."
+            },
             "clipPolygon": {
                 "type": "array",
                 "description": "The clip polygon of the detail/worksheet",
@@ -11978,6 +12160,7 @@ var gSchemaDefinitions = {
             "detailIdStr",
             "isHorizontalMarker",
             "isWindowOpened",
+            "constructionElementsOnly",
             "clipPolygon",
             "linkData"
         ]
@@ -12014,7 +12197,8 @@ var gSchemaDefinitions = {
                 "$ref": "#/ElementType"
             },
             "origin": {
-                "$ref": "#/Coordinate3D"
+                "$ref": "#/Coordinate3D",
+                "description": "The placement point, z absolute (the home story level plus the offset). ModifyObjects and ModifyLamps take it back with the same key (and as coordinates)."
             },
             "dimensions": {
                 "$ref": "#/Coordinate3D"
@@ -12479,6 +12663,10 @@ var gSchemaDefinitions = {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12497,9 +12685,13 @@ var gSchemaDefinitions = {
             "Continuous"
         ]
     },
+    "LinkedArrowAttributes": {
+        "type": "boolean",
+        "description": "Are the size and pen of the start and end arrowheads linked (Archicad 29 and later; \"Links the start and end arrows sizes and pens\")? Read from Archicad 29 on, not returned before. Writing true links them: a size or pen given for one end only applies to both ends, two ends given different ones are refused, and without a size or pen given the end takes the start's. Writing false unlinks them. When it is not given, ends given a different size or pen are unlinked. Before Archicad 29 both ends always share one size and pen: true is accepted and changes nothing, false is refused."
+    },
     "LineArrowhead": {
         "type": "object",
-        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked, unless linkedArrowAttributes is given; see LinkedArrowAttributes). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
         "properties": {
             "visible": {
                 "type": "boolean",
@@ -12584,6 +12776,10 @@ var gSchemaDefinitions = {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
             },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -12641,6 +12837,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end. Only present for Arc, not Circle."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present for Arc, not Circle, from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12707,6 +12907,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "The arrowhead at the end."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Are the size and pen of the two arrowheads linked? Only present from Archicad 29."
             },
             "zCoordinate": {
                 "type": "number"
@@ -12829,6 +13033,14 @@ var gSchemaDefinitions = {
                 "$ref": "#/Coordinate2D",
                 "description": "The reference point an automatic zone was placed from (the referencePosition of CreateZones); the zone is found around it when zones are updated. Only present when isManual is false."
             },
+            "boundaryMethod": {
+                "type": "string",
+                "description": "How an automatic zone found its boundary: ReferenceLine when it is surrounded by the reference lines of the walls, InnerEdge when by their inner edges (side lines). A ReferenceLine zone's polygon is expected to differ from the inner faces of its walls, and only such a zone uses polygonDisplay. Read only; only present when isManual is false.",
+                "enum": [
+                    "ReferenceLine",
+                    "InnerEdge"
+                ]
+            },
             "polygonOutline": {
                 "type": "array",
                 "description": "The 2D coordinates of the edge of the zone.",
@@ -12871,6 +13083,10 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
+            "roomLSize": {
+                "type": "number",
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements), so this value may not change how the stamp looks."
+            },
             "contourLine": {
                 "$ref": "#/ZoneContourLine"
             },
@@ -12904,6 +13120,7 @@ var gSchemaDefinitions = {
             "topOffset",
             "relativeTopStory",
             "floorThickness",
+            "roomLSize",
             "contourLine",
             "coverFill",
             "surface",
@@ -12920,6 +13137,13 @@ var gSchemaDefinitions = {
                 "description": "The 2D coordinates of the reference line of the railing, one per node.",
                 "items": {
                     "$ref": "#/Coordinate2D"
+                }
+            },
+            "referenceLineArcs": {
+                "type": "array",
+                "description": "The curved segments of the reference line; empty when every segment is straight. begIndex and endIndex are indices into referenceLine (from 0), in the same form CreateRailingsFromPolyline takes as polylineArcs.",
+                "items": {
+                    "$ref": "#/PolyArc"
                 }
             },
             "bottomOffset": {
@@ -12975,6 +13199,7 @@ var gSchemaDefinitions = {
         "additionalProperties": false,
         "required": [
             "referenceLine",
+            "referenceLineArcs",
             "bottomOffset",
             "zCoordinate",
             "height",
@@ -13005,6 +13230,26 @@ var gSchemaDefinitions = {
             },
             "referenceLineLocation": {
                 "$ref": "#/RailingReferenceLineLocation"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the segment is shown (API_RailingSegmentType::visible)."
+            },
+            "verticalOffset": {
+                "type": "number",
+                "description": "The vertical offset of the segment (API_RailingSegmentType::zOffset)."
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "The slant angle of the segment (API_RailingSegmentType::slantAngle)."
+            },
+            "skewAngle": {
+                "type": "number",
+                "description": "The skew angle of the segment (API_RailingSegmentType::skewAngle)."
+            },
+            "relativeSkewingAngle": {
+                "type": "boolean",
+                "description": "Whether skewAngle is relative (API_RailingSegmentType::relativeSkewingAngle)."
             }
         },
         "additionalProperties": false,
@@ -13012,7 +13257,12 @@ var gSchemaDefinitions = {
             "elementId",
             "height",
             "lateralOffset",
-            "referenceLineLocation"
+            "referenceLineLocation",
+            "visible",
+            "verticalOffset",
+            "slantAngle",
+            "skewAngle",
+            "relativeSkewingAngle"
         ]
     },
     "RailingReferenceLineLocation": {
@@ -13043,6 +13293,30 @@ var gSchemaDefinitions = {
             "unifyPatterns": {
                 "type": "boolean",
                 "description": "True when the pattern of the segments continues across the node, false when the segments are cropped at it (API_RailingNodeType::unifyPatterns)."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the node is shown (API_RailingNodeType::visible)."
+            },
+            "isStatic": {
+                "type": "boolean",
+                "description": "Whether the node is static, not associated with the element the railing was placed on (API_RailingNodeType::isStatic)."
+            },
+            "tiltedPost": {
+                "type": "boolean",
+                "description": "Whether the node's post follows the slope of the segments (API_RailingNodeType::tiltedPost)."
+            },
+            "autoConnectionOffset": {
+                "type": "boolean",
+                "description": "Whether Archicad sets the connection offset of the rails at the node (API_RailingNodeType::autoConnectionOffset)."
+            },
+            "connectionOffset": {
+                "type": "number",
+                "description": "The connection offset of the rails at the node (API_RailingNodeType::connectionOffset)."
+            },
+            "endingOffset": {
+                "type": "number",
+                "description": "The ending offset of the rails at the node (API_RailingNodeType::endingOffset)."
             }
         },
         "additionalProperties": false,
@@ -13050,7 +13324,13 @@ var gSchemaDefinitions = {
             "elementId",
             "postOffset",
             "elevation",
-            "unifyPatterns"
+            "unifyPatterns",
+            "visible",
+            "isStatic",
+            "tiltedPost",
+            "autoConnectionOffset",
+            "connectionOffset",
+            "endingOffset"
         ]
     },
     "RailingComponentOwnerElementId": {
@@ -13507,6 +13787,55 @@ var gSchemaDefinitions = {
             "innerPostCount"
         ]
     },
+    "RailingPatternEntry": {
+        "type": "object",
+        "description": "The pattern entry of a railing segment (API_RailingSegmentType::defPattern): the settings Archicad generates the segment's RailingPattern, RailingPanel, RailingBalusterSet and RailingInnerPost subelements (the instances) from. The components in it are settings, not placed elements, so they have no owner and no libPart.",
+        "properties": {
+            "distribution": {
+                "$ref": "#/RailingDistribution",
+                "description": "How the pattern is repeated along the segment (API_RailingPatternType::distribution)."
+            },
+            "panelCount": {
+                "type": "integer",
+                "description": "The number of panels in the pattern (API_RailingPatternType::nPanels)."
+            },
+            "balusterSetCount": {
+                "type": "integer",
+                "description": "The number of baluster sets in the pattern (API_RailingPatternType::nBalusterSets)."
+            },
+            "innerPostCount": {
+                "type": "integer",
+                "description": "The number of inner posts in the pattern (API_RailingPatternType::nInnerPosts)."
+            },
+            "panel": {
+                "$ref": "#/RailingPanelDetails",
+                "description": "The panel settings of the pattern (defPanel)."
+            },
+            "balusterSet": {
+                "$ref": "#/RailingBalusterSetDetails",
+                "description": "The baluster set settings of the pattern (defBalusterSet); its distribution is the baluster spacing."
+            },
+            "baluster": {
+                "$ref": "#/RailingBalusterDetails",
+                "description": "The baluster settings of the pattern's baluster set (defBalusterSet.defBaluster)."
+            },
+            "innerPost": {
+                "$ref": "#/RailingInnerPostDetails",
+                "description": "The inner post settings of the pattern (defInnerPost)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "distribution",
+            "panelCount",
+            "balusterSetCount",
+            "innerPostCount",
+            "panel",
+            "balusterSet",
+            "baluster",
+            "innerPost"
+        ]
+    },
     "RailingRailEndDetails": {
         "type": "object",
         "description": "The details of the end of a rail, top rail or handrail (RailingRailEnd, RailingToprailEnd, RailingHandrailEnd: API_RailingRailEndType).",
@@ -13729,7 +14058,7 @@ var gSchemaDefinitions = {
             },
             "zCoordinate": {
                 "type": "number",
-                "description": "The absolute elevation of the bottom of the curtain wall: its home story's level plus its offset from it (API_CurtainWallType::planeOffset), as CreateCurtainWalls and ModifyCurtainWalls take it."
+                "description": "The absolute elevation of the bottom of the curtain wall's reference line: its home story's level plus its base level from it (API_CurtainWallType::storyRelLevel, which follows a change of the base offset in Archicad; less offset * cos (angle) on a slanted curtain wall, whose panels the offset lifts), as CreateCurtainWalls and ModifyCurtainWalls take it."
             },
             "referenceLine": {
                 "type": "array",
@@ -13750,9 +14079,24 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "The nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth), as ModifyCurtainWalls takes it."
             },
+            "primaryPattern": {
+                "$ref": "#/CurtainWallPattern",
+                "description": "The column pattern of the curtain wall (the primary grid), as CreateCurtainWalls and ModifyCurtainWalls take it in primaryPattern, so it can be written back as it is. It is the curtain wall's own pattern (API_ElementMemo::cWSegPrimaryPattern of the curtain wall): those commands write one pattern for the whole curtain wall, and Archicad builds every segment from it. A segment whose scheme was changed on its own in Archicad may differ, and writing this pattern back applies it to every segment again. flexibleIndices is always given, because those commands rewrite it each time. Omitted when the pattern has no sizes or uses the number-of-divisions logic, which those commands cannot write; writing the details back without it keeps the pattern."
+            },
+            "secondaryPattern": {
+                "$ref": "#/CurtainWallPattern",
+                "description": "The row pattern of the curtain wall (the secondary grid, from the bottom up), as CreateCurtainWalls and ModifyCurtainWalls take it in secondaryPattern, so it can be written back as it is. It is the curtain wall's own pattern (API_ElementMemo::cWSegSecondaryPattern of the curtain wall): those commands write one pattern for the whole curtain wall, and Archicad builds every segment from it. A segment whose scheme was changed on its own in Archicad may differ, and writing this pattern back applies it to every segment again. flexibleIndices is always given, because those commands rewrite it each time. Omitted when the pattern has no sizes or uses the number-of-divisions logic, which those commands cannot write; writing the details back without it keeps the pattern."
+            },
+            "cells": {
+                "type": "array",
+                "description": "The panel and frame classes of every cell of the pattern unit, as CreateCurtainWalls and ModifyCurtainWalls take them in cells, so they can be written back as they are: one item per cell (the columns of the primary pattern times the rows of the secondary pattern), row by row from the bottom row, each row from the start of the segment. Read from the curtain wall's own cells (API_ElementMemo::cWSegPatternCells of the curtain wall), like the patterns. A class index those commands would refuse (outside the panel and frame classes of the curtain wall, e.g. a customized cell) is left out of its item, so writing the cell back keeps it. Omitted when Archicad returns fewer cells than the pattern unit has.",
+                "items": {
+                    "$ref": "#/CurtainWallPatternCell"
+                }
+            },
             "angle": {
                 "type": "number",
-                "description": "The rotation angle of the curtain wall in radians."
+                "description": "The slant angle of the curtain wall plane in degrees, measured from the horizontal (API_CurtainWallType::angle): 90 is vertical, less than 90 leans to the left of the reference line, more than 90 to the right, as CreateCurtainWalls takes it."
             },
             "displayOption": {
                 "$ref": "#/DisplayOption"
@@ -13900,6 +14244,71 @@ var gSchemaDefinitions = {
             "gridAngle"
         ]
     },
+    "CurtainWallJunctionDetails": {
+        "type": "object",
+        "description": "A junction of a curtain wall: a GDL object Archicad places where frames and panels meet (API_CWJunctionType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": [ "System", "Custom" ],
+                "description": "Whether the junction is a system junction or a custom one (API_CWJunctionType::category)."
+            },
+            "flipped": {
+                "type": "boolean",
+                "description": "Whether the junction is flipped."
+            },
+            "clampingFrameCount": {
+                "type": "integer",
+                "description": "The number of frames the junction clamps (API_CWJunctionType::clampFramesNum)."
+            },
+            "clampingPanelCount": {
+                "type": "integer",
+                "description": "The number of panels the junction clamps (API_CWJunctionType::clampPanelsNum)."
+            },
+            "curtainWallId": {
+                "$ref": "#/ElementId",
+                "description": "The curtain wall the junction belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "category",
+            "flipped",
+            "clampingFrameCount",
+            "clampingPanelCount",
+            "curtainWallId"
+        ]
+    },
+    "CurtainWallAccessoryDetails": {
+        "type": "object",
+        "description": "An accessory of a curtain wall: a GDL object Archicad joins to a frame (API_CWAccessoryType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
+        "properties": {
+            "category": {
+                "type": "string",
+                "enum": [ "System", "Custom" ],
+                "description": "Whether the accessory is a system accessory or a custom one (API_CWAccessoryType::category)."
+            },
+            "flipped": {
+                "type": "boolean",
+                "description": "Whether the accessory is flipped."
+            },
+            "referenceFrameId": {
+                "$ref": "#/ElementId",
+                "description": "The frame the accessory is joined to (API_CWAccessoryType::refFrame)."
+            },
+            "curtainWallId": {
+                "$ref": "#/ElementId",
+                "description": "The curtain wall the accessory belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "category",
+            "flipped",
+            "referenceFrameId",
+            "curtainWallId"
+        ]
+    },
     "CurtainWallPanelDetails": {
         "type": "object",
         "properties": {
@@ -13954,13 +14363,23 @@ var gSchemaDefinitions = {
     },
     "CurtainWallFrameType": {
         "type": "string",
-        "description": "Enumeration of available curtain wall frame types.",
+        "description": "The class of a curtain wall frame (API_CWFrameType::classID): Deleted, Division, Corner, Boundary, or Custom for a frame class of the curtain wall or a customized frame. Not the object type that ModifyCurtainWallFrames takes as type: that one is CurtainWallFrameObjectType.",
         "enum": [
             "Deleted",
             "Division",
             "Corner",
             "Boundary",
             "Custom"
+        ]
+    },
+    "CurtainWallFrameObjectType": {
+        "type": "string",
+        "description": "The object type of a curtain wall frame (API_CWFrameType::objectType, API_CWFrameObjectTypeID): how the frame is drawn.",
+        "enum": [
+            "Invisible",
+            "GDL",
+            "InvisibleConnectedTurning",
+            "InvisibleConnectedStill"
         ]
     },
     "CurtainWallFrameDetails": {
@@ -14037,7 +14456,16 @@ var gSchemaDefinitions = {
                 "type": "string"
             },
             "type": {
-                "$ref": "#/CurtainWallFrameType"
+                "$ref": "#/CurtainWallFrameType",
+                "description": "The class of the frame. ModifyCurtainWallFrames takes it as classIndex, and its own type is objectType."
+            },
+            "classIndex": {
+                "type": "integer",
+                "description": "The frame class (API_CWFrameType::classID) as ModifyCurtainWallFrames takes it: 0 to 3 for the built-in classes (0 Deleted, 1 Division, 2 Corner, 3 Boundary), 4 and up for the frame classes of the curtain wall, -1 for a customized frame."
+            },
+            "objectType": {
+                "$ref": "#/CurtainWallFrameObjectType",
+                "description": "The object type of the frame, as ModifyCurtainWallFrames takes it in type."
             }
         },
         "additionalProperties": false,
@@ -14049,7 +14477,9 @@ var gSchemaDefinitions = {
             "frameContour",
             "segmentIndex",
             "className",
-            "type"
+            "type",
+            "classIndex",
+            "objectType"
         ]
     },
     "MeshSkirtType": {
@@ -14144,7 +14574,7 @@ var gSchemaDefinitions = {
             },
             "polygonCoordinates": {
                 "type": "array",
-                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
+                "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given. Where a level line (sublines) crosses the new outline or a hole, Archicad adds a point; each given point keeps its own z, and an added point gets the z interpolated along the edge between the given points next to it.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 },
@@ -14685,6 +15115,10 @@ var gSchemaDefinitions = {
                 "type": "string",
                 "description": "Path of the drawing's external source file (the Drawing Manager's Path column). Present only when the source is a file (external view, DWG/DXF, PDF, image, ...). Read-only."
             },
+            "sourceNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The navigator item (view or viewpoint) the drawing shows, as the sourceNavigatorItemId of its Layout Book item; GetViewSettings accepts it. Absent when the source is not a navigator item (external file). Read-only."
+            },
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
@@ -14776,7 +15210,17 @@ var gSchemaDefinitions = {
           },
           "paragraphCount": {
             "type": "integer",
-            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+            "description": "Present only when labelClass is 'Text'. Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
+          },
+          "lines": {
+            "type": "array",
+            "description": "Present only when labelClass is 'Text' and Archicad reports the line starts. Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text included, each without the line-end characters that end it.",
+            "items": { "type": "string" }
+          },
+          "lineStarts": {
+            "type": "array",
+            "description": "Present with 'lines'. Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+            "items": { "type": "integer" }
           },
           "runs": {
             "type": "array",
@@ -14841,11 +15285,11 @@ var gSchemaDefinitions = {
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",
-                "description": "Present only for an associative level dimension: the element it measures."
+                "description": "Present when the level dimension has an owner element: the element it measures. ModifyLevelDimensions takes it back with the same key."
             },
             "ownerElementType": {
                 "$ref": "#/ElementType",
-                "description": "Present only for an associative level dimension."
+                "description": "Present when the level dimension has an owner element. Only read."
             },
             "dimForm": {
                 "type": "integer",
@@ -15016,7 +15460,7 @@ var gSchemaDefinitions = {
     },
     "DimensionDetails": {
         "type": "object",
-        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.",
+        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes, and the texts of its witness points. The witness points themselves are read with GetDimensionData.",
         "properties": {
             "appearance": {
                 "type": "string",
@@ -15026,6 +15470,10 @@ var gSchemaDefinitions = {
             "elevationOrigin": {
                 "$ref": "#/DimensionOrigin",
                 "description": "The level an Elevation dimension measures from (kept for the other types too)."
+            },
+            "elevationMarker": {
+                "$ref": "#/DimensionElevationMarker",
+                "description": "The marker of an Elevation dimension, always with all of its fields (kept for the other types too)."
             },
             "dimensionLinePosition": {
                 "$ref": "#/Coordinate2D",
@@ -15094,12 +15542,20 @@ var gSchemaDefinitions = {
             },
             "layeredElementDimensions": {
                 "$ref": "#/LayeredElementDimensions"
+            },
+            "witnessPointTexts": {
+                "type": "array",
+                "description": "The text of every witness point, in the order GetDimensionData returns them, with the keys ModifyAssociativeDimensions' witnessPointTexts takes, so the list read can be sent back as it is. Missing when the witness points cannot be read.",
+                "items": {
+                    "$ref": "#/DimensionWitnessPointText"
+                }
             }
         },
         "additionalProperties": false,
         "required": [
             "appearance",
             "elevationOrigin",
+            "elevationMarker",
             "dimensionLinePosition",
             "direction",
             "witnessPointCount",
@@ -15118,6 +15574,40 @@ var gSchemaDefinitions = {
             "openingHeightsNominal",
             "layeredElementDimensions"
         ]
+    },
+    "DimensionWitnessPointText": {
+        "type": "object",
+        "description": "The text of one witness point of a linear dimension, as the dimension text of a selected witness point in Archicad: the measured value or a custom text, superscript, and the text's position. ModifyAssociativeDimensions writes the given fields of the given witness points (witnessPointTexts); GetDetailsOfElements reads it for every witness point with the same keys (index, content, superscript, customText for a custom text and textPosition for a text moved by hand).",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
+            },
+            "content": {
+                "type": "string",
+                "enum": ["MeasuredValue", "CustomText"],
+                "description": "Optional: show the measured value or the custom text (API note contentType)."
+            },
+            "customText": {
+                "type": "string",
+                "description": "Optional custom text of the witness point (API note contentUStr). Write {MeasuredValue} where the measured value goes, e.g. \"{MeasuredValue} ok\" (Archicad 26 and later; Archicad 25 refuses it). A line break is \\r (Archicad shows \\n on one line). Without content the witness point shows the custom text. GetDetailsOfElements reads it only while content is CustomText; GetDimensionData also reads the custom text a witness point keeps while it shows the measured value."
+            },
+            "superscript": {
+                "type": "boolean",
+                "description": "Optional: show the text superscript (API note effectBits, APIEffect_SuperScript)."
+            },
+            "resetTextPosition": {
+                "type": "boolean",
+                "description": "Optional: true puts a text that was moved by hand back to its automatic position (API note fixPos false); false changes nothing. Cannot be given with textPosition. Only written: GetDetailsOfElements leaves out textPosition for a text at its automatic position instead."
+            },
+            "textPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Optional: moves the text there and fixes it, as dragging it by hand does (API note pos, fixPos true). In the coordinates GetDimensionData returns the witness points and the textPosition of each text in, so a text can be moved relative to where it is. GetDetailsOfElements reads it only for a text that was moved by hand (fixed), so the texts read can be sent back without fixing the automatic ones."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["index"]
     },
     "ChangeMarkerComponent": {
         "type": "string",
@@ -15267,6 +15757,35 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "DimensionElevationMarker": {
+        "type": "object",
+        "description": "The marker an Elevation dimension (appearance Elevation, e.g. a height chain in a section) draws at its witness points, set under Elevation dimension in the Dimension Settings (API ed_dimForm, ed_arrowAng, ed_arrowFill, ed_arrowUp, ed_needPlus). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all five, for the other dimension types too.",
+        "properties": {
+            "form": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The marker form as Archicad stores it (API ed_dimForm; the DevKit does not list the values, the commands take 0 to 19, as for the Level Dimension tool's dimForm): read it back with GetDetailsOfElements from an Elevation dimension that has the wanted marker."
+            },
+            "arrowAngle": {
+                "type": "integer",
+                "enum": [30, 45, 60],
+                "description": "The angle of the half arrow in degrees (API ed_arrowAng 0, 1, 2)."
+            },
+            "arrowFilled": {
+                "type": "boolean",
+                "description": "Whether the arrow is filled (API ed_arrowFill)."
+            },
+            "arrowUp": {
+                "type": "boolean",
+                "description": "Whether the arrow points up (API ed_arrowUp; false: down)."
+            },
+            "plusSign": {
+                "type": "boolean",
+                "description": "Whether positive values get a \"+\" sign (API ed_needPlus)."
+            }
+        },
+        "additionalProperties": false
+    },
     "RadialDimensionDetails": {
         "type": "object",
         "description": "A radial dimension, as Archicad stores it. The Archicad API does not document how the measured arc is stored (the meaning of basePoint and ownerElementInIndex), so these are the raw values; ownerArcCenter is read from the measured arc or circle.",
@@ -15393,7 +15912,7 @@ var gSchemaDefinitions = {
             },
             "position": {
                 "$ref": "#/Coordinate2D",
-                "description": "The placement position of the text."
+                "description": "The placement position of the text. ModifyTexts takes it back with the same key (and as coordinate with a z)."
             },
             "angle": {
                 "type": "number",
@@ -15415,13 +15934,27 @@ var gSchemaDefinitions = {
                 "type": "number",
                 "description": "The level of the text's floor."
             },
+            "width": {
+                "type": "number",
+                "description": "The wrap width in mm, as CreateTexts and ModifyTexts write it with the same key: the box width (style.boxWidth) while word wrap is on (style.nonBreaking false), 0 for an auto-width text."
+            },
             "style": {
                 "$ref": "#/TextStyleDetails",
                 "description": "The flat fields above are the subset SetDetailsOfElements takes back."
             },
             "paragraphCount": {
                 "type": "integer",
-                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands always produce 1)."
+                "description": "Read-only: number of paragraphs in the memo (Tapir's own Create/Modify commands write one paragraph per line of the content)."
+            },
+            "lines": {
+                "type": "array",
+                "description": "Read-only: the lines as Archicad lays the text out, the breaks of a wrapped text (style.nonBreaking false) included, each without the line-end characters that end it. Present when Archicad reports the line starts.",
+                "items": { "type": "string" }
+            },
+            "lineStarts": {
+                "type": "array",
+                "description": "Read-only: the offset in 'text' of the first character of each entry of 'lines'.",
+                "items": { "type": "integer" }
             },
             "runs": {
                 "type": "array",
@@ -15442,9 +15975,122 @@ var gSchemaDefinitions = {
             "paragraphCount"
         ]
     },
+    "StairTreadDetails": {
+        "type": "object",
+        "description": "A tread of a stair (API_StairTreadType), as GetSubelementsOfHierarchicalElements lists them in stairTreads. Its GDL parameters are read by GetGDLParametersOfElements.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "enum": [ "Run", "Landing" ],
+                "description": "Whether the tread is on a flight (Run) or a landing."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the tread is shown."
+            },
+            "isCustom": {
+                "type": "boolean",
+                "description": "Whether the tread has its own settings instead of those of the stair."
+            },
+            "nosingType": {
+                "type": "string",
+                "enum": [ "ByValue", "BySlanting" ],
+                "description": "How the nosing is defined: by a value (nosingValue) or by slanting the riser (nosingSlant)."
+            },
+            "nosingValue": {
+                "type": "number",
+                "description": "The nosing length."
+            },
+            "nosingSlant": {
+                "type": "number",
+                "description": "The slant of the nosing."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the tread (API_StairTreadType::offset)."
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the tread."
+            },
+            "zOffset": {
+                "type": "number",
+                "description": "The vertical offset of the tread (API_StairTreadType::zOffset)."
+            },
+            "stairId": {
+                "$ref": "#/ElementId",
+                "description": "The stair the tread belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "role",
+            "visible",
+            "isCustom",
+            "nosingType",
+            "nosingValue",
+            "nosingSlant",
+            "offset",
+            "thickness",
+            "zOffset",
+            "stairId"
+        ]
+    },
+    "StairRiserDetails": {
+        "type": "object",
+        "description": "A riser of a stair (API_StairRiserType), as GetSubelementsOfHierarchicalElements lists them in stairRisers. Its GDL parameters are read by GetGDLParametersOfElements.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "enum": [ "Run", "Landing" ],
+                "description": "Whether the riser is on a flight (Run) or a landing."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the riser is shown."
+            },
+            "riserPosition": {
+                "type": "string",
+                "enum": [ "OnTread", "BehindTread" ],
+                "description": "Whether the riser stands on the tread below or behind it."
+            },
+            "crossSection": {
+                "type": "string",
+                "enum": [ "Simple", "Slanted" ],
+                "description": "The cross section of the riser."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The slant angle of a slanted riser (API_StairRiserType::angle)."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the riser (API_StairRiserType::offset)."
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the riser."
+            },
+            "stairId": {
+                "$ref": "#/ElementId",
+                "description": "The stair the riser belongs to."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "role",
+            "visible",
+            "riserPosition",
+            "crossSection",
+            "angle",
+            "offset",
+            "thickness",
+            "stairId"
+        ]
+    },
     "StairDetails": {
         "type": "object",
-        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.",
+        "description": "The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), of which CreateStairs and ModifyStairs write stairDisplayType, structureVisibility and, in floorPlanLayout and reflectedCeilingPlanLayout, storyVisibility and the show... switches. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists; structures gives the structure settings they are built from, and GetDetailsOfElements reads a StairStructure subelement with the same keys.",
         "properties": {
             "stepNum": {
                 "type": "integer",
@@ -15481,6 +16127,63 @@ var gSchemaDefinitions = {
             "rules": {
                 "$ref": "#/StairRules",
                 "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
+            },
+            "extraTopTread": {
+                "type": "boolean",
+                "description": "Whether the stair has an extra tread at its top, as CreateStairs and ModifyStairs take it."
+            },
+            "extraBottomTread": {
+                "type": "boolean",
+                "description": "Whether the stair has an extra tread at its bottom, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLinePosition": {
+                "type": "string",
+                "enum": [ "Left", "Right", "Center", "Auto" ],
+                "description": "Where the walking line runs on the flight, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLineOffset": {
+                "type": "number",
+                "description": "The offset of the walking line from the side walkingLinePosition names, as CreateStairs and ModifyStairs take it."
+            },
+            "walkingLineSymbolPosition": {
+                "type": "string",
+                "enum": [ "Auto", "Center", "Custom" ],
+                "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos), as CreateStairs and ModifyStairs take it."
+            },
+            "numberingType": {
+                "type": "string",
+                "enum": [ "Treads", "Risers" ],
+                "description": "Whether the steps are numbered on their treads or on their risers, as CreateStairs and ModifyStairs take it."
+            },
+            "uniformFinish": {
+                "type": "boolean",
+                "description": "Whether the flights and the landings share one finish setting."
+            },
+            "uniformMonolithAttributes": {
+                "type": "boolean",
+                "description": "Whether the monolithic structures of the flights and the landings share one set of attributes."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the flights and the landings share one draining setting."
+            },
+            "treads": {
+                "type": "array",
+                "description": "The tread settings of the flights (Run) and of the landings (Landing), the stair's own per-part defaults its treads are built from (API_StairType::tread), as CreateStairs and ModifyStairs take them. The treads themselves are subelements (GetSubelementsOfHierarchicalElements).",
+                "items": {
+                    "$ref": "#/StairTreadPartSettings"
+                }
+            },
+            "risers": {
+                "type": "array",
+                "description": "The riser settings of the flights (Run) and of the landings (Landing), the stair's own per-part defaults its risers are built from (API_StairType::riser), as CreateStairs and ModifyStairs take them.",
+                "items": {
+                    "$ref": "#/StairRiserPartSettings"
+                }
+            },
+            "headroom": {
+                "$ref": "#/StairHeadroom",
+                "description": "The headroom of the stair (Stair Settings > Headroom), as stored in the stair. Whether the headroom body is shown is a Model View Option, not part of the stair."
             },
             "level": {
                 "type": "number",
@@ -15553,6 +16256,65 @@ var gSchemaDefinitions = {
                     "additionalProperties": false,
                     "required": ["turnType", "landingStartEdgeOffset", "landingEndEdgeOffset", "minLandingStartEdgeOffset", "minLandingEndEdgeOffset"]
                 }
+            },
+            "basePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "The stair's own coordinate system (API_StairType::basePlane), in model coordinates. Archicad keeps the baseline, the boundaries and the walking lines in it; the points reported here are already transformed by it (origin + x * xAxis + y * yAxis). A rotated stair has turned axes, a mirrored one axes of the other handedness (isMirrored)."
+            },
+            "isMirrored": {
+                "type": "boolean",
+                "description": "Whether the stair was mirrored, as its basePlane tells (xAxis and yAxis of the other handedness). Its left boundary is then on the right seen along the baseline, and its arcs bend the other way in its own coordinate system; the arcs reported are already turned back to model coordinates."
+            },
+            "baselinePosition": {
+                "type": "string",
+                "enum": ["Left", "Right", "Center", "Auto", "Unknown"],
+                "description": "The edge of the flight the baseline runs on, as CreateStairs takes it (API_StairType::baselinePosition)."
+            },
+            "baselineOffset": {
+                "type": "number",
+                "description": "The offset of the baseline from that edge (API_StairType::baselineOffset)."
+            },
+            "inputDirection": {
+                "type": "string",
+                "enum": [ "Upward", "Inverse" ],
+                "description": "The walking direction along the baseline, as CreateStairs and ModifyStairs take it. Upward: baseLinePoints run from the bottom of the stair to its top. Inverse: they run from the top down. The walking lines and the boundaries run from the bottom up either way (seen on a stair drawn in Archicad 27); Archicad 29 creates and keeps stairs Upward even when Inverse is given."
+            },
+            "leftBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "Read only. The left boundary line of the stair (the memo's stairBoundary[0]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
+            },
+            "rightBoundary": {
+                "$ref": "#/StairBoundary",
+                "description": "Read only. The right boundary line of the stair (the memo's stairBoundary[1]), seen along the baseline. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
+            },
+            "walkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "Read only. The walking line of the stair (the memo's stairWalkingLine), the one Archicad lays the goings out along. Given when Archicad has calculated it. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
+            },
+            "customWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "Read only. The custom walking line of the stair (the memo's stairCustomWalkLine). Archicad 29 fills it on every stair: on a stair whose walking line was not edited it is the same as walkingLine. The API cannot write it (see StairOutlineNotWritable)."
+            },
+            "centerWalkingLine": {
+                "$ref": "#/StairPolyline",
+                "description": "Read only. The center walking line of the stair (the memo's stairCenterWalkLine). Archicad 29 fills it on every stair: on a stair with a centered walking line it is the same as walkingLine. Archicad lays it out from the baseline and the flight width; the API cannot write it (see StairOutlineNotWritable)."
+            },
+            "linkToSettings": {
+                "$ref": "#/LinkToSettings"
+            },
+            "uniformLeftRightSideSupports": {
+                "type": "object",
+                "description": "Whether the left and right side supports of the flights (run) and of the landings (landing) share their settings (API_StairType::uniformLeftRightSideSupports).",
+                "properties": {
+                    "run": {
+                        "type": "boolean"
+                    },
+                    "landing": {
+                        "type": "boolean"
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["run", "landing"]
             },
             "stairDisplayType": {
                 "type": "string",
@@ -15781,6 +16543,13 @@ var gSchemaDefinitions = {
                     "additionalProperties": false,
                     "required": ["view", "uniformSymbolRepresentationEnabled", "stories"]
                 }
+            },
+            "structures": {
+                "type": "array",
+                "description": "The structure settings of the flights (Run) and of the landings (Landing), for each side (API_StairType::structure), in the order Run LeftSide, RightSide, UnderSide, then Landing LeftSide, RightSide, UnderSide. These are the settings Archicad builds the StairStructure subelements from.",
+                "items": {
+                    "$ref": "#/StairStructureDetails"
+                }
             }
         },
         "additionalProperties": false,
@@ -15799,6 +16568,423 @@ var gSchemaDefinitions = {
             "baseLinePoints"
         ]
     },
+    "StairPolyline": {
+        "type": "object",
+        "description": "A polyline of a stair, such as its walking line, in model coordinates (the coordinates of baseLinePoints).",
+        "properties": {
+            "points": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the polyline, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["points", "arcs"]
+    },
+    "StairBoundary": {
+        "type": "object",
+        "description": "A side boundary line of a stair: an open polyline along that side of the flights and landings, in model coordinates (the coordinates of baseLinePoints). The left boundary, the right boundary reversed and the two segments joining their ends make the outline of the stair in plan.",
+        "properties": {
+            "isCustom": {
+                "type": "boolean",
+                "description": "Whether the boundary was edited by hand."
+            },
+            "points": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "arcs": {
+                "type": "array",
+                "description": "The curved segments of the boundary, with 0-based indices into points; empty when every segment is straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "edges": {
+                "type": "array",
+                "description": "One item per segment: edge i runs from points[i] to points[i + 1].",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "visible": {
+                            "type": "boolean",
+                            "description": "Whether the part of the stair this segment describes is visible."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["visible"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["isCustom", "points", "arcs", "edges"]
+    },
+    "StairOutlineNotWritable": {
+        "type": "object",
+        "description": "Not writable: a boundary or a walking line of a stair, as GetDetailsOfElements reads it (leftBoundary, rightBoundary, walkingLine, customWalkingLine, centerWalkingLine). Archicad lays them out itself from the baseline and the flight width, and the API keeps none given: ACAPI_Element_Change refuses a stair memo that holds them (APIERR_GENERAL, also when it is unchanged) or ignores them, ACAPI_Element_ChangeExt does not take stairs (APIERR_BADID), and ACAPI_Element_Create lays them out again, whatever the memo holds (checked on Archicad 29). The walking line stays in the middle of the flight: Archicad 29 keeps walkingLinePosition Center and walkingLineOffset half the flight width whatever is written. An item that gives one is refused with an error, before anything is changed. Change the baseline instead (CreateStairs, RecreateStairs), or flightWidth (ModifyStairs), which moves the boundaries and keeps the walking line in the middle."
+    },
+    "StairStructureDetails": {
+        "type": "object",
+        "description": "The settings of one structure of a stair: of one part (Run or Landing) and side in the stair's structures, or of a StairStructure subelement, whose values are the ones Archicad solved for that part (API_StairStructureType). monolith is given for a Monolith structure and sideStair for a Side structure; beam supported and cantilevered structures have no extra data.",
+        "properties": {
+            "role": {
+                "type": "string",
+                "description": "Whether the structure belongs to the flights (Run) or to the landings (Landing).",
+                "enum": ["Run", "Landing", "Unknown"]
+            },
+            "side": {
+                "type": "string",
+                "description": "Where the structure supports the steps: from the left, from the right or from under.",
+                "enum": ["LeftSide", "RightSide", "UnderSide", "Unknown"]
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the structure is modeled."
+            },
+            "structureType": {
+                "type": "string",
+                "description": "The type of the structure: side stringers, monolithic, beam supported or cantilevered.",
+                "enum": ["Side", "Monolith", "BeamSupport", "CantileveredSupport", "Unknown"]
+            },
+            "bottomType": {
+                "type": "string",
+                "description": "The bottom of the structure: stepped along with the steps, flat under the steps, or smooth.",
+                "enum": ["Stepped", "Flat", "Smooth", "Unknown"]
+            },
+            "thickness": {
+                "type": "number",
+                "description": "The thickness of the structure."
+            },
+            "horizontalThickness": {
+                "type": "number",
+                "description": "The horizontal thickness of the structure."
+            },
+            "monolith": {
+                "$ref": "#/StairMonolithStructure"
+            },
+            "sideStair": {
+                "$ref": "#/StairSideStructure"
+            }
+        },
+        "additionalProperties": false,
+        "required": ["role", "side", "visible", "structureType", "bottomType", "thickness", "horizontalThickness"]
+    },
+    "StairMonolithStructure": {
+        "type": "object",
+        "description": "The data of a monolithic stair structure (API_MonolithStairStructData). An attribute that is not set is left out.",
+        "properties": {
+            "thinning": {
+                "type": "boolean",
+                "description": "Whether the structure is thinned."
+            },
+            "monolithThickness": {
+                "type": "number",
+                "description": "The thickness of the monolith."
+            },
+            "bottomOversize": {
+                "type": "number",
+                "description": "The size of the horizontal bottom."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the structure."
+            },
+            "sideFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the building material."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surfaces of the structure are chained."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The top surface of the structure."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The left side surface of the structure."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The right side surface of the structure."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The bottom surface of the structure."
+            },
+            "surfaceMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface material of the structure."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the cut parts' 2D representation."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "description": "The pen of the cut parts' 2D representation."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the 2D representation."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen of the 2D representation."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill pen of the structure."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill background pen of the structure."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the drainings on the left and the right side are the same."
+            },
+            "drainings": {
+                "type": "array",
+                "description": "The drainings of the structure, on the left and on the right side.",
+                "items": {
+                    "$ref": "#/StairStructureDraining"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["thinning", "monolithThickness", "bottomOversize", "materialsChained", "topMaterial", "leftMaterial", "rightMaterial", "bottomMaterial", "cutLinePen", "pen", "cutFillPen", "cutFillBackgroundPen", "uniformDrainings", "drainings"]
+    },
+    "StairStructureDraining": {
+        "type": "object",
+        "description": "The draining of one side of a monolithic stair structure (API_StairStructureDrainingData).",
+        "properties": {
+            "side": {
+                "type": "string",
+                "enum": ["Left", "Right"]
+            },
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the draining is modeled."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the draining."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the draining from the boundary."
+            },
+            "horizontalDepth": {
+                "type": "number",
+                "description": "The horizontal depth of the draining."
+            },
+            "verticalDepth": {
+                "type": "number",
+                "description": "The vertical depth of the draining."
+            },
+            "material": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface of the draining."
+            },
+            "surfaceType": {
+                "type": "string",
+                "description": "Whether the draining is stepped or smooth.",
+                "enum": ["Stepped", "Smooth"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["side", "enabled", "width", "offset", "horizontalDepth", "verticalDepth", "material", "surfaceType"]
+    },
+    "StairSideStructure": {
+        "type": "object",
+        "description": "The data of a side (stringer) stair structure (API_SideStairStructData).",
+        "properties": {
+            "width": {
+                "type": "number",
+                "description": "The width of the stringer."
+            },
+            "heightAboveTread": {
+                "type": "number",
+                "description": "The height of the stringer above its tread."
+            },
+            "heightMeasure": {
+                "type": "string",
+                "description": "How the height above the tread is measured: perpendicular to the stair or vertically.",
+                "enum": ["Perpendicular", "Vertical"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["width", "heightAboveTread", "heightMeasure"]
+    },
+    "StairMonolithStructureSettings": {
+        "type": "object",
+        "description": "The data of a monolithic stair structure that CreateStairs and ModifyStairs write (API_MonolithStairStructData), with the keys GetDetailsOfElements reads in StairMonolithStructure. Only the given fields are changed. An attribute is given by the id of an existing attribute of its type; an unknown id is refused.",
+        "properties": {
+            "thinning": {
+                "type": "boolean",
+                "description": "Whether the structure is thinned."
+            },
+            "monolithThickness": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The thickness of the monolith. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure, whose thickness is the structure's thickness; ModifyStairs then reports it as not applied."
+            },
+            "bottomOversize": {
+                "type": "number",
+                "description": "The size of the horizontal bottom. Archicad 26 and 28 were seen to keep 0 here for a Smooth structure; ModifyStairs then reports it as not applied."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the structure."
+            },
+            "sideFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the building material."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surfaces of the structure are chained. While they are, Archicad was seen to give the top the surface of another side, so give false with a surface of one side."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The top surface of the structure."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The left side surface of the structure."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The right side surface of the structure."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The bottom surface of the structure."
+            },
+            "surfaceMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface material of the structure."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the cut parts' 2D representation."
+            },
+            "cutLinePen": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "The pen of the cut parts' 2D representation."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the 2D representation."
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 255,
+                "description": "The pen of the 2D representation."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill pen of the structure."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The cut fill background pen of the structure."
+            },
+            "uniformDrainings": {
+                "type": "boolean",
+                "description": "Whether the drainings on the left and the right side are the same."
+            },
+            "drainings": {
+                "type": "array",
+                "description": "The drainings of the structure to change, each named by its side. Only the given fields of the given sides are changed.",
+                "items": {
+                    "$ref": "#/StairStructureDrainingSettings"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "StairStructureDrainingSettings": {
+        "type": "object",
+        "description": "The draining of one side of a monolithic stair structure that CreateStairs and ModifyStairs write (API_StairStructureDrainingData). Only the given fields are changed.",
+        "properties": {
+            "side": {
+                "type": "string",
+                "description": "The side of the draining.",
+                "enum": ["Left", "Right"]
+            },
+            "enabled": {
+                "type": "boolean",
+                "description": "Whether the draining is modeled."
+            },
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The width of the draining."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the draining from the boundary."
+            },
+            "horizontalDepth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The horizontal depth of the draining."
+            },
+            "verticalDepth": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The vertical depth of the draining."
+            },
+            "material": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface of the draining."
+            },
+            "surfaceType": {
+                "type": "string",
+                "description": "Whether the draining is stepped or smooth.",
+                "enum": ["Stepped", "Smooth"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["side"]
+    },
+    "StairSideStructureSettings": {
+        "type": "object",
+        "description": "The data of a side (stringer) stair structure that CreateStairs and ModifyStairs write (API_SideStairStructData), with the keys GetDetailsOfElements reads in StairSideStructure. Only the given fields are changed.",
+        "properties": {
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "The width of the stringer."
+            },
+            "heightAboveTread": {
+                "type": "number",
+                "description": "The height of the stringer above its tread."
+            },
+            "heightMeasure": {
+                "type": "string",
+                "description": "How the height above the tread is measured: perpendicular to the stair or vertically.",
+                "enum": ["Perpendicular", "Vertical"]
+            }
+        },
+        "additionalProperties": false
+    },
     "StairSymbolView": {
         "type": "string",
         "description": "The view a stair structure symbol setting belongs to (API_StairStructSymbViewID).",
@@ -15808,6 +16994,36 @@ var gSchemaDefinitions = {
         "type": "string",
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairTreadPartSettings": {
+        "type": "object",
+        "description": "The tread settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::tread[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+        "properties": {
+            "role": { "type": "string", "enum": [ "Run", "Landing" ], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+            "visible": { "type": "boolean", "description": "Whether the treads are present." },
+            "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the treads." },
+            "offset": { "type": "number", "description": "The offset of the treads." },
+            "nosingType": { "type": "string", "enum": [ "ByValue", "BySlanting" ], "description": "Whether the nosing is given by its length (nosingValue) or by the slant of the riser (nosingSlant)." },
+            "nosingValue": { "type": "number", "description": "The length of the nosing." },
+            "nosingSlant": { "type": "number", "description": "The slant of the nosing in radians." }
+        },
+        "additionalProperties": false,
+        "required": [ "role" ]
+    },
+    "StairRiserPartSettings": {
+        "type": "object",
+        "description": "The riser settings of the flights (Run) or of the landings (Landing) of a stair (API_StairType::riser[role]). CreateStairs and ModifyStairs change only the given fields of the given part.",
+        "properties": {
+            "role": { "type": "string", "enum": [ "Run", "Landing" ], "description": "The part of the stair: the flights (Run) or the landings (Landing)." },
+            "visible": { "type": "boolean", "description": "Whether the risers are present." },
+            "thickness": { "type": "number", "minimum": 0.0, "description": "The thickness of the risers." },
+            "offset": { "type": "number", "description": "The offset of the risers." },
+            "crossSection": { "type": "string", "enum": [ "Simple", "Slanted" ], "description": "The cross section of the risers." },
+            "angle": { "type": "number", "description": "The angle of a slanted riser in radians." },
+            "position": { "type": "string", "enum": [ "OnTread", "BehindTread" ], "description": "Whether the risers stand on the treads or behind them." }
+        },
+        "additionalProperties": false,
+        "required": [ "role" ]
     },
     "StairRules": {
         "type": "object",
@@ -15846,9 +17062,20 @@ var gSchemaDefinitions = {
         },
         "additionalProperties": false
     },
+    "StairHeadroom": {
+        "type": "object",
+        "description": "The headroom of a Stair (API_StairHeadroomData, Stair Settings > Headroom): the clear space above the flights that Archicad checks against the elements above the stair. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "method": { "type": "string", "enum": ["RightAngleToSlope", "VerticallyToSlope", "Unknown"], "description": "How the headroom is generated: at right angle to the slope of the stair (APIHM_RightAngleToSlope) or vertically to it (APIHM_VerticallyToSlope). GetDetailsOfElements returns Unknown for a value it does not know; CreateStairs and ModifyStairs refuse Unknown." },
+            "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "The height of the headroom." },
+            "leftOffset": { "type": "number", "description": "The offset of the headroom from the left side of the stair." },
+            "rightOffset": { "type": "number", "description": "The offset of the headroom from the right side of the stair." }
+        },
+        "additionalProperties": false
+    },
     "StairLayoutSettings": {
         "type": "object",
-        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (part of API_StairLayoutData). Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout.",
+        "description": "The floor plan or reflected ceiling plan display settings of a Stair that CreateStairs and ModifyStairs write (API_StairLayoutData without its visibility and isAutoOnStoryVisibility, which storyVisibility sets): the shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides. Only the given fields are changed; GetDetailsOfElements reads them back in floorPlanLayout and reflectedCeilingPlanLayout, with the same keys.",
         "properties": {
             "storyVisibility": {
                 "type": "string",
@@ -15874,9 +17101,374 @@ var gSchemaDefinitions = {
             "showStructure": {
                 "type": "boolean",
                 "description": "Whether the stair structures are shown."
+            },
+            "gridTypeAbove": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories above the stair's relevant stories (Unknown is refused)."
+            },
+            "gridTypeTop": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the top relevant story (Unknown is refused)."
+            },
+            "gridTypeMiddle": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the middle relevant stories (Unknown is refused)."
+            },
+            "gridTypeBottom": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the bottom relevant story (Unknown is refused)."
+            },
+            "gridTypeBelow": {
+                "$ref": "#/StairGridType",
+                "description": "The symbol shown on the stories below the stair's relevant stories (Unknown is refused)."
+            },
+            "breakLineAngleType": {
+                "type": "string",
+                "description": "How the angle of the break line is given: by breakLineAngle to the vertical or to the horizontal, or worked out from breakLineAngleNumberOfGoings.",
+                "enum": ["AngleToVertical", "AngleToHorizontal", "NumberOfGoings"]
+            },
+            "breakLineAngle": {
+                "type": "number",
+                "description": "The angle of the break line, used when breakLineAngleType is AngleToVertical or AngleToHorizontal."
+            },
+            "breakLineAngleNumberOfGoings": {
+                "type": "integer",
+                "description": "The number of goings the break line crosses, used when breakLineAngleType is NumberOfGoings.",
+                "minimum": 1
+            },
+            "breakLineDistance": {
+                "type": "number",
+                "description": "The gap of the break line."
+            },
+            "breakLinePositionType": {
+                "type": "string",
+                "description": "Where the break line is: at the floor plan cut plane height, at a custom height or at a given riser.",
+                "enum": ["FloorPlanCutPlaneHeight", "CustomHeight", "AtNthRiser"]
+            },
+            "upperBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the upper break line, used when breakLinePositionType is CustomHeight."
+            },
+            "lowerBreakLineCustomPosition": {
+                "type": "number",
+                "description": "The height of the lower break line, used when breakLinePositionType is CustomHeight."
+            },
+            "upperBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the upper break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "lowerBreakLineNthRiserPosition": {
+                "type": "integer",
+                "description": "The riser of the lower break line, used when breakLinePositionType is AtNthRiser.",
+                "minimum": 0
+            },
+            "overrideLineType": {
+                "type": "boolean",
+                "description": "Whether lineTypeId overrides the line types of the stair's components."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The override line type: a line type of the project."
+            },
+            "overridePen": {
+                "type": "boolean",
+                "description": "Whether pen overrides the line pens of the stair's components."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The override line pen.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "overrideSymbolFill": {
+                "type": "boolean",
+                "description": "Whether symbolFillId and its pens override the symbol fills of the stair's components."
+            },
+            "symbolFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The override symbol fill: a fill type of the project."
+            },
+            "symbolFillPen": {
+                "type": "integer",
+                "description": "The foreground pen of the override symbol fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "symbolFillBackgroundPen": {
+                "type": "integer",
+                "description": "The background pen of the override symbol fill.",
+                "minimum": -1,
+                "maximum": 255
             }
         },
         "additionalProperties": false
+    },
+    "StairStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one structure symbol of a Stair that CreateStairs and ModifyStairs write (API_StairStructureSymbolData of API_StairType::structSymbData), for one structure type and view. Only the given fields are changed; GetDetailsOfElements reads them back in structureSymbols, with the same keys.",
+        "properties": {
+            "structureType": {
+                "type": "string",
+                "description": "The structure the symbol is for: the structure under the stair or the stringers.",
+                "enum": ["UnderStructure", "Stringer"]
+            },
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "visibleLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the visible structure lines: a line type of the project."
+            },
+            "visibleLinePen": {
+                "type": "integer",
+                "description": "Pen of the visible structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden structure lines: a line type of the project."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden structure lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the visible structure: a fill type of the project."
+            },
+            "visibleFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the visible structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "visibleFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the visible structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "hiddenFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the hidden structure: a fill type of the project."
+            },
+            "hiddenFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the hidden structure fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "hiddenFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the hidden structure fill.",
+                "minimum": -1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["structureType", "view"]
+    },
+    "StairMonolithStructureSymbolSettings": {
+        "type": "object",
+        "description": "The line types, pens and fills of one symbol of a Stair's monolithic structure that CreateStairs and ModifyStairs write (API_StairMonolithStructureSymbolData of API_StairType::monolithStructureSymbolData), for one view and visible or hidden part. Only the given fields are changed; GetDetailsOfElements reads them back in monolithStructureSymbols, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the symbol is for (Unknown is refused)."
+            },
+            "part": {
+                "$ref": "#/StairSymbolPart",
+                "description": "The visible or the hidden part of the structure (Unknown is refused)."
+            },
+            "goingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the going lines: a line type of the project."
+            },
+            "goingLinePen": {
+                "type": "integer",
+                "description": "Pen of the going lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "goingNosingLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the nosing lines: a line type of the project."
+            },
+            "goingNosingLinePen": {
+                "type": "integer",
+                "description": "Pen of the nosing lines.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines: a line type of the project."
+            },
+            "connectionLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines. Archicad keeps it equal to connectionDetailLinePen: when the two are given different, both are read back as connectionDetailLinePen, and the difference is reported as an error, so give them the same pen.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "connectionDetailLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the connection lines on detail views: a line type of the project."
+            },
+            "connectionDetailLinePen": {
+                "type": "integer",
+                "description": "Pen of the connection lines on detail views. Archicad also uses it as connectionLinePen (see there).",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill type of the draining: a fill type of the project."
+            },
+            "drainingFillPen": {
+                "type": "integer",
+                "description": "Foreground pen of the draining fill.",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "drainingFillBackgroundPen": {
+                "type": "integer",
+                "description": "Background pen of the draining fill.",
+                "minimum": -1,
+                "maximum": 255
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the contour lines: a line type of the project."
+            },
+            "contourLinePen": {
+                "type": "integer",
+                "description": "Pen of the contour lines.",
+                "minimum": 1,
+                "maximum": 255
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view", "part"]
+    },
+    "StairStructureVisibilitySettings": {
+        "type": "object",
+        "description": "Which structure symbols of a Stair are shown on which of its relevant stories, for one view, that CreateStairs and ModifyStairs write (API_StairStructureComponentSettingsVisibility of API_StairType::structureVisibilityOnStories). Only the given fields of the given items are changed; GetDetailsOfElements reads them back in structureVisibilityOnStories, with the same keys.",
+        "properties": {
+            "view": {
+                "$ref": "#/StairSymbolView",
+                "description": "The view the visibility is for (Unknown is refused)."
+            },
+            "uniformSymbolRepresentationEnabled": {
+                "type": "boolean",
+                "description": "Whether one structure symbol representation is used on every story (Archicad's uniform symbol representation) instead of the settings per story range."
+            },
+            "stories": {
+                "type": "array",
+                "description": "The visibility per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID). Only the given story ranges are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "relevantStories": {
+                            "type": "string",
+                            "description": "The story range: every story, the stories below the relevant stories, the bottom, middle and top relevant story, or the stories above them.",
+                            "enum": ["AllStories", "BelowRelevant", "BottomRelevant", "MiddleRelevant", "TopRelevant", "AboveRelevant"]
+                        },
+                        "structures": {
+                            "type": "array",
+                            "description": "Whether the lines of each structure are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structure": {
+                                        "type": "string",
+                                        "description": "The structure: beam, cantilevered, stringer or monolithic.",
+                                        "enum": ["Beam", "Cantilevered", "Stringer", "Monolith"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its lines are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structure", "visible"]
+                            }
+                        },
+                        "fills": {
+                            "type": "array",
+                            "description": "Whether the fills of each structure type are shown, per visible or hidden part. Only the given items are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "structureType": {
+                                        "type": "string",
+                                        "description": "The structure under the stair or the stringers.",
+                                        "enum": ["UnderStructure", "Stringer"]
+                                    },
+                                    "visible": {
+                                        "type": "boolean",
+                                        "description": "Whether its fill is shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part", "structureType", "visible"]
+                            }
+                        },
+                        "monolithParts": {
+                            "type": "array",
+                            "description": "Which parts of a monolithic structure are shown, per visible or hidden part. Only the given fields are changed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "part": {
+                                        "$ref": "#/StairSymbolPart",
+                                        "description": "The visible or the hidden part of the structure (Unknown is refused)."
+                                    },
+                                    "connectionVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the connection lines are shown."
+                                    },
+                                    "drainingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the draining is shown."
+                                    },
+                                    "landingLineVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the landing lines are shown."
+                                    },
+                                    "structureGoingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the going lines of the structure are shown."
+                                    },
+                                    "structureGoingNosingVisible": {
+                                        "type": "boolean",
+                                        "description": "Whether the nosing lines of the structure are shown."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["part"]
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["relevantStories"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["view"]
     },
     "StairLayout": {
         "type": "object",
@@ -16082,6 +17674,183 @@ var gSchemaDefinitions = {
             "depthCoordinates"
         ]
     },
+    "InteriorElevationDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and its segments. Each segment is one viewpoint of the Project Map, with its own name, reference ID, lines and settings.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerGuid": {
+                "$ref": "#/Guid",
+                "description": "The GUID Archicad keeps for the common marker (API_InteriorElevationType::markerGuid)."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments of the interior elevation, in the order of its line (CreateInteriorElevations makes one per gap between two nodeCoordinates). Empty when they cannot be read.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "useCommonMarker",
+            "segments"
+        ]
+    },
+    "InteriorElevationSegmentDetails": {
+        "type": "object",
+        "description": "One segment of an Interior Elevation: one viewpoint of the Project Map.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the segment, shown in the Project Map. RenameNavigatorItem changes it through the segment's viewpoint."
+            },
+            "idStr": {
+                "type": "string",
+                "description": "The reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "mainCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's line, from start to end. Empty when the line cannot be read. Archicad does not keep the line on the nodeCoordinates given to CreateInteriorElevations: in Archicad 26 and 28 each segment's line is moved to the left of its pair of nodes by the depth.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "depthCoordinates": {
+                "type": "array",
+                "description": "The points of the segment's depth line, its far boundary. Empty when it cannot be read.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "startCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The first point of the segment's line."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The last point of the segment's line."
+            },
+            "depth": {
+                "type": "number",
+                "description": "The distance of the first depth point from the first line of the segment (depth of CreateInteriorElevations)."
+            },
+            "viewDirection": {
+                "$ref": "#/Coordinate2D",
+                "description": "The unit vector perpendicular to the first line of the segment, pointing to the side of the depth line: the direction the segment looks in."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationDetails",
+                "description": "The settings of the segment (API_SectionSegment), with the keys GetSectionsAndElevationsDetails gives for a Section or an Elevation. showOnStories and storyToShowOn are the interior elevation's own, above, and markerShowType is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "idStr",
+            "mainCoordinates",
+            "depthCoordinates",
+            "settings"
+        ]
+    },
+    "InteriorElevationSegmentSettableDetails": {
+        "type": "object",
+        "description": "The changes to one segment of an Interior Elevation, for SetInteriorElevationsDetails. Only the fields given are changed.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the segment in the segments that GetDetailsOfElements returns for the interior elevation, from 0."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the segment, shown in the Project Map."
+            },
+            "id": {
+                "type": "string",
+                "description": "The new reference ID of the segment, shown in its marker and in the Project Map."
+            },
+            "settings": {
+                "$ref": "#/SectionElevationSettableDetails",
+                "description": "The segment settings to change (API_SectionSegment), with the keys of SetSectionsAndElevationsDetails. showOnStories, storyToShowOn and markerShowType are not settings of a segment and are refused here; showOnStories and storyToShowOn are set on the interior elevation itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentIndex"
+        ]
+    },
+    "InteriorElevationSettableDetails": {
+        "type": "object",
+        "description": "The settings of an Interior Elevation element and of its segments that SetInteriorElevationsDetails changes, with the keys of InteriorElevationDetails. Only the fields given are changed.",
+        "properties": {
+            "showOnStories": {
+                "type": "string",
+                "enum": ["All", "OneStory", "InRange", "PartRange"],
+                "description": "Which stories the interior elevation is shown on."
+            },
+            "storyToShowOn": {
+                "type": "integer",
+                "description": "The story index the interior elevation is shown on, if showOnStories is 'OneStory'."
+            },
+            "useCommonMarker": {
+                "type": "boolean",
+                "description": "Whether the common marker of the interior elevation is shown."
+            },
+            "commonMarkerPenIndex": {
+                "type": "integer",
+                "description": "Pen index of the common marker."
+            },
+            "commonMarkerFontIndex": {
+                "type": "integer",
+                "description": "Font index of the common marker."
+            },
+            "commonMarkerSize": {
+                "type": "number",
+                "description": "Size of the common marker."
+            },
+            "commonMarkerTextSize": {
+                "type": "number",
+                "description": "Size of the common marker's text."
+            },
+            "segments": {
+                "type": "array",
+                "description": "The segments to change, each chosen by its segmentIndex. Segments not listed are kept as they are.",
+                "items": {
+                    "$ref": "#/InteriorElevationSegmentSettableDetails"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "PictureAnchorPoint": {
         "type": "string",
         "description": "The anchor point of the picture on a 3x3 grid of its box (API_PictureType::anchorPoint).",
@@ -16112,6 +17881,10 @@ var gSchemaDefinitions = {
             "box": {
                 "$ref": "#/BoundingBox2D",
                 "description": "The box the picture is drawn in, in model units, before its rotation by angle. For an unmirrored picture this is API_PictureType::destBox; a mirrored picture is drawn one width away from its stored destBox (along the rotated x axis), and this box is the drawn one, so a mirrored and an unmirrored picture drawn at the same place report the same box."
+            },
+            "position": {
+                "$ref": "#/Coordinate2D",
+                "description": "Where the anchor point of the picture is, the point it is rotated around, in model units (on a layout in layout units): the anchorPoint of its box, worked out the way ModifyPictures places it, so ModifyPictures takes it back with the same key and the picture stays where it is. For an unmirrored picture it is the anchorPoint of box; for a mirrored one it follows ModifyPictures, which shifts the stored box by one width along x without the rotation."
             },
             "width": {
                 "type": "number",
@@ -16270,6 +18043,12 @@ var gSchemaDefinitions = {
                 "$ref": "#/CurtainWallFrameDetails"
             },
             {
+                "$ref": "#/CurtainWallJunctionDetails"
+            },
+            {
+                "$ref": "#/CurtainWallAccessoryDetails"
+            },
+            {
                 "$ref": "#/MeshDetails"
             },
             {
@@ -16303,7 +18082,19 @@ var gSchemaDefinitions = {
                 "$ref": "#/StairDetails"
             },
             {
+                "$ref": "#/StairTreadDetails"
+            },
+            {
+                "$ref": "#/StairRiserDetails"
+            },
+            {
+                "$ref": "#/StairStructureDetails"
+            },
+            {
                 "$ref": "#/SectionDetails"
+            },
+            {
+                "$ref": "#/InteriorElevationDetails"
             },
             {
                 "$ref": "#/PictureDetails"
@@ -16533,6 +18324,7 @@ var gSchemaDefinitions = {
     },
     "RoofLevel": {
         "type": "object",
+        "description": "A level of a multi-plane roof: its height and the angle of the roof planes above it. Give levelHeight and levelAngle, or height and angle, the keys GetDetailsOfElements reads the levels with (RoofDetailsLevel), so the levels read can be sent back; levelHeight and levelAngle win when both forms are given.",
         "properties": {
             "levelHeight": {
                 "type": "number"
@@ -16540,12 +18332,31 @@ var gSchemaDefinitions = {
             "levelAngle": {
                 "type": "number",
                 "exclusiveMinimum": 0.0
+            },
+            "height": {
+                "type": "number",
+                "description": "The same as levelHeight, as GetDetailsOfElements reads it."
+            },
+            "angle": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "The same as levelAngle, as GetDetailsOfElements reads it."
             }
         },
         "additionalProperties": false,
-        "required": [
-            "levelHeight",
-            "levelAngle"
+        "anyOf": [
+            {
+                "required": [
+                    "levelHeight",
+                    "levelAngle"
+                ]
+            },
+            {
+                "required": [
+                    "height",
+                    "angle"
+                ]
+            }
         ]
     },
     "RoofPivotLine": {
@@ -17445,6 +19256,11 @@ var gSchemaDefinitions = {
                 "minimum": 0.0,
                 "description": "Thickness of the floor finish (subfloor thickness) of the zone."
             },
+            "roomLSize": {
+                "type": "number",
+                "exclusiveMinimum": 0.0,
+                "description": "Letter size of the zone (roomLSize of the Archicad API) in millimetres, not in metres like the other lengths. The zone stamps of the current Archicad libraries size their texts with their own parameters (GetGDLParametersOfElements, SetGDLParametersOfElements), so this value may not change how the stamp looks."
+            },
             "referencePosition": {
                 "$ref": "#/Coordinate2D",
                 "description": "Moves the reference point of an automatic zone; the zone is found around the new point when zones are next updated. Ignored for a manual zone (isManual true)."
@@ -17555,7 +19371,7 @@ var gSchemaDefinitions = {
     },
     "ZonePolygonDisplay": {
         "type": "string",
-        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls; for other zones it is stored but has no effect.",
+        "description": "The zone polygon display of the Zone settings: Gross uses the reference line of the bounding walls, Net their inner edges. Archicad only uses it for a zone whose boundary is the reference line of the walls (boundaryMethod ReferenceLine in GetDetailsOfElements); for other zones it is stored but has no effect.",
         "enum": [
             "Gross",
             "Net"
@@ -17611,6 +19427,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17657,6 +19477,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads of an Arc. A Circle refuses it."
             }
         },
         "additionalProperties": false,
@@ -17699,6 +19523,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17740,6 +19568,10 @@ var gSchemaDefinitions = {
             "endArrow": {
                 "$ref": "#/LineArrowhead",
                 "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "linkedArrowAttributes": {
+                "$ref": "#/LinkedArrowAttributes",
+                "description": "Optional: link (true) or unlink (false) the size and pen of the two arrowheads."
             }
         },
         "additionalProperties": false,
@@ -17942,7 +19774,7 @@ var gSchemaDefinitions = {
             },
             "height": {
                 "type": "number",
-                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content as one paragraph with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
+                "description": "The character height in millimeters. Only applied to Text elements. A multistyle Text takes its height from the per-run sizes of its content, so applying it rebuilds the content (one paragraph per line) with the new height on every run (the runs' own pens/fonts/faces are kept) and switches the element to automatic width, as setting text does. Refused when the content holds an autotext run; give the new content explicitly via text then, or use ModifyTexts."
             },
             "justification": {
                 "$ref": "#/Justification",
@@ -18818,6 +20650,10 @@ var gSchemaDefinitions = {
             "elevationOrigin": {
                 "$ref": "#/DimensionOrigin",
                 "description": "The level an Elevation dimension measures from (kept for the other types too)."
+            },
+            "elevationMarker": {
+                "$ref": "#/DimensionElevationMarker",
+                "description": "The marker of an Elevation dimension, always with all of its fields (kept for the other types too)."
             },
             "witnessPoints": {
                 "type": "array",
@@ -20430,6 +22266,50 @@ var gSchemaDefinitions = {
             "holesSurface"
         ]
     },
+    "StairQuantities": {
+        "type": "object",
+        "description": "Quantities of a Stair element, as calculated by Archicad. Lengths in meters, areas in square meters, volumes in cubic meters.",
+        "properties": {
+            "area": {
+                "type": "number",
+                "description": "The front surface area of the stair, as Archicad calls it: on a straight flight its length times its width."
+            },
+            "volume": {
+                "type": "number",
+                "description": "Volume of the stair."
+            },
+            "height": {
+                "type": "number",
+                "description": "Height of the stair."
+            },
+            "walkingLineLength": {
+                "type": "number",
+                "description": "Length of the walking line."
+            },
+            "gradient": {
+                "type": "number",
+                "description": "Inclination angle of the stair, in radians."
+            },
+            "numberOfRisers": {
+                "type": "integer",
+                "description": "Number of risers."
+            },
+            "numberOfTreads": {
+                "type": "integer",
+                "description": "Number of treads."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "area",
+            "volume",
+            "height",
+            "walkingLineLength",
+            "gradient",
+            "numberOfRisers",
+            "numberOfTreads"
+        ]
+    },
     "ElementQuantities": {
         "description": "The type-specific quantities of an element. The fields depend on the type of the element.",
         "type": "object",
@@ -20463,6 +22343,9 @@ var gSchemaDefinitions = {
             },
             {
                 "$ref": "#/BeamSegmentQuantities"
+            },
+            {
+                "$ref": "#/StairQuantities"
             }
         ]
     },
@@ -21277,6 +23160,34 @@ var gSchemaDefinitions = {
             "isControlledByPreference": {
                 "type": "boolean",
                 "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
+            },
+            "width": {
+                "type": "number",
+                "description": "The width of the flexible segment (FlexibleSegment::GetWidth), as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the flexible segment (FlexibleSegment::GetHeight), as ModifyMEPElements writes it. FlexibleSegment."
+            },
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point, as ModifyMEPElements writes it. The elements ModifyMEPElements can place: Terminal, Accessory, Equipment, Fitting, FlexibleSegment and the other modifiable MEP elements."
+            },
+            "orientation": {
+                "$ref": "#/MEPOrientation",
+                "description": "The orientation, as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "libraryPartId": {
+                "$ref": "#/LibPartUnId",
+                "description": "The library part the element uses (its main guid), as ModifyMEPElements writes it. Present with anchorPoint."
+            },
+            "xSize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local x axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
+            },
+            "ySize": {
+                "type": "number",
+                "description": "The size of the library part along the element's local y axis in meters, as ModifyMEPElements writes it. Present with anchorPoint, from Archicad 30."
             }
         },
         "additionalProperties": false,
@@ -21564,7 +23475,7 @@ var gSchemaDefinitions = {
             },
             "nodePositions": {
                 "type": "array",
-                "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
+                "description": "New positions of the routing nodes. The size must match the number of nodes of the route. A first or last node that is connected to a tee (Branch) must keep its position (within 1 mm): moving a route end away from its tee can crash Archicad, and no command moves a tee, so such an item is refused and nothing of it is changed. GetMEPRoutingElements reads them back with the same key.",
                 "items": {
                     "$ref": "#/Coordinate3D"
                 }
@@ -22241,11 +24152,11 @@ var gSchemaDefinitions = {
             },
             "width": {
                 "type": "number",
-                "description": "The new width of a flexible segment."
+                "description": "The new width of a flexible segment. It is written before height: on Archicad 29 a Ventilation flexible duct of the template then read the height given in the same item as its width too (probably a round duct, whose width and height are one diameter), so give such a duct one of them."
             },
             "height": {
                 "type": "number",
-                "description": "The new height of a flexible segment."
+                "description": "The new height of a flexible segment, written after width."
             },
             "xSize": {
                 "type": "number",
@@ -24378,6 +26289,9 @@ var gSchemaDefinitions = {
                 "additionalProperties": {
                     "$ref": "#/LibraryPartScript"
                 }
+            },
+            "parameters": {
+                "$ref": "#/LibraryPartParameterValueList"
             }
         },
         "additionalProperties": false,
@@ -24510,6 +26424,61 @@ var gSchemaDefinitions = {
             "isServerLibraryPart"
         ]
     },
+    "LibraryPartParameterValueList": {
+        "type": "array",
+        "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
+        "items": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The name of the parameter."
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Integer",
+                        "Length",
+                        "Angle",
+                        "RealNumber",
+                        "LightSwitch",
+                        "RGBColor",
+                        "Intensity",
+                        "LineType",
+                        "Material",
+                        "FillPattern",
+                        "PenColor",
+                        "String",
+                        "Boolean",
+                        "BuildingMaterial",
+                        "Profile"
+                    ],
+                    "description": "The type of the parameter."
+                },
+                "dimension1": {
+                    "type": "integer",
+                    "description": "The 1st dimension of an array parameter."
+                },
+                "dimension2": {
+                    "type": "integer",
+                    "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+                },
+                "value": {
+                    "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "type",
+                "value"
+            ]
+        }
+    },
     "LibraryPartParameterValues": {
         "type": "object",
         "properties": {
@@ -24518,59 +26487,7 @@ var gSchemaDefinitions = {
                 "description": "The name of the library part, as given."
             },
             "parameters": {
-                "type": "array",
-                "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the parameter."
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "Integer",
-                                "Length",
-                                "Angle",
-                                "RealNumber",
-                                "LightSwitch",
-                                "RGBColor",
-                                "Intensity",
-                                "LineType",
-                                "Material",
-                                "FillPattern",
-                                "PenColor",
-                                "String",
-                                "Boolean",
-                                "BuildingMaterial",
-                                "Profile"
-                            ],
-                            "description": "The type of the parameter."
-                        },
-                        "dimension1": {
-                            "type": "integer",
-                            "description": "The 1st dimension of an array parameter."
-                        },
-                        "dimension2": {
-                            "type": "integer",
-                            "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
-                        },
-                        "value": {
-                            "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
-                        },
-                        "description": {
-                            "type": "string",
-                            "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "type",
-                        "value"
-                    ]
-                }
+                "$ref": "#/LibraryPartParameterValueList"
             }
         },
         "additionalProperties": false,
@@ -28467,6 +30384,13 @@ var gSchemaDefinitions = {
                 },
                 "minItems": 2
             },
+            "baseLineArcs": {
+                "type": "array",
+                "description": "Optional. The curved edges of the baseline, as in CreateStairs and as GetDetailsOfElements returns them: begIndex and endIndex are 0-based indices of baseLinePoints, an arc bends one edge (endIndex = begIndex + 1), and arcAngle is not 0 and less than a full turn. Edges without an arc are straight.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
             "zCoordinate": {
                 "type": "number",
                 "description": "The Z coordinate (absolute elevation) of the stair base."
@@ -28946,6 +30870,64 @@ var gSchemaDefinitions = {
             "customNumbering",
             "addOwnPrefix"
         ]
+    },
+    "LayoutSubsetSettingsData": {
+        "type": "object",
+        "description": "Settings of a Layout Book subset to write, with the field names of CreateLayoutSubset and GetLayoutSubsetSettings. Every field is optional; one that is not given is left as it is.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The name of the subset."
+            },
+            "ownPrefix": {
+                "type": "string",
+                "description": "The subset's own ID prefix. Giving it also switches addOwnPrefix on, unless addOwnPrefix is given."
+            },
+            "customNumber": {
+                "type": "string",
+                "description": "The subset's custom number (its custom ID). Giving it also switches customNumbering on, unless customNumbering is given."
+            },
+            "numberingStyle": {
+                "type": "string",
+                "description": "The ID appearance style of the subset.",
+                "enum": [
+                    "Undefined",
+                    "abc",
+                    "ABC",
+                    "1",
+                    "01",
+                    "001",
+                    "0001",
+                    "noID"
+                ]
+            },
+            "startAt": {
+                "type": "integer",
+                "description": "The number the subset's numbering starts at."
+            },
+            "continueNumbering": {
+                "type": "boolean",
+                "description": "Whether the subset continues using the ID assignment of the levels above."
+            },
+            "useUpperPrefix": {
+                "type": "boolean",
+                "description": "Whether the subset uses the prefix and IDs of the levels above."
+            },
+            "includeToIDSequence": {
+                "type": "boolean",
+                "description": "Whether the subset is included in the ID sequence: the opposite of the Subset Settings dialog's \"Do not include this Subset in ID sequence\"."
+            },
+            "customNumbering": {
+                "type": "boolean",
+                "description": "Whether the subset has a custom ID (customNumber) instead of an automatically generated one."
+            },
+            "addOwnPrefix": {
+                "type": "boolean",
+                "description": "Whether the subset adds its own prefix (ownPrefix)."
+            }
+        },
+        "additionalProperties": false
     },
     "CreatedDatabase": {
         "type": "object",
@@ -30646,12 +32628,17 @@ var gSchemaDefinitions = {
         "properties": {
             "absoluteBottom": {
                 "type": "number",
-                "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+                "description": "The absolute bottom level of the curtain wall or its subelement: the level of its home story plus bottomFromHomeStory."
+            },
+            "bottomFromHomeStory": {
+                "type": "number",
+                "description": "The bottom of the curtain wall or its subelement relative to its home story, as ACAPI_CurtainWall_GetCWAbsoluteBottom returns it despite its name. Earlier versions of GetCurtainWallAbsoluteBottoms returned this value as absoluteBottom, which was only right on a story at level 0."
             }
         },
         "additionalProperties": false,
         "required": [
-            "absoluteBottom"
+            "absoluteBottom",
+            "bottomFromHomeStory"
         ]
     },
     "TextContentChange": {
@@ -31170,6 +33157,71 @@ var gSchemaDefinitions = {
         "required": [
             "turnType"
         ]
+    },
+    "RecreateNotCarriedOver": {
+        "type": "object",
+        "description": "Something that was linked to the old element of a Recreate command and could not be moved to the new one.",
+        "properties": {
+            "relation": {
+                "type": "string",
+                "enum": [
+                    "Label",
+                    "Dimension",
+                    "LevelDimension",
+                    "Group"
+                ],
+                "description": "Label: an associative label of the old element; it is deleted with it. Dimension, LevelDimension: a dimension of the current database (the active window) that measured the old element; it loses those witness points or is deleted. Group: the old element was in a group; the new one is not."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The label or dimension, as it was before the old element was deleted. Not given for Group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "relation"
+        ]
+    },
+    "RecreatedElement": {
+        "type": "object",
+        "description": "An element a Recreate command created again, and the old element it replaces.",
+        "properties": {
+            "oldElementId": {
+                "$ref": "#/ElementId",
+                "description": "The old element, which was deleted."
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The new element."
+            },
+            "notCarriedOver": {
+                "type": "array",
+                "description": "What was linked to the old element and could not be moved to the new one. Only the dimensions of the current database (the active window) are listed.",
+                "items": {
+                    "$ref": "#/RecreateNotCarriedOver"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "oldElementId",
+            "elementId",
+            "notCarriedOver"
+        ]
+    },
+    "RecreatedElementsOrErrors": {
+        "type": "array",
+        "description": "One item per input element of a Recreate command: the new element, or an error. After an error nothing was changed for that element.",
+        "items": {
+            "oneOf": [
+                {
+                    "$ref": "#/RecreatedElement"
+                },
+                {
+                    "$ref": "#/ErrorItem"
+                }
+            ]
+        }
     }
 }
 ;

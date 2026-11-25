@@ -1,6 +1,8 @@
 """Renames the top story with SetStories, reads the stories back, then restores the original names.
 
 SetStories takes the whole story structure: stories left out are deleted, new ones are created.
+A dry run first shows what leaving out the top story would delete (the story and the number
+of elements on it) without changing anything.
 """
 import aclib
 
@@ -9,6 +11,9 @@ original = [
     {'index': s['index'], 'dispOnSections': s['dispOnSections'], 'level': s['level'], 'name': s['name']}
     for s in stories
 ]
+
+if len (original) > 1:
+    aclib.PrintJson (aclib.RunTapirCommand ('SetStories', {'stories': original[:-1], 'dryRun': True}))
 
 changed = [dict (s) for s in original]
 changed[-1]['name'] = 'Tapir Top Story'

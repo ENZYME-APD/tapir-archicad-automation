@@ -1,0 +1,456 @@
+{
+ "version": 1,
+ "groups": [
+  "Graphic Override Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "CreateGraphicalOverrideRule",
+   "group": "Graphic Override Commands",
+   "version": "1.7.2",
+   "description": "Creates or overwrites a graphic override rule in a rule group: name, criterion XML, surface color and line pen. Needs Archicad 27 or later.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the override rule. Rule names are unique in the project: an existing rule with this name is overwritten, in whichever rule group it is."
+     },
+     "ruleGroupName": {
+      "type": "string",
+      "description": "Rule group of a new rule, created when it does not exist. Default: 'Tapir'. An overwritten rule stays in its own group."
+     },
+     "criterionXML": {
+      "type": "string",
+      "description": "Optional criterion XML. Archicad only takes XML in its own format: read it from a rule made in the GUI with GetGraphicalOverrideRules and change the values. XML written from scratch is dropped without an error, and so is an empty one: the rule then applies to all elements."
+     },
+     "surfaceRGB": {
+      "type": "object",
+      "description": "Optional color override of the cut and uncut surfaces. Components are in the 0..1 range.",
+      "properties": {
+       "red": {
+        "type": "number"
+       },
+       "green": {
+        "type": "number"
+       },
+       "blue": {
+        "type": "number"
+       }
+      },
+      "required": [
+       "red",
+       "green",
+       "blue"
+      ],
+      "additionalProperties": false
+     },
+     "linePenIndex": {
+      "type": "integer",
+      "description": "Optional pen index override for lines, markers and texts. Only a positive index takes effect."
+     },
+     "overrideContours": {
+      "type": "boolean",
+      "description": "Optional. If true, the contours of the overridden surfaces are recolored too."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "name"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "ruleId": {
+      "$ref": "#/GuidId",
+      "description": "The created or overwritten override rule."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "ruleId"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateGraphicalOverrideRuleComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/GraphicOverride/CreateGraphicalOverrideRule.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/GraphicOverride/CreateGraphicalOverrideRule.py",
+    "description": "Creates a graphic override rule that colors surfaces red with CreateGraphicalOverrideRule. The rule is created in the rule group 'Tapir Examples', which is deleted with it at the end. Without criterionXML the rule applies to every element. Requires Archicad 27 or later.",
+    "code": "\"\"\"Creates a graphic override rule that colors surfaces red with CreateGraphicalOverrideRule.\n\nThe rule is created in the rule group 'Tapir Examples', which is deleted with it at the end. Without criterionXML\nthe rule applies to every element. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateGraphicalOverrideRule', {\n    'name': 'Tapir Example Red Surfaces',\n    'ruleGroupName': 'Tapir Examples',\n    'surfaceRGB': {'red': 1.0, 'green': 0.0, 'blue': 0.0},\n    'linePenIndex': 20,\n    'overrideContours': True\n}))\n\naclib.RunTapirCommand ('GetGraphicalOverrideRules')\n\naclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples'], 'deleteRules': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateGraphicalOverrideRule"
+  },
+  {
+   "name": "GetGraphicalOverrideRules",
+   "group": "Graphic Override Commands",
+   "version": "1.7.2",
+   "description": "Returns every graphic override rule with its criterion XML. Needs Archicad 27 or later.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "rules": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "ruleId": {
+         "$ref": "#/GuidId"
+        },
+        "name": {
+         "type": "string"
+        },
+        "ruleGroupName": {
+         "type": "string",
+         "description": "Name of the rule group the rule belongs to."
+        },
+        "criterionXML": {
+         "type": "string",
+         "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules."
+        }
+       },
+       "required": [
+        "ruleId",
+        "name",
+        "ruleGroupName",
+        "criterionXML"
+       ],
+       "additionalProperties": false
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "rules"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetGraphicalOverrideRulesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/GraphicOverride/GetGraphicalOverrideRules.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/GraphicOverride/GetGraphicalOverrideRules.py",
+    "description": "Lists every graphic override rule of the project with its rule group and criterion XML with GetGraphicalOverrideRules. Requires Archicad 27 or later.",
+    "code": "\"\"\"Lists every graphic override rule of the project with its rule group and criterion XML with GetGraphicalOverrideRules.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nrules = aclib.RunTapirCommand ('GetGraphicalOverrideRules')['rules']\nfor rule in rules:\n    print (rule['ruleGroupName'], '/', rule['name'])\n    print (rule['criterionXML'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetGraphicalOverrideRules"
+  },
+  {
+   "name": "CreateGraphicalOverrideCombination",
+   "group": "Graphic Override Commands",
+   "version": "1.7.2",
+   "description": "Creates a graphic override combination from rule names, or replaces the rules of an existing one. Needs Archicad 27 or later.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the override combination. When a combination with this name exists, its rule list is replaced."
+     },
+     "ruleNames": {
+      "type": "array",
+      "description": "Names of the override rules in the combination, in order. Rule names are unique in the project, whatever the rule group. An empty list makes a combination without rules.",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "name",
+     "ruleNames"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "combinationId": {
+      "$ref": "#/GuidId",
+      "description": "The created or changed override combination."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "combinationId"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateGraphicalOverrideCombinationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/GraphicOverride/CreateGraphicalOverrideCombination.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/GraphicOverride/CreateGraphicalOverrideCombination.py",
+    "description": "Creates a graphic override combination from a rule with CreateGraphicalOverrideCombination. The rule and the combination are created by the script and deleted at the end. Requires Archicad 27 or later.",
+    "code": "\"\"\"Creates a graphic override combination from a rule with CreateGraphicalOverrideCombination.\n\nThe rule and the combination are created by the script and deleted at the end. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateGraphicalOverrideRule', {\n    'name': 'Tapir Example Red Surfaces',\n    'ruleGroupName': 'Tapir Examples',\n    'surfaceRGB': {'red': 1.0, 'green': 0.0, 'blue': 0.0}\n})\n\ncombination = aclib.RunTapirCommand ('CreateGraphicalOverrideCombination', {\n    'name': 'Tapir Example Combination',\n    'ruleNames': ['Tapir Example Red Surfaces']\n})\naclib.PrintJson (combination)\n\naclib.RunTapirCommand ('DeleteGraphicOverrideCombinations', {\n    'graphicOverrideCombinationIds': [{'graphicOverrideCombinationId': combination['combinationId']}]\n})\naclib.RunTapirCommand ('DeleteGraphicOverrideRuleGroups', {'ruleGroupNames': ['Tapir Examples'], 'deleteRules': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateGraphicalOverrideCombination"
+  },
+  {
+   "name": "GetGraphicalOverrideStyleOfElements",
+   "group": "Graphic Override Commands",
+   "version": "1.8.0",
+   "description": "Returns the graphic override style each element is drawn with in the current window: for every overridable member (line type, pens, fill types, surfaces, ...) whether the active graphic override combination replaces it, and with what. Needs Archicad 27 or later.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "styles": {
+      "type": "array",
+      "description": "The graphic override style of each element in the current window, aligned with the input, or an error.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "lineType": {
+           "$ref": "#/OverriddenValue"
+          },
+          "lineMarkerTextPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "overrideLinePenThickness": {
+           "type": "boolean"
+          },
+          "cutFillType": {
+           "$ref": "#/OverriddenValue"
+          },
+          "cutFillForegroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "cutFillBackgroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "overrideCutFillForegroundThickness": {
+           "type": "boolean"
+          },
+          "coverFillType": {
+           "$ref": "#/OverriddenValue"
+          },
+          "coverFillForegroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "coverFillBackgroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "overrideCoverFillForegroundThickness": {
+           "type": "boolean"
+          },
+          "draftFillType": {
+           "$ref": "#/OverriddenValue"
+          },
+          "draftFillForegroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "draftFillBackgroundPen": {
+           "$ref": "#/OverriddenValue"
+          },
+          "overrideDraftFillForegroundThickness": {
+           "type": "boolean"
+          },
+          "cutSurface": {
+           "$ref": "#/OverriddenValue"
+          },
+          "uncutSurface": {
+           "$ref": "#/OverriddenValue"
+          },
+          "showSkinSeparators": {
+           "type": "boolean"
+          },
+          "hideCutContours": {
+           "type": "boolean"
+          },
+          "hideUncutContours": {
+           "type": "boolean"
+          }
+         },
+         "additionalProperties": false
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "styles"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetGraphicalOverrideStyleOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/GraphicOverride/GetGraphicalOverrideStyleOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/GraphicOverride/GetGraphicalOverrideStyleOfElements.py",
+    "description": "Gets the graphic override style the first three walls are drawn with in the current window with GetGraphicalOverrideStyleOfElements. Needs at least one Wall. Requires Archicad 27 or later.",
+    "code": "\"\"\"Gets the graphic override style the first three walls are drawn with in the current window with GetGraphicalOverrideStyleOfElements.\n\nNeeds at least one Wall. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetGraphicalOverrideStyleOfElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetGraphicalOverrideStyleOfElements"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "AttributeId": {
+   "type": "object",
+   "description": "The identifier of an attribute.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "OverriddenValue": {
+   "type": "object",
+   "description": "A value the active graphic override combination may replace. 'overridden' tells whether it does; only then the value is given: 'attributeId' for line types, fills and surfaces, 'penIndex' for pens, 'color' for background pens and surfaces set to a color.",
+   "properties": {
+    "overridden": {
+     "type": "boolean"
+    },
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    },
+    "penIndex": {
+     "type": "integer"
+    },
+    "color": {
+     "type": "object",
+     "properties": {
+      "red": {
+       "type": "number"
+      },
+      "green": {
+       "type": "number"
+      },
+      "blue": {
+       "type": "number"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "red",
+      "green",
+      "blue"
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "overridden"
+   ]
+  }
+ }
+}

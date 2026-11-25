@@ -50,7 +50,13 @@ name: Weekly Release
 #
 # A build failure stops the run before publishing and before the version
 # bump; the tag is left in place so a maintainer can investigate and re-run
-# the pipelines (or this workflow) after fixing the problem.
+# the pipelines (or this workflow) after fixing the problem. When a build job
+# really failed, the request_fix job opens a release-failure issue and starts
+# the issue bot on it; its fix is merged as soon as its builds and review pass
+# (claude_auto_merge.yml), which starts this workflow again. The unpublished
+# tag is then on an older commit, and the next run deletes it and re-tags the
+# fixed main under the same version, when the version shipped nowhere (no
+# published release, no Grasshopper run on the tag).
 
 on:
   schedule:
@@ -114,6 +120,10 @@ jobs:
     permissions:
       contents: write   # push the tag and the version bump commit
       actions: write    # dispatch the two release pipelines
+      checks: read      # read a cancelled job's annotations ("was not acquired by Runner")
+    outputs:
+      # Read by request_fix below when this job fails.
+      version: ${{ steps.plan.outputs.version }}
 
     steps:
       - name: Require main
@@ -158,6 +168,53 @@ jobs:
             echo "::error::The version files disagree with tools/package_info.json." \
                  "Run tools/update_version.py and commit the result before releasing."
             exit 1
+          fi
+
+          # A release that failed after tagging, followed by new commits (a
+          # fix the release-failure issue below asked for, or the week's
+          # work), leaves an unpublished tag on an older commit. Re-tagging
+          # the current HEAD under the same version is safe only while that
+          # version has shipped nowhere: no published GitHub release and no
+          # Grasshopper pipeline run on the tag at all (it pushes to the
+          # Rhino package manager, and a run that failed may have pushed
+          # first). Then the stale drafts and the tag are deleted, and the
+          # code below sees no tag and cuts the release from HEAD. Anything
+          # it cannot prove, or a delete the repository's rules refuse,
+          # leaves the tag alone, and the error below asks a person instead.
+          if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null \
+             && [ "$(git rev-parse "refs/tags/$VERSION^{commit}")" != "$(git rev-parse HEAD)" ] \
+             && git merge-base --is-ancestor "refs/tags/$VERSION^{commit}" HEAD \
+             && ! gh api "repos/${{ github.repository }}/releases/tags/$VERSION" --jq '.id' > /dev/null 2>&1; then
+            GH_RUNS=$(gh api "repos/${{ github.repository }}/actions/workflows/grasshopper_plugin.yml/runs?branch=$VERSION&per_page=1" \
+              --jq '.total_count' 2> /dev/null || echo unknown)
+            DRAFTS=$(gh api --paginate "repos/${{ github.repository }}/releases?per_page=100" \
+              --jq ".[] | select(.draft and .tag_name == \"$VERSION\") | .id" 2> /dev/null || echo unknown)
+            if [ "$GH_RUNS" != "0" ] || printf '%s\n' "$DRAFTS" | grep -qx unknown; then
+              echo "::warning::Tag $VERSION is unpublished on an older commit, but it cannot be shown that" \
+                   "$VERSION reached neither GitHub nor the Rhino package manager (Grasshopper runs on the" \
+                   "tag: $GH_RUNS) - leaving it for a person."
+            elif [ '${{ inputs.dry_run }}' = 'true' ]; then
+              # A dry run changes nothing on GitHub: it only says what would be
+              # deleted, and drops the tag locally so the rest of the plan
+              # reports the release that would follow.
+              echo "DRY RUN: would delete the stale tag $VERSION and its draft release(s)" \
+                   "($(printf '%s' "$DRAFTS" | grep -c . || true)), then release $VERSION from the current main." \
+                | tee -a "$GITHUB_STEP_SUMMARY"
+              git tag -d "$VERSION" > /dev/null 2>&1 || true
+            else
+              DELETED=true
+              for DRAFT in $DRAFTS; do
+                gh api -X DELETE "repos/${{ github.repository }}/releases/$DRAFT" > /dev/null || DELETED=false
+              done
+              if [ "$DELETED" = true ] && git push origin ":refs/tags/$VERSION"; then
+                git tag -d "$VERSION" > /dev/null 2>&1 || true
+                echo "::warning::Tag $VERSION was never published and pointed at an older commit; deleted it" \
+                     "and its draft release(s), so $VERSION is released from the current main." \
+                  | tee -a "$GITHUB_STEP_SUMMARY"
+              else
+                echo "::warning::Could not delete the stale tag $VERSION or its drafts - leaving it for a person."
+              fi
+            fi
           fi
 
           if git rev-parse -q --verify "refs/tags/$VERSION" > /dev/null; then
@@ -434,6 +491,25 @@ jobs:
             done
             return 1
           }
+
+          # Waits for a workflow run to finish and leaves its conclusion in
+          # CONCLUSION. A transient gh failure during this multi-hour wait must
+          # not kill the release under set -e; an unknown status or an empty
+          # conclusion just means poll again (the job timeout bounds the loop).
+          wait_for_run () {
+            local RUN_ID="$1" STATUS _ 
+            while true; do
+              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
+              [ "$STATUS" = "completed" ] && break
+              sleep 60
+            done
+            CONCLUSION=''
+            for _ in 1 2 3; do
+              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
+              [ -n "$CONCLUSION" ] && break
+              sleep 20
+            done
+          }
           # The dispatch is a non-idempotent POST: a client-side failure can
           # arrive after the server accepted the run, and a blind retry
           # would start a second parallel pipeline on the tag - racing the
@@ -527,26 +603,74 @@ jobs:
               exit 1
             fi
             echo "Waiting for $WORKFLOW (run $RUN_ID)..."
-            # A transient gh failure during this multi-hour wait must not
-            # kill the release run under set -e; an unknown status just
-            # means poll again (the job timeout bounds the loop).
-            while true; do
-              STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
-              [ "$STATUS" = "completed" ] && break
-              sleep 60
+            wait_for_run "$RUN_ID"
+            # A job GitHub never gave a runner to ("The job was not acquired by
+            # Runner of type hosted even after multiple attempts") ends as
+            # 'cancelled', not 'failed' - on 2026-11-16 exactly that on
+            # build_mac (27) failed the 2.0.1 release while 15 of 16 jobs
+            # passed. Such a run is re-run, up to three times. A job that
+            # actually failed is believed: a release missing one version's
+            # binary is worse than a release that waits a week.
+            INFRA_RETRY=0
+            while [ "$CONCLUSION" != "success" ]; do
+              FAILED_JOBS=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '[.jobs[] | select(.conclusion == "failure")] | length' || echo 1)
+              if [ "$FAILED_JOBS" -gt 0 ]; then
+                echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION', $FAILED_JOBS job(s) failed." \
+                     "The release is NOT published and the version is NOT bumped." \
+                     "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
+                exit 1
+              fi
+              # Only a job GitHub itself gave up on is retried: it carries the
+              # annotation "The job was not acquired by Runner of type hosted
+              # even after multiple attempts". A job that has no steps is not
+              # proof enough - a person cancelling the release while its jobs
+              # still wait for runners leaves the same shape - and a person's
+              # cancel or a timeout must never resurrect itself. Every
+              # unfinished job must carry the annotation, or nothing is re-run.
+              UNFINISHED_IDS=$(gh_retry gh run view "$RUN_ID" --json jobs \
+                --jq '.jobs[] | select(.conclusion != "success" and .conclusion != "skipped") | .databaseId' || echo unreadable)
+              NOT_ACQUIRED=0
+              OTHER=0
+              for JOB_ID in $UNFINISHED_IDS; do
+                # Read first, then match: grep -q in the pipe could exit early
+                # and, under pipefail, turn a match into a miss.
+                MESSAGES=$(gh_retry gh api "repos/${{ github.repository }}/check-runs/$JOB_ID/annotations" \
+                  --jq '.[].message' 2>/dev/null || echo '')
+                if printf '%s\n' "$MESSAGES" | grep -q 'was not acquired by Runner'; then
+                  NOT_ACQUIRED=$((NOT_ACQUIRED + 1))
+                else
+                  OTHER=$((OTHER + 1))
+                fi
+              done
+              if [ "$OTHER" -gt 0 ] || [ "$NOT_ACQUIRED" -eq 0 ]; then
+                echo "::error::$WORKFLOW ended '$CONCLUSION' and $OTHER unfinished job(s) were not ones GitHub" \
+                     "failed to give a runner to: a cancelled release or a job that timed out. Not re-running" \
+                     "it. The release is NOT published and the version is NOT bumped; tag $VERSION stays in place."
+                exit 1
+              fi
+              INFRA_RETRY=$((INFRA_RETRY + 1))
+              if [ "$INFRA_RETRY" -gt 3 ]; then
+                echo "::error::$WORKFLOW still ended '$CONCLUSION' after three re-runs, with no failed job: nothing" \
+                     "compiled wrong, the hosted runners never picked the jobs up. The release is NOT" \
+                     "published and the version is NOT bumped; tag $VERSION stays in place - re-run this" \
+                     "workflow when GitHub has runner capacity."
+                exit 1
+              fi
+              echo "::warning::$WORKFLOW ended '$CONCLUSION' but no job failed - a hosted runner was" \
+                   "probably not acquired. Re-running the jobs that did not run" \
+                   "(attempt $INFRA_RETRY of 3)."
+              gh_retry gh run rerun "$RUN_ID" --failed || true
+              # The run stays 'completed' for a few seconds after the rerun
+              # request, so wait for it to be picked up before waiting for it
+              # to finish - otherwise the poll below reads the old conclusion.
+              for _ in $(seq 1 30); do
+                STATUS=$(gh run view "$RUN_ID" --json status --jq '.status' || echo unknown)
+                [ "$STATUS" != "completed" ] && break
+                sleep 10
+              done
+              wait_for_run "$RUN_ID"
             done
-            CONCLUSION=''
-            for _ in 1 2 3; do
-              CONCLUSION=$(gh run view "$RUN_ID" --json conclusion --jq '.conclusion' || echo '')
-              [ -n "$CONCLUSION" ] && break
-              sleep 20
-            done
-            if [ "$CONCLUSION" != "success" ]; then
-              echo "::error::$WORKFLOW finished with conclusion '$CONCLUSION'." \
-                   "The release is NOT published and the version is NOT bumped." \
-                   "Tag $VERSION stays in place - fix the build and re-run the pipelines on it."
-              exit 1
-            fi
             echo "$WORKFLOW succeeded."
           done
 
@@ -801,3 +925,156 @@ jobs:
             exit 1
           fi
           echo "Started development of version **$NEXT_VERSION**." >> "$GITHUB_STEP_SUMMARY"
+
+  # A release that stops on a build that really failed - a job with the
+  # conclusion `failure` in a pipeline this run dispatched, not a runner that
+  # was never acquired - opens one issue for that version and hands it to the
+  # issue bot (claude_issue_triage.yml), the way the Discord issue bot does.
+  # Its fix pull request is merged without the usual waiting time once its
+  # builds and review pass (claude_auto_merge.yml, "Release fixes"), and that
+  # merge starts this workflow again, which re-tags the unpublished version
+  # on the fixed main (the stale-tag step in "Decide whether to release").
+  # At most RELEASE_FIX_MAX_ATTEMPTS (default 2) issues per version reach the
+  # bot; after that the issue is labelled needs-maintainer instead. Plain
+  # shell, no model. RELEASE_FIX=false turns it off.
+  request_fix:
+    needs: release
+    if: >-
+      failure() && needs.release.outputs.version != '' && inputs.dry_run != true
+      && github.repository == 'ENZYME-APD/tapir-archicad-automation' && vars.RELEASE_FIX != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write     # open or update the release-failure issue
+      actions: write    # read the pipelines' logs; start the issue bot
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      VERSION: ${{ needs.release.outputs.version }}
+      RELEASE_RUN_ID: ${{ github.run_id }}
+      RELEASE_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      MAX_ATTEMPTS: ${{ vars.RELEASE_FIX_MAX_ATTEMPTS || '2' }}
+      NOTIFY: ${{ vars.RELEASE_FAILURE_NOTIFY }}
+    steps:
+      - name: Open the release-failure issue and start the issue bot
+        run: |
+          set -euo pipefail
+          WORK="$RUNNER_TEMP/release-fix"; mkdir -p "$WORK"
+          STARTED=$(gh api "repos/$REPO/actions/runs/$RELEASE_RUN_ID" --jq '.run_started_at')
+          # Only the pipelines this run dispatched or re-ran: a failed run left on
+          # the tag by an earlier attempt is not this failure.
+          : > "$WORK/failed.tsv"
+          for WF in archicad_addon.yml grasshopper_plugin.yml; do
+            gh run list --repo "$REPO" --workflow "$WF" --branch "$VERSION" --limit 20 \
+              --json databaseId,updatedAt \
+              --jq ".[] | select(.updatedAt >= \"$STARTED\") | .databaseId" > "$WORK/runs" || : > "$WORK/runs"
+            while read -r RUN; do
+              [ -n "$RUN" ] || continue
+              gh run view "$RUN" --repo "$REPO" --json jobs \
+                --jq ".jobs[] | select(.conclusion == \"failure\") | [\"$WF\", \"$RUN\", (.databaseId | tostring), .name, .url] | @tsv" \
+                >> "$WORK/failed.tsv" || true
+            done < "$WORK/runs"
+          done
+          if [ ! -s "$WORK/failed.tsv" ]; then
+            echo "No build job of this run's pipelines failed - not a build failure (a runner that was" \
+                 "never acquired, a release step, or a check before the builds), so no fix is requested." \
+              | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          while IFS=$'\t' read -r _ _ JOB _ _; do
+            gh api "repos/$REPO/actions/jobs/$JOB/logs" > "$WORK/log-$JOB" 2> /dev/null || : > "$WORK/log-$JOB"
+          done < "$WORK/failed.tsv"
+
+          gh label create release-failure --repo "$REPO" --color B60205 \
+            --description "A release stopped on a failed build; the issue bot fixes it" > /dev/null 2>&1 || true
+          gh issue list --repo "$REPO" --state all --label release-failure --limit 100 \
+            --json number,state,author,body > "$WORK/issues.json"
+
+          # The issue's text: the failed jobs with their error lines (or last lines),
+          # what the bot may and may not change, and how many tries this version had.
+          python3 - "$WORK" <<'PYEOF'
+          import json, os, re, sys
+          work = sys.argv[1]
+          version = os.environ['VERSION']
+          # The marker opens the body and names this run: claude_auto_merge.yml
+          # checks both before it lets the fix skip the waiting time.
+          marker = '<!-- release-failure: %s run=%s -->' % (version, os.environ['RELEASE_RUN_ID'])
+          marker_prefix = '<!-- release-failure: %s run=' % version
+          jobs = [line.rstrip('\n').split('\t') for line in open(os.path.join(work, 'failed.tsv')) if line.strip()]
+          stamp = re.compile(r'^﻿?\d{4}-\d\d-\d\dT[\d:.]+Z ?')
+          error = re.compile(r'error|fatal|failed|exception|traceback', re.I)
+          parts = []
+          budget = 45000
+          for wf, run, job, name, url in jobs:
+              try:
+                  lines = [stamp.sub('', l) for l in open(os.path.join(work, 'log-' + job), errors='replace').read().splitlines()]
+              except OSError:
+                  lines = []
+              hits = [l for l in lines if error.search(l) and '##[' not in l][:60]
+              shown = hits or lines[-60:]
+              text = '\n'.join(shown).replace('```', '` ` `')
+              text = text[:max(0, min(budget, 12000))]
+              budget -= len(text)
+              parts.append('### `%s` (%s)\n\n[Job log](%s)\n\n```\n%s\n```' % (name, wf, url, text or '(no log could be read)'))
+          issues = [i for i in json.load(open(os.path.join(work, 'issues.json')))
+                    if (i.get('body') or '').startswith(marker_prefix)
+                    and (i.get('author') or {}).get('login') in ('app/github-actions', 'github-actions[bot]', 'github-actions')]
+          attempts = len(issues)
+          max_attempts = int(os.environ.get('MAX_ATTEMPTS') or '2')
+          notify = (os.environ.get('NOTIFY') or '').strip()
+          body = '\n\n'.join([
+              marker,
+              'The release of **%s** stopped because a build failed ([release run](%s)). '
+              'Nothing was published and the version was not bumped.' % (version, os.environ['RELEASE_RUN_URL']),
+              '## What to do',
+              '- Fix the cause on `main` so that every build listed below passes, for every Archicad version in '
+              '`archicad-addon/devkits.json`. Keep the change to what the failure needs.\n'
+              '- Do not change `.github/`, `tools/`, `archicad-addon/Tools/`, `archicad-addon/Installer/`, '
+              '`archicad-addon/devkits.json` or a CMake or `.csproj` file: those are never merged without a person. '
+              'If the cause is there, say so on this issue and open no pull request.\n'
+              '- Once the fix is merged, the release starts again by itself and releases %s from the fixed `main`.' % version,
+              '## Failed builds',
+              '\n\n'.join(parts),
+          ] + (['cc %s' % notify] if notify else []))
+          open_issue = next((i for i in issues if i['state'] == 'OPEN'), None)
+          if open_issue:
+              action = 'update %d' % open_issue['number']
+              # Keep the run that opened the issue in its marker: auto-merge
+              # checks that the issue was opened while that run was going.
+              body = (open_issue.get('body') or '').split('\n', 1)[0] + body[len(marker):]
+          elif attempts >= max_attempts:
+              action = 'maintainer'
+              body += ('\n\n**%d earlier release-failure issue(s) for %s did not fix it, so this one is left to a '
+                       'maintainer** (RELEASE_FIX_MAX_ATTEMPTS).' % (attempts, version))
+          else:
+              action = 'new'
+          open(os.path.join(work, 'body.md'), 'w').write(body)
+          open(os.path.join(work, 'action'), 'w').write(action)
+          PYEOF
+
+          ACTION=$(cat "$WORK/action")
+          TITLE="Release $VERSION stopped on a failed build"
+          case "$ACTION" in
+            "update "*)
+              NUMBER=${ACTION#update }
+              # The bot already has this issue; its merged pull request is what
+              # restarts the release. Only the logs are refreshed.
+              gh issue edit "$NUMBER" --repo "$REPO" --body-file "$WORK/body.md" > /dev/null
+              echo "Updated the open release-failure issue #$NUMBER for $VERSION." | tee -a "$GITHUB_STEP_SUMMARY"
+              ;;
+            maintainer)
+              URL=$(gh issue create --repo "$REPO" --title "$TITLE" --body-file "$WORK/body.md" \
+                --label release-failure --label needs-maintainer)
+              echo "Opened $URL for a maintainer: the attempts for $VERSION are used up." | tee -a "$GITHUB_STEP_SUMMARY"
+              ;;
+            new)
+              URL=$(gh issue create --repo "$REPO" --title "$TITLE" --body-file "$WORK/body.md" --label release-failure)
+              NUMBER=${URL##*/}
+              # An issue opened with GITHUB_TOKEN starts no workflow run, so the
+              # issue bot is started on it, as discord_issue_bot.yml does.
+              gh workflow run claude_issue_triage.yml --repo "$REPO" --ref main -f issue_number="$NUMBER" \
+                || echo "::warning::Could not start the issue bot on #$NUMBER; apply the claude-fix label to start it."
+              echo "Opened $URL and started the issue bot on it." | tee -a "$GITHUB_STEP_SUMMARY"
+              ;;
+          esac

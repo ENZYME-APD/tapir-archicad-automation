@@ -1,5 +1,5 @@
 {
-  "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398)",
+  "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398), without crashing Archicad when a hole grows the pivot memo (#2897)",
   "minTapir": "2.0.1",
   "requiresEmpty": [ "Roof" ],
   "steps": [
@@ -52,8 +52,14 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
       "save": {
+        "planeX0Before": "detailsOfElements[1].details.polygonOutline[0].x",
+        "planeY0Before": "detailsOfElements[1].details.polygonOutline[0].y",
+        "planeX1Before": "detailsOfElements[1].details.polygonOutline[1].x",
+        "planeY1Before": "detailsOfElements[1].details.polygonOutline[1].y",
         "planeX2Before": "detailsOfElements[1].details.polygonOutline[2].x",
-        "planeY2Before": "detailsOfElements[1].details.polygonOutline[2].y"
+        "planeY2Before": "detailsOfElements[1].details.polygonOutline[2].y",
+        "planeX3Before": "detailsOfElements[1].details.polygonOutline[3].x",
+        "planeY3Before": "detailsOfElements[1].details.polygonOutline[3].y"
       },
       "expect": [
         { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
@@ -115,8 +121,14 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
       "save": {
+        "planeX0After": "detailsOfElements[1].details.polygonOutline[0].x",
+        "planeY0After": "detailsOfElements[1].details.polygonOutline[0].y",
+        "planeX1After": "detailsOfElements[1].details.polygonOutline[1].x",
+        "planeY1After": "detailsOfElements[1].details.polygonOutline[1].y",
         "planeX2After": "detailsOfElements[1].details.polygonOutline[2].x",
-        "planeY2After": "detailsOfElements[1].details.polygonOutline[2].y"
+        "planeY2After": "detailsOfElements[1].details.polygonOutline[2].y",
+        "planeX3After": "detailsOfElements[1].details.polygonOutline[3].x",
+        "planeY3After": "detailsOfElements[1].details.polygonOutline[3].y"
       },
       "expect": [
         { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "still multi-plane" },
@@ -128,8 +140,9 @@
         { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.6, "name": "eaves overhang kept" },
         { "path": "detailsOfElements[1].details.holes", "len": 1, "name": "plane roof has the hole" },
         { "path": "detailsOfElements[1].details.polygonOutline", "len": 5, "name": "plane roof outline kept" },
-        { "expr": "${planeX2After} - ${planeX2Before}", "approx": 0.0, "name": "plane roof corner kept (x)" },
-        { "expr": "${planeY2After} - ${planeY2Before}", "approx": 0.0, "name": "plane roof corner kept (y)" },
+        { "expr": "${planeX0After} + ${planeX1After} + ${planeX2After} + ${planeX3After} - (${planeX0Before} + ${planeX1Before} + ${planeX2Before} + ${planeX3Before})", "approx": 0.0, "name": "plane roof corners kept (x), in any vertex order" },
+        { "expr": "${planeY0After} + ${planeY1After} + ${planeY2After} + ${planeY3After} - (${planeY0Before} + ${planeY1Before} + ${planeY2Before} + ${planeY3Before})", "approx": 0.0, "name": "plane roof corners kept (y), in any vertex order" },
+        { "expr": "${planeX0After} * ${planeY0After} + ${planeX1After} * ${planeY1After} + ${planeX2After} * ${planeY2After} + ${planeX3After} * ${planeY3After} - (${planeX0Before} * ${planeY0Before} + ${planeX1Before} * ${planeY1Before} + ${planeX2Before} * ${planeY2Before} + ${planeX3Before} * ${planeY3Before})", "approx": 0.0, "tol": 0.01, "name": "plane roof corners kept (x * y), in any vertex order" },
         { "path": "detailsOfElements[1].details.angle", "approx": 0.5, "name": "plane roof angle kept" }
       ]
     },

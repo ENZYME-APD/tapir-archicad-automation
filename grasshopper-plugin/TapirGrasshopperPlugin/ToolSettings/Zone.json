@@ -123,6 +123,16 @@
       "subgroup": null
     },
     {
+      "get": "roomLSize",
+      "set": "roomLSize",
+      "apiMember": "API_ZoneType::roomLSize",
+      "apiDescription": "Room letter size in mm.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
       "get": "isManual",
       "set": null,
       "apiMember": "API_ZoneType::manual",
@@ -147,6 +157,16 @@
       "set": null,
       "apiMember": "API_ZoneType::refPos",
       "apiDescription": "Reference point to find zone if it was not created manually.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "boundaryMethod",
+      "set": null,
+      "apiMember": "API_ZoneType::refLineFlag",
+      "apiDescription": "How an automatic zone finds its boundary: by the reference line or the inner edge of the walls.",
       "label": null,
       "labelSource": null,
       "group": null,

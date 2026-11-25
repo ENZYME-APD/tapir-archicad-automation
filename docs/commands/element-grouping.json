@@ -1,0 +1,1221 @@
+{
+ "version": 1,
+ "groups": [
+  "Element grouping Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "CreateGroups",
+   "group": "Element grouping Commands",
+   "version": "1.4.0",
+   "description": "Creates groups of the passed elements",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementGroups": {
+      "type": "array",
+      "description": "A list of element groups to create.",
+      "items": {
+       "$ref": "#/ElementGroupParameters"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementGroups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "groupGuids": {
+      "type": "array",
+      "description": "The results of the group creation operations.",
+      "items": {
+       "$ref": "#/GroupIdOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groupGuids"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/CreateGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/CreateGroups.py",
+    "description": "Groups the first two Walls with CreateGroups, then ungroups them again. Needs at least two Walls that are not grouped yet.",
+    "code": "\"\"\"Groups the first two Walls with CreateGroups, then ungroups them again.\n\nNeeds at least two Walls that are not grouped yet.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\n\ngroups = aclib.RunTapirCommand ('CreateGroups', {'elementGroups': [{'elements': walls}]})['groupGuids']\naclib.PrintJson (groups)\n\naclib.RunTapirCommand ('UngroupElements', {'groups': [g for g in groups if 'groupId' in g]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateGroups"
+  },
+  {
+   "name": "UngroupElements",
+   "group": "Element grouping Commands",
+   "version": "1.7.3",
+   "description": "Ungroups the given groups one level, like Edit > Grouping > Ungroup: each group is dissolved, the elements and subgroups it directly contains stay. A group nested in another group is reported as failed; ungroup the containing group first. Returns an execution result per group.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to ungroup, as returned by CreateGroups or GetGroupsOfElements. A group nested in another group is reported as failed: ungroup the containing group first.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UngroupElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/UngroupElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/UngroupElements.py",
+    "description": "Groups the first two Walls and ungroups them again with UngroupElements. Needs at least two Walls that are not grouped yet.",
+    "code": "\"\"\"Groups the first two Walls and ungroups them again with UngroupElements.\n\nNeeds at least two Walls that are not grouped yet.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\ngroups = aclib.RunTapirCommand ('CreateGroups', {'elementGroups': [{'elements': walls}]})['groupGuids']\n\naclib.PrintJson (aclib.RunTapirCommand ('UngroupElements', {'groups': [g for g in groups if 'groupId' in g]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UngroupElements"
+  },
+  {
+   "name": "GetGroupsOfElements",
+   "group": "Element grouping Commands",
+   "version": "1.5.6",
+   "description": "Gets the identifier of the group that directly contains each given element. Returns an error for elements that are not part of any group.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "groupGuids": {
+      "type": "array",
+      "description": "The identifier of the group that directly contains each given element, or an error for elements that are not part of any group.",
+      "items": {
+       "$ref": "#/GroupIdOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groupGuids"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetGroupsOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetGroupsOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetGroupsOfElements.py",
+    "description": "Gets the group that directly contains each of the first three Walls with GetGroupsOfElements. A wall that is not in a group gets an error item. Needs at least one Wall.",
+    "code": "\"\"\"Gets the group that directly contains each of the first three Walls with GetGroupsOfElements.\n\nA wall that is not in a group gets an error item. Needs at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetGroupsOfElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetGroupsOfElements"
+  },
+  {
+   "name": "GetElementsOfGroups",
+   "group": "Element grouping Commands",
+   "version": "1.5.6",
+   "description": "Gets the elements directly contained by each given group.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to get the elements of.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementsOfGroups": {
+      "type": "array",
+      "description": "The elements directly contained by each given group, or an error.",
+      "items": {
+       "$ref": "#/ElementsWrapperOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementsOfGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementsOfGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetElementsOfGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetElementsOfGroups.py",
+    "description": "Lists the elements directly contained by the groups of the Walls with GetElementsOfGroups. Needs at least one grouped Wall.",
+    "code": "\"\"\"Lists the elements directly contained by the groups of the Walls with GetElementsOfGroups.\n\nNeeds at least one grouped Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\ngroups = aclib.RunTapirCommand ('GetGroupsOfElements', {'elements': walls})['groupGuids'] if walls else []\ngroups = list ({g['groupId']['guid']: g for g in groups if 'groupId' in g}.values ())\nif not groups:\n    raise SystemExit ('No grouped wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementsOfGroups', {'groups': groups}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementsOfGroups"
+  },
+  {
+   "name": "GetMainGroups",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Gets the top level group of each given group. A group that is not nested in another group is its own top level group.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to get the top level group of.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "mainGroups": {
+      "type": "array",
+      "description": "The top level group of each given group (the group itself if it is not nested in another group), or an error.",
+      "items": {
+       "$ref": "#/GroupIdOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "mainGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetMainGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetMainGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetMainGroups.py",
+    "description": "Gets the top level group of each group of the Walls with GetMainGroups. Needs at least one grouped Wall.",
+    "code": "\"\"\"Gets the top level group of each group of the Walls with GetMainGroups.\n\nNeeds at least one grouped Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\ngroups = aclib.RunTapirCommand ('GetGroupsOfElements', {'elements': walls})['groupGuids'] if walls else []\ngroups = list ({g['groupId']['guid']: g for g in groups if 'groupId' in g}.values ())\nif not groups:\n    raise SystemExit ('No grouped wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetMainGroups', {'groups': groups}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetMainGroups"
+  },
+  {
+   "name": "GetAllElementsOfGroups",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Gets all the elements of each given group, including the elements of its nested groups.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to get all the elements of.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementsOfGroups": {
+      "type": "array",
+      "description": "All the elements of each given group, including the elements of its nested groups, or an error.",
+      "items": {
+       "$ref": "#/ElementsWrapperOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementsOfGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAllElementsOfGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetAllElementsOfGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetAllElementsOfGroups.py",
+    "description": "Lists all elements of the groups of the Walls, nested groups included, with GetAllElementsOfGroups. Needs at least one grouped Wall.",
+    "code": "\"\"\"Lists all elements of the groups of the Walls, nested groups included, with GetAllElementsOfGroups.\n\nNeeds at least one grouped Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\ngroups = aclib.RunTapirCommand ('GetGroupsOfElements', {'elements': walls})['groupGuids'] if walls else []\ngroups = list ({g['groupId']['guid']: g for g in groups if 'groupId' in g}.values ())\nif not groups:\n    raise SystemExit ('No grouped wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAllElementsOfGroups', {'groups': groups}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAllElementsOfGroups"
+  },
+  {
+   "name": "GetAutoGroupMode",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Gets the current state of the Auto Group mode.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "autoGroup": {
+      "type": "boolean",
+      "description": "True if the Auto Group mode is currently on."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "autoGroup"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAutoGroupModeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetAutoGroupMode.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetAutoGroupMode.py",
+    "description": "Tells whether the Auto Group mode is on with GetAutoGroupMode.",
+    "code": "\"\"\"Tells whether the Auto Group mode is on with GetAutoGroupMode.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAutoGroupMode'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAutoGroupMode"
+  },
+  {
+   "name": "GetElementSetData",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Gets the elements and the custom data of each given element set. Element sets are created by add-ons to link elements together; the custom data is returned as Base64 encoded bytes.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSets": {
+      "type": "array",
+      "description": "The element sets to get the data of.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementSetId": {
+         "type": "object",
+         "description": "The identifier of an element set.",
+         "properties": {
+          "guid": {
+           "$ref": "#/Guid"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "guid"
+         ]
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementSetId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSets": {
+      "type": "array",
+      "description": "The data of each given element set, or an error.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "elements": {
+           "$ref": "#/Elements",
+           "description": "The elements of the element set."
+          },
+          "userData": {
+           "type": "object",
+           "description": "The custom data stored with the element set by the add-on that created it.",
+           "properties": {
+            "dataVersion": {
+             "type": "integer",
+             "description": "The version of the data, as set by the add-on that created the element set."
+            },
+            "platformSign": {
+             "type": "integer",
+             "description": "The platform sign of the data, telling the byte order it was written with."
+            },
+            "data": {
+             "type": "string",
+             "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
+            }
+           },
+           "additionalProperties": false,
+           "required": [
+            "dataVersion",
+            "platformSign",
+            "data"
+           ]
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elements",
+          "userData"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSets"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementSetDataComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetElementSetData.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetElementSetData.py",
+    "description": "Creates an element set of the first two Walls, reads its elements and custom data with GetElementSetData, then deletes it. Deleting the set keeps the walls. Needs at least two Walls.",
+    "code": "\"\"\"Creates an element set of the first two Walls, reads its elements and custom data with GetElementSetData, then deletes it.\n\nDeleting the set keeps the walls. Needs at least two Walls.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\nelementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]})['elementSets']\nelementSets = [s for s in elementSets if 'elementSetId' in s]\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementSetData', {'elementSets': elementSets}))\n\naclib.RunTapirCommand ('DeleteElementSets', {'elementSets': elementSets})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementSetData"
+  },
+  {
+   "name": "GetUserDataOfGroups",
+   "group": "Element grouping Commands",
+   "version": "1.7.3",
+   "description": "Gets the user data an add-on attached to each given group: its version, platform sign, flags and bytes (base64 encoded), and, when its version is 1 (the layout SetUserDataOfGroups writes), its key-value pairs. Returns an error for groups that have no user data.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to get the user data of.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "userDataOfGroups": {
+      "type": "array",
+      "description": "The user data attached to each given group, or an error for groups that have none.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "userData": {
+           "type": "object",
+           "description": "The user data an add-on attached to the group.",
+           "properties": {
+            "dataVersion": {
+             "type": "integer",
+             "description": "The version of the user data, as set by the add-on that attached it."
+            },
+            "platformSign": {
+             "type": "integer",
+             "description": "The platform sign of the user data, which tells the byte order the data was written in."
+            },
+            "flags": {
+             "type": "integer",
+             "description": "The flags of the user data (APIUserDataFlag_FillWith and APIUserDataFlag_Pickup bits), as set by the add-on that attached it."
+            },
+            "data": {
+             "type": "string",
+             "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
+            },
+            "pairs": {
+             "$ref": "#/UserDataPairs",
+             "description": "The key-value pairs of the user data, decoded from data. Only present when dataVersion is 1, the layout SetUserDataOfGroups writes."
+            }
+           },
+           "additionalProperties": false,
+           "required": [
+            "dataVersion",
+            "platformSign",
+            "flags",
+            "data"
+           ]
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "userData"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "userDataOfGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetUserDataOfGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetUserDataOfGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetUserDataOfGroups.py",
+    "description": "Reads the user data add-ons attached to the groups of the Walls with GetUserDataOfGroups. A group without user data gets an error item. Needs at least one grouped Wall.",
+    "code": "\"\"\"Reads the user data add-ons attached to the groups of the Walls with GetUserDataOfGroups.\n\nA group without user data gets an error item. Needs at least one grouped Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\ngroups = aclib.RunTapirCommand ('GetGroupsOfElements', {'elements': walls})['groupGuids'] if walls else []\ngroups = list ({g['groupId']['guid']: g for g in groups if 'groupId' in g}.values ())\nif not groups:\n    raise SystemExit ('No grouped wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetUserDataOfGroups', {'groups': groups}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetUserDataOfGroups"
+  },
+  {
+   "name": "SetUserDataOfGroups",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Stores string values under keys in the user data of groups, for scripts to keep their own state on a group. The given pairs are merged into what each group already holds: a key that exists gets the new value, other keys are left as they are, and the keys listed in keysToDelete are removed. Prefix the keys with the script's name so that scripts do not overwrite each other's data. User data in another layout is left unchanged and reported as an error. One undo step per call.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "groups": {
+      "type": "array",
+      "description": "The groups to store the pairs on.",
+      "items": {
+       "$ref": "#/GroupIdArrayItem"
+      },
+      "minItems": 1
+     },
+     "pairs": {
+      "$ref": "#/UserDataPairs",
+      "description": "The key-value pairs to store on each group. A key the group already holds gets the new value; other keys are left as they are."
+     },
+     "keysToDelete": {
+      "$ref": "#/UserDataKeysToDelete"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "groups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result per group, in the input order."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetUserDataOfGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/SetUserDataOfGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/SetUserDataOfGroups.py",
+    "description": "Groups the first two Walls, stores a key-value pair on the group with SetUserDataOfGroups and reads it back. The script ungroups the walls again at the end. Needs at least two Walls that are not grouped yet.",
+    "code": "\"\"\"Groups the first two Walls, stores a key-value pair on the group with SetUserDataOfGroups and reads it back.\n\nThe script ungroups the walls again at the end. Needs at least two Walls that are not grouped yet.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\ngroups = aclib.RunTapirCommand ('CreateGroups', {'elementGroups': [{'elements': walls}]})['groupGuids']\ngroups = [g for g in groups if 'groupId' in g]\n\naclib.PrintJson (aclib.RunTapirCommand ('SetUserDataOfGroups', {\n    'groups': groups,\n    'pairs': [{'key': 'tapirExample.note', 'value': 'Grouped by a Tapir example'}]\n}))\naclib.RunTapirCommand ('GetUserDataOfGroups', {'groups': groups})\n\naclib.RunTapirCommand ('UngroupElements', {'groups': groups})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetUserDataOfGroups"
+  },
+  {
+   "name": "GetSuspendGroupsMode",
+   "group": "Element grouping Commands",
+   "version": "1.5.6",
+   "description": "Gets the current state of the Suspend Groups mode.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "suspendGroups": {
+      "type": "boolean",
+      "description": "True if the Suspend Groups mode is currently on."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "suspendGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetSuspendGroupsModeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetSuspendGroupsMode.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetSuspendGroupsMode.py",
+    "description": "Tells whether the Suspend Groups mode is on with GetSuspendGroupsMode.",
+    "code": "\"\"\"Tells whether the Suspend Groups mode is on with GetSuspendGroupsMode.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetSuspendGroupsMode'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetSuspendGroupsMode"
+  },
+  {
+   "name": "SetSuspendGroupsMode",
+   "group": "Element grouping Commands",
+   "version": "1.5.6",
+   "description": "Turns the Suspend Groups mode on or off. Suspend groups to perform operations on elements that are part of a group; remember to restore the previous state afterwards.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "suspendGroups": {
+      "type": "boolean",
+      "description": "Turn the Suspend Groups mode on or off."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "suspendGroups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetSuspendGroupsModeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/SetSuspendGroupsMode.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/SetSuspendGroupsMode.py",
+    "description": "Toggles the Suspend Groups mode with SetSuspendGroupsMode, then restores it.",
+    "code": "\"\"\"Toggles the Suspend Groups mode with SetSuspendGroupsMode, then restores it.\"\"\"\nimport aclib\n\nsuspended = aclib.RunTapirCommand ('GetSuspendGroupsMode')['suspendGroups']\n\naclib.PrintJson (aclib.RunTapirCommand ('SetSuspendGroupsMode', {'suspendGroups': not suspended}))\naclib.RunTapirCommand ('GetSuspendGroupsMode')\n\naclib.PrintJson (aclib.RunTapirCommand ('SetSuspendGroupsMode', {'suspendGroups': suspended}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetSuspendGroupsMode"
+  },
+  {
+   "name": "CreateElementSets",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Creates element sets of the given elements. An element set is a hidden, persistent collection of elements (it is not a group and has no effect on selection or editing).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSets": {
+      "type": "array",
+      "description": "The element sets to create.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elements": {
+         "$ref": "#/Elements",
+         "description": "The elements to put into the element set."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elements"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSets": {
+      "type": "array",
+      "description": "The identifier of each created element set, or an error, in the order of the input.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "elementSetId": {
+           "type": "object",
+           "description": "The identifier of an element set.",
+           "properties": {
+            "guid": {
+             "$ref": "#/Guid"
+            }
+           },
+           "additionalProperties": false,
+           "required": [
+            "guid"
+           ]
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elementSetId"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSets"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateElementSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/CreateElementSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/CreateElementSets.py",
+    "description": "Creates an element set of the first two Walls with CreateElementSets, then deletes it. An element set is a hidden collection of elements; deleting it keeps the walls. Needs at least two Walls.",
+    "code": "\"\"\"Creates an element set of the first two Walls with CreateElementSets, then deletes it.\n\nAn element set is a hidden collection of elements; deleting it keeps the walls. Needs at least two Walls.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\n\nelementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]})['elementSets']\naclib.PrintJson (elementSets)\naclib.RunTapirCommand ('GetElementSetsOfElements', {'elements': walls})\n\naclib.RunTapirCommand ('DeleteElementSets', {'elementSets': [s for s in elementSets if 'elementSetId' in s]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateElementSets"
+  },
+  {
+   "name": "DeleteElementSets",
+   "group": "Element grouping Commands",
+   "version": "1.8.0",
+   "description": "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element set that a real run would delete gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSets": {
+      "type": "array",
+      "description": "The element sets to delete, as returned by CreateElementSets or GetElementSetsOfElements. Only element sets created by the Tapir Add-On can be deleted. The elements of a deleted set are not deleted.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementSetId": {
+         "type": "object",
+         "description": "The identifier of an element set.",
+         "properties": {
+          "guid": {
+           "$ref": "#/Guid"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "guid"
+         ]
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementSetId"
+       ]
+      }
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input element set, in the order of the input. On a dry run an element set that exists and was created by the Tapir Add-On gets wouldDelete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteElementSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/DeleteElementSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/DeleteElementSets.py",
+    "description": "Creates an element set of the first two Walls and deletes it again with DeleteElementSets. The walls are kept. Only element sets created by Tapir can be deleted. Needs at least two Walls.",
+    "code": "\"\"\"Creates an element set of the first two Walls and deletes it again with DeleteElementSets.\n\nThe walls are kept. Only element sets created by Tapir can be deleted. Needs at least two Walls.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:2]\nif len (walls) < 2:\n    raise SystemExit ('Needs at least two walls.')\nelementSets = aclib.RunTapirCommand ('CreateElementSets', {'elementSets': [{'elements': walls}]})['elementSets']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteElementSets', {'elementSets': [s for s in elementSets if 'elementSetId' in s]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteElementSets"
+  },
+  {
+   "name": "GetElementSetsOfElements",
+   "group": "Element grouping Commands",
+   "version": "1.7.3",
+   "description": "Gets the element sets that contain each given element. Only element sets created by the Tapir Add-On are examined; sets created by other add-ons are not found.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementSetsOfElements": {
+      "type": "array",
+      "description": "The element sets that contain each given element, or an error, in the order of the input. Only element sets created by the Tapir Add-On are examined.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ElementSetsOfElement"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementSetsOfElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementSetsOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ElementGrouping/GetElementSetsOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ElementGrouping/GetElementSetsOfElements.py",
+    "description": "Gets the element sets that contain each of the first three Walls with GetElementSetsOfElements. Only element sets created by Tapir are found. Needs at least one Wall.",
+    "code": "\"\"\"Gets the element sets that contain each of the first three Walls with GetElementSetsOfElements.\n\nOnly element sets created by Tapir are found. Needs at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementSetsOfElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementSetsOfElements"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "DryRun": {
+   "type": "boolean",
+   "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
+  },
+  "DryRunFlag": {
+   "type": "boolean",
+   "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
+   "enum": [
+    true
+   ]
+  },
+  "WouldDeleteExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldDelete": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldDelete"
+   ]
+  },
+  "DeletionExecutionResult": {
+   "type": "object",
+   "description": "The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldDeleteExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "DeletionExecutionResults": {
+   "type": "array",
+   "description": "A list of deletion results.",
+   "items": {
+    "$ref": "#/DeletionExecutionResult"
+   }
+  },
+  "GroupId": {
+   "type": "object",
+   "description": "The identifier of a group.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GroupIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the group identifier.",
+   "properties": {
+    "groupId": {
+     "$ref": "#/GroupId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "groupId"
+   ]
+  },
+  "UserDataPair": {
+   "type": "object",
+   "description": "A string value stored under a key in user data.",
+   "properties": {
+    "key": {
+     "type": "string",
+     "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
+     "minLength": 1
+    },
+    "value": {
+     "type": "string",
+     "description": "The stored value: any text, for example an id, a timestamp or a JSON document the script encodes itself."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "key",
+    "value"
+   ]
+  },
+  "UserDataPairs": {
+   "type": "array",
+   "description": "Key-value pairs stored in user data.",
+   "items": {
+    "$ref": "#/UserDataPair"
+   }
+  },
+  "UserDataKeysToDelete": {
+   "type": "array",
+   "description": "The keys to remove from the user data. A key that is not stored is ignored. Applied after pairs.",
+   "items": {
+    "type": "string",
+    "minLength": 1
+   }
+  },
+  "ElementsWrapper": {
+   "type": "object",
+   "description": "A list of elements wrapped in an object.",
+   "properties": {
+    "elements": {
+     "$ref": "#/Elements"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elements"
+   ]
+  },
+  "ElementsWrapperOrError": {
+   "type": "object",
+   "description": "A list of elements or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementsWrapper"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "GroupIdOrError": {
+   "type": "object",
+   "description": "A groupId or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/GroupIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementOrGroupId": {
+   "type": "object",
+   "description": "An identifier representing either an Element or a Group.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementIdArrayItem"
+    },
+    {
+     "$ref": "#/GroupIdArrayItem"
+    }
+   ]
+  },
+  "ElementOrGroupIds": {
+   "type": "array",
+   "description": "A list of element and/or group identifiers.",
+   "items": {
+    "$ref": "#/ElementOrGroupId"
+   },
+   "minItems": 2
+  },
+  "ElementGroupParameters": {
+   "type": "object",
+   "description": "The parameters for creating a single group",
+   "properties": {
+    "elements": {
+     "$ref": "#/ElementOrGroupIds",
+     "description": "The elements or child groups to be grouped."
+    },
+    "parentGroupId": {
+     "$ref": "#/GroupId",
+     "description": "Optional parent group ID to nest this group under."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elements"
+   ]
+  },
+  "ElementSetsOfElement": {
+   "type": "object",
+   "properties": {
+    "elementSets": {
+     "type": "array",
+     "description": "The element sets that contain the element. Empty if the element is not part of any element set.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "elementSetId": {
+        "type": "object",
+        "description": "The identifier of an element set.",
+        "properties": {
+         "guid": {
+          "$ref": "#/Guid"
+         }
+        },
+        "additionalProperties": false,
+        "required": [
+         "guid"
+        ]
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "elementSetId"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementSets"
+   ]
+  }
+ }
+}

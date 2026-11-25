@@ -2587,7 +2587,7 @@ GS::Optional<GS::UniString> GetAnalyticalVisibilitySettingsCommand::GetRawRespon
 GS::ObjectState GetAnalyticalVisibilitySettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2600
-    API_AM_VisibilitySettings settings;
+    API_AM_VisibilitySettings settings {};
     const GSErrCode err = TAPIR_GetAnalyticalVisibilitySettings (settings);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the Structural Analytical Model visibility settings.");
@@ -2641,7 +2641,7 @@ GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::Objec
         return CreateFailedExecutionResult (APIERR_BADPARS, "visibilitySettings is missing.");
     }
 
-    API_AM_VisibilitySettings settings;
+    API_AM_VisibilitySettings settings {};
     GSErrCode err = TAPIR_GetAnalyticalVisibilitySettings (settings);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to get the Structural Analytical Model visibility settings.");
@@ -2664,6 +2664,30 @@ GS::ObjectState SetAnalyticalVisibilitySettingsCommand::Execute (const GS::Objec
     });
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the Structural Analytical Model visibility settings.");
+    }
+
+    // Read back, so a given field Archicad did not keep is reported instead of a success.
+    API_AM_VisibilitySettings kept {};
+    err = TAPIR_GetAnalyticalVisibilitySettings (kept);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the Structural Analytical Model visibility settings back after the change.");
+    }
+    GS::UniString notKept;
+    if (settingsOS->Contains ("visibilityMode") && kept.visibilityMode != settings.visibilityMode) {
+        const char* keptName = EnumToString (AnalyticalVisibilityModeNames, kept.visibilityMode);
+        notKept += GS::UniString (" visibilityMode is ") + (keptName != nullptr ? keptName : "unknown") + ".";
+    }
+    for (const VisibilityFlag& flag : AnalyticalVisibilityFlags) {
+        if (settingsOS->Contains (flag.name) && kept.*(flag.field) != settings.*(flag.field)) {
+            notKept += GS::UniString (" ") + flag.name + (kept.*(flag.field) ? " is true." : " is false.");
+        }
+    }
+    if (settingsOS->Contains ("loadVisibilityMode") && kept.loadVisibilityMode != settings.loadVisibilityMode) {
+        const char* keptName = EnumToString (AnalyticalLoadVisibilityModeNames, kept.loadVisibilityMode);
+        notKept += GS::UniString (" loadVisibilityMode is ") + (keptName != nullptr ? keptName : "unknown") + ".";
+    }
+    if (!notKept.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not keep every given visibility setting:" + notKept);
     }
 
     return CreateSuccessfulExecutionResult ();
@@ -2706,7 +2730,7 @@ GS::Optional<GS::UniString> GetAnalyticalMemberTypesOfElementsCommand::GetRawRes
         "properties": {
             "memberTypesOfElements": {
                 "type": "array",
-                "description": "The analytical member type of each element, in the order of the input. An element the type cannot be got for is represented by an error object.",
+                "description": "The analytical member type of each element, in the order of the input, as the Complementary Project (the structural analysis project exchanged with Archicad) gives it: Unknown for every element when the project has none. An element that does not exist, or whose type cannot be got, is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -2751,8 +2775,16 @@ GS::ObjectState GetAnalyticalMemberTypesOfElementsCommand::Execute (const GS::Ob
             continue;
         }
 
+        // The API answers Unknown, not an error, for a guid that is no element, so check it first.
+        API_Elem_Head elemHead = {};
+        elemHead.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+            memberTypesOfElements (CreateErrorResponse (APIERR_BADID, "The element does not exist."));
+            continue;
+        }
+
         API_AnalyticalMemberType memberType = {};
-        const GSErrCode err = TAPIR_GetComplementaryProjectMemberType (GetGuidFromObjectState (*elementId), memberType);
+        const GSErrCode err = TAPIR_GetComplementaryProjectMemberType (elemHead.guid, memberType);
         if (err != NoError) {
             memberTypesOfElements (CreateErrorResponse (err, "Failed to get the analytical member type of the element."));
             continue;

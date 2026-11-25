@@ -1,0 +1,706 @@
+{
+  "title": "CreateDrawings places a clipped Drawing of a view that stores its zoom with the view's origin at position, like one of a view without a saved zoom (#2928)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": {
+        "navigatorMapId": "LayoutBook"
+      },
+      "save": {
+        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset for the layout",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": {
+        "subsetsData": [
+          {
+            "name": "Tapir check saved zoom"
+          }
+        ]
+      },
+      "save": {
+        "subset": "navigatorItems[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset second in the Layout Book",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": {
+          "guid": "${subset}"
+        },
+        "parentNavigatorItemId": {
+          "guid": "${bookRoot}"
+        },
+        "previousNavigatorItemId": {
+          "guid": "${bookFirst}"
+        }
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "source worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          {
+            "name": "Tapir check saved zoom source",
+            "referenceId": "TCSZ1"
+          }
+        ]
+      },
+      "save": {
+        "wsDb": "databases[0].databaseId.guid",
+        "ws": "databases[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "content in the worksheet",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": {
+          "guid": "${wsDb}"
+        },
+        "polylinesData": [
+          {
+            "coordinates": [
+              {
+                "x": 0,
+                "y": 0
+              },
+              {
+                "x": 0.3,
+                "y": 0
+              },
+              {
+                "x": 0.3,
+                "y": 0.2
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "View Map folder",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": {
+        "folderName": "TapirCheck saved zoom views"
+      },
+      "save": {
+        "folder": "navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItemId.guid",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "three views of the worksheet",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          {
+            "navigatorItemId": {
+              "guid": "${ws}"
+            },
+            "parentNavigatorItemId": {
+              "guid": "${folder}"
+            },
+            "name": "TapirCheck zoom 1to1"
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${ws}"
+            },
+            "parentNavigatorItemId": {
+              "guid": "${folder}"
+            },
+            "name": "TapirCheck no zoom 1to1"
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${ws}"
+            },
+            "parentNavigatorItemId": {
+              "guid": "${folder}"
+            },
+            "name": "TapirCheck zoom 1to50"
+          }
+        ]
+      },
+      "save": {
+        "zoomView": "navigatorItems[0].navigatorItemId.guid",
+        "plainView": "navigatorItems[1].navigatorItemId.guid",
+        "zoomView50": "navigatorItems[2].navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItems",
+          "len": 3
+        },
+        {
+          "path": "navigatorItems[2].navigatorItemId.guid",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "scale, rotation and zoom of the views",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView}"
+            },
+            "viewSettings": {
+              "drawingScale": 1,
+              "rotation": 0,
+              "zoom": {
+                "xMin": -0.035,
+                "yMin": -0.025,
+                "xMax": 0.22,
+                "yMax": 0.16
+              }
+            }
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${plainView}"
+            },
+            "viewSettings": {
+              "drawingScale": 1,
+              "rotation": 0,
+              "saveZoom": false
+            }
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView50}"
+            },
+            "viewSettings": {
+              "drawingScale": 50,
+              "rotation": 0,
+              "zoom": {
+                "xMin": -1.75,
+                "yMin": -1.25,
+                "xMax": 11,
+                "yMax": 8
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults",
+          "len": 3
+        },
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": true
+        },
+        {
+          "path": "executionResults[2].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "the views store what the Drawings depend on",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView}"
+            }
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${plainView}"
+            }
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView50}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "viewSettings[0].saveZoom",
+          "eq": true,
+          "name": "first view stores its zoom"
+        },
+        {
+          "path": "viewSettings[0].zoom.xMin",
+          "approx": -0.035,
+          "tol": 1e-06
+        },
+        {
+          "path": "viewSettings[0].drawingScale",
+          "eq": 1
+        },
+        {
+          "path": "viewSettings[1].saveZoom",
+          "eq": false,
+          "name": "second view stores no zoom"
+        },
+        {
+          "path": "viewSettings[2].saveZoom",
+          "eq": true,
+          "name": "third view stores its zoom"
+        },
+        {
+          "path": "viewSettings[2].drawingScale",
+          "eq": 50
+        }
+      ]
+    },
+    {
+      "id": "layout in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check saved zoom layout",
+            "masterLayoutName": "Tapir check saved zoom master",
+            "parentNavigatorItemId": {
+              "guid": "${subset}"
+            },
+            "paperWidth": 420,
+            "paperHeight": 297
+          }
+        ]
+      },
+      "save": {
+        "layoutDb": "databases[0].databaseId.guid"
+      }
+    },
+    {
+      "id": "the layout in the Layout Book",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": {
+        "navigatorMapId": "LayoutBook"
+      },
+      "save": {
+        "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name",
+          "contains": "Tapir check saved zoom layout"
+        }
+      ]
+    },
+    {
+      "id": "master of the layout",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": {
+        "layoutDatabaseIds": [
+          {
+            "databaseId": {
+              "guid": "${layoutDb}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "master": "layoutSettings[0].masterNavigatorItemId.guid"
+      }
+    },
+    {
+      "id": "clipped Drawings of the views at the same position",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView}"
+            },
+            "layoutDatabaseId": {
+              "guid": "${layoutDb}"
+            },
+            "position": {
+              "x": 0.2,
+              "y": 0.15
+            },
+            "scale": 1,
+            "angle": 0,
+            "modelOffset": {
+              "x": 0,
+              "y": 0
+            },
+            "clipPolygon": [
+              {
+                "x": 0.21,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.24
+              },
+              {
+                "x": 0.21,
+                "y": 0.24
+              }
+            ]
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${plainView}"
+            },
+            "layoutDatabaseId": {
+              "guid": "${layoutDb}"
+            },
+            "position": {
+              "x": 0.2,
+              "y": 0.15
+            },
+            "scale": 1,
+            "angle": 0,
+            "modelOffset": {
+              "x": 0,
+              "y": 0
+            },
+            "clipPolygon": [
+              {
+                "x": 0.21,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.24
+              },
+              {
+                "x": 0.21,
+                "y": 0.24
+              }
+            ]
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView}"
+            },
+            "layoutDatabaseId": {
+              "guid": "${layoutDb}"
+            },
+            "position": {
+              "x": 0.2,
+              "y": 0.15
+            },
+            "scale": 2,
+            "angle": 0,
+            "modelOffset": {
+              "x": 0,
+              "y": 0
+            },
+            "clipPolygon": [
+              {
+                "x": 0.21,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.24
+              },
+              {
+                "x": 0.21,
+                "y": 0.24
+              }
+            ]
+          },
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView50}"
+            },
+            "layoutDatabaseId": {
+              "guid": "${layoutDb}"
+            },
+            "position": {
+              "x": 0.2,
+              "y": 0.15
+            },
+            "scale": 1,
+            "angle": 0,
+            "modelOffset": {
+              "x": 0,
+              "y": 0
+            },
+            "clipPolygon": [
+              {
+                "x": 0.21,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.16
+              },
+              {
+                "x": 0.31,
+                "y": 0.24
+              },
+              {
+                "x": 0.21,
+                "y": 0.24
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "dZoom": "elements[0].elementId.guid",
+        "dPlain": "elements[1].elementId.guid",
+        "dZoom2": "elements[2].elementId.guid",
+        "dZoom50": "elements[3].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 4
+        },
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true
+        },
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true
+        },
+        {
+          "path": "elements[2].elementId.guid",
+          "exists": true
+        },
+        {
+          "path": "elements[3].elementId.guid",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "the source view's origin is at position whether or not the view stores its zoom",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${dZoom}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${dPlain}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${dZoom2}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${dZoom50}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.pos.x",
+          "approx": 0.2,
+          "tol": 0.0001,
+          "name": "saved zoom 1:1 (was 0.445, 0.335): pos x is position"
+        },
+        {
+          "path": "detailsOfElements[0].details.pos.y",
+          "approx": 0.15,
+          "tol": 0.0001,
+          "name": "saved zoom 1:1 (was 0.445, 0.335): pos y is position"
+        },
+        {
+          "path": "detailsOfElements[1].details.pos.x",
+          "approx": 0.2,
+          "tol": 0.0001,
+          "name": "no saved zoom 1:1: pos x is position"
+        },
+        {
+          "path": "detailsOfElements[1].details.pos.y",
+          "approx": 0.15,
+          "tol": 0.0001,
+          "name": "no saved zoom 1:1: pos y is position"
+        },
+        {
+          "path": "detailsOfElements[2].details.pos.x",
+          "approx": 0.2,
+          "tol": 0.0001,
+          "name": "saved zoom 1:1 at scale 2 (was 0.690, 0.520): pos x is position"
+        },
+        {
+          "path": "detailsOfElements[2].details.pos.y",
+          "approx": 0.15,
+          "tol": 0.0001,
+          "name": "saved zoom 1:1 at scale 2 (was 0.690, 0.520): pos y is position"
+        },
+        {
+          "path": "detailsOfElements[3].details.pos.x",
+          "approx": 0.2,
+          "tol": 0.0001,
+          "name": "saved zoom 1:50: pos x is position"
+        },
+        {
+          "path": "detailsOfElements[3].details.pos.y",
+          "approx": 0.15,
+          "tol": 0.0001,
+          "name": "saved zoom 1:50: pos y is position"
+        },
+        {
+          "path": "detailsOfElements[0].details.isCutWithFrame",
+          "eq": true,
+          "name": "clipped"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": {
+        "windowType": "FloorPlan"
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${layout}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${master}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${plainView}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${zoomView50}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${folder}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${ws}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

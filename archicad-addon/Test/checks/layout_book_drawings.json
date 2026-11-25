@@ -4,14 +4,18 @@
   "minArchicad": "27",
   "steps": [
     {
-      "id": "Layout Book before",
+      "id": "Layout Book before: the Layout Map root holds the Layout Book item, which holds the subsets",
       "command": "GetNavigatorItemTree",
       "creates": false,
+      "stopOnFail": true,
       "params": { "navigatorMapId": "LayoutBook" },
       "save": {
-        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
-        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
-      }
+        "bookRoot": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.type", "eq": "BookItem", "name": "the Layout Book item" }
+      ]
     },
     {
       "id": "subset for the layout",
@@ -21,7 +25,7 @@
       "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
     },
     {
-      "id": "subset second in the Layout Book",
+      "id": "subset second in the Layout Book item",
       "command": "MoveNavigatorItem",
       "creates": false,
       "params": {
@@ -140,13 +144,14 @@
       "command": "GetNavigatorItemTree",
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook" },
-      "save": { "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "save": { "layout": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.name", "contains": "Tapir check drawings", "name": "the moved subset" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check drawing layout" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "one Drawing on the layout" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "DrawingItem" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source one", "name": "named after worksheet one" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.navigatorItemId.guid", "eq": "${subset}", "name": "the moved subset" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check drawings", "name": "the moved subset's name" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check drawing layout" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "one Drawing on the layout" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "DrawingItem" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source one", "name": "named after worksheet one" }
       ]
     },
     {
@@ -255,8 +260,8 @@
       "creates": false,
       "params": { "navigatorMapId": "LayoutBook" },
       "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "still one Drawing on the layout" },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source two", "name": "named after worksheet two" }
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "still one Drawing on the layout" },
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source two", "name": "named after worksheet two" }
       ]
     },
     {

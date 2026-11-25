@@ -1,7 +1,7 @@
 # Tapir
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
-> ENZYME-APD and its community. It adds 804 JSON commands to Archicad's own JSON API, a palette
+> ENZYME-APD and its community. It adds 831 JSON commands to Archicad's own JSON API, a palette
 > that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
 > Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
 > every Monday.
@@ -26,8 +26,9 @@ through Archicad's own `API.ExecuteAddOnCommand`, in the namespace `TapirCommand
 
 The answer is `{"succeeded": true, "result": {"addOnCommandResponse": {...}}}`. Python's standard
 library is enough (`urllib.request`); the official `archicad` package and the Tapir Grasshopper
-plugin send the same JSON. Every command, with its parameters and an example, is in
-[commands.md](https://archicad-api.com/commands.md) and [commands.json](https://archicad-api.com/commands.json).
+plugin send the same JSON. Every command is listed in [commands.md](https://archicad-api.com/commands.md) and
+[commands.json](https://archicad-api.com/commands.json), which link one file per command group (for example
+[commands/element.md](https://archicad-api.com/commands/element.md)) with its commands' parameters, results and examples.
 
 ## Docs
 
@@ -48,17 +49,42 @@ plugin send the same JSON. Every command, with its parameters and an example, is
 
 ## Project
 
-- [Community – Archicad automation with Tapir](https://archicad-api.com/community/index.md): Ask on Discord, report a bug, test a fix in your Archicad: how Tapir's community and its bots turn a report into a release, and how the project grew.
-- [Tapir roadmap – Archicad automation](https://archicad-api.com/roadmap/index.md): How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.
-- [About Tapir – open-source Archicad add-on](https://archicad-api.com/about/index.md): Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme's R&D and Tibor Lorántfy's JSON template, who builds it and how to support it.
+- [Archicad automation community | Tapir](https://archicad-api.com/community/index.md): Ask on Discord, report a bug, test a fix in your Archicad: how Tapir's community and its bots turn a report into a release, and how the project grew.
+- [Archicad automation roadmap | Tapir](https://archicad-api.com/roadmap/index.md): How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.
+- [About the open-source Archicad add-on | Tapir](https://archicad-api.com/about/index.md): Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme's R&D and Tibor Lorántfy's JSON template, who builds it and how to support it.
 
 ## Reference
 
-- [Commands in Markdown](https://archicad-api.com/commands.md): every command with its parameters, results, Grasshopper components and example.
-- [Commands as JSON](https://archicad-api.com/commands.json): the same, with the full JSON schemas and the example code.
-- [archicad-addon](https://archicad-api.com/archicad-addon/): The command reference, also as commands.md and commands.json.
+- [Command index in Markdown](https://archicad-api.com/commands.md): every command by group, one line each, linking the group files.
+- [Command index as JSON](https://archicad-api.com/commands.json): the same index, machine-readable.
+- [Application Commands](https://archicad-api.com/commands/application.md) ([JSON](https://archicad-api.com/commands/application.json)): 42 commands with their parameters, results, Grasshopper components and examples.
+- [Project Commands](https://archicad-api.com/commands/project.md) ([JSON](https://archicad-api.com/commands/project.json)): 70 commands with their parameters, results, Grasshopper components and examples.
+- [Custom Data Commands](https://archicad-api.com/commands/custom-data.md) ([JSON](https://archicad-api.com/commands/custom-data.json)): 2 commands with their parameters, results, Grasshopper components and examples.
+- [Element Commands](https://archicad-api.com/commands/element.md) ([JSON](https://archicad-api.com/commands/element.json)): 198 commands with their parameters, results, Grasshopper components and examples.
+- [Element grouping Commands](https://archicad-api.com/commands/element-grouping.md) ([JSON](https://archicad-api.com/commands/element-grouping.json)): 15 commands with their parameters, results, Grasshopper components and examples.
+- [Favorites Commands](https://archicad-api.com/commands/favorites.md) ([JSON](https://archicad-api.com/commands/favorites.json)): 27 commands with their parameters, results, Grasshopper components and examples.
+- [Property Commands](https://archicad-api.com/commands/property.md) ([JSON](https://archicad-api.com/commands/property.json)): 32 commands with their parameters, results, Grasshopper components and examples.
+- [Classification Commands](https://archicad-api.com/commands/classification.md) ([JSON](https://archicad-api.com/commands/classification.json)): 19 commands with their parameters, results, Grasshopper components and examples.
+- [Attribute Commands](https://archicad-api.com/commands/attribute.md) ([JSON](https://archicad-api.com/commands/attribute.json)): 70 commands with their parameters, results, Grasshopper components and examples.
+- [IFC Commands](https://archicad-api.com/commands/ifc.md) ([JSON](https://archicad-api.com/commands/ifc.json)): 15 commands with their parameters, results, Grasshopper components and examples.
+- [Library Commands](https://archicad-api.com/commands/library.md) ([JSON](https://archicad-api.com/commands/library.json)): 51 commands with their parameters, results, Grasshopper components and examples.
+- [Teamwork Commands](https://archicad-api.com/commands/teamwork.md) ([JSON](https://archicad-api.com/commands/teamwork.json)): 18 commands with their parameters, results, Grasshopper components and examples.
+- [Navigator Commands](https://archicad-api.com/commands/navigator.md) ([JSON](https://archicad-api.com/commands/navigator.json)): 92 commands with their parameters, results, Grasshopper components and examples.
+- [Graphic Override Commands](https://archicad-api.com/commands/graphic-override.md) ([JSON](https://archicad-api.com/commands/graphic-override.json)): 4 commands with their parameters, results, Grasshopper components and examples.
+- [Issue Management Commands](https://archicad-api.com/commands/issue-management.md) ([JSON](https://archicad-api.com/commands/issue-management.json)): 11 commands with their parameters, results, Grasshopper components and examples.
+- [Revision Management Commands](https://archicad-api.com/commands/revision-management.md) ([JSON](https://archicad-api.com/commands/revision-management.json)): 9 commands with their parameters, results, Grasshopper components and examples.
+- [Design Options Commands](https://archicad-api.com/commands/design-options.md) ([JSON](https://archicad-api.com/commands/design-options.json)): 30 commands with their parameters, results, Grasshopper components and examples.
+- [Keynote Commands](https://archicad-api.com/commands/keynote.md) ([JSON](https://archicad-api.com/commands/keynote.json)): 9 commands with their parameters, results, Grasshopper components and examples.
+- [Project Data Commands](https://archicad-api.com/commands/project-data.md) ([JSON](https://archicad-api.com/commands/project-data.json)): 11 commands with their parameters, results, Grasshopper components and examples.
+- [MEP Commands / MEP Commands (extended)](https://archicad-api.com/commands/mep.md) ([JSON](https://archicad-api.com/commands/mep.json)): 47 commands with their parameters, results, Grasshopper components and examples.
+- [Analytical Commands](https://archicad-api.com/commands/analytical.md) ([JSON](https://archicad-api.com/commands/analytical.json)): 35 commands with their parameters, results, Grasshopper components and examples.
+- [Solid Element Operation Commands](https://archicad-api.com/commands/solid-element-operation.md) ([JSON](https://archicad-api.com/commands/solid-element-operation.json)): 11 commands with their parameters, results, Grasshopper components and examples.
+- [Script UI Commands](https://archicad-api.com/commands/script-ui.md) ([JSON](https://archicad-api.com/commands/script-ui.json)): 12 commands with their parameters, results, Grasshopper components and examples.
+- [Developer Commands](https://archicad-api.com/commands/developer.md) ([JSON](https://archicad-api.com/commands/developer.json)): 1 commands with their parameters, results, Grasshopper components and examples.
+- [archicad-addon](https://archicad-api.com/archicad-addon/): The command reference, also as Markdown and JSON: commands.md and commands.json (the index) and one file per command group under commands/.
 - [api-coverage](https://archicad-api.com/api-coverage/): Which parts of the Archicad API Tapir uses, updated hourly; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.md
 - [gh-coverage](https://archicad-api.com/gh-coverage/): Which Tapir commands have a Grasshopper component; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage.md
+- [grasshopper-components](https://archicad-api.com/grasshopper-components/): Every Grasshopper component with its inputs, outputs, Tapir commands and JSON keys; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/docs/grasshopper-components/components.js
 
 ## Optional
 

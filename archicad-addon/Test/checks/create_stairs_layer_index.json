@@ -1,0 +1,103 @@
+{
+  "title": "CreateStairs puts the new stair on the layer given by layerIndex and refuses a nonexistent or locked layer (#3006)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Stair" ],
+  "steps": [
+    {
+      "id": "an open and a locked layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check stair layer open", "isHidden": false, "isLocked": false },
+          { "name": "Tapir check stair layer locked", "isHidden": false, "isLocked": true }
+        ]
+      },
+      "save": { "layerOpen": "attributeIds[0].attributeId.guid", "layerLocked": "attributeIds[1].attributeId.guid" }
+    },
+    {
+      "id": "indices of the two layers",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerOpen}" } }, { "attributeId": { "guid": "${layerLocked}" } } ],
+        "fields": [ "isLocked" ]
+      },
+      "save": { "indexOpen": "layers[0].index", "indexLocked": "layers[1].index" },
+      "expect": [
+        { "path": "layers[1].isLocked", "eq": true, "name": "second layer is locked" }
+      ]
+    },
+    {
+      "id": "straight stair on the open layer",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 960.0, "y": 760.0 }, { "x": 960.0, "y": 764.2 } ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.0,
+            "layerIndex": "${indexOpen}"
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created, layerIndex accepted" }
+      ]
+    },
+    {
+      "id": "read the new stair's layer",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": { "stairLayer": "detailsOfElements[0].layerIndex" },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Stair" },
+        { "path": "detailsOfElements[0].layerIndex", "exists": true },
+        { "expr": "${stairLayer} - ${indexOpen}", "eq": 0, "name": "stair is on the given layer" }
+      ]
+    },
+    {
+      "id": "stairs on a nonexistent and on a locked layer",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [ { "x": 970.0, "y": 760.0 }, { "x": 970.0, "y": 764.2 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.0,
+            "layerIndex": 99999
+          },
+          {
+            "baseLinePoints": [ { "x": 980.0, "y": 760.0 }, { "x": 980.0, "y": 764.2 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.0,
+            "layerIndex": "${indexLocked}"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one result per item" },
+        { "path": "elements[0].error.code", "exists": true, "name": "nonexistent layer refused" },
+        { "path": "elements[1].error.code", "exists": true, "name": "locked layer refused" }
+      ]
+    },
+    {
+      "id": "only the stair on the open layer was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Stair" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    }
+  ]
+}

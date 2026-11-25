@@ -1608,9 +1608,19 @@ GS::ObjectState ActivateLayerCombinationCommand::Execute (const GS::ObjectState&
     API_Attribute attribute = {};
     attribute.header.typeID = API_LayerCombID;
     attribute.header.guid = GetGuidFromObjectState (attributeId);
+    const API_Guid requestedGuid = attribute.header.guid;
     GSErrCode err = ACAPI_Attribute_Get (&attribute);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Layer combination not found.");
+    }
+
+    // A lookup by guid also finds attributes of other types (the guid of a Layer returned the Layer, whose index
+    // then activated an unrelated layer combination). Reading the layer combination back by that index tells them apart.
+    API_Attribute layerComb = {};
+    layerComb.header.typeID = API_LayerCombID;
+    layerComb.header.index = attribute.header.index;
+    if (attribute.header.typeID != API_LayerCombID || ACAPI_Attribute_Get (&layerComb) != NoError || layerComb.header.guid != requestedGuid) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Layer combination not found.");
     }
 
     // Applies the combination to the current window, like choosing it in the
@@ -3185,25 +3195,34 @@ static GS::Optional<GS::UniString> CheckProfileNestedItems (const GS::ObjectStat
                 return error;
             }
             GS::Array<GS::ObjectState> contours;
-            if (newSkins[i].Get ("contours", contours)) {
-                for (UIndex c = 0; c < contours.GetSize (); ++c) {
-                    const GS::UniString contourPath = ProfileItemPath (path, "contours", c);
-                    error = CheckProfileItemKeys (contours[c], contourPath, { "polygonCoordinates", "polygonArcs" });
-                    if (!error.HasValue ()) {
-                        error = CheckProfileCoordinates (contours[c], "polygonCoordinates", contourPath);
+            if (!newSkins[i].Get ("contours", contours) || contours.IsEmpty ()) {
+                return GS::UniString::Printf ("%T/contours: a new skin needs at least one contour.", path.ToPrintf ());
+            }
+            for (UIndex c = 0; c < contours.GetSize (); ++c) {
+                const GS::UniString contourPath = ProfileItemPath (path, "contours", c);
+                error = CheckProfileItemKeys (contours[c], contourPath, { "polygonCoordinates", "polygonArcs" });
+                if (!error.HasValue ()) {
+                    error = CheckProfileCoordinates (contours[c], "polygonCoordinates", contourPath);
+                }
+                // A contour of fewer than 3 vertices would be skipped by BuildHatchPolygonGeometry, so a hole
+                // given as 2 vertices with two semicircle arcs disappeared while the profile was created (#2971).
+                GS::Array<GS::ObjectState> polygonCoordinates;
+                contours[c].Get ("polygonCoordinates", polygonCoordinates);
+                if (!error.HasValue () && polygonCoordinates.GetSize () < 3) {
+                    error = GS::UniString::Printf ("%T/polygonCoordinates: a contour needs at least 3 vertices, it has %d. A circle or a curved contour is given as 3 or more vertices with an arc on each curved edge.",
+                        contourPath.ToPrintf (), (int) polygonCoordinates.GetSize ());
+                }
+                GS::Array<GS::ObjectState> polygonArcs;
+                if (!error.HasValue () && contours[c].Get ("polygonArcs", polygonArcs)) {
+                    for (UIndex a = 0; a < polygonArcs.GetSize () && !error.HasValue (); ++a) {
+                        error = CheckProfileItemKeys (polygonArcs[a], ProfileItemPath (contourPath, "polygonArcs", a), { "begIndex", "endIndex", "arcAngle" });
                     }
-                    GS::Array<GS::ObjectState> polygonArcs;
-                    if (!error.HasValue () && contours[c].Get ("polygonArcs", polygonArcs)) {
-                        for (UIndex a = 0; a < polygonArcs.GetSize () && !error.HasValue (); ++a) {
-                            error = CheckProfileItemKeys (polygonArcs[a], ProfileItemPath (contourPath, "polygonArcs", a), { "begIndex", "endIndex", "arcAngle" });
-                        }
-                    }
-                    if (!error.HasValue ()) {
-                        error = CheckProfileContourArcs (contours[c], contourPath);
-                    }
-                    if (error.HasValue ()) {
-                        return error;
-                    }
+                }
+                if (!error.HasValue ()) {
+                    error = CheckProfileContourArcs (contours[c], contourPath);
+                }
+                if (error.HasValue ()) {
+                    return error;
                 }
             }
             error = CheckProfileSkinSettings (newSkins[i], path);

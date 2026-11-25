@@ -1,0 +1,289 @@
+{
+  "title": "CreateStairs and ModifyStairs write which structure symbols of a stair are shown on which of its relevant stories (structureVisibilityOnStories, #2848)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a straight stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 820.0, "y": 720.0 },
+              { "x": 826.0, "y": 720.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "set the structure visibility on some story ranges of both views",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureVisibilityOnStories": [
+              {
+                "view": "FloorPlan",
+                "uniformSymbolRepresentationEnabled": false,
+                "stories": [
+                  {
+                    "relevantStories": "TopRelevant",
+                    "structures": [ { "part": "Hidden", "structure": "Beam", "visible": true } ],
+                    "fills": [ { "part": "Visible", "structureType": "Stringer", "visible": true } ],
+                    "monolithParts": [ { "part": "Hidden", "drainingVisible": true, "landingLineVisible": false } ]
+                  }
+                ]
+              },
+              {
+                "view": "CeilingPlan",
+                "stories": [
+                  {
+                    "relevantStories": "BelowRelevant",
+                    "structures": [ { "part": "Visible", "structure": "Monolith", "visible": true } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "visibility accepted and read back as given" }
+      ]
+    },
+    {
+      "id": "read the visibility back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].view", "eq": "FloorPlan", "name": "item 0 is the floor plan" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].uniformSymbolRepresentationEnabled", "eq": false, "name": "floor plan not uniform" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].relevantStories", "eq": "TopRelevant", "name": "story item 4 is the top relevant story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].structures[4].part", "eq": "Hidden", "name": "structure item 4 is the hidden part" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].structures[4].structure", "eq": "Beam", "name": "structure item 4 is the beam" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].structures[4].visible", "eq": true, "name": "hidden beam shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].fills[1].part", "eq": "Visible", "name": "fill item 1 is the visible part" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].fills[1].structureType", "eq": "Stringer", "name": "fill item 1 is the stringer" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].fills[1].visible", "eq": true, "name": "visible stringer fill shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].monolithParts[1].part", "eq": "Hidden", "name": "monolith item 1 is the hidden part" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].monolithParts[1].drainingVisible", "eq": true, "name": "hidden draining shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].monolithParts[1].landingLineVisible", "eq": false, "name": "hidden landing line not shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].view", "eq": "CeilingPlan", "name": "item 1 is the RCP" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[1].relevantStories", "eq": "BelowRelevant", "name": "story item 1 is below the relevant stories" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[1].structures[3].structure", "eq": "Monolith", "name": "structure item 3 is the monolith" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[1].structures[3].visible", "eq": true, "name": "visible monolith shown below in the RCP" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width unchanged" }
+      ]
+    },
+    {
+      "id": "turn the same items the other way",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureVisibilityOnStories": [
+              {
+                "view": "FloorPlan",
+                "stories": [
+                  {
+                    "relevantStories": "TopRelevant",
+                    "structures": [ { "part": "Hidden", "structure": "Beam", "visible": false } ],
+                    "fills": [ { "part": "Visible", "structureType": "Stringer", "visible": false } ],
+                    "monolithParts": [ { "part": "Hidden", "drainingVisible": false, "landingLineVisible": true } ]
+                  }
+                ]
+              },
+              {
+                "view": "CeilingPlan",
+                "stories": [
+                  {
+                    "relevantStories": "BelowRelevant",
+                    "structures": [ { "part": "Visible", "structure": "Monolith", "visible": false } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "visibility accepted and read back as given" }
+      ]
+    },
+    {
+      "id": "read the turned visibility back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].structures[4].visible", "eq": false, "name": "hidden beam not shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].fills[1].visible", "eq": false, "name": "visible stringer fill not shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].monolithParts[1].drainingVisible", "eq": false, "name": "hidden draining not shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].monolithParts[1].landingLineVisible", "eq": true, "name": "hidden landing line shown on the top story" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[1].structures[3].visible", "eq": false, "name": "visible monolith not shown below in the RCP" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].uniformSymbolRepresentationEnabled", "eq": false, "name": "floor plan still not uniform (not given)" }
+      ]
+    },
+    {
+      "id": "a bad part is refused with the rest of the call",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureVisibilityOnStories": [
+              {
+                "view": "FloorPlan",
+                "uniformSymbolRepresentationEnabled": true,
+                "stories": [
+                  {
+                    "relevantStories": "TopRelevant",
+                    "structures": [ { "part": "Unknown", "structure": "Beam", "visible": true } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "nothing of the refused change is written",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].uniformSymbolRepresentationEnabled", "eq": false, "name": "floor plan still not uniform" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].stories[4].structures[4].visible", "eq": false, "name": "hidden beam still not shown" }
+      ]
+    },
+    {
+      "id": "make the floor plan uniform",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "structureVisibilityOnStories": [ { "view": "FloorPlan", "uniformSymbolRepresentationEnabled": true } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "uniform representation accepted and read back" }
+      ]
+    },
+    {
+      "id": "the floor plan is uniform",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[0].uniformSymbolRepresentationEnabled", "eq": true, "name": "floor plan uniform" }
+      ]
+    },
+    {
+      "id": "create a stair with the hidden stringer shown above",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 820.0, "y": 726.0 },
+              { "x": 826.0, "y": 726.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "structureVisibilityOnStories": [
+              {
+                "view": "CeilingPlan",
+                "stories": [
+                  {
+                    "relevantStories": "AboveRelevant",
+                    "structures": [ { "part": "Hidden", "structure": "Stringer", "visible": true } ],
+                    "fills": [ { "part": "Hidden", "structureType": "UnderStructure", "visible": true } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "create a stair with the hidden stringer not shown above",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 820.0, "y": 732.0 },
+              { "x": 826.0, "y": 732.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "structureVisibilityOnStories": [
+              {
+                "view": "CeilingPlan",
+                "stories": [
+                  {
+                    "relevantStories": "AboveRelevant",
+                    "structures": [ { "part": "Hidden", "structure": "Stringer", "visible": false } ],
+                    "fills": [ { "part": "Hidden", "structureType": "UnderStructure", "visible": false } ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "the created stairs have the given visibility",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c}" } }, { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].relevantStories", "eq": "AboveRelevant", "name": "story item 5 is above the relevant stories" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].structures[6].part", "eq": "Hidden", "name": "structure item 6 is the hidden part" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].structures[6].structure", "eq": "Stringer", "name": "structure item 6 is the stringer" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].structures[6].visible", "eq": true, "name": "created with the hidden stringer shown" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].fills[2].part", "eq": "Hidden", "name": "fill item 2 is the hidden part" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].fills[2].structureType", "eq": "UnderStructure", "name": "fill item 2 is the under structure" },
+        { "path": "detailsOfElements[0].details.structureVisibilityOnStories[1].stories[5].fills[2].visible", "eq": true, "name": "created with the hidden under structure fill shown" },
+        { "path": "detailsOfElements[1].details.structureVisibilityOnStories[1].stories[5].structures[6].visible", "eq": false, "name": "created with the hidden stringer not shown" },
+        { "path": "detailsOfElements[1].details.structureVisibilityOnStories[1].stories[5].fills[2].visible", "eq": false, "name": "created with the hidden under structure fill not shown" }
+      ]
+    }
+  ]
+}

@@ -36,15 +36,15 @@ MCP servers let Claude and other assistants read and change a project through Ta
 
 Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.
 
-**01** **Post it**Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
+**Post it**Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.
 
-**02** **An issue**Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
+**An issue**Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.
 
-**03** **A draft fix**The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
+**A draft fix**The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.
 
-**04** **You test**A comment on the pull request links the built add-on and asks the person who reported it to try it.
+**You test**A comment on the pull request links the built add-on and asks the person who reported it to try it.
 
-**05** **Released**Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
+**Released**Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday's [release](https://github.com/ENZYME-APD/tapir-archicad-automation/releases).
 
 Report
 

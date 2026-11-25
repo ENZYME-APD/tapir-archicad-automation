@@ -1,0 +1,223 @@
+{
+  "title": "ModifyStory changes the name, height, level and level line display of one story: a new height moves the stories above with it, a new level moves only the story, and no story is added or deleted (#2842)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "the stories before",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "first": "firstStory", "top": "lastStory" },
+      "expect": [
+        { "path": "stories", "exists": true }
+      ]
+    },
+    {
+      "id": "story A above the top story",
+      "command": "InsertStory",
+      "creates": false,
+      "params": { "storyIndex": "${top}", "position": "Above", "name": "Tapir Check A", "height": 3.0 },
+      "save": { "a": "story.index", "aLevel": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 3.0, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "story B above A",
+      "command": "InsertStory",
+      "creates": false,
+      "params": { "storyIndex": "${a}", "position": "Above", "name": "Tapir Check B", "height": 2.5 },
+      "save": { "b": "story.index", "bLevel0": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 2.5, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "story C above B",
+      "command": "InsertStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "position": "Above", "name": "Tapir Check C", "height": 2.0 },
+      "save": { "c": "story.index", "cLevel0": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 2.0, "tol": 0.001 },
+        { "expr": "${c} - ${a}", "eq": 2, "name": "A, B and C are on top of each other" }
+      ]
+    },
+    {
+      "id": "rename A, make it taller and hide its level line",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${a}", "name": "Tapir Modified A", "height": 3.5, "dispOnSections": false },
+      "save": { "aLevel1": "story.level", "aIndex1": "story.index" },
+      "expect": [
+        { "expr": "${aIndex1} - ${a}", "eq": 0, "name": "the answer is story A" },
+        { "path": "story.name", "eq": "Tapir Modified A" },
+        { "path": "story.dispOnSections", "eq": false },
+        { "path": "story.height", "approx": 3.5, "tol": 0.001 },
+        { "expr": "${aLevel1} - ${aLevel}", "approx": 0, "tol": 0.001, "name": "A stays on its level" }
+      ]
+    },
+    {
+      "id": "B moved up with the top of A and kept its height",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "dispOnSections": true },
+      "save": { "bLevel1": "story.level" },
+      "expect": [
+        { "path": "story.name", "eq": "Tapir Check B" },
+        { "path": "story.dispOnSections", "eq": true },
+        { "path": "story.height", "approx": 2.5, "tol": 0.001 },
+        { "expr": "${bLevel1} - ${aLevel}", "approx": 3.5, "tol": 0.001, "name": "B starts where A ends" }
+      ]
+    },
+    {
+      "id": "C moved up too and kept its height",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${c}", "dispOnSections": true },
+      "save": { "cLevel1": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 2.0, "tol": 0.001 },
+        { "expr": "${cLevel1} - ${cLevel0}", "approx": 0.5, "tol": 0.001, "name": "C moved up by the 0.5 A grew" }
+      ]
+    },
+    {
+      "id": "B up to the level of C, with a height",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "level": "${cLevel1}", "height": 2.0 },
+      "save": { "bLevel2": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 2.0, "tol": 0.001 },
+        { "expr": "${bLevel2} - ${cLevel1}", "approx": 0, "tol": 0.001, "name": "B is on the requested level" }
+      ]
+    },
+    {
+      "id": "C moved above the new top of B",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${c}", "dispOnSections": true },
+      "save": { "cLevel2": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 2.0, "tol": 0.001 },
+        { "expr": "${cLevel2} - ${cLevel1}", "approx": 2.0, "tol": 0.001, "name": "C starts where B ends" }
+      ]
+    },
+    {
+      "id": "A grew up to B",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${a}", "dispOnSections": false },
+      "save": { "aLevel2": "story.level", "aHeight2": "story.height" },
+      "expect": [
+        { "expr": "${aLevel2} - ${aLevel}", "approx": 0, "tol": 0.001, "name": "A stays on its level" },
+        { "expr": "${aHeight2} - (${cLevel1} - ${aLevel})", "approx": 0, "tol": 0.001, "name": "A ends where B starts" }
+      ]
+    },
+    {
+      "id": "B down to its earlier level, level only",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "level": "${bLevel1}" },
+      "save": { "bLevel3": "story.level", "bHeight3": "story.height" },
+      "expect": [
+        { "expr": "${bLevel3} - ${bLevel1}", "approx": 0, "tol": 0.001, "name": "B is on the requested level" },
+        { "expr": "${bHeight3} - (${cLevel2} - ${bLevel1})", "approx": 0, "tol": 0.001, "name": "B grew down; C did not move" }
+      ]
+    },
+    {
+      "id": "C did not move with a level change of B",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${c}", "dispOnSections": true },
+      "save": { "cLevel3": "story.level" },
+      "expect": [
+        { "expr": "${cLevel3} - ${cLevel2}", "approx": 0, "tol": 0.001, "name": "C stays on its level" }
+      ]
+    },
+    {
+      "id": "B up again, level only",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "level": "${cLevel1}" },
+      "save": { "bLevel4": "story.level", "bHeight4": "story.height" },
+      "expect": [
+        { "expr": "${bLevel4} - ${cLevel1}", "approx": 0, "tol": 0.001, "name": "B is on the requested level" },
+        { "expr": "${bHeight4} - (${cLevel2} - ${cLevel1})", "approx": 0, "tol": 0.001, "name": "B got shorter from below; C did not move" }
+      ]
+    },
+    {
+      "id": "the height of the top story C",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${c}", "height": 4.0 },
+      "save": { "cLevel4": "story.level" },
+      "expect": [
+        { "path": "story.height", "approx": 4.0, "tol": 0.001 },
+        { "expr": "${cLevel4} - ${cLevel2}", "approx": 0, "tol": 0.001, "name": "C stays on its level" }
+      ]
+    },
+    {
+      "id": "refused: B down onto the level of A",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "level": "${aLevel}" },
+      "expect": [
+        { "path": "error.message", "contains": "story below" }
+      ]
+    },
+    {
+      "id": "refused: B up past C without a height",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "level": "${cLevel4}" },
+      "expect": [
+        { "path": "error.message", "contains": "story above" }
+      ]
+    },
+    {
+      "id": "the refused changes moved nothing",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}", "dispOnSections": true },
+      "save": { "bLevel5": "story.level" },
+      "expect": [
+        { "expr": "${bLevel5} - ${cLevel1}", "approx": 0, "tol": 0.001, "name": "B stays on its level" }
+      ]
+    },
+    {
+      "id": "refused: nothing to change",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": "${b}" },
+      "expect": [
+        { "path": "error", "exists": true }
+      ]
+    },
+    {
+      "id": "refused: an unknown story",
+      "command": "ModifyStory",
+      "creates": false,
+      "params": { "storyIndex": 999, "name": "Nowhere" },
+      "expect": [
+        { "path": "error", "exists": true }
+      ]
+    },
+    {
+      "id": "no story added or deleted by ModifyStory",
+      "command": "GetStories",
+      "creates": false,
+      "params": {},
+      "save": { "lastEnd": "lastStory", "firstEnd": "firstStory" },
+      "expect": [
+        { "expr": "${lastEnd} - ${c}", "eq": 0, "name": "C is still the top story" },
+        { "expr": "${firstEnd} - ${first}", "eq": 0, "name": "the bottom story is kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteStory", "params": { "storyIndex": "${c}", "deleteElements": true } },
+    { "command": "DeleteStory", "params": { "storyIndex": "${b}", "deleteElements": true } },
+    { "command": "DeleteStory", "params": { "storyIndex": "${a}", "deleteElements": true } }
+  ]
+}

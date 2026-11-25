@@ -4,34 +4,11 @@
   "minArchicad": "27",
   "steps": [
     {
-      "id": "Layout Book before",
-      "command": "GetNavigatorItemTree",
-      "creates": false,
-      "params": { "navigatorMapId": "LayoutBook" },
-      "save": {
-        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
-        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
-      }
-    },
-    {
       "id": "subset for the layout",
       "command": "CreateLayoutSubset",
       "creates": false,
       "params": { "subsetsData": [ { "name": "Tapir check other databases" } ] },
       "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
-    },
-    {
-      "id": "subset second in the Layout Book",
-      "command": "MoveNavigatorItem",
-      "creates": false,
-      "params": {
-        "navigatorItemIdToMove": { "guid": "${subset}" },
-        "parentNavigatorItemId": { "guid": "${bookRoot}" },
-        "previousNavigatorItemId": { "guid": "${bookFirst}" }
-      },
-      "expect": [
-        { "path": "success", "eq": true }
-      ]
     },
     {
       "id": "source worksheet",
@@ -104,16 +81,6 @@
       ]
     },
     {
-      "id": "layout item for the teardown",
-      "command": "GetNavigatorItemTree",
-      "creates": false,
-      "params": { "navigatorMapId": "LayoutBook" },
-      "save": { "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
-      "expect": [
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check other databases layout" }
-      ]
-    },
-    {
       "id": "back to the floor plan",
       "command": "ChangeWindow",
       "creates": false,
@@ -134,7 +101,7 @@
       "save": { "wall": "elements[0].elementId.guid" }
     },
     {
-      "id": "[Drawing, wall, polyline] without readFromOtherDatabases: headers only",
+      "id": "[Drawing, wall, polyline] without readFromOtherDatabases: an answer for each (headers only before Archicad 29, in full on Archicad 29)",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": {
@@ -145,10 +112,10 @@
         ]
       },
       "expect": [
-        { "path": "detailsOfElements[0].fromOtherDatabase", "eq": true, "name": "Drawing: header only" },
-        { "path": "detailsOfElements[0].details", "exists": false, "name": "Drawing: no details" },
+        { "path": "detailsOfElements", "len": 3, "name": "an answer for each element" },
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
         { "path": "detailsOfElements[1].type", "eq": "Wall" },
-        { "path": "detailsOfElements[2].fromOtherDatabase", "eq": true, "name": "polyline: header only" }
+        { "path": "detailsOfElements[2].type", "eq": "PolyLine" }
       ]
     },
     {
@@ -195,14 +162,13 @@
       "params": { "elements": [ { "elementId": { "guid": "${wall}" } }, { "elementId": { "guid": "${drawing}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].type", "eq": "Wall" },
-        { "path": "detailsOfElements[0].fromOtherDatabase", "exists": false, "name": "wall read in full" },
-        { "path": "detailsOfElements[1].fromOtherDatabase", "eq": true, "name": "Drawing: header only again" }
+        { "path": "detailsOfElements[0].fromOtherDatabase", "exists": false, "name": "wall read in full" }
       ]
     }
   ],
   "teardown": [
     { "command": "ChangeWindow", "params": { "windowType": "FloorPlan" } },
-    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${subset}" } } ] } },
     { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } },
     { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws}" } } ] } }
   ]

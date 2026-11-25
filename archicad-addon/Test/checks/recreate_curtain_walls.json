@@ -1,0 +1,111 @@
+{
+  "title": "RecreateCurtainWalls gives a curtain wall a reference line with more segments, keeping its settings, slant and Element ID",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "a one-segment curtain wall, 3.3 m high, with an Element ID, and a slanted one",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 990.0, "y": 960.0 }, { "x": 996.0, "y": 960.0 } ],
+            "zCoordinate": 0.5,
+            "floorIndex": 0,
+            "height": 3.3,
+            "id": "CHK-RECREATE-CW",
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 990.0, "y": 970.0 }, { "x": 996.0, "y": 970.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0
+          }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "s": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "slanted curtain wall created" }
+      ]
+    },
+    {
+      "id": "recreate the first on three points, the slanted one on a longer line",
+      "command": "RecreateCurtainWalls",
+      "params": {
+        "curtainWalls": [
+          { "elementId": { "guid": "${a}" }, "coordinates": [ { "x": 990.0, "y": 960.0 }, { "x": 996.0, "y": 960.0 }, { "x": 996.0, "y": 964.5 } ] },
+          { "elementId": { "guid": "${s}" }, "coordinates": [ { "x": 990.0, "y": 970.0 }, { "x": 999.0, "y": 970.0 } ] }
+        ]
+      },
+      "save": { "na": "results[0].elementId.guid", "ns": "results[1].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new curtain wall created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${a}", "name": "the old curtain wall is named" },
+        { "path": "results[1].elementId.guid", "exists": true, "name": "new slanted curtain wall created" }
+      ]
+    },
+    {
+      "id": "the new curtain walls",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${na}" } }, { "elementId": { "guid": "${ns}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-CW", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.3, "name": "keeps the height" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "the new reference line, three points" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.5, "name": "keeps its base 0.5 m up" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 60.0, "name": "the slanted one keeps its 60 degrees" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "and its vertical height" }
+      ]
+    },
+    {
+      "id": "segments of the first new curtain wall",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] },
+      "expect": [ { "path": "subelements[0].cWallSegments", "len": 2, "name": "two segments now" } ]
+    },
+    {
+      "id": "the old curtain wall is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old curtain wall was deleted" } ]
+    },
+    {
+      "id": "a wall to give as curtain wall",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 990.0, "y": 980.0 }, "endCoordinate": { "x": 994.0, "y": 980.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 } ] },
+      "save": { "w": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateCurtainWalls",
+      "params": {
+        "curtainWalls": [
+          { "elementId": { "guid": "${ns}" }, "coordinates": [ { "x": 990.0, "y": 970.0 }, { "x": 999.0, "y": 970.0 }, { "x": 999.0, "y": 975.0 } ] },
+          { "elementId": { "guid": "${w}" }, "coordinates": [ { "x": 990.0, "y": 980.0 }, { "x": 994.0, "y": 980.0 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "a bent line for a slanted curtain wall refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a wall refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "the slanted curtain wall is still there, unchanged" } ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${na}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${ns}" } } ] } }
+  ]
+}

@@ -236,6 +236,16 @@
       "subgroup": null
     },
     {
+      "get": "veneer",
+      "set": "veneer",
+      "apiMember": "API_ColumnSegmentType::venType, venThick, venBuildingMaterial",
+      "apiDescription": "The type of the column's segment veneer; the thickness of the column's segment veneer; the Building Material index of column's segment veneer's hatch, used only if structure type is API_BasicStrucure. Written to all segments, read from the first one (each segment's own veneer is in segments).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "visibility",
       "set": "visibility",
       "apiMember": "API_ColumnType::visibility",

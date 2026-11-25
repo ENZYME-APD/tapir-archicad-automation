@@ -158,6 +158,15 @@ The diagram below explains the components and their dependencies.
 
 [The Tapir Roadmap](https://github.com/orgs/ENZYME-APD/projects/4/views/1) is the older planning board; current work is in the [issues](https://github.com/ENZYME-APD/tapir-archicad-automation/issues) and [pull requests](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls).
 
+## Contributing
+
+Tapir is developed in this repository: the Add-On, the Grasshopper plugin, the Python client, the
+installer, the marketplace scripts and the docs. [CONTRIBUTING.md](CONTRIBUTING.md) has how to build
+it, how to run the tests, how to add a command and what a pull request needs. Testing a pull request's
+build on your Archicad is a contribution on its own — the
+[community test runner](tools/community-test-runner/) does the work. Please report security problems
+privately, as [SECURITY.md](SECURITY.md) describes, not in an issue.
+
 ## Code signing policy
 
 Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
