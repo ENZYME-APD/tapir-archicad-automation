@@ -1,5 +1,5 @@
 {
-  "title": "ModifyWalls, ModifyBeams, ModifyColumns, ModifySlabs and ModifyMorphs write every field of the story visibility, not only showOnHome, and CreateMorphs keeps the one it is given",
+  "title": "ModifyWalls, ModifyBeams, ModifyColumns, ModifySlabs and ModifyMorphs write every field of the story visibility, not only showOnHome, and CreateMorphs and CreateWalls keep the one they are given",
   "minTapir": "2.0.2",
   "minArchicad": "27",
   "steps": [
@@ -219,6 +219,45 @@
       ]
     },
     {
+      "id": "a wall created on its home story and one story up and down",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 930.0,
+              "y": 955.0
+            },
+            "endCoordinate": {
+              "x": 934.0,
+              "y": 955.0
+            },
+            "zCoordinate": 0,
+            "height": 2.5,
+            "thickness": 0.2,
+            "isAutoOnStoryVisibility": false,
+            "visibility": {
+              "showOnHome": true,
+              "showAllAbove": false,
+              "showAllBelow": false,
+              "showRelAbove": 1,
+              "showRelBelow": 1
+            }
+          }
+        ]
+      },
+      "save": {
+        "createdWall": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
       "id": "wall: home, one story up and one down",
       "command": "ModifyWalls",
       "creates": false,
@@ -407,6 +446,11 @@
             "elementId": {
               "guid": "${wall}"
             }
+          },
+          {
+            "elementId": {
+              "guid": "${createdWall}"
+            }
           }
         ]
       },
@@ -470,6 +514,16 @@
           "path": "detailsOfElements[5].details.visibility.showRelBelow",
           "eq": 1,
           "name": "wall one story down"
+        },
+        {
+          "path": "detailsOfElements[6].details.visibility.showRelAbove",
+          "eq": 1,
+          "name": "created wall one story up"
+        },
+        {
+          "path": "detailsOfElements[6].details.visibility.showRelBelow",
+          "eq": 1,
+          "name": "created wall one story down"
         }
       ]
     }

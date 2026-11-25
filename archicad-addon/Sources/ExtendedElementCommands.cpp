@@ -8613,6 +8613,29 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
+// ACAPI_Element_Create keeps a new wall's default relative story visibility (showRelAbove,
+// showRelBelow, showAllAbove, showAllBelow) whatever it is given, so a given visibility is written
+// again by a change, as ModifyWalls writes it. An error deletes the new wall and fails the item.
+GSErrCode CreateWallsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    if (!parameters.Contains ("visibility")) {
+        return NoError;
+    }
+    API_Element element = {};
+    element.header.guid = newElementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    element.wall.isAutoOnStoryVisibility = requestedElement.wall.isAutoOnStoryVisibility;
+    element.wall.visibility = requestedElement.wall.visibility;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, isAutoOnStoryVisibility);
+    MaskWholeMember (mask.wall.visibility);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 // The holes of a beam as CreateBeams and ModifyBeams write them (#2551): the given array
 // replaces all holes of the beam, numbered from 1 in the given order. An empty array gives a
 // one-item cleared handle, which Archicad reads as no holes (as ModifyBeams always did).
