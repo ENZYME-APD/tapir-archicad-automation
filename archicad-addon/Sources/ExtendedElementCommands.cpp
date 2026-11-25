@@ -16789,6 +16789,22 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
             }
 
+            // ACAPI_Element_Create keeps the default story visibility (home story only) whatever
+            // showContour and showFill say, as it does the surface above, so they are written by a
+            // follow-up change too.
+            if (data.Contains ("showContour") || data.Contains ("showFill")) {
+                API_Element visibilityMask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (visibilityMask);
+                ACAPI_ELEMENT_MASK_SET (visibilityMask, API_MorphType, isAutoOnStoryVisibility);
+                MaskWholeMember (visibilityMask.morph.showContour);
+                MaskWholeMember (visibilityMask.morph.showFill);
+                err = ACAPI_Element_Change (&element, &visibilityMask, nullptr, 0, true);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its showContour and showFill."));
+                    continue;
+                }
+            }
+
             // The faces' own surfaces (morphMaterialMapTable) are not kept by ACAPI_Element_Create
             // either, and the change of the whole-morph surface above gives every face that surface
             // (#2626). So the body is written again with its face surfaces, after that change, the

@@ -1,5 +1,5 @@
 {
-  "title": "ModifyBeams, ModifyColumns, ModifySlabs and ModifyMorphs write every field of the story visibility, not only showOnHome",
+  "title": "ModifyBeams, ModifyColumns, ModifySlabs and ModifyMorphs write every field of the story visibility, not only showOnHome, and CreateMorphs keeps the one it is given",
   "minTapir": "2.0.2",
   "minArchicad": "27",
   "steps": [
@@ -131,6 +131,53 @@
       },
       "save": {
         "morph": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "morph created"
+        }
+      ]
+    },
+    {
+      "id": "a morph created on its home story and one story up and down",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "layerIndex": 1,
+            "basePoint": {
+              "x": 930.0,
+              "y": 950.0,
+              "z": 0.0
+            },
+            "size": {
+              "x": 1.0,
+              "y": 1.0,
+              "z": 1.0
+            },
+            "isAutoOnStoryVisibility": false,
+            "showContour": {
+              "showOnHome": true,
+              "showAllAbove": false,
+              "showAllBelow": false,
+              "showRelAbove": 1,
+              "showRelBelow": 1
+            },
+            "showFill": {
+              "showOnHome": true,
+              "showAllAbove": false,
+              "showAllBelow": false,
+              "showRelAbove": 1,
+              "showRelBelow": 1
+            }
+          }
+        ]
+      },
+      "save": {
+        "createdMorph": "elements[0].elementId.guid"
       },
       "expect": [
         {
@@ -291,6 +338,11 @@
             "elementId": {
               "guid": "${morph}"
             }
+          },
+          {
+            "elementId": {
+              "guid": "${createdMorph}"
+            }
           }
         ]
       },
@@ -334,6 +386,16 @@
           "path": "detailsOfElements[3].details.showFill.showRelBelow",
           "eq": 1,
           "name": "morph fill one story down"
+        },
+        {
+          "path": "detailsOfElements[4].details.showContour.showRelAbove",
+          "eq": 1,
+          "name": "created morph contour one story up"
+        },
+        {
+          "path": "detailsOfElements[4].details.showFill.showRelBelow",
+          "eq": 1,
+          "name": "created morph fill one story down"
         }
       ]
     }
