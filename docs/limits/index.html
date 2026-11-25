@@ -300,6 +300,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2701">#2701</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change a view&rsquo;s own (custom) layer settings, or switch a view from a layer combination to custom layers</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read them with customLayers in <a href="../archicad-addon/#GetViewSettings">GetViewSettings</a>. To change the layers a view shows, give it a layer combination with <a href="../archicad-addon/#SetViewSettings">SetViewSettings</a> (make one with <a href="../archicad-addon/#CreateLayerCombinations">CreateLayerCombinations</a>). Otherwise set the layers in the window and use View Settings &gt; Get Current Window&rsquo;s Settings in Archicad.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_NavigatorView</code> has <code>layerStats</code> (<code>APIdefs_Navigator.h</code>, AC27&ndash;AC30), and <code>ACAPI_Navigator_GetNavigatorView</code> fills it. Tried on Archicad 29 (build 5101): <code>ACAPI_Navigator_ChangeNavigatorView</code> answers <code>NoError</code> to a changed <code>layerStats</code> with <code>saveLaySet</code> true and an empty <code>layerCombination</code>, and the view keeps its old states, whatever the window shows; on a view that stores a layer combination, an empty <code>layerCombination</code> leaves the combination in place.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3065">#3065</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Tell a clone folder of the View Map from a normal folder</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Give the clone folders a name or ID of their own and find them by it in <a href="../archicad-addon/#GetNavigatorItemTree">GetNavigatorItemTree</a>.</td>
