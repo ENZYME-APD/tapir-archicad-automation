@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements with readFromOtherDatabases reads a Drawing of a closed layout and a worksheet's polyline in full from the floor plan, and puts the floor plan back (#2791)",
-  "minTapir": "2.0.1",
+  "minTapir": "2.0.2",
   "minArchicad": "27",
   "steps": [
     {

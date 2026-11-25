@@ -16,7 +16,7 @@ of Archicad's Drawing Manager: status, update type, stored in project, source
 and path. Export the list to Excel or CSV, or update the drawings whose source
 has changed: the script shows which drawings it will update and asks before
 updating them, then reports the drawings it could not update. Reading takes
-one pass without opening any layout; with a Tapir Add-On older than 2.0.1 it
+one pass without opening any layout; with a Tapir Add-On older than 2.0.2 it
 opens each layout in turn (those give a drawing's data only from its own
 layout) and then goes back to the window that was active. Based on the
 get_drawing_manager_data.py workflow example.
@@ -93,7 +93,7 @@ class DrawingStatusReport:
             layouts = run_tapir("GetDatabases", {"types": ["Layout"]}).get("databases", [])
             drawings, details, failed_layouts, unread = self._read_without_opening(layouts)
             if unread:
-                # an Add-On before 2.0.1, or a layout whose drawings it could not read from
+                # an Add-On before 2.0.2, or a layout whose drawings it could not read from
                 # here: those layouts are opened one by one, as before
                 more_drawings, more_details, more_failed = self._read_by_opening(unread)
                 drawings += more_drawings
@@ -165,7 +165,7 @@ class DrawingStatusReport:
                 details += run_tapir("GetDetailsOfElements", {
                     "elements": chunk, "fields": ["details"], "readFromOtherDatabases": True}).get("detailsOfElements", [])
         except ArchicadError:
-            # an Add-On before 2.0.1 refuses readFromOtherDatabases: every layout is opened
+            # an Add-On before 2.0.2 refuses readFromOtherDatabases: every layout is opened
             return [], [], 0, layouts
 
         unread = {index for (index, _), detail in zip(listed, details) if detail.get("fromOtherDatabase")}
@@ -174,7 +174,7 @@ class DrawingStatusReport:
                 [layouts[index] for index in sorted(unread)])
 
     def _read_by_opening(self, layouts: list[dict]) -> tuple[list[dict], list[dict], int]:
-        """ GetDetailsOfElements of an Add-On before 2.0.1 returns the details of the current
+        """ GetDetailsOfElements of an Add-On before 2.0.2 returns the details of the current
         database's elements only (a drawing of another layout comes back with fromOtherDatabase
         and no details), so each layout is opened before its drawings are read, and the user's
         window is brought back afterwards. """
