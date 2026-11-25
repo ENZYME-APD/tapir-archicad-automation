@@ -201,6 +201,25 @@
       ]
     },
     {
+      "id": "[activate with the guid of a layer]",
+      "command": "ActivateLayerCombination",
+      "creates": false,
+      "params": { "attributeId": { "guid": "${layerA}" } },
+      "expect": [
+        { "path": "success", "eq": false, "name": "a layer is not a layer combination" },
+        { "path": "error", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "current combination is still 'A locked'",
+      "command": "GetCurrentLayerCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "name", "eq": "Tapir check combination A locked", "name": "unchanged by the layer guid" }
+      ]
+    },
+    {
       "id": "[combination with an existing name, no overwrite]",
       "command": "CreateLayerCombinations",
       "creates": false,

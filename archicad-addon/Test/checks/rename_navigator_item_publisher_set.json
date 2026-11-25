@@ -1,0 +1,59 @@
+{
+  "title": "RenameNavigatorItem refuses the root item of a publisher set instead of reporting a rename Archicad does not apply",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "a publisher set",
+      "command": "GetPublisherSets",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "save": {
+        "setName": "publisherSets[0].name",
+        "setRoot": "publisherSets[0].rootNavigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "publisherSets[0].rootNavigatorItemId.guid", "exists": true, "name": "the template has a publisher set" }
+      ]
+    },
+    {
+      "id": "rename the root item of the set",
+      "command": "RenameNavigatorItem",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${setRoot}" }, "newName": "TapirCheck renamed set" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" },
+        { "path": "error.message", "contains": "publisher set", "name": "the error says it is a publisher set" },
+        { "path": "error.message", "contains": "Organizer", "name": "the error says where to rename it" }
+      ]
+    },
+    {
+      "id": "change the ID of the root item of the set",
+      "command": "RenameNavigatorItem",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${setRoot}" }, "newId": "TapirCheck" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the set keeps its name",
+      "command": "GetPublisherSets",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "publisherSets[0].name", "eq": "${setName}" }
+      ]
+    },
+    {
+      "id": "the root item was not renamed either",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublisherSets", "publisherSetName": "${setName}" },
+      "expect": [
+        { "path": "navigatorItemTree.name", "ne": "TapirCheck renamed set" },
+        { "path": "navigatorItemTree.uiId", "ne": "TapirCheck" }
+      ]
+    }
+  ]
+}

@@ -274,6 +274,11 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
                 elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + reasonText + ", " + DeleteUnfinishedElement (element.header.guid)));
                 continue;
             }
+            const GS::UniString notKept = GetSettingsNotKept (requestedElement, element.header.guid, data);
+            if (!notKept.IsEmpty ()) {
+                elements (CreateErrorResponse (APIERR_GENERAL, "Archicad did not keep every setting of the new " + elemTypeName + ":" + notKept + " The " + elemTypeName + " was not finished, " + DeleteUnfinishedElement (element.header.guid) + "."));
+                continue;
+            }
 
             // Per-item "id" support: the Element ID is written right after the creation, in
             // the same undoable command, so the create call itself stays as it was. Without
@@ -7116,6 +7121,11 @@ GS::Optional<GS::ObjectState> CreateCurtainWallsCommand::SetTypeSpecificParamete
         const double angleRad = angle * std::acos (-1.0) / 180.0;
         sinA = std::sin (angleRad);
         cosA = std::cos (angleRad);
+        // A horizontal plane (angle 0 or 180, e.g. the slant of a template drawn flat on the floor
+        // plan) has no vertical height, and the base offset below would be divided by zero (#3011).
+        if (std::fabs (sinA) < 1e-6) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("A horizontal curtain wall (angle %.4f degrees) cannot be created: height and zCoordinate are measured vertically, and a horizontal plane has no vertical extent. With a horizontal templateElementId, give an angle above 0 and below 180 to override its slant.", angle));
+        }
     }
     API_Tranmat& planeMatrix = element.curtainWall.planeMatrix;
     if (hasAngle) {

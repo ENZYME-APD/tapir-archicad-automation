@@ -1,0 +1,143 @@
+{
+  "title": "SetProjectPreferences writes the Calculation Rules page (element rules and insulation and air fills), refuses a rule for an element type it cannot have and a guid that is not a fill, and GetProjectPreferences reads it back (#3036)",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "two fills of the template",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill0": "attributes[0].attributeId.guid", "fill1": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the template has two fills" }
+      ]
+    },
+    {
+      "id": "read the page of the template",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "CalculationRules" ] },
+      "save": { "rules0": "calculationRules" },
+      "expect": [
+        { "path": "calculationRules.elementRules", "exists": true, "name": "element rules read" },
+        { "path": "calculationRules.wallInsulationFills", "exists": true, "name": "wall insulation fills read" },
+        { "path": "calculationRules.wallAirFills", "exists": true, "name": "wall air fills read" },
+        { "path": "calculationRules.roofInsulationFills", "exists": true, "name": "roof insulation fills read" },
+        { "path": "calculationRules.shellInsulationFills", "exists": true, "name": "shell insulation fills read" },
+        { "path": "legacy", "exists": false, "name": "only the page asked for" }
+      ]
+    },
+    {
+      "id": "set one rule and the fills",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "calculationRules": {
+          "elementRules": [
+            { "propertyType": "Surface", "holeLimit": 0.3, "elementTypes": [ "Roof" ] }
+          ],
+          "wallInsulationFills": [ { "attributeId": { "guid": "${fill0}" } } ],
+          "wallAirFills": [ { "attributeId": { "guid": "${fill1}" } } ],
+          "roofInsulationFills": [],
+          "shellInsulationFills": [ { "attributeId": { "guid": "${fill0}" } } ]
+        }
+      },
+      "expect": [
+        { "path": "calculationRules.success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the set values",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "CalculationRules" ] },
+      "expect": [
+        { "path": "calculationRules.elementRules", "len": 1, "name": "one rule" },
+        { "path": "calculationRules.elementRules[0].propertyType", "eq": "Surface", "name": "rule property type" },
+        { "path": "calculationRules.elementRules[0].holeLimit", "approx": 0.3, "tol": 0.0001, "name": "rule hole limit" },
+        { "path": "calculationRules.elementRules[0].elementTypes", "len": 1, "name": "rule has one element type" },
+        { "path": "calculationRules.elementRules[0].elementTypes[0]", "eq": "Roof", "name": "rule element type" },
+        { "path": "calculationRules.wallInsulationFills", "len": 1, "name": "one wall insulation fill" },
+        { "path": "calculationRules.wallInsulationFills[0].attributeId.guid", "eq": "${fill0}", "name": "wall insulation fill" },
+        { "path": "calculationRules.wallAirFills", "len": 1, "name": "one wall air fill" },
+        { "path": "calculationRules.wallAirFills[0].attributeId.guid", "eq": "${fill1}", "name": "wall air fill" },
+        { "path": "calculationRules.roofInsulationFills", "len": 0, "name": "no roof insulation fill" },
+        { "path": "calculationRules.shellInsulationFills[0].attributeId.guid", "eq": "${fill0}", "name": "shell insulation fill" }
+      ]
+    },
+    {
+      "id": "set two rules only",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "calculationRules": {
+          "elementRules": [
+            { "propertyType": "Volume", "holeLimit": 0.5, "elementTypes": [ "Wall", "Beam" ] },
+            { "propertyType": "Length", "holeLimit": 0.25, "elementTypes": [ "Wall" ] }
+          ]
+        }
+      },
+      "expect": [
+        { "path": "calculationRules.success", "eq": true }
+      ]
+    },
+    {
+      "id": "the rules replaced, the fills kept",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "CalculationRules" ] },
+      "expect": [
+        { "path": "calculationRules.elementRules", "len": 2, "name": "two rules" },
+        { "path": "calculationRules.wallAirFills[0].attributeId.guid", "eq": "${fill1}", "name": "wall air fill kept" },
+        { "path": "calculationRules.wallInsulationFills[0].attributeId.guid", "eq": "${fill0}", "name": "wall insulation fill kept" }
+      ]
+    },
+    {
+      "id": "[a Length rule for slabs]",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "calculationRules": {
+          "elementRules": [ { "propertyType": "Length", "holeLimit": 0.1, "elementTypes": [ "Slab" ] } ],
+          "wallAirFills": []
+        }
+      },
+      "expect": [
+        { "path": "calculationRules.success", "eq": false, "name": "refused" },
+        { "path": "calculationRules.error.message", "exists": true, "name": "with a message" }
+      ]
+    },
+    {
+      "id": "[a guid that is not a fill]",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "calculationRules": {
+          "roofInsulationFills": [ { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ]
+        }
+      },
+      "expect": [
+        { "path": "calculationRules.success", "eq": false, "name": "refused" },
+        { "path": "calculationRules.error.message", "exists": true, "name": "with a message" }
+      ]
+    },
+    {
+      "id": "the refused calls changed nothing",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "CalculationRules" ] },
+      "expect": [
+        { "path": "calculationRules.elementRules", "len": 2, "name": "rules unchanged" },
+        { "path": "calculationRules.wallAirFills", "len": 1, "name": "wall air fills unchanged" },
+        { "path": "calculationRules.roofInsulationFills", "len": 0, "name": "roof insulation fills unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetProjectPreferences",
+      "params": { "calculationRules": "${rules0}" }
+    }
+  ]
+}

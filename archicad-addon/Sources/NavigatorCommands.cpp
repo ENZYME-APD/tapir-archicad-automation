@@ -4337,6 +4337,23 @@ static bool IsProjectMapItem (const API_Guid& guid)
     return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
 }
 
+// True when guid is the root item of a publisher set (the rootGuid of its API_NavigatorSet).
+static bool IsPublisherSetRoot (const API_Guid& guid)
+{
+    Int32 numberOfPublisherSets = 0;
+    if (ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets) != NoError) {
+        return false;
+    }
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        if (ACAPI_Navigator_GetNavigatorSet (&set, &ii) == NoError && set.rootGuid == guid) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Finds the Drawing element of a placed Drawing's Layout Book item in the current database, which is the database
 // of the item's layout. Neither the element's guid nor its drawingGuid is the item's guid; what links them is the
 // view the Drawing shows: the item's sourceGuid is the Drawing's linkGuid (ACAPI_Drawing_GetDrawingLink, tested on
@@ -4498,6 +4515,18 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     // element behind the viewpoint is renamed instead (#466, #755). It is found
     // through the viewpoint's database, which links back to it. Every other Project
     // Map item is refused here.
+    // A publisher set is named by its API_NavigatorSet, which the API only reads
+    // (ACAPI_Navigator_GetNavigatorSet; there is no function that changes a set).
+    // ACAPI_Navigator_ChangeNavigatorItem on the set's root item returns NoError and the
+    // read-back below gets the new name, but only that hidden root item is renamed: the set
+    // keeps its name in the Navigator, the Organizer and GetPublisherSets (tested on
+    // Archicad 30 build 3001). So a new name or ID is refused there; dropping a custom name
+    // stays allowed, to clean up a root item renamed before this check.
+    if ((hasNewName || hasNewId) && IsPublisherSetRoot (guid)) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+            "This is the root item of a publisher set. Archicad's API cannot rename a publisher set: renaming its root item only changes a hidden item, not the name of the set. Rename the set in Archicad's Organizer.");
+    }
+
     const bool isProjectMapItem = (hasNewName || resetCustomName || hasNewId) && IsProjectMapItem (guid);
     API_DatabaseInfo dbInfo = navItem.db;
     const bool renameLinkedElement = isProjectMapItem &&

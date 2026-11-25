@@ -49,6 +49,10 @@ protected:
     // prepared it and the item's parameters, for what the create itself does not keep. An error
     // deletes the new element.
     virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return NoError; }
+    // Called after AfterCreate: reads the new element back and names the settings of the item
+    // Archicad did not keep (each starting with a space). A non-empty text deletes the new element
+    // and fails the item with it.
+    virtual GS::UniString GetSettingsNotKept (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/, const GS::ObjectState& /*parameters*/) const { return {}; }
     // AfterCreate for a command that also says why the new element could not be finished: the
     // item's answer gives failureReason. The default calls AfterCreate and gives no reason.
     virtual GSErrCode AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& /*failureReason*/) const { return AfterCreate (requestedElement, newElementGuid, parameters); }

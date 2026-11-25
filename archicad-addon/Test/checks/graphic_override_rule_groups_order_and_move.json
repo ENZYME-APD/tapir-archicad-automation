@@ -1,8 +1,18 @@
 {
   "title": "Graphic override rule groups: create, order, rename; rules: order, move, find by name, delete",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "minArchicad": "27",
   "steps": [
+    {
+      "id": "read the built-in group",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "save": { "builtInGroup": "graphicOverrideRuleGroups[0].name" },
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "exists": true, "name": "a new project starts with the built-in Renovation group (its name is localized)" }
+      ]
+    },
     {
       "id": "create two groups",
       "command": "CreateGraphicOverrideRuleGroups",
@@ -37,9 +47,9 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group A" },
-        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B" },
-        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 0, "name": "empty group listed" }
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A" },
+        { "path": "graphicOverrideRuleGroups[2].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 0, "name": "empty group listed" }
       ]
     },
     {
@@ -57,8 +67,28 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B" },
-        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A", "name": "unlisted group kept its place after the listed one" }
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[2].name", "eq": "TapirCheck group A", "name": "unlisted group kept its place after the listed one" }
+      ]
+    },
+    {
+      "id": "order with the built-in group",
+      "command": "SetGraphicOverrideRuleGroupOrder",
+      "creates": false,
+      "params": { "ruleGroupNames": ["${builtInGroup}"] },
+      "expect": [
+        { "path": "success", "eq": false, "name": "a built-in group cannot be moved" },
+        { "path": "error.message", "contains": "built in", "name": "says why" }
+      ]
+    },
+    {
+      "id": "built-in group still first",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "eq": "${builtInGroup}", "name": "kept its place through the reorders" },
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B" }
       ]
     },
     {
@@ -140,12 +170,12 @@
       "creates": false,
       "params": {},
       "save": {
-        "orderFirst": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
-        "orderLast": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[2].graphicOverrideRuleId.guid"
+        "orderFirst": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+        "orderLast": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds[2].graphicOverrideRuleId.guid"
       },
       "expect": [
-        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A" },
-        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 3 }
+        { "path": "graphicOverrideRuleGroups[2].name", "eq": "TapirCheck group A" },
+        { "path": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds", "len": 3 }
       ]
     },
     {
@@ -201,9 +231,9 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B" },
-        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 1 },
-        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 2 }
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 1 },
+        { "path": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds", "len": 2 }
       ]
     },
     {
@@ -234,11 +264,11 @@
       "creates": false,
       "params": {},
       "save": {
-        "bFirst": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid"
+        "bFirst": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid"
       },
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 2 },
-        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 1 }
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 2 },
+        { "path": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds", "len": 1 }
       ]
     },
     {
@@ -275,10 +305,10 @@
       "creates": false,
       "params": {},
       "save": {
-        "bLast": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds[1].graphicOverrideRuleId.guid"
+        "bLast": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[1].graphicOverrideRuleId.guid"
       },
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 2 }
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 2 }
       ]
     },
     {
@@ -332,9 +362,9 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B", "name": "B kept its name" },
-        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A renamed" },
-        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 1, "name": "renamed group kept its rule" }
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B", "name": "B kept its name" },
+        { "path": "graphicOverrideRuleGroups[2].name", "eq": "TapirCheck group A renamed" },
+        { "path": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds", "len": 1, "name": "renamed group kept its rule" }
       ]
     },
     {
@@ -365,8 +395,8 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A renamed" },
-        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 0 }
+        { "path": "graphicOverrideRuleGroups[2].name", "eq": "TapirCheck group A renamed" },
+        { "path": "graphicOverrideRuleGroups[2].graphicOverrideRuleIds", "len": 0 }
       ]
     },
     {

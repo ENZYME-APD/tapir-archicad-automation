@@ -105,6 +105,9 @@
     'Add an item to a publisher set': 'パブリッシャーセット（publisher set）に項目を追加する',
     'Add the items in Archicad\'s Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.':
         'Archicad の Organizer で項目を追加し、<a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> でそのセットをパブリッシュします。',
+    'Rename a publisher set': 'パブリッシャーセットの名前を変更する',
+    'Rename the set in Archicad\'s Organizer. <a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> reads the names, and <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> publishes a set by its name.':
+        'セットの名前は Archicad の Organizer で変更します。<a href="../archicad-addon/#GetPublisherSets">GetPublisherSets</a> で名前を読み取り、<a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a> で名前を指定してセットをパブリッシュできます。',
     'Change, rename or create a stored Model View Options combination': '保存済みの Model View Options の組み合わせを変更、名前変更、または作成する',
     'Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.':
         '組み合わせは <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a> で読み取れます。現在のウィンドウのオプションは <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a> で変更できます。',
