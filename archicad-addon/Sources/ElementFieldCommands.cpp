@@ -8,6 +8,8 @@
 #include <cstring>
 #include <deque>
 #include <limits>
+#include <string>
+#include <vector>
 
 using namespace ElementFields;
 
@@ -738,12 +740,15 @@ void AddFieldsOf (GS::ObjectState& result, const FieldTable& table, API_ElemType
     }
 }
 
+const char* GetReadOnlyReason (API_ElemTypeID typeId, const FieldInfo& field, bool ofElement);
+
 // Writes the given values into wanted and sets their bytes in mask; lists the fields written in
 // written, with their values before and after in oldValues and newValues. Returns an error text when
 // a path is unknown or read-only, a value does not fit its field, or a field is in a union member
-// the element does not use; nothing otherwise.
+// the element does not use; nothing otherwise. ofElement is false for the tool defaults of a type.
 GS::UniString WriteFieldValues (const GS::ObjectState& fields, const FieldTable& table, API_ElemTypeID typeId, API_Element& wanted, API_Element& mask,
-                                GS::Array<const FieldInfo*>& written, GS::ObjectState& oldValues, GS::ObjectState& newValues, UniStringStore& store)
+                                GS::Array<const FieldInfo*>& written, GS::ObjectState& oldValues, GS::ObjectState& newValues, UniStringStore& store,
+                                bool ofElement)
 {
     ACAPI_ELEMENT_MASK_CLEAR (mask);
     GS::UniString error;
@@ -757,8 +762,9 @@ GS::UniString WriteFieldValues (const GS::ObjectState& fields, const FieldTable&
             error = GS::UniString ("The element type ") + GetElementTypeNonLocalizedName (typeId) + " has no field " + GS::UniString (key.ToCStr ()) + " (see GetElementFieldDefinitions).";
             return;
         }
-        if (field->readOnly) {
-            error = GS::UniString (key.ToCStr ()) + " is read-only: Archicad computes it, or it chooses the shape of the element (see GetElementFieldDefinitions).";
+        const char* readOnlyReason = GetReadOnlyReason (typeId, *field, ofElement);
+        if (readOnlyReason != nullptr) {
+            error = GS::UniString (key.ToCStr ()) + " is read-only: " + readOnlyReason + " (see GetElementFieldDefinitions).";
             return;
         }
         GS::Optional<GS::UniString> writeError = WriteFieldValue (fields, key, *field, wanted, mask, store);
@@ -791,6 +797,188 @@ GS::UniString DescribeNotKept (const GS::Array<const FieldInfo*>& written, const
         }
     }
     return notKept;
+}
+
+const char* TableReadOnlyReason = "Archicad computes it, or it chooses the shape of the element";
+
+const char* LibraryPartReadOnlyReason = "it is the library part of the element, which Archicad only changes together with the parameters of the new library part, and SetElementFields writes no parameters: use ChangeLibraryPartOfElements";
+
+const char* NoteLeaderLineReadOnlyReason = "Archicad gives a leader line only to the notes of angle dimensions, floor plan dimensions and hatches (API_NoteType), and refuses the leader line fields of the notes of a level dimension";
+
+bool EndsWith (const std::string& text, const char* suffix)
+{
+    const size_t n = std::strlen (suffix);
+    return text.size () >= n && text.compare (text.size () - n, n, suffix) == 0;
+}
+
+bool BeginsWith (const std::string& text, const char* prefix)
+{
+    return text.compare (0, std::strlen (prefix), prefix) == 0;
+}
+
+// Whether path is a leader line field of the note at prefix (e.g. "note1."): useLeaderLine,
+// anchorAtTextEnd and the coordinates of the leader line.
+bool IsNoteLeaderLineField (const std::string& path, const char* prefix)
+{
+    for (const char* leaf : { "useLeaderLine", "anchorAtTextEnd", "begC.x", "begC.y", "midC.x", "midC.y", "endC.x", "endC.y" }) {
+        if (path == std::string (prefix) + leaf) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Why a field of an element type cannot be written, or nullptr when it can. Besides the fields the
+// generated table marks read-only (owners, counts and the fields that choose the shape of an
+// element), an element (ofElement; not the tool defaults, which were not checked) has fields Archicad
+// refuses whatever their value, even the value GetElementFields just read (#3054, Archicad 30): the
+// library part of the elements ChangeLibraryPartOfElements changes, and the leader lines of the notes
+// of a level dimension.
+const char* GetReadOnlyReason (API_ElemTypeID typeId, const FieldInfo& field, bool ofElement)
+{
+    if (field.readOnly) {
+        return TableReadOnlyReason;
+    }
+    if (!ofElement) {
+        return nullptr;
+    }
+    const std::string path (field.path);
+    switch (typeId) {
+        case API_ObjectID:
+        case API_LampID:
+        case API_ZoneID:
+            return path == "libInd" ? LibraryPartReadOnlyReason : nullptr;
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+            return path == "openingBase.libInd" ? LibraryPartReadOnlyReason : nullptr;
+        case API_LabelID:
+            return path == "u.symbol.libInd" ? LibraryPartReadOnlyReason : nullptr;
+        case API_LevelDimensionID:
+            return IsNoteLeaderLineField (path, "note1.") || IsNoteLeaderLineField (path, "note2.") ? NoteLeaderLineReadOnlyReason : nullptr;
+        default:
+            return nullptr;
+    }
+}
+
+// The railing components Archicad generates from the post model of their node (defPost) or the
+// pattern of their segment (defPattern), and so does not take a change to.
+bool IsGeneratedRailingComponentType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_RailingPostID:
+        case API_RailingInnerPostID:
+        case API_RailingPanelID:
+        case API_RailingBalusterSetID:
+        case API_RailingBalusterID:
+        case API_RailingPatternID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool ReadBoolField (const FieldTable& table, const char* path, const API_Element& element, bool& value)
+{
+    const FieldInfo* field = FindField (table, GS::String (path));
+    if (field == nullptr || field->kind != FieldKind::Bool) {
+        return false;
+    }
+    value = *(reinterpret_cast<const char*> (&element) + field->offset) != 0;
+    return true;
+}
+
+// The isAutoOnStoryVisibility field that decides a story visibility field, e.g. "showContour.showOnHome"
+// -> "isAutoOnStoryVisibility", "floorPlanLayout.visibility.showRelAbove" -> "floorPlanLayout.isAutoOnStoryVisibility",
+// and an isAutoOnStoryVisibility field itself; empty for the other fields.
+std::string GetAutoStoryVisibilityPath (const std::string& path)
+{
+    if (path == "isAutoOnStoryVisibility" || EndsWith (path, ".isAutoOnStoryVisibility")) {
+        return path;
+    }
+    bool isVisibilityLeaf = false;
+    for (const char* leaf : { ".showOnHome", ".showAllAbove", ".showAllBelow", ".showRelAbove", ".showRelBelow" }) {
+        isVisibilityLeaf = isVisibilityLeaf || EndsWith (path, leaf);
+    }
+    if (!isVisibilityLeaf) {
+        return std::string ();
+    }
+    // Drop the leaf and the story visibility member: what is left is the struct both are in.
+    const std::string member = path.substr (0, path.rfind ('.'));
+    const size_t dot = member.rfind ('.');
+    const std::string prefix = dot == std::string::npos ? std::string () : member.substr (0, dot + 1);
+    return prefix + "isAutoOnStoryVisibility";
+}
+
+// The conditions known to make Archicad refuse, or not keep, the given fields, as sentences to add to
+// the message; empty when none applies. written is the element as it was given to Archicad, state the
+// element as Archicad kept it (written again when Archicad refused the change).
+GS::UniString DescribeConditions (API_ElemTypeID typeId, const FieldTable& table, const GS::Array<const FieldInfo*>& fields, const API_Element& written, const API_Element& state)
+{
+    const API_Element& element = written;
+    GS::UniString conditions;
+    if (IsGeneratedRailingComponentType (typeId)) {
+        // Confirmed on Archicad 29 for posts, inner posts, panels, baluster sets and balusters (a
+        // refused change), and in #3054 on Archicad 30 for panels and patterns (values not kept).
+        conditions += " Archicad generates this railing component from the post model of its node (defPost of the Railing Node) or the pattern of its segment (defPattern of the Railing Segment), and does not take a change to it: change those instead (ModifyRailings).";
+    }
+
+    // While the automatic story visibility is on, Archicad recomputes the visibility from the
+    // element's vertical extent and drops the values given for it (as ModifyRailings, ModifySlabs and
+    // the other Modify commands of elements with a story visibility find).
+    std::vector<std::string> autoPaths;
+    bool lineArrowsGiven = false;
+    for (const FieldInfo* field : fields) {
+        const std::string path (field->path);
+        const std::string autoPath = GetAutoStoryVisibilityPath (path);
+        if (!autoPath.empty () && std::find (autoPaths.begin (), autoPaths.end (), autoPath) == autoPaths.end ()) {
+            autoPaths.push_back (autoPath);
+        }
+
+        const char* p = reinterpret_cast<const char*> (&element) + field->offset;
+        if (field->kind == FieldKind::Real && (EndsWith (path, "ArrowData.arrowSize") || path == "arrowData.arrowSize") && ReadReal (p, field->size) <= 0.0) {
+            conditions += GS::UniString (" ") + field->path + " is " + FieldValueToString (*field, element) + ": Archicad takes an arrowhead size greater than 0 (an end without an arrowhead may read 0), so leave it out or give a size.";
+        }
+        if (field->kind == FieldKind::SignedInt && (EndsWith (path, "ArrowData.arrowPen") || path == "arrowData.arrowPen")) {
+            const Int64 pen = ReadSigned (p, field->size);
+            if (pen < 1 || pen > 255) {
+                conditions += GS::UniString (" ") + field->path + " is " + FieldValueToString (*field, element) + ": Archicad takes an arrowhead pen from 1 to 255, so leave it out or give a pen.";
+            }
+        }
+        lineArrowsGiven = lineArrowsGiven || BeginsWith (path, "startArrowData.arrow") || BeginsWith (path, "endArrowData.arrow") || path == "linkedArrowAttributes";
+    }
+    for (const std::string& autoPath : autoPaths) {
+        bool isAuto = false;
+        if (!ReadBoolField (table, autoPath.c_str (), state, isAuto) || !isAuto) {
+            continue;
+        }
+        conditions += GS::UniString (" ") + autoPath.c_str () + " is true: Archicad recomputes the story visibility from the element's vertical extent and drops the values given for it";
+        if (typeId == API_RailingID) {
+            // ModifyRailings, confirmed on Archicad 29.
+            conditions += ", and does not turn the automatic story visibility of a railing off through the API.";
+        } else {
+            conditions += GS::UniString (", so give ") + autoPath.c_str () + " false in the same call.";
+        }
+    }
+
+    // Linked arrowheads share one size and pen (linkedArrowAttributes of lines, arcs, polylines and
+    // splines from Archicad 29).
+    bool linked = false;
+    if (lineArrowsGiven && ReadBoolField (table, "linkedArrowAttributes", element, linked) && linked) {
+        const FieldInfo* startSize = FindField (table, GS::String ("startArrowData.arrowSize"));
+        const FieldInfo* endSize = FindField (table, GS::String ("endArrowData.arrowSize"));
+        const FieldInfo* startPen = FindField (table, GS::String ("startArrowData.arrowPen"));
+        const FieldInfo* endPen = FindField (table, GS::String ("endArrowData.arrowPen"));
+        const char* bytes = reinterpret_cast<const char*> (&element);
+        const bool sizesDiffer = startSize != nullptr && endSize != nullptr && startSize->kind == FieldKind::Real && endSize->kind == FieldKind::Real &&
+            std::abs (ReadReal (bytes + startSize->offset, startSize->size) - ReadReal (bytes + endSize->offset, endSize->size)) > 1e-9;
+        const bool pensDiffer = startPen != nullptr && endPen != nullptr && startPen->kind == FieldKind::SignedInt && endPen->kind == FieldKind::SignedInt &&
+            ReadSigned (bytes + startPen->offset, startPen->size) != ReadSigned (bytes + endPen->offset, endPen->size);
+        if (sizesDiffer || pensDiffer) {
+            conditions += " linkedArrowAttributes is true: both ends share one arrowhead size and pen, so give startArrowData and endArrowData the same arrowSize and arrowPen, or linkedArrowAttributes false in the same call.";
+        }
+    }
+    return conditions;
 }
 
 }
@@ -860,7 +1048,11 @@ GS::Optional<GS::UniString> GetElementFieldDefinitionsCommand::GetRawResponseSch
                         },
                         "readOnly": {
                             "type": "boolean",
-                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit): SetElementFields refuses them."
+                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit), and for the fields of placed elements Archicad refuses whatever their value: the library part (libInd) of Objects, Lamps, Windows, Doors, Skylights, Zones and symbol Labels, which ChangeLibraryPartOfElements changes, and the leader line fields of the notes of a Level Dimension (note1/note2 useLeaderLine, anchorAtTextEnd, begC, midC, endC). SetElementFields refuses them, giving readOnlyReason; SetFieldsOfElementDefaults refuses only the first group (owners, counts and shape selectors)."
+                        },
+                        "readOnlyReason": {
+                            "type": "string",
+                            "description": "Why the field is read-only; only given for a read-only field."
                         },
                         "variant": {
                             "type": "string",
@@ -897,12 +1089,16 @@ GS::ObjectState GetElementFieldDefinitionsCommand::Execute (const GS::ObjectStat
     const auto& fields = response.AddList<GS::ObjectState> ("fields");
     for (UInt32 i = 0; i < table->count; ++i) {
         const FieldInfo& field = table->fields[i];
+        const char* readOnlyReason = GetReadOnlyReason (typeId, field, true);
         GS::ObjectState definition (
             "path", field.path,
             "type", GetJsonTypeName (field.kind),
             "kind", GetKindName (field.kind),
             "size", static_cast<Int32> (field.size),
-            "readOnly", field.readOnly);
+            "readOnly", readOnlyReason != nullptr);
+        if (readOnlyReason != nullptr) {
+            definition.Add ("readOnlyReason", GS::UniString (readOnlyReason));
+        }
         if (field.variant != nullptr) {
             definition.Add ("variant", field.variant);
         }
@@ -1139,6 +1335,7 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         API_Element                     wanted = {};
         API_Element                     mask = {};
         GS::Array<const FieldInfo*>     fields;
+        const FieldTable*               table = nullptr;
     };
     UniStringStore strings;
     GS::Array<Prepared> prepared;
@@ -1166,13 +1363,14 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
         }
         GS::ObjectState oldValues;
         GS::ObjectState newValues;
-        const GS::UniString error = WriteFieldValues (fields, *table, *typeId, p.wanted, p.mask, p.fields, oldValues, newValues, strings);
+        const GS::UniString error = WriteFieldValues (fields, *table, *typeId, p.wanted, p.mask, p.fields, oldValues, newValues, strings, true);
         if (!error.IsEmpty ()) {
             p.result = CreateFailedExecutionResult (APIERR_BADPARS, error);
             prepared.Push (p);
             continue;
         }
         ClearUnwrittenUniStrings (*table, p.fields, p.wanted);
+        p.table = table;
         p.ok = true;
         if (dryRun) {
             p.result = CreateWouldChangeExecutionResult (GS::ObjectState ("oldValue", oldValues, "newValue", newValues));
@@ -1192,12 +1390,11 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
                 p.ok = false;
                 const GS::UniString refusal = DescribeElementEditRefusal (changeErr, p.wanted.header);
                 GS::UniString message = GS::UniString ("Archicad refused the change") + (refusal.IsEmpty () ? GS::UniString (".") : GS::UniString (": ") + refusal + ".");
-                const API_ElemTypeID typeId = GetElemTypeId (p.wanted.header);
-                if (changeErr == APIERR_BADPARS && (typeId == API_RailingPostID || typeId == API_RailingInnerPostID || typeId == API_RailingPanelID ||
-                                                    typeId == API_RailingBalusterSetID || typeId == API_RailingBalusterID)) {
-                    // Confirmed on Archicad 29: these components are generated from the post model of their
-                    // node (defPost) and from the pattern of their segment (defPattern).
-                    message += " Archicad generates this railing component from the post model of its node or the pattern of its segment, and does not take a change to it.";
+                // The conditions known to make Archicad refuse the given values (#3054), checked on the
+                // element as it was to be written; not for a refusal whose reason is already known (a
+                // locked layer, a Teamwork reservation).
+                if (refusal.IsEmpty ()) {
+                    message += DescribeConditions (GetElemTypeId (p.wanted.header), *p.table, p.fields, p.wanted, p.wanted);
                 }
                 p.result = CreateFailedExecutionResult (changeErr, message);
             }
@@ -1220,8 +1417,20 @@ GS::ObjectState SetElementFieldsCommand::Execute (const GS::ObjectState& paramet
                     p.result = CreateFailedExecutionResult (APIERR_GENERAL, "The element was changed but could not be read back.");
                 } else {
                     const GS::UniString notApplied = DescribeNotKept (p.fields, p.wanted, got);
-                    p.result = notApplied.IsEmpty () ? CreateSuccessfulExecutionResult () :
-                        CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not keep every value:") + notApplied + " The other given fields were changed.");
+                    if (notApplied.IsEmpty ()) {
+                        p.result = CreateSuccessfulExecutionResult ();
+                    } else {
+                        // The conditions known to make Archicad drop the values it did not keep (#3054),
+                        // checked on the element as Archicad kept it.
+                        GS::Array<const FieldInfo*> notKept;
+                        for (const FieldInfo* field : p.fields) {
+                            if (!IsSameFieldValue (*field, p.wanted, got)) {
+                                notKept.Push (field);
+                            }
+                        }
+                        p.result = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not keep every value:") + notApplied +
+                            DescribeConditions (GetElemTypeId (got.header), *p.table, notKept, p.wanted, got) + " The other given fields were changed.");
+                    }
                     changeReporter.MarkChanged (p.wanted.header.guid);
                 }
             }
@@ -1482,7 +1691,7 @@ GS::ObjectState SetFieldsOfElementDefaultsCommand::Execute (const GS::ObjectStat
         GS::Array<const FieldInfo*> written;
         GS::ObjectState oldValues;
         GS::ObjectState newValues;
-        const GS::UniString error = WriteFieldValues (fields, *table, typeId, wanted, mask, written, oldValues, newValues, strings);
+        const GS::UniString error = WriteFieldValues (fields, *table, typeId, wanted, mask, written, oldValues, newValues, strings, false);
         if (!error.IsEmpty ()) {
             results (CreateFailedExecutionResult (APIERR_BADPARS, error));
             continue;
