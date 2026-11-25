@@ -6243,7 +6243,7 @@
             },
             "inIndex": {
                 "type": "integer",
-                "description": "Subindex of the element's node (API_Base inIndex). On a polygon element (a Slab, for example) the 1-based index of the vertex among all the coordinates of the element's polygon, as GetPolygonVertexIdsOfElements returns it; with line true it is the edge from that vertex to the next. Always give it together with nodeId there."
+                "description": "Subindex of the element's node (API_Base inIndex). On a polygon element (a Slab, for example) the 1-based index of the vertex among all the coordinates of the element's polygon, as GetPolygonVertexIdsOfElements returns it; with line true it is the edge from that vertex to the next. Always give it together with nodeId there: the vertexId of that vertex, or with line true the edgeId of that edge."
             },
             "special": {
                 "type": "integer"
@@ -6257,7 +6257,7 @@
             "nodeId": {
                 "type": "number",
                 "minimum": 0.0,
-                "description": "Polygon vertex ID (API_Base node_id), for elements with a polygon: the vertexId of the vertex at inIndex, as GetPolygonVertexIdsOfElements returns it. It is the ID Archicad keeps for the vertex, not its position in the polygon: on an edited slab it can be any number. With a nodeId that is not the ID of the vertex at inIndex, or without inIndex, Archicad does not attach the point to the element, and the command reports an error instead of creating the dimension (#3004)."
+                "description": "Polygon vertex or edge ID (API_Base node_id), for elements with a polygon: the vertexId of the vertex at inIndex, or with line true the edgeId of the edge that starts at inIndex, as GetPolygonVertexIdsOfElements returns them. It is the ID Archicad keeps for the vertex or edge, not its position in the polygon: on an edited slab it can be any number, and an edge's ID differs from the ID of its start vertex (#3034). With a nodeId that is not the ID of the vertex or edge at inIndex, or without inIndex, Archicad does not attach the point to the element, and the command reports an error instead of creating the dimension (#3004)."
             }
         },
         "additionalProperties": false

@@ -58,16 +58,16 @@ jobs:
     # The Mac installer is built universal2 from the official python.org
     # package, like in archicad_addon.yml (see there; keep these the same).
     env:
-      PYTHON_PKG_URL: https://www.python.org/ftp/python/3.12.10/python-3.12.10-macos11.pkg
-      PYTHON_PKG_SHA256: 8373e58da4ea146b3eb1c1f9834f19a319440b6b679b06050b1f9ee3237aa8e4
-      UNIVERSAL2_PYTHON: /Library/Frameworks/Python.framework/Versions/3.12/bin/python3
+      PYTHON_PKG_URL: https://www.python.org/ftp/python/3.15.2/python-3.15.2-macos11.pkg
+      PYTHON_PKG_SHA256: 2c6104475535b720b45774c68b0dfc9fcca2235353cf9ff81e05488f89845396
+      UNIVERSAL2_PYTHON: /Library/Frameworks/Python.framework/Versions/3.15/bin/python3
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v4
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.12'
+        python-version: '3.15'
     - name: Syntax Check
       run: python -m py_compile archicad-addon/Installer/tapir_installer.py
     # Released Add-Ons download this script from main to update themselves.
@@ -165,9 +165,11 @@ jobs:
         done < <(find dist/TapirInstaller.app -type f -print0)
         echo "Checked ${#names[@]} Mach-O files."
         # Make sure the libraries were found at all, so a pass means something.
-        for prefix in Python libtcl libtk; do
-          if ! printf '%s\n' "${names[@]}" | grep -q "^$prefix"; then
-            echo "::error::No Mach-O file named $prefix* in dist/TapirInstaller.app"
+        # Tcl/Tk come as libtcl*/libtk* dylibs in older python.org packages
+        # and as Tcl/Tk framework binaries from 3.15 on.
+        for pattern in 'Python' 'libtcl.*|Tcl' 'libtk.*|Tk'; do
+          if ! printf '%s\n' "${names[@]}" | grep -Eqx "$pattern"; then
+            echo "::error::No Mach-O file named $pattern in dist/TapirInstaller.app"
             failed=1
           fi
         done

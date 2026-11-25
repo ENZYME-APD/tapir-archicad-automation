@@ -822,7 +822,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetPolygonVertexIdsOfElementsCommand> (
             elementCommands, "2.0.1",
-            "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex) and the vertex ID Archicad stores for it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex or an edge of the polygon; the vertex IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements."
+            "Gets the polygon vertices of the given elements that have a polygon with vertex IDs (Slabs, Zones, Roofs, Meshes, Fills and others): for each point of the outline and of each hole, in the order GetDetailsOfElements returns them, its coordinate, its index in the element's polygon (inIndex), the vertex ID Archicad stores for it and the edge ID of the edge that starts at it. These are the inIndex and nodeId a witness point of CreateAssociativeDimensions needs to attach to a vertex (vertexId) or an edge (edgeId) of the polygon; the IDs are kept when vertices are inserted or deleted, so they cannot be worked out from the order of the points. The output is aligned with the input array of elements."
         );
         err |= RegisterCommand<ConvertRevealOffsetsCommand> (
             elementCommands, "1.7.3",
@@ -1152,7 +1152,8 @@ GSErrCode Initialize (void)
             "and the turn at each baseline point (landings and winders), and with curved baseline edges (baseLineArcs) for curved and spiral stairs. Accepts the same settings as ModifyStairs: the step values with their locks, "
             "the top link (relativeTopStory, topOffset), the Rules and Standards, the headroom, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
             "and structure settings of the flights and the landings (with the monolith data of a Monolith structure and the stringer data of a Side one), and the floor plan and reflected ceiling plan display (shown stories and components, the symbol on each story, the break line and the line type, pen and fill overrides), and the line types, pens and fills of the structure symbols (structureSymbols, monolithStructureSymbols) with their visibility on the stories (structureVisibilityOnStories); "
-            "settings not given come from the Stair tool defaults or the favorite. "
+            "settings not given come from the Stair tool defaults or the favorite. A given walking direction or walking line is read back: a stair Archicad did not keep it on "
+            "is deleted again and its item fails with what Archicad made of it. "
             "Archicad lays out the boundaries and the walking lines from the baseline and the flight width, and the API cannot write them: an item that gives one is refused with an error that says so."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
@@ -1467,7 +1468,7 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "2.0.0",
             "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the headroom (generation method, height and left and right offset; read back, and one Archicad did not apply is reported as an error), the finish and structure visibility, "
-            "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
+            "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction (the walking line and the direction are read back, and one Archicad did not apply is reported as an error), the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness, the monolith data of a Monolith structure: thinning, thickness, bottom oversize, building material and fill, surfaces, pens, line types and drainings, and the stringer data of a Side structure: width, height above tread and how it is measured; the monolith and stringer data are read back, and one Archicad did not apply is reported as an error), "
             "and the floor plan display: whether it is Custom or by the Model View Options, and for the floor plan and the reflected ceiling plan separately the stories the stair is shown on "
             "and whether its walking line, numbering, up/down text, description and structure are shown, the symbol on each story (above, top, middle, bottom and below the relevant stories), the break line (angle, gap and position) "
@@ -3008,7 +3009,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RenameNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
-            "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again."
+            "Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. A publisher set cannot be renamed (Archicad's API only reads publisher sets), so a new name or ID for the root item of a publisher set is refused. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again."
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",

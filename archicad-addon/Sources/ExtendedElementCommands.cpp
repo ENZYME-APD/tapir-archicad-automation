@@ -2428,7 +2428,8 @@ GS::Optional<GS::UniString> CheckAssociativeDimensionPoints (
             return GS::UniString::Printf (
                 "Witness point %d was not attached to its element, so the dimension was not created. "
                 "On a polygon element (a Slab, for example) give inIndex and nodeId together: the index and the vertexId "
-                "of the vertex, as GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
+                "of the vertex, or with line true the index of the edge's start point and its edgeId, as "
+                "GetPolygonVertexIdsOfElements returns them.", (int) pointIndex);
         }
         used[dimElemIndex.Get ()] = true;
         const API_DimElem& dimElem = (*memo.dimElems)[dimElemIndex.Get ()];
@@ -8949,11 +8950,11 @@ static const char* StairSettingsSchemaProperties = R"(
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
                         "extraTopTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its top." },
                         "extraBottomTread": { "type": "boolean", "description": "Whether the stair has an extra tread at its bottom." },
-                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto)." },
-                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto." },
+                        "walkingLinePosition": { "type": "string", "enum": ["Left", "Right", "Center", "Auto"], "description": "Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto). CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
+                        "walkingLineOffset": { "type": "number", "description": "The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto. While the stair's walking line is Left or Right, CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
                         "walkingLineSymbolPosition": { "type": "string", "enum": ["Auto", "Center", "Custom"], "description": "Where the symbol of the walking line is placed (API_StairType::walkLineSymbPos): by Archicad (Auto), centered, or where it was placed by hand (Custom)." },
                         "numberingType": { "type": "string", "enum": ["Treads", "Risers"], "description": "Whether the steps are numbered on their treads or on their risers." },
-                        "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward)." },
+                        "inputDirection": { "type": "string", "enum": ["Upward", "Inverse"], "description": "The walking direction along the baseline: upward from its first point, or inverse (downward). CreateStairs and ModifyStairs read it back and fail the item when Archicad did not keep it (CreateStairs then deletes the new stair)." },
                         "uniformFinish": { "type": "boolean", "description": "Whether the flights and the landings share one finish setting." },
                         "uniformMonolithAttributes": { "type": "boolean", "description": "Whether the monolithic structures of the flights and the landings share one set of attributes." },
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
@@ -9046,6 +9047,49 @@ static const char* StairOutlineSchemaProperties = R"(
                         "centerWalkingLine": { "$ref": "#/StairOutlineNotWritable", "description": "Not writable: the center walking line of the stair. An item with it is refused." })";
 
 static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
+
+static GS::UniString StairLinePositionToString (API_LinePositionID position)
+{
+    switch (position) {
+        case APILP_Left:   return "Left";
+        case APILP_Right:  return "Right";
+        case APILP_Center: return "Center";
+        case APILP_Auto:   return "Auto";
+        default:           return GS::UniString::Printf ("%d", static_cast<int> (position));
+    }
+}
+
+// Reads the stair back after CreateStairs created it or ModifyStairs changed it and names the
+// walking direction and walking line settings that were given but differ now (#2940): Archicad 29
+// answered success for an Inverse inputDirection and a walkingLinePosition, and kept the stair as
+// it was. The walking line offset is only compared while the stair's walking line is Left or Right,
+// the positions it is measured from. Empty when none were given or all were kept.
+static GS::UniString CheckStairDirectionAndWalkingLineApplied (const API_Guid& stairGuid, const API_StairType& want, bool hasInputDirection, bool hasWalkingLinePosition, bool hasWalkingLineOffset)
+{
+    if (!hasInputDirection && !hasWalkingLinePosition && !hasWalkingLineOffset) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = stairGuid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back.";
+    }
+
+    const API_StairType& got = changed.stair;
+    GS::UniString notApplied;
+    if (hasInputDirection && got.inputDirection != want.inputDirection) {
+        notApplied += got.inputDirection == APISD_Inverse ? " inputDirection is Inverse." : " inputDirection is Upward.";
+    }
+    if (hasWalkingLinePosition && got.walkingLinePosition != want.walkingLinePosition) {
+        notApplied += GS::UniString (" walkingLinePosition is ") + StairLinePositionToString (got.walkingLinePosition) + ".";
+    }
+    const bool offsetUsed = got.walkingLinePosition == APILP_Left || got.walkingLinePosition == APILP_Right;
+    if (hasWalkingLineOffset && offsetUsed && std::fabs (got.walkingLineOffset - want.walkingLineOffset) > 1e-6) {
+        notApplied += GS::UniString::Printf (" walkingLineOffset is %g.", got.walkingLineOffset);
+    }
+    return notApplied;
+}
 
 CreateStairsCommand::CreateStairsCommand () :
     CreateElementsCommandBase ("CreateStairs", API_StairID, "stairsData")
@@ -9149,6 +9193,14 @@ GS::Optional<GS::UniString> CreateStairsCommand::GetInputParametersSchema () con
         "additionalProperties": false,
         "required": ["stairsData"]
     })";
+}
+
+// A new stair that did not keep the given walking direction or walking line is deleted again and
+// the item fails, naming what Archicad made of it (#2940), as ModifyStairs reports it.
+GS::UniString CreateStairsCommand::GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    return CheckStairDirectionAndWalkingLineApplied (newElementGuid, requestedElement.stair,
+        parameters.Contains ("inputDirection"), parameters.Contains ("walkingLinePosition"), parameters.Contains ("walkingLineOffset"));
 }
 
 static bool StairSegmentTypeFromString (const GS::UniString& str, API_StairSegmentTypeID& type)
@@ -12845,6 +12897,15 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
             const GS::UniString headroomNotApplied = CheckStairHeadroomApplied (element, givenHeadroomMask);
             if (!headroomNotApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every headroom setting:" + headroomNotApplied));
+                continue;
+            }
+            // And for the walking direction and the walking line (#2940).
+            const GS::UniString directionNotApplied = CheckStairDirectionAndWalkingLineApplied (element.header.guid, element.stair,
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, inputDirection),
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLinePosition),
+                ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, walkingLineOffset));
+            if (!directionNotApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every walking direction and walking line setting:" + directionNotApplied));
                 continue;
             }
 
@@ -18685,7 +18746,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "elementId": { "$ref": "#/ElementId" },
                         "coordinates": {
                             "type": "array",
-                            "description": "The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight).",
+                            "description": "The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight). Only for a vertical curtain wall (angle 90): on a slanted or horizontal one the item fails and nothing is changed, because Archicad takes its reference line in the plane of the curtain wall; use RecreateCurtainWalls for a slanted one.",
                             "items": {
                                 "$ref": "#/Coordinate2D"
                             },
@@ -18693,7 +18754,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         },
                         "zCoordinate": {
                             "type": "number",
-                            "description": "The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too."
+                            "description": "The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too. Only for a vertical curtain wall (angle 90): on a slanted or horizontal one Archicad moves the plane by the base offset along the plane itself, so the item fails and nothing is changed; give a slanted one a new elevation with CreateCurtainWalls and it as templateElementId."
                         },
                         "floorIndex": {
                             "type": "integer",
@@ -18701,7 +18762,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         },
                         "height": {
                             "type": "number",
-                            "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed.",
+                            "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed. Only for a vertical curtain wall (angle 90): on a slanted or horizontal one the item fails and nothing is changed; use RecreateCurtainWalls for a slanted one.",
                             "exclusiveMinimum": 0.0
                         },
                         "flipped": {
@@ -19114,6 +19175,24 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
     }
     if (GetElemTypeId (element.header) != API_CurtainWallID) {
         return CreateFailedExecutionResult (APIERR_BADID, "Element is not a Curtain Wall.");
+    }
+
+    // A curtain wall that is not vertical lies in its own plane (planeMatrix): Archicad takes
+    // memo.coords in that plane, measures the height along it and moves it by planeOffset along
+    // it, so the floor plan coordinates, the vertical height and the base offset written below
+    // would move or distort it - a horizontal one got its X doubled and its Y turned into a
+    // depth of -Y, and reported failure afterwards (#3011). Those fields are refused before
+    // anything is changed; CreateCurtainWalls (and RecreateCurtainWalls through it) places a
+    // slanted one in its plane.
+    if (std::fabs (element.curtainWall.angle - 90.0) > 1e-6) {
+        const char* refusedField = item.Contains ("coordinates") ? "coordinates" : (item.Contains ("height") ? "height" : (item.Contains ("zCoordinate") ? "zCoordinate" : nullptr));
+        if (refusedField != nullptr) {
+            const bool horizontal = std::fabs (std::sin (element.curtainWall.angle * std::acos (-1.0) / 180.0)) < 1e-6;
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf (
+                "%s cannot be changed on a curtain wall that is not vertical (its angle is %.4f degrees, not 90): Archicad takes it in the plane of the curtain wall, so it would move or distort it. %s Nothing was changed.",
+                refusedField, element.curtainWall.angle,
+                horizontal ? "A horizontal curtain wall cannot be changed this way, nor recreated with RecreateCurtainWalls yet." : "Use RecreateCurtainWalls for a new reference line or height, or CreateCurtainWalls with it as templateElementId for a new zCoordinate."));
+        }
     }
 
     // The height is changed in a call of its own, before the other fields (see below).
