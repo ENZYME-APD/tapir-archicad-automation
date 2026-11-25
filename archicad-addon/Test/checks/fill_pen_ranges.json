@@ -1,0 +1,202 @@
+{
+  "title": "Fill pen ranges (#3054): ModifyWindows and ModifyDoors accept the background pen -1 that Archicad reads back, and the foreground fill pen 0 is refused by ModifyDoors, ModifyWindows, ModifyObjects and ModifyMorphs",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 940.0, "y": 940.0 },
+            "endCoordinate": { "x": 948.0, "y": 940.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "window",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 1.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2
+          }
+        ]
+      },
+      "save": {
+        "window": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window created" }
+      ]
+    },
+    {
+      "id": "door",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 5.5,
+            "sillHeight": 0.0,
+            "width": 0.9,
+            "height": 2.1
+          }
+        ]
+      },
+      "save": {
+        "door": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door created" }
+      ]
+    },
+    {
+      "id": "window background pen -1",
+      "command": "ModifyWindows",
+      "creates": false,
+      "params": {
+        "windowsWithDetails": [
+          {
+            "elementId": { "guid": "${window}" },
+            "sectionFillPen": 5,
+            "sectionFillBackgroundPen": -1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "-1 passes the schema" },
+        { "path": "executionResults[0].success", "eq": true, "name": "window modified" }
+      ]
+    },
+    {
+      "id": "door background pen -1",
+      "command": "ModifyDoors",
+      "creates": false,
+      "params": {
+        "doorsWithDetails": [
+          {
+            "elementId": { "guid": "${door}" },
+            "sectionFillPen": 6,
+            "sectionFillBackgroundPen": -1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "-1 passes the schema" },
+        { "path": "executionResults[0].success", "eq": true, "name": "door modified" }
+      ]
+    },
+    {
+      "id": "read the pens back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.sectionFillPen", "eq": 5, "name": "window fill pen" },
+        { "path": "detailsOfElements[0].details.sectionFillBackgroundPen", "eq": -1, "name": "window background pen -1" },
+        { "path": "detailsOfElements[1].details.sectionFillPen", "eq": 6, "name": "door fill pen" },
+        { "path": "detailsOfElements[1].details.sectionFillBackgroundPen", "eq": -1, "name": "door background pen -1" }
+      ]
+    },
+    {
+      "id": "door foreground fill pen 0",
+      "command": "ModifyDoors",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "doorsWithDetails": [
+          {
+            "elementId": { "guid": "${door}" },
+            "sectionFillPen": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema (minimum 1)" }
+      ]
+    },
+    {
+      "id": "window foreground fill pen 0",
+      "command": "ModifyWindows",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "windowsWithDetails": [
+          {
+            "elementId": { "guid": "${window}" },
+            "sectionFillPen": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema (minimum 1)" }
+      ]
+    },
+    {
+      "id": "object foreground fill pen 0",
+      "command": "ModifyObjects",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "objectsWithDetails": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "sectionFillPen": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema (minimum 1)" }
+      ]
+    },
+    {
+      "id": "morph foreground fill pen 0",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "morphsWithDetails": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "coverFillPen": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema (minimum 1)" }
+      ]
+    },
+    {
+      "id": "refused calls changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.sectionFillPen", "eq": 5, "name": "window fill pen kept" },
+        { "path": "detailsOfElements[1].details.sectionFillPen", "eq": 6, "name": "door fill pen kept" }
+      ]
+    }
+  ]
+}
