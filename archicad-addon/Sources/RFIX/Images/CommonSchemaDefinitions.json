@@ -32313,7 +32313,7 @@
     },
     "ElementHeaderFromOtherDatabase": {
         "type": "object",
-        "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.",
+        "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Give GetDetailsOfElements readFromOtherDatabases: true to read its full details without opening a window, or use GetContainingDatabases and ChangeWindow to open its database first.",
         "properties": {
             "elementId": {
                 "$ref": "#/ElementId"
