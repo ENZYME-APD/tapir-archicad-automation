@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 14:50 UTC",
+ "generatedAt": "2026-11-25 17:15 UTC",
  "versions": [
   25,
   26,
@@ -4758,12 +4758,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2979,
-     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4878,12 +4873,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2979,
-     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7282,10 +7272,6 @@
     {
      "number": 3067,
      "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
-    {
-     "number": 2979,
-     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
     {
      "number": 2797,
@@ -25372,10 +25358,6 @@
      "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
     },
     {
-     "number": 2979,
-     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37443,10 +37425,6 @@
     {
      "number": 3066,
      "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
-    },
-    {
-     "number": 2979,
-     "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
     },
     {
      "number": 2880,
