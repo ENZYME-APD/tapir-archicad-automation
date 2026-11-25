@@ -1,10 +1,10 @@
 {
  "version": 1,
- "generatedAt": "2026-11-24T13:56:42Z",
+ "generatedAt": "2026-11-25T13:05:07Z",
  "totals": {
-  "people": 51,
-  "places": 47,
-  "countries": 30
+  "people": 52,
+  "places": 48,
+  "countries": 31
  },
  "places": [
   {
@@ -304,6 +304,15 @@
    "people": 1
   },
   {
+   "name": "Serbia",
+   "country": "Serbia",
+   "countryCode": "RS",
+   "lat": 44.15,
+   "lon": 20.55,
+   "people": 1,
+   "countryOnly": true
+  },
+  {
    "name": "Sevilla",
    "country": "Spain",
    "countryCode": "ES",
@@ -515,6 +524,11 @@
   {
    "name": "Romania",
    "code": "RO",
+   "people": 1
+  },
+  {
+   "name": "Serbia",
+   "code": "RS",
    "people": 1
   },
   {
@@ -857,6 +871,14 @@
    "lat": -33.44,
    "lon": -70.65,
    "kind": "settlement"
+  },
+  "serbia": {
+   "name": "Serbia",
+   "country": "Serbia",
+   "countryCode": "RS",
+   "lat": 44.15,
+   "lon": 20.55,
+   "kind": "country"
   },
   "seville": {
    "name": "Sevilla",
