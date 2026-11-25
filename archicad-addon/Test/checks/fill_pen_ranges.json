@@ -119,6 +119,7 @@
       "id": "door foreground fill pen 0",
       "command": "ModifyDoors",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "doorsWithDetails": [
           {
@@ -135,6 +136,7 @@
       "id": "window foreground fill pen 0",
       "command": "ModifyWindows",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "windowsWithDetails": [
           {
@@ -151,6 +153,7 @@
       "id": "object foreground fill pen 0",
       "command": "ModifyObjects",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "objectsWithDetails": [
           {
@@ -167,6 +170,7 @@
       "id": "morph foreground fill pen 0",
       "command": "ModifyMorphs",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "morphsWithDetails": [
           {

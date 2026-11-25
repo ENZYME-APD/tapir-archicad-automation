@@ -45,6 +45,7 @@
       "id": "foreground pen 0",
       "command": "SetOpeningDefault",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "floorPlanParameters": {
           "coverFillPen": 0
