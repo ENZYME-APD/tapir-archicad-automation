@@ -1,0 +1,72 @@
+{
+  "title": "SetURLReferencesOfElements: an omitted or empty description takes the URL (#3054)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "four walls without a link",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {"begCoordinate": {"x": 700.0, "y": 700.0}, "endCoordinate": {"x": 703.0, "y": 700.0},
+           "zCoordinate": 0.0, "height": 2.5, "thickness": 0.2},
+          {"begCoordinate": {"x": 700.0, "y": 703.0}, "endCoordinate": {"x": 703.0, "y": 703.0},
+           "zCoordinate": 0.0, "height": 2.5, "thickness": 0.2},
+          {"begCoordinate": {"x": 700.0, "y": 706.0}, "endCoordinate": {"x": 703.0, "y": 706.0},
+           "zCoordinate": 0.0, "height": 2.5, "thickness": 0.2},
+          {"begCoordinate": {"x": 700.0, "y": 709.0}, "endCoordinate": {"x": 703.0, "y": 709.0},
+           "zCoordinate": 0.0, "height": 2.5, "thickness": 0.2}
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid",
+        "w3": "elements[2].elementId.guid",
+        "w4": "elements[3].elementId.guid"
+      },
+      "expect": [
+        {"path": "elements", "len": 4, "name": "four walls created"}
+      ]
+    },
+    {
+      "id": "links: description omitted, empty, given; an omitted one with a URL over 255 bytes",
+      "command": "SetURLReferencesOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithURLReferences": [
+          {"elementId": {"guid": "${w1}"}, "url": "https://www.graphisoft.com"},
+          {"elementId": {"guid": "${w2}"}, "url": "https://archicad-api.com", "description": ""},
+          {"elementId": {"guid": "${w3}"}, "url": "https://www.graphisoft.com", "description": "GRAPHISOFT Home Page"},
+          {"elementId": {"guid": "${w4}"}, "url": "https://example.com/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+        ]
+      },
+      "expect": [
+        {"path": "executionResults[0].success", "eq": true, "name": "description omitted: set"},
+        {"path": "executionResults[1].success", "eq": true, "name": "description empty: set"},
+        {"path": "executionResults[2].success", "eq": true, "name": "description given: set"},
+        {"path": "executionResults[3].success", "eq": false, "name": "description omitted, URL too long for it: refused"},
+        {"path": "executionResults[3].error.message", "contains": "give a description", "name": "the refusal says what to do"}
+      ]
+    },
+    {
+      "id": "read the links back",
+      "command": "GetURLReferencesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {"elementId": {"guid": "${w1}"}},
+          {"elementId": {"guid": "${w2}"}},
+          {"elementId": {"guid": "${w3}"}},
+          {"elementId": {"guid": "${w4}"}}
+        ]
+      },
+      "expect": [
+        {"path": "urlReferences[0].url", "eq": "https://www.graphisoft.com", "name": "omitted: url kept"},
+        {"path": "urlReferences[0].description", "eq": "https://www.graphisoft.com", "name": "omitted: description is the URL"},
+        {"path": "urlReferences[1].url", "eq": "https://archicad-api.com", "name": "empty: url kept"},
+        {"path": "urlReferences[1].description", "eq": "https://archicad-api.com", "name": "empty: description is the URL"},
+        {"path": "urlReferences[2].description", "eq": "GRAPHISOFT Home Page", "name": "given: description kept"},
+        {"path": "urlReferences[3].error", "exists": true, "name": "refused one has no link"}
+      ]
+    }
+  ]
+}
