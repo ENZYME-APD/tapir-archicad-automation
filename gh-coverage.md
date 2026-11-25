@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-24 22:05 UTC.
+Updated 2026-11-25 01:04 UTC.
 
 | | Status |
 |---|---|
@@ -118,7 +118,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetAutoTextKeys` 🟢 1/1 parameters – `GetAutoTextKeysComponent`
 - ✅ `GetAutoTextName` 🟢 1/1 parameters – `GetAutoTextNameComponent`
 - ✅ `GetAllAutoTextKeys` 🟢 0/0 parameters – `GetAllAutoTextKeysComponent`
-- ✅ `InterpretAutoTexts` 🟢 2/2 parameters – `InterpretAutoTextsComponent`
+- ✅ `InterpretAutoTexts` 🟢 1/1 parameters – `InterpretAutoTextsComponent`
 - ✅ `GetNoteAutotexts` 🟢 2/2 parameters – `GetNoteAutotextsComponent`
 - ✅ `GetNoteAutoTextKeywords` 🟢 1/1 parameters – `GetNoteAutoTextKeywordsComponent`
 - ✅ `GetHotlinks` 🟢 0/0 parameters – `GetHotLinksComponent`

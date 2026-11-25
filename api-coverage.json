@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-24 22:05 UTC",
+ "generatedAt": "2026-11-25 01:04 UTC",
  "versions": [
   25,
   26,
@@ -2909,10 +2909,6 @@
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
-    },
-    {
-     "number": 2619,
-     "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
     }
    ],
    "issues": []
@@ -9901,12 +9897,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2619,
-     "title": "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30981,10 +30972,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3035,
-     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -44108,10 +44095,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3035,
-     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47231,10 +47214,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3035,
-     "title": "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"

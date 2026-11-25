@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-24 22:05 UTC.
+Archicad 25–30 DevKits; updated 2026-11-25 01:04 UTC.
 
 | | Status |
 |---|---|
@@ -327,7 +327,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - ✅ `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2619](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2619 "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type")
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database.
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
@@ -670,7 +670,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_GraphicalOverride_ChangeOverrideCombination` – Changes an override combination identified by its guid. <sub>(was `ACAPI_Override_ChangeOverrideCombination`)</sub>
 - ✅ `ACAPI_GraphicalOverride_ChangeOverrideRule` – Changes an override rule identified by its guid. <sub>(was `ACAPI_Override_ChangeOverrideRule`)</sub>
-- ✅ `ACAPI_GraphicalOverride_ChangeOverrideRuleGroup` <sub>AC27–30</sub> – Changes an override rule group identified by its guid. — [#2619](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2619 "Fix SetGraphicOverrideRuleGroupOrder with built-in groups and ActivateLayerCombination with a guid of another type")
+- ✅ `ACAPI_GraphicalOverride_ChangeOverrideRuleGroup` <sub>AC27–30</sub> – Changes an override rule group identified by its guid.
 - ✅ `ACAPI_GraphicalOverride_CreateOverrideCombination` – Creates an override combination. <sub>(was `ACAPI_Override_CreateOverrideCombination`)</sub>
 - ✅ `ACAPI_GraphicalOverride_CreateOverrideRule` – Creates an override rule. <sub>(was `ACAPI_Override_CreateOverrideRule`)</sub>
 - ✅ `ACAPI_GraphicalOverride_CreateOverrideRuleGroup` <sub>AC27–30</sub> – Creates an override rule group.
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#3035](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3035 "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#3035](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3035 "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#3035](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3035 "GetPolygonVertexIdsOfElements: return the edge ID of each polygon edge"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
