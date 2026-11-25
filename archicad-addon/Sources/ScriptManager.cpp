@@ -238,7 +238,8 @@ static bool SplitUrl (const GS::UniString& url, GS::UniString& origin, GS::UniSt
 }
 
 // Downloads the body of url, with the DevKit's HTTP client as VersionChecker uses it. error: why it failed.
-static bool DownloadBytes (const GS::UniString& url, std::vector<char>& body, GS::UniString& error)
+// An empty body is an error unless allowEmpty: a helper file may be empty (utilities/__init__.py is, #3045).
+static bool DownloadBytes (const GS::UniString& url, std::vector<char>& body, GS::UniString& error, bool allowEmpty = false)
 {
     GS::UniString origin;
     GS::UniString pathAndQuery;
@@ -267,7 +268,7 @@ static bool DownloadBytes (const GS::UniString& url, std::vector<char>& body, GS
             error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_HTTP_STATUS), statusCode, origin.ToPrintf ());
             return false;
         }
-        if (body.empty ()) {
+        if (body.empty () && !allowEmpty) {
             error = UpdateText (ID_AUTOUPDATE_ERROR_EMPTY);
             return false;
         }
@@ -1409,7 +1410,7 @@ bool ScriptManager::Install (const Script& script, const ScriptVersion& version)
         for (const auto& helper : HelperFiles) {
             const GS::UniString relativePath = GS::UniString (helper[0]) + "/" + helper[1];
             std::vector<char> content;
-            if (!DownloadBytes (GS::UniString (HelpersBaseUrl) + relativePath, content, error)) {
+            if (!DownloadBytes (GS::UniString (HelpersBaseUrl) + relativePath, content, error, true)) {
                 ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), relativePath.ToPrintf (), error.ToPrintf ()));
                 return false;
             }
