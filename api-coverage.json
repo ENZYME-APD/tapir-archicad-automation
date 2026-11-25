@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 13:00 UTC",
+ "generatedAt": "2026-11-25 14:50 UTC",
  "versions": [
   25,
   26,
@@ -9,9 +9,10 @@
   30
  ],
  "counts": {
-  "not applicable": 569,
+  "not applicable": 563,
   "done": 2278,
-  "skipped": 32
+  "skipped": 32,
+  "merged": 6
  },
  "items": [
   {
@@ -6726,6 +6727,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3068,
+     "title": "ModifySections: move a Limited section's line on Archicad 29 (write its depth line with it)"
+    },
+    {
+     "number": 3067,
+     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
+    },
+    {
      "number": 3059,
      "title": "[5/6] SetElementFields: mark the fields Archicad always refuses read-only, name the reason of other refusals"
     },
@@ -6980,6 +6989,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3067,
+     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -7266,6 +7279,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3067,
+     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
+    },
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
@@ -13737,7 +13754,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3066,
+     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
+    }
+   ],
    "issues": [
     {
      "number": 3065,
@@ -14286,7 +14308,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3066,
+     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
+    }
+   ],
    "issues": [
     {
      "number": 3065,
@@ -16162,16 +16189,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3039,
-     "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 3037,
-     "title": "[1/3] GetProjectPreferences / SetProjectPreferences: Legacy, Imaging and Calculation, Layouts and Data Safety pages"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 3036,
@@ -16288,16 +16306,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3039,
-     "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 3037,
-     "title": "[1/3] GetProjectPreferences / SetProjectPreferences: Legacy, Imaging and Calculation, Layouts and Data Safety pages"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 3036,
@@ -25358,6 +25367,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3067,
+     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
+    },
     {
      "number": 2979,
      "title": "GetDetailsOfElements: read elements of other databases without opening them (faster Drawing Status Report)"
@@ -37424,12 +37437,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3039,
-     "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
+     "number": 3067,
+     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
     },
     {
-     "number": 3037,
-     "title": "[1/3] GetProjectPreferences / SetProjectPreferences: Legacy, Imaging and Calculation, Layouts and Data Safety pages"
+     "number": 3066,
+     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
     },
     {
      "number": 2979,
@@ -52788,14 +52801,9 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [
-    {
-     "number": 3043,
-     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52859,14 +52867,9 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [
-    {
-     "number": 3043,
-     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52880,8 +52883,8 @@
     29
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -52962,14 +52965,9 @@
     29
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [
-    {
-     "number": 3043,
-     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52984,14 +52982,9 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [
-    {
-     "number": 3043,
-     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53006,14 +52999,9 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface: it builds or shows the add-on's own dialogs, menus, palettes or toolbox items, which do nothing to the project by themselves; the few that would help a script are listed as applicable (#2237)",
-   "pullRequests": [
-    {
-     "number": 3043,
-     "title": "Script shortcuts: show the assigned key and name the Work Environment entries after their scripts"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
