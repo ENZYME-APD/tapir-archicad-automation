@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 20:10 UTC",
+ "generatedAt": "2026-11-25 20:45 UTC",
  "counts": {
   "done": 789,
   "open": 42,
@@ -15661,7 +15661,7 @@
    "id": "GetViewSettings",
    "group": "Navigator Commands",
    "version": "1.1.4",
-   "brief": "Gets the view settings of navigator items",
+   "brief": "Gets the view settings of navigator items, including a view's own (custom) layer states",
    "status": "done",
    "reason": "",
    "components": [

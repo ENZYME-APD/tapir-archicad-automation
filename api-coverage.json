@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 20:10 UTC",
+ "generatedAt": "2026-11-25 20:45 UTC",
  "versions": [
   25,
   26,
@@ -6717,14 +6717,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3068,
-     "title": "ModifySections: move a Limited section's line on Archicad 29 (write its depth line with it)"
-    },
-    {
-     "number": 3067,
-     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
-    {
      "number": 3059,
      "title": "[5/6] SetElementFields: mark the fields Archicad always refuses read-only, name the reason of other refusals"
     },
@@ -6979,10 +6971,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3067,
-     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -7269,10 +7257,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3067,
-     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -13740,17 +13724,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3066,
-     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
-    {
-     "number": 3065,
-     "title": "SetViewSettings: a view's own (custom) layer states can't be written through ChangeNavigatorView"
-    },
     {
      "number": 688,
      "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
@@ -14294,18 +14269,8 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3066,
-     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
-    }
-   ],
-   "issues": [
-    {
-     "number": 3065,
-     "title": "SetViewSettings: a view's own (custom) layer states can't be written through ChangeNavigatorView"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Navigator_GetStructureDisplay",
@@ -25353,10 +25318,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3067,
-     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -37418,14 +37379,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3067,
-     "title": "Story visibility: write every field of it (walls, beams, columns, slabs, morphs, curtain walls, railings); CreateMorphs and CreateWalls keep it"
-    },
-    {
-     "number": 3066,
-     "title": "GetViewSettings: return a view's own (custom) layer states; SetViewSettings refuses what Archicad doesn't write"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
