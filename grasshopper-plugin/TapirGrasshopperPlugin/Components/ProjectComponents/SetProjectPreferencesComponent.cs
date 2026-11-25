@@ -22,7 +22,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             "CalculationUnits",
             "Zones",
             "ReferenceLevels",
-            "FloorPlanCutPlane"
+            "FloorPlanCutPlane",
+            "Legacy",
+            "ImagingAndCalculation",
+            "Layouts",
+            "DataSafety",
+            "CalculationRules"
         };
 
         // The keys of the pages in the commands' JSON, in the order of TypeNames.
@@ -33,7 +38,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             "calculationUnits",
             "zones",
             "referenceLevels",
-            "floorPlanCutPlane"
+            "floorPlanCutPlane",
+            "legacy",
+            "imagingAndCalculation",
+            "layouts",
+            "dataSafety",
+            "calculationRules"
+        };
+
+        // The indices (into TypeNames and Keys) of the pages SetProjectPreferences
+        // writes, in the order of its inputs and outputs: Data Safety is read only.
+        // New pages are appended, so saved definitions keep their parameters.
+        public static readonly int[] SettableIndices =
+        {
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 10
         };
 
         private static Dictionary<string, object> Fields(
@@ -57,6 +75,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "showZeroWhole",
                 "showZeroInch",
                 "hideZeroDecimals");
+
+        // The items of a list of attributes: { "attributeId": { "guid": ... } }.
+        private static Dictionary<string, object> AttributeIdArrayItem() =>
+            new Dictionary<string, object>
+            {
+                ["attributeId"] = Fields("guid")
+            };
 
         // The fields of each page: null for a value, a dictionary for an object
         // (or for the items of an array of objects).
@@ -108,6 +133,40 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 ["topLevel"] = Fields("relativeStory", "offset"),
                 ["bottomLevel"] = Fields("relativeStory", "offset"),
                 ["absoluteDisplayLimit"] = null
+            },
+            new Dictionary<string, object>
+            {
+                ["columnIntersectionPriority"] = null,
+                ["aboveHomeStoryLineTypeId"] = Fields("guid"),
+                ["belowHomeStoryLineTypeId"] = Fields("guid"),
+                ["roofContourDisplay"] = null,
+                ["useLegacyIntersections"] = null,
+                ["hideZonesOnSections"] = null
+            },
+            Fields(
+                "autoRebuild3D",
+                "activate3DOnChange",
+                "keepZoomedSection",
+                "showProgressWindow",
+                "interruptOnError",
+                "progressSounds",
+                "generate3DReport",
+                "reportLevel",
+                "selectedElementsListing"),
+            new Dictionary<string, object>
+            {
+                ["masterItemsColor"] = Fields("red", "green", "blue"),
+                ["useOwnMasterItemsColor"] = null,
+                ["adjustDrawingFrameToViewZoom"] = null
+            },
+            Fields("temporaryFolder"),
+            new Dictionary<string, object>
+            {
+                ["elementRules"] = Fields("propertyType", "holeLimit", "elementTypes"),
+                ["wallInsulationFills"] = AttributeIdArrayItem(),
+                ["wallAirFills"] = AttributeIdArrayItem(),
+                ["roofInsulationFills"] = AttributeIdArrayItem(),
+                ["shellInsulationFills"] = AttributeIdArrayItem()
             }
         };
 
@@ -173,8 +232,9 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "SetProjectPreferences",
                 "Changes pages of the project preferences (Options > Project Preferences): the working units, " +
-                "the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan " +
-                "Cut Plane Settings. Each page is a JSON text, as " +
+                "the dimensions, the calculation units, the zones, the reference levels, the legacy settings, " +
+                "the layouts and the calculation rules, and the Floor Plan Cut Plane Settings, as well as the " +
+                "Imaging and Calculation page of the Work Environment. Each page is a JSON text, as " +
                 "GetProjectPreferences returns it; only the given fields change, the rest of each page keeps its " +
                 "value. In Teamwork the PreferencesDialog lockable object set has to be reserved first " +
                 "(ReserveLockableObjectSet). Available from Archicad 27.",
@@ -216,16 +276,42 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "The fields of the Floor Plan Cut Plane Settings to change, as JSON: cutPlaneHeight, topLevel and " +
                 "bottomLevel (relativeStory, offset), absoluteDisplayLimit.");
 
+            InText(
+                "Legacy",
+                "The fields of the Legacy page to change, as JSON: columnIntersectionPriority, " +
+                "aboveHomeStoryLineTypeId and belowHomeStoryLineTypeId (guid of a line type), roofContourDisplay " +
+                "(AllVisibleContours or OnlyTheTopSurface), useLegacyIntersections, hideZonesOnSections.");
+
+            InText(
+                "ImagingAndCalculation",
+                "The fields of the Imaging and Calculation page to change, as JSON: autoRebuild3D, " +
+                "activate3DOnChange, keepZoomedSection, showProgressWindow, interruptOnError, progressSounds, " +
+                "generate3DReport, reportLevel (No, Brief, Short, Detailed or Full), selectedElementsListing " +
+                "(ShowAlert, ListAll or UseFilters). This page belongs to the Work Environment, so it changes " +
+                "the settings of Archicad, not of the project.");
+
+            InText(
+                "Layouts",
+                "The fields of the Layouts page to change, as JSON: masterItemsColor (red, green, blue from 0 " +
+                "to 1), useOwnMasterItemsColor, adjustDrawingFrameToViewZoom.");
+
+            InText(
+                "CalculationRules",
+                "The fields of the Calculation Rules page to change, as JSON: elementRules (items of " +
+                "propertyType: Volume, Surface or Length, holeLimit and elementTypes: Wall, Slab, Roof, Shell, " +
+                "Beam), wallInsulationFills, wallAirFills, roofInsulationFills and shellInsulationFills (items of " +
+                "attributeId with the guid of a fill). Each list given replaces the whole list.");
+
             SetOptionality(
                 new[]
                 {
-                    0, 1, 2, 3, 4, 5
+                    0, 1, 2, 3, 4, 5, 6, 7, 8, 9
                 });
         }
 
         protected override void AddOutputs()
         {
-            for (var i = 0; i < ProjectPreferencesPages.TypeNames.Length; i++)
+            foreach (var i in ProjectPreferencesPages.SettableIndices)
             {
                 OutText(
                     ProjectPreferencesPages.TypeNames[i] + "Result",
@@ -237,10 +323,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             IGH_DataAccess da)
         {
             var parameters = new JObject();
-            for (var i = 0; i < ProjectPreferencesPages.Keys.Length; i++)
+            for (var p = 0; p < ProjectPreferencesPages.SettableIndices.Length; p++)
             {
+                var i = ProjectPreferencesPages.SettableIndices[p];
                 if (!da.TryGet(
-                        i,
+                        p,
                         out string text) ||
                     string.IsNullOrWhiteSpace(text))
                 {
@@ -288,11 +375,11 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 return;
             }
 
-            for (var i = 0; i < ProjectPreferencesPages.Keys.Length; i++)
+            for (var p = 0; p < ProjectPreferencesPages.SettableIndices.Length; p++)
             {
-                var result = response[ProjectPreferencesPages.Keys[i]];
+                var result = response[ProjectPreferencesPages.Keys[ProjectPreferencesPages.SettableIndices[p]]];
                 da.SetData(
-                    i,
+                    p,
                     result == null
                         ? null
                         : ProjectComponentHelp.ExecutionResultMessage(result));
