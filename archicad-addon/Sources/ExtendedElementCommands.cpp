@@ -4196,13 +4196,13 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
     GS::ObjectState visibilityOs;
     if (details.Get ("visibility", visibilityOs)) {
         MergeStoryVisibility (visibilityOs, element.slab.visibilityCont);
-        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont);
+        MaskWholeMember (mask.slab.visibilityCont);
         changed = true;
     }
     GS::ObjectState fillVisibilityOs;
     if (details.Get ("fillVisibility", fillVisibilityOs)) {
         MergeStoryVisibility (fillVisibilityOs, element.slab.visibilityFill);
-        ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill);
+        MaskWholeMember (mask.slab.visibilityFill);
         changed = true;
     }
 #ifdef ServerMainVers_2900
@@ -4854,7 +4854,7 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
     GS::ObjectState visibilityOs;
     if (details.Get ("visibility", visibilityOs)) {
         element.wall.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
-        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, visibility);
+        MaskWholeMember (mask.wall.visibility);
         changed = true;
         if (!details.Contains ("isAutoOnStoryVisibility")) {
             // isAutoOnStoryVisibility defaults to true on a wall, in which case Archicad
@@ -5490,7 +5490,7 @@ GS::Optional<GS::UniString> ApplyColumnDisplaySettings (API_Element& element, AP
     }
 
     element.column = column;
-    if (hasVisibility)                                  ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, visibility);
+    if (hasVisibility)                                  MaskWholeMember (mask.column.visibility);
     if (hasVisibility || hasIsAutoOnStoryVisibility)    ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, isAutoOnStoryVisibility);
     if (hasDisplayOption)                               ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, displayOption);
     if (hasViewDepthLimitation)                         ACAPI_ELEMENT_MASK_SET (mask, API_ColumnType, viewDepthLimitation);
@@ -6079,7 +6079,7 @@ GS::Optional<GS::UniString> ApplyBeamDisplaySettings (API_Element& element, API_
     }
 
     element.beam = beam;
-    if (hasVisibility)                                      ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, visibility);
+    if (hasVisibility)                                      MaskWholeMember (mask.beam.visibility);
     if (hasVisibility || hasIsAutoOnStoryVisibility)        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, isAutoOnStoryVisibility);
     if (hasDisplayOption)                                   ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, displayOption);
     if (hasViewDepthLimitation)                             ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, viewDepthLimitation);
@@ -7083,34 +7083,20 @@ bool ApplyMorphCosmeticDetails (const GS::ObjectState& details, API_Element& ele
         }
     }
 
-    const auto applyStoryVisibility = [&] (const char* fieldName, API_StoryVisibility& target) {
-        const GS::ObjectState* svOS = details.Get (fieldName);
-        if (svOS == nullptr) {
-            return;
-        }
-        API_StoryVisibility sv = target;
-        svOS->Get ("showOnHome", sv.showOnHome);
-        svOS->Get ("showAllAbove", sv.showAllAbove);
-        svOS->Get ("showAllBelow", sv.showAllBelow);
-        Int32 relAbove = sv.showRelAbove;
-        Int32 relBelow = sv.showRelBelow;
-        if (svOS->Get ("showRelAbove", relAbove)) {
-            sv.showRelAbove = (short) relAbove;
-        }
-        if (svOS->Get ("showRelBelow", relBelow)) {
-            sv.showRelBelow = (short) relBelow;
-        }
-        target = sv;
-        ++appliedCount;
+    const std::pair<const char*, API_StoryVisibility API_MorphType::*> storyVisibilities[] = {
+        { "showContour", &API_MorphType::showContour },
+        { "showFill", &API_MorphType::showFill }
     };
-    applyStoryVisibility ("showContour", element.morph.showContour);
-    if (details.Get ("showContour") != nullptr && mask != nullptr) {
-        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showContour);
+    for (const auto& storyVisibility : storyVisibilities) {
+        const GS::ObjectState* storyVisibilityOs = details.Get (storyVisibility.first);
+        if (storyVisibilityOs == nullptr) {
+            continue;
+        }
+        MergeStoryVisibility (*storyVisibilityOs, element.morph.*storyVisibility.second);
+        ++appliedCount;
     }
-    applyStoryVisibility ("showFill", element.morph.showFill);
-    if (details.Get ("showFill") != nullptr && mask != nullptr) {
-        ACAPI_ELEMENT_MASK_SET (*mask, API_MorphType, showFill);
-    }
+    if (mask != nullptr && details.Contains ("showContour")) MaskWholeMember (mask->morph.showContour);
+    if (mask != nullptr && details.Contains ("showFill")) MaskWholeMember (mask->morph.showFill);
 
     {
         const GS::ObjectState* linkOS = details.Get ("linkToSettings");
@@ -8369,7 +8355,7 @@ static const char* WallSharedSettingsSchemaProperties = R"(
                         "zoneRel": {
                             "$ref": "#/WallZoneRelation"
                         },
-                        "visibility": { "$ref": "#/StoryVisibility", "description": "Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the wall is shown on. Archicad 29 keeps any combination written here (showRelAbove and showRelBelow 1 read back), although its Wall Settings offer only 'Home story only' and 'All relevant stories', with no Custom option to show the others (#852). 'All relevant stories' is isAutoOnStoryVisibility true." },
                         "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts." },
                         "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
                         "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
@@ -8625,6 +8611,29 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     }
 
     return {};
+}
+
+// ACAPI_Element_Create keeps a new wall's default relative story visibility (showRelAbove,
+// showRelBelow, showAllAbove, showAllBelow) whatever it is given, so a given visibility is written
+// again by a change, as ModifyWalls writes it. An error deletes the new wall and fails the item.
+GSErrCode CreateWallsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    if (!parameters.Contains ("visibility")) {
+        return NoError;
+    }
+    API_Element element = {};
+    element.header.guid = newElementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    element.wall.isAutoOnStoryVisibility = requestedElement.wall.isAutoOnStoryVisibility;
+    element.wall.visibility = requestedElement.wall.visibility;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_WallType, isAutoOnStoryVisibility);
+    MaskWholeMember (mask.wall.visibility);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
 // The holes of a beam as CreateBeams and ModifyBeams write them (#2551): the given array
@@ -16803,6 +16812,22 @@ GS::ObjectState CreateMorphsCommand::Execute (const GS::ObjectState& parameters,
                 ACAPI_Element_Change (&element, &materialMask, nullptr, 0, true);
             }
 
+            // ACAPI_Element_Create keeps the default story visibility (home story only) whatever
+            // showContour and showFill say, as it does the surface above, so they are written by a
+            // follow-up change too.
+            if (data.Contains ("showContour") || data.Contains ("showFill")) {
+                API_Element visibilityMask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (visibilityMask);
+                ACAPI_ELEMENT_MASK_SET (visibilityMask, API_MorphType, isAutoOnStoryVisibility);
+                MaskWholeMember (visibilityMask.morph.showContour);
+                MaskWholeMember (visibilityMask.morph.showFill);
+                err = ACAPI_Element_Change (&element, &visibilityMask, nullptr, 0, true);
+                if (err != NoError) {
+                    elements.Push (CreateErrorResponse (err, "Morph created, but failed to set its showContour and showFill."));
+                    continue;
+                }
+            }
+
             // The faces' own surfaces (morphMaterialMapTable) are not kept by ACAPI_Element_Create
             // either, and the change of the whole-morph surface above gives every face that surface
             // (#2626). So the body is written again with its face surfaces, after that change, the
@@ -18932,7 +18957,7 @@ GS::Optional<GS::UniString> ApplyCurtainWallDisplay (const GS::ObjectState& item
     const bool hasIsAutoOnStoryVisibility = item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
     if (hasVisibility) {
         cw.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
-        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, visibility);
+        MaskWholeMember (mask.curtainWall.visibility);
         if (!hasIsAutoOnStoryVisibility) {
             // As on walls and railings: while isAutoOnStoryVisibility is on, Archicad recomputes the
             // visibility from the vertical extent of the curtain wall and drops the one given here.
@@ -23001,6 +23026,48 @@ GS::Optional<GS::UniString> ModifyMorphsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
+// Reads a Morph back after ModifyMorphs changed it, and names each story visibility key given in
+// item that Archicad did not apply (it answers NoError and keeps the old values of the fields the
+// mask does not mark). The automatic story visibility, when it is on after the change, recomputes both
+// visibilities, so they are not compared then.
+static GS::Array<GS::UniString> GetUnappliedMorphStoryVisibility (const API_Guid& morphGuid, const GS::ObjectState& item)
+{
+    GS::Array<GS::UniString> unapplied;
+    API_Element morph = {};
+    morph.header.guid = morphGuid;
+    if (ACAPI_Element_Get (&morph) != NoError) {
+        return unapplied;
+    }
+    bool isAutoOnStoryVisibility = false;
+    if (item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility) && morph.morph.isAutoOnStoryVisibility != isAutoOnStoryVisibility) {
+        unapplied.Push ("isAutoOnStoryVisibility");
+    }
+    if (morph.morph.isAutoOnStoryVisibility) {
+        return unapplied;
+    }
+    const std::pair<const char*, const API_StoryVisibility*> storyVisibilities[] = {
+        { "showContour", &morph.morph.showContour },
+        { "showFill", &morph.morph.showFill }
+    };
+    for (const auto& storyVisibility : storyVisibilities) {
+        const GS::ObjectState* storyVisibilityOs = item.Get (storyVisibility.first);
+        if (storyVisibilityOs == nullptr) {
+            continue;
+        }
+        API_StoryVisibility requested = *storyVisibility.second;
+        MergeStoryVisibility (*storyVisibilityOs, requested);
+        const API_StoryVisibility& kept = *storyVisibility.second;
+        if (requested.showOnHome != kept.showOnHome ||
+            requested.showAllAbove != kept.showAllAbove ||
+            requested.showAllBelow != kept.showAllBelow ||
+            requested.showRelAbove != kept.showRelAbove ||
+            requested.showRelBelow != kept.showRelBelow) {
+            unapplied.Push (storyVisibility.first);
+        }
+    }
+    return unapplied;
+}
+
 GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -23170,6 +23237,16 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                         continue;
                     }
                 }
+            }
+
+            const GS::Array<GS::UniString> unapplied = GetUnappliedMorphStoryVisibility (element.header.guid, item);
+            if (!unapplied.IsEmpty ()) {
+                GS::UniString list;
+                for (UIndex k = 0; k < unapplied.GetSize (); ++k) {
+                    list += (k == 0 ? "" : ", ") + unapplied[k];
+                }
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply " + list + " to the Morph. The other details given were applied."));
+                continue;
             }
 
             results.Push (CreateSuccessfulExecutionResult ());
@@ -29651,7 +29728,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             }
             if (hasVisibility) {
                 element.railing.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
-                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, visibility);
+                MaskWholeMember (mask.railing.visibility);
                 if (!hasIsAutoOnStoryVisibility) {
                     // As on walls: while isAutoOnStoryVisibility is on, Archicad recomputes the
                     // visibility from the elevation of the railing and drops the one given here.

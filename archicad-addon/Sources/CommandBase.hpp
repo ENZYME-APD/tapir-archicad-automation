@@ -116,6 +116,16 @@ void AddGuidDifference (const GS::HashSet<API_Guid>& from, const GS::HashSet<API
     }
 }
 
+// Marks a whole member of an element mask, every byte of it, the way ACAPI_ELEMENT_MASK_SETFULL
+// marks the whole element: ACAPI_ELEMENT_MASK_SET only marks the first byte, which for a struct
+// member (a story visibility, a cover fill transformation, an overridden pen) is only its first
+// field, so Archicad keeps the others (#2821).
+template <typename T>
+void MaskWholeMember (T& maskMember)
+{
+    memset (&maskMember, 0xFF, sizeof (T));
+}
+
 API_Guid    GetGuidFromObjectState (const GS::ObjectState& os);
 
 // A guid string field that may be left out. Archicad does not check the type of fields whose schema
