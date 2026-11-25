@@ -1633,12 +1633,12 @@ GS::Optional<GS::UniString> Set3DWindowSettingsCommand::GetInputParametersSchema
         "zoomScaleX": {
             "type": "number",
             "description": "The horizontal zoom scale of the 3D projection.",
-            "exclusiveMinimum": 0
+            "minimum": 0, "exclusiveMinimum": true
         },
         "zoomScaleY": {
             "type": "number",
             "description": "The vertical zoom scale of the 3D projection.",
-            "exclusiveMinimum": 0
+            "minimum": 0, "exclusiveMinimum": true
         },
         "zoomDispX": {
             "type": "number",

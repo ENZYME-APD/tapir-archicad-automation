@@ -1438,7 +1438,7 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "scale": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Scale ratio applied to the drawing relative to its source view (API_DrawingType::ratio). Defaults to 1.0."
                         },
                         "angle": {

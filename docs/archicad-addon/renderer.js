@@ -438,10 +438,19 @@ function DescriptionText(schema) {
             }
         }
     }
-    Limit('minimum', 'minimum');
-    Limit('exclusiveMinimum', 'greater than');
-    Limit('maximum', 'maximum');
-    Limit('exclusiveMaximum', 'less than');
+    // Archicad validates the schemas as JSON Schema draft 4, where an exclusive limit is
+    // "minimum": x with "exclusiveMinimum": true (a number there is ignored, #3054).
+    function Bound(key, exclusiveKey, label, exclusiveLabel) {
+        for (let source of sources) {
+            if (source[key] !== undefined) {
+                limits.push((source[exclusiveKey] === true ? exclusiveLabel : label) + ' ' + ValueText(source[key]));
+                return;
+            }
+        }
+        Limit(exclusiveKey, exclusiveLabel);
+    }
+    Bound('minimum', 'exclusiveMinimum', 'minimum', 'greater than');
+    Bound('maximum', 'exclusiveMaximum', 'maximum', 'less than');
     Limit('minLength', 'minimum length');
     Limit('minItems', 'minimum items');
     Limit('maxItems', 'maximum items');
@@ -671,9 +680,9 @@ function SampleValue(schema, refs, depth) {
     }
     if (type === 'number' || type === 'integer') {
         if (schema.minimum !== undefined) {
-            return schema.minimum;
+            return schema.exclusiveMinimum === true ? schema.minimum + 1 : schema.minimum;
         }
-        if (schema.exclusiveMinimum !== undefined) {
+        if (typeof schema.exclusiveMinimum === 'number') {
             return schema.exclusiveMinimum + 1;
         }
         return 0;
