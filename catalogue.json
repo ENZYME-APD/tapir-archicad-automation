@@ -364,6 +364,22 @@
       "changes": "model",
       "versions": [
         {
+          "version": "1.1.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "With Tapir 2.0.2 or later it reads every drawing in one pass, without opening each layout, so a project with many layouts is read much faster. Older Tapir versions still open the layouts one by one.",
+          "commit": "337a77d0734042595f523d63a9cea3d8dadcc9e1",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/337a77d0734042595f523d63a9cea3d8dadcc9e1/marketplace/drawing-status-report/DrawingStatusReport.py",
+          "sha256": "9fc3cf779eae38eddc83b4c13ac51f85b77ea66c808e622d2e8bd3ff36e6b6b3"
+        },
+        {
           "version": "1.0.0",
           "archicadVersions": [
             25,
