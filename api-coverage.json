@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 10:28 UTC",
+ "generatedAt": "2026-11-25 13:00 UTC",
  "versions": [
   25,
   26,
@@ -13740,6 +13740,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 3065,
+     "title": "SetViewSettings: a view's own (custom) layer states can't be written through ChangeNavigatorView"
+    },
+    {
      "number": 688,
      "title": "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values"
     }
@@ -14283,7 +14287,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3065,
+     "title": "SetViewSettings: a view's own (custom) layer states can't be written through ChangeNavigatorView"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetStructureDisplay",
