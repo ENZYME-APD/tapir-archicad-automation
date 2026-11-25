@@ -2796,7 +2796,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",
-            "Gets the view settings of navigator items"
+            "Gets the view settings of navigator items, including a view's own (custom) layer states"
         );
         err |= RegisterCommand<SetViewSettingsCommand> (
             navigatorCommands, "1.1.4",
