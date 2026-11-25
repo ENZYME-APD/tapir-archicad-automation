@@ -6208,6 +6208,155 @@ static GS::ObjectState CreateFloorPlanCutPlaneObjectState (const API_FloorPlanCu
         "absoluteDisplayLimit", prefs.fixLevel2Absolute0);
 }
 
+// The Legacy page (API_LegacyPrefs): the column intersection priority, the line types of
+// construction elements shown above and below their home story, the roof contour display
+// and two switches. The line types are answered as attribute ids.
+static GS::UniString ConvertRoofContourDisplay (API_RoofContourDisplay display)
+{
+    switch (display) {
+        case APIRoofDisplay_OnlyTheTopSurfaceOldWay: return "OnlyTheTopSurface";
+        case APIRoofDisplay_AllVisibleContours:
+        default:                                     return "AllVisibleContours";
+    }
+}
+
+static GS::ObjectState CreateLegacyObjectState (const API_LegacyPrefs& prefs)
+{
+    return GS::ObjectState (
+        "columnIntersectionPriority", static_cast<Int32> (prefs.coluConnPriority),
+        "aboveHomeStoryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, prefs.aboveLineType)),
+        "belowHomeStoryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, prefs.belowLineType)),
+        "roofContourDisplay", ConvertRoofContourDisplay (prefs.roofContourDisplay),
+        "useLegacyIntersections", prefs.useLegacyIntersections,
+        "hideZonesOnSections", prefs.hideZonesOnSections);
+}
+
+// The Imaging and Calculation page of the Work Environment (API_ImagingAndCalcPrefs).
+// The report level and the listing of selected elements are the APIReportLevel_* and
+// APICalcSelElems_* values, answered by name.
+static GS::UniString ConvertReportLevel (short reportLevel)
+{
+    switch (reportLevel) {
+        case APIReportLevel_Brief:    return "Brief";
+        case APIReportLevel_Short:    return "Short";
+        case APIReportLevel_Detailed: return "Detailed";
+        case APIReportLevel_Full:     return "Full";
+        case APIReportLevel_No:
+        default:                      return "No";
+    }
+}
+
+static GS::UniString ConvertSelectedElementsListing (short selElemsListing)
+{
+    switch (selElemsListing) {
+        case APICalcSelElems_ListAll:    return "ListAll";
+        case APICalcSelElems_UseFilters: return "UseFilters";
+        case APICalcSelElems_ShowAlert:
+        default:                         return "ShowAlert";
+    }
+}
+
+static GS::ObjectState CreateImagingAndCalculationObjectState (const API_ImagingAndCalcPrefs& prefs)
+{
+    return GS::ObjectState (
+        "autoRebuild3D", prefs.autoRebuild3D,
+        "activate3DOnChange", prefs.activate3DOnChange,
+        "keepZoomedSection", prefs.keepZoomedSection,
+        "showProgressWindow", prefs.showProgressWindow,
+        "interruptOnError", prefs.interruptOnError,
+        "progressSounds", prefs.progressSounds,
+        "generate3DReport", prefs.generate3DReport,
+        "reportLevel", ConvertReportLevel (prefs.reportLevel),
+        "selectedElementsListing", ConvertSelectedElementsListing (prefs.selElemsListing));
+}
+
+// The Layouts page (API_LayoutsPrefs).
+static GS::ObjectState CreateLayoutsObjectState (const API_LayoutsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "masterItemsColor", GS::ObjectState ("red", prefs.masterColor.f_red, "green", prefs.masterColor.f_green, "blue", prefs.masterColor.f_blue),
+        "useOwnMasterItemsColor", prefs.useOwnMasterColor,
+        "adjustDrawingFrameToViewZoom", prefs.adjustDrawingFrameToViewZoom);
+}
+
+// The Data Safety page (API_SafetyPrefs): ACAPI_ProjectSetting_GetPreferences allocates
+// the temporary folder's location, which the caller deletes (as in the DevKit's
+// Environment_Control example). ACAPI_ProjectSetting_SetPreferences refuses this page.
+static GSErrCode GetDataSafetyObjectState (GS::ObjectState& result)
+{
+    API_SafetyPrefs prefs = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_DataSafetyID);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::UniString temporaryFolder;
+    if (prefs.tempFolder != nullptr) {
+        prefs.tempFolder->ToPath (&temporaryFolder);
+        delete prefs.tempFolder;
+    }
+
+    result = GS::ObjectState ("temporaryFolder", temporaryFolder);
+    return NoError;
+}
+
+// The Calculation Rules page (API_CalcRulesPrefs): the conditional element rules and the
+// fill sets Archicad counts as insulation and air fills. The fills are answered as
+// attribute ids, the element types of a rule by their non-localized names.
+static GS::UniString ConvertConditionalElementPropertyType (API_ConditionalElementPropertyTypeID propertyType)
+{
+    switch (propertyType) {
+        case APIConditionalElementPropertyType_Surface: return "Surface";
+        case APIConditionalElementPropertyType_Length:  return "Length";
+        case APIConditionalElementPropertyType_Volume:
+        default:                                        return "Volume";
+    }
+}
+
+// The element types of a rule are API_ElemType from Archicad 26, API_ElemTypeID before.
+#ifdef ServerMainVers_2600
+static API_ElemTypeID GetCalculationRuleElementTypeID (const API_ElemType& elemType)
+{
+    return elemType.typeID;
+}
+#else
+static API_ElemTypeID GetCalculationRuleElementTypeID (API_ElemTypeID elemType)
+{
+    return elemType;
+}
+#endif
+
+static GS::Array<GS::ObjectState> CreateFillAttributeIds (const GS::HashSet<API_AttributeIndex>& fills)
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    for (const API_AttributeIndex& fill : fills) {
+        attributeIds.Push (GS::ObjectState ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, fill))));
+    }
+    return attributeIds;
+}
+
+static GS::ObjectState CreateCalculationRulesObjectState (const API_CalcRulesPrefs& prefs)
+{
+    GS::Array<GS::ObjectState> elementRules;
+    for (const API_ConditionalElementRule& rule : prefs.elementRules) {
+        GS::Array<GS::UniString> elementTypes;
+        for (const auto& elemType : rule.elementTypes) {
+            elementTypes.Push (GetElementTypeNonLocalizedName (GetCalculationRuleElementTypeID (elemType)));
+        }
+        elementRules.Push (GS::ObjectState (
+            "propertyType", ConvertConditionalElementPropertyType (rule.propertyType),
+            "holeLimit", rule.holeLimit,
+            "elementTypes", elementTypes));
+    }
+
+    return GS::ObjectState (
+        "elementRules", elementRules,
+        "wallInsulationFills", CreateFillAttributeIds (prefs.wallInsulationFills),
+        "wallAirFills", CreateFillAttributeIds (prefs.wallAirFills),
+        "roofInsulationFills", CreateFillAttributeIds (prefs.roofInsulationFills),
+        "shellInsulationFills", CreateFillAttributeIds (prefs.shellInsulationFills));
+}
+
 #ifdef ServerMainVers_2700
 
 template <typename EnumType>
@@ -6633,6 +6782,222 @@ static GS::Optional<GS::UniString> ApplyFloorPlanCutPlane (const GS::ObjectState
     }
 
     changed |= os.Get ("absoluteDisplayLimit", prefs.fixLevel2Absolute0);
+    return GS::NoValue;
+}
+
+// --- Legacy page
+
+static GS::Optional<GS::UniString> ApplyLegacyLineType (const GS::ObjectState& os, const char* key, API_AttributeIndex& target, bool& changed)
+{
+    GS::ObjectState lineTypeId;
+    if (!os.Get (key, lineTypeId)) {
+        return GS::NoValue;
+    }
+
+    const API_Guid guid = GetGuidFromObjectState (lineTypeId);
+    const API_AttributeIndex index = guid != APINULLGuid ? GetAttributeIndexFromGuid (API_LinetypeID, guid) : ACAPI_CreateAttributeIndex (-1);
+    if (!index.IsPositive ()) {
+        return GS::UniString (key) + " is not the attributeId of a line type of the project.";
+    }
+    target = index;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyLegacy (const GS::ObjectState& os, API_LegacyPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceIntegerField (os, "columnIntersectionPriority", prefs.coluConnPriority);
+
+    GS::Optional<GS::UniString> error = ApplyLegacyLineType (os, "aboveHomeStoryLineTypeId", prefs.aboveLineType, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = ApplyLegacyLineType (os, "belowHomeStoryLineTypeId", prefs.belowLineType, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    GS::UniString roofContourDisplay;
+    if (os.Get ("roofContourDisplay", roofContourDisplay)) {
+        if (roofContourDisplay == "AllVisibleContours") {
+            prefs.roofContourDisplay = APIRoofDisplay_AllVisibleContours;
+        } else if (roofContourDisplay == "OnlyTheTopSurface") {
+            prefs.roofContourDisplay = APIRoofDisplay_OnlyTheTopSurfaceOldWay;
+        } else {
+            return GS::UniString ("Unknown roofContourDisplay: ") + roofContourDisplay;
+        }
+        changed = true;
+    }
+
+    changed |= GetPreferenceFlagField (os, "useLegacyIntersections", prefs.useLegacyIntersections);
+    changed |= GetPreferenceFlagField (os, "hideZonesOnSections", prefs.hideZonesOnSections);
+    return GS::NoValue;
+}
+
+// --- Imaging and Calculation page
+
+static GS::Optional<GS::UniString> ApplyImagingAndCalculation (const GS::ObjectState& os, API_ImagingAndCalcPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceFlagField (os, "autoRebuild3D", prefs.autoRebuild3D);
+    changed |= GetPreferenceFlagField (os, "activate3DOnChange", prefs.activate3DOnChange);
+    changed |= GetPreferenceFlagField (os, "keepZoomedSection", prefs.keepZoomedSection);
+    changed |= GetPreferenceFlagField (os, "showProgressWindow", prefs.showProgressWindow);
+    changed |= GetPreferenceFlagField (os, "interruptOnError", prefs.interruptOnError);
+    changed |= GetPreferenceFlagField (os, "progressSounds", prefs.progressSounds);
+    changed |= GetPreferenceFlagField (os, "generate3DReport", prefs.generate3DReport);
+
+    GS::UniString reportLevel;
+    if (os.Get ("reportLevel", reportLevel)) {
+        static const short reportLevels[] = { APIReportLevel_No, APIReportLevel_Brief, APIReportLevel_Short, APIReportLevel_Detailed, APIReportLevel_Full };
+        bool found = false;
+        for (short level : reportLevels) {
+            if (ConvertReportLevel (level) == reportLevel) {
+                prefs.reportLevel = level;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Unknown reportLevel: ") + reportLevel;
+        }
+        changed = true;
+    }
+
+    GS::UniString selectedElementsListing;
+    if (os.Get ("selectedElementsListing", selectedElementsListing)) {
+        static const short listings[] = { APICalcSelElems_ShowAlert, APICalcSelElems_ListAll, APICalcSelElems_UseFilters };
+        bool found = false;
+        for (short listing : listings) {
+            if (ConvertSelectedElementsListing (listing) == selectedElementsListing) {
+                prefs.selElemsListing = listing;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Unknown selectedElementsListing: ") + selectedElementsListing;
+        }
+        changed = true;
+    }
+
+    return GS::NoValue;
+}
+
+// --- Layouts page
+
+static GS::Optional<GS::UniString> ApplyLayouts (const GS::ObjectState& os, API_LayoutsPrefs& prefs, bool& changed)
+{
+    changed |= GetColor (os, "masterItemsColor", prefs.masterColor);
+    changed |= GetPreferenceFlagField (os, "useOwnMasterItemsColor", prefs.useOwnMasterColor);
+    changed |= GetPreferenceFlagField (os, "adjustDrawingFrameToViewZoom", prefs.adjustDrawingFrameToViewZoom);
+    return GS::NoValue;
+}
+
+// --- Calculation Rules page
+
+// The element types the API documents as valid for each property type of a rule.
+static bool IsValidCalculationRuleElementType (API_ConditionalElementPropertyTypeID propertyType, API_ElemTypeID typeID)
+{
+    switch (propertyType) {
+        case APIConditionalElementPropertyType_Volume:
+            return typeID == API_WallID || typeID == API_SlabID || typeID == API_RoofID || typeID == API_ShellID || typeID == API_BeamID;
+        case APIConditionalElementPropertyType_Surface:
+            return typeID == API_WallID || typeID == API_SlabID || typeID == API_RoofID || typeID == API_ShellID;
+        case APIConditionalElementPropertyType_Length:
+            return typeID == API_WallID;
+        default:
+            return false;
+    }
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRuleElementRules (const GS::ObjectState& os, GS::Array<API_ConditionalElementRule>& target, bool& changed)
+{
+    GS::Array<GS::ObjectState> elementRules;
+    if (!os.Get ("elementRules", elementRules)) {
+        return GS::NoValue;
+    }
+
+    GS::Array<API_ConditionalElementRule> rules;
+    for (const GS::ObjectState& ruleOs : elementRules) {
+        API_ConditionalElementRule rule = {};
+
+        GS::UniString propertyType;
+        if (!ruleOs.Get ("propertyType", propertyType) ||
+            !ParseEnumByName (propertyType, {
+                APIConditionalElementPropertyType_Volume,
+                APIConditionalElementPropertyType_Surface,
+                APIConditionalElementPropertyType_Length
+            }, ConvertConditionalElementPropertyType, rule.propertyType)) {
+            return GS::UniString ("Unknown propertyType of an element rule: ") + propertyType;
+        }
+
+        if (!ruleOs.Get ("holeLimit", rule.holeLimit)) {
+            return GS::UniString ("An element rule has no holeLimit.");
+        }
+        if (rule.holeLimit < 0.0) {
+            return GS::UniString ("The holeLimit of an element rule must not be negative.");
+        }
+
+        GS::Array<GS::UniString> elementTypes;
+        ruleOs.Get ("elementTypes", elementTypes);
+        if (elementTypes.IsEmpty ()) {
+            return GS::UniString ("An element rule has no elementTypes.");
+        }
+        for (const GS::UniString& elementType : elementTypes) {
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementType);
+            if (!IsValidCalculationRuleElementType (rule.propertyType, typeID)) {
+                return GS::UniString ("The element type ") + elementType + " cannot have a " + propertyType + " rule.";
+            }
+            rule.elementTypes.Add (API_ElemType (typeID));
+        }
+
+        rules.Push (rule);
+    }
+
+    target = rules;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRuleFills (const GS::ObjectState& os, const char* key, GS::HashSet<API_AttributeIndex>& target, bool& changed)
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    if (!os.Get (key, attributeIds)) {
+        return GS::NoValue;
+    }
+
+    GS::HashSet<API_AttributeIndex> fills;
+    for (const GS::ObjectState& item : attributeIds) {
+        GS::ObjectState attributeId;
+        const API_Guid guid = item.Get ("attributeId", attributeId) ? GetGuidFromObjectState (attributeId) : APINULLGuid;
+        const API_AttributeIndex index = guid != APINULLGuid ? GetAttributeIndexFromGuid (API_FilltypeID, guid) : ACAPI_CreateAttributeIndex (-1);
+        if (!index.IsPositive ()) {
+            return GS::UniString (key) + " holds an attributeId that is not a fill of the project.";
+        }
+        fills.Add (index);
+    }
+
+    target = fills;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRules (const GS::ObjectState& os, API_CalcRulesPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error = ApplyCalculationRuleElementRules (os, prefs.elementRules, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    static const char* fillKeys[] = { "wallInsulationFills", "wallAirFills", "roofInsulationFills", "shellInsulationFills" };
+    GS::HashSet<API_AttributeIndex>* fillSets[] = { &prefs.wallInsulationFills, &prefs.wallAirFills, &prefs.roofInsulationFills, &prefs.shellInsulationFills };
+    for (UIndex i = 0; i < 4; ++i) {
+        error = ApplyCalculationRuleFills (os, fillKeys[i], *fillSets[i], changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
     return GS::NoValue;
 }
 
@@ -7192,6 +7557,234 @@ static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
     return schema;
 }
 
+static GS::UniString GetLegacySchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Legacy page: settings kept for compatibility with projects made in earlier Archicad versions.",
+        "properties": {
+            "columnIntersectionPriority": {
+                "type": "integer",
+                "description": "The priority of columns when they intersect other elements, as set on the page."
+            },
+            "aboveHomeStoryLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of construction elements shown above their home story. It affects library parts only when their Use Symbol Linetypes checkbox is off, and not ghost story elements."
+            },
+            "belowHomeStoryLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of construction elements shown below their home story. It affects library parts only when their Use Symbol Linetypes checkbox is off, and not ghost story elements."
+            },
+            "roofContourDisplay": {
+                "type": "string",
+                "description": "How roofs are shown: with all their visible contours, or only with their top surface (the earlier way).",
+                "enum": [
+                    "AllVisibleContours",
+                    "OnlyTheTopSurface"
+                ]
+            },
+            "useLegacyIntersections": {
+                "type": "boolean",
+                "description": "Use the legacy intersection and surface methods for model elements."
+            },
+            "hideZonesOnSections": {
+                "type": "boolean",
+                "description": "Hide zones on sections."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("columnIntersectionPriority", "aboveHomeStoryLineTypeId", "belowHomeStoryLineTypeId", "roofContourDisplay", "useLegacyIntersections", "hideZonesOnSections")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetImagingAndCalculationSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Imaging and Calculation page of the Work Environment (Options > Work Environment), not of the Project Preferences: these settings belong to the user's Archicad, not to the project.",
+        "properties": {
+            "autoRebuild3D": {
+                "type": "boolean",
+                "description": "Rebuild the 3D window whenever it is brought to the front."
+            },
+            "activate3DOnChange": {
+                "type": "boolean",
+                "description": "Bring the 3D window to the front whenever the 3D projection settings or the rendering mode change."
+            },
+            "keepZoomedSection": {
+                "type": "boolean",
+                "description": "Keep the magnified detail of a section window when it is rebuilt."
+            },
+            "showProgressWindow": {
+                "type": "boolean",
+                "description": "Show the 3D progress window."
+            },
+            "interruptOnError": {
+                "type": "boolean",
+                "description": "Interrupt imaging processes with error messages."
+            },
+            "progressSounds": {
+                "type": "boolean",
+                "description": "Play sounds for 3D processes."
+            },
+            "generate3DReport": {
+                "type": "boolean",
+                "description": "Write the 3D report."
+            },
+            "reportLevel": {
+                "type": "string",
+                "description": "The level of detail of the 3D report.",
+                "enum": [
+                    "No",
+                    "Brief",
+                    "Short",
+                    "Detailed",
+                    "Full"
+                ]
+            },
+            "selectedElementsListing": {
+                "type": "string",
+                "description": "How selected elements are listed: ShowAlert asks each time, ListAll lists every selected element, UseFilters applies the filters set for the listing.",
+                "enum": [
+                    "ShowAlert",
+                    "ListAll",
+                    "UseFilters"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("autoRebuild3D", "activate3DOnChange", "keepZoomedSection", "showProgressWindow", "interruptOnError", "progressSounds", "generate3DReport", "reportLevel", "selectedElementsListing")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetLayoutsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Layouts page.",
+        "properties": {
+            "masterItemsColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color master items are shown in on layouts, when useOwnMasterItemsColor is false."
+            },
+            "useOwnMasterItemsColor": {
+                "type": "boolean",
+                "description": "Show the master items in their own colors instead of masterItemsColor."
+            },
+            "adjustDrawingFrameToViewZoom": {
+                "type": "boolean",
+                "description": "When a model view is placed onto a layout, fit its drawing frame to the zoomed area of the view."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("masterItemsColor", "useOwnMasterItemsColor", "adjustDrawingFrameToViewZoom")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+// Not named Get...Schema: the docs generator reads such a call without
+// arguments as the command's own schema method.
+static GS::UniString BuildDataSafetySchema ()
+{
+    return R"({
+        "type": "object",
+        "description": "The Data Safety page. Read only: Archicad does not let add-ons change it, so SetProjectPreferences has no dataSafety page.",
+        "properties": {
+            "temporaryFolder": {
+                "type": "string",
+                "description": "The path of the folder Archicad keeps its temporary files in; empty when Archicad gives none."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "temporaryFolder"
+        ]
+    })";
+}
+
+static GS::UniString GetCalculationRulesSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Calculation Rules page: the conditional rules that leave small holes out of element quantities, and the fills counted as insulation and air in walls, roofs and shells. A list given to SetProjectPreferences replaces the whole list on the page.",
+        "properties": {
+            "elementRules": {
+                "type": "array",
+                "description": "The conditional element rules. Each rule ignores the holes smaller than its holeLimit in a quantity (propertyType) of the given element types.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyType": {
+                            "type": "string",
+                            "description": "The quantity the rule applies to. Volume rules can apply to walls, slabs, roofs, shells and beams, Surface rules to walls, slabs, roofs and shells, Length rules to walls only.",
+                            "enum": [
+                                "Volume",
+                                "Surface",
+                                "Length"
+                            ]
+                        },
+                        "holeLimit": {
+                            "type": "number",
+                            "description": "The hole size limit: holes smaller than this are ignored in the quantity. In SI units, as Archicad stores it.",
+                            "minimum": 0
+                        },
+                        "elementTypes": {
+                            "type": "array",
+                            "description": "The element types the rule applies to.",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Wall",
+                                    "Slab",
+                                    "Roof",
+                                    "Shell",
+                                    "Beam"
+                                ]
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyType",
+                        "holeLimit",
+                        "elementTypes"
+                    ]
+                }
+            },
+            "wallInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in walls."
+            },
+            "wallAirFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as air in walls."
+            },
+            "roofInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in roofs."
+            },
+            "shellInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in shells."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("elementRules", "wallInsulationFills", "wallAirFills", "roofInsulationFills", "shellInsulationFills")");
+    schema += R"(
+    })";
+    return schema;
+}
+
 GetProjectPreferencesCommand::GetProjectPreferencesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -7218,7 +7811,12 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                         "CalculationUnits",
                         "Zones",
                         "ReferenceLevels",
-                        "FloorPlanCutPlane"
+                        "FloorPlanCutPlane",
+                        "Legacy",
+                        "ImagingAndCalculation",
+                        "Layouts",
+                        "DataSafety",
+                        "CalculationRules"
                     ]
                 },
                 "minItems": 1
@@ -7253,6 +7851,21 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += R"(,
             "floorPlanCutPlane": )";
     schema += GetFloorPlanCutPlaneSchema (true);
+    schema += R"(,
+            "legacy": )";
+    schema += GetLegacySchema (true);
+    schema += R"(,
+            "imagingAndCalculation": )";
+    schema += GetImagingAndCalculationSchema (true);
+    schema += R"(,
+            "layouts": )";
+    schema += GetLayoutsSchema (true);
+    schema += R"(,
+            "dataSafety": )";
+    schema += BuildDataSafetySchema ();
+    schema += R"(,
+            "calculationRules": )";
+    schema += GetCalculationRulesSchema (true);
     schema += R"(
         },
         "additionalProperties": false,
@@ -7272,6 +7885,11 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         preferenceTypes.Push ("Zones");
         preferenceTypes.Push ("ReferenceLevels");
         preferenceTypes.Push ("FloorPlanCutPlane");
+        preferenceTypes.Push ("Legacy");
+        preferenceTypes.Push ("ImagingAndCalculation");
+        preferenceTypes.Push ("Layouts");
+        preferenceTypes.Push ("DataSafety");
+        preferenceTypes.Push ("CalculationRules");
     }
 
     GS::ObjectState response;
@@ -7318,6 +7936,41 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the floor plan cut plane settings.");
             }
             response.Add ("floorPlanCutPlane", CreateFloorPlanCutPlaneObjectState (prefs));
+        } else if (preferenceType == "Legacy") {
+            API_LegacyPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_LegacyID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the legacy preferences.");
+            }
+            response.Add ("legacy", CreateLegacyObjectState (prefs));
+        } else if (preferenceType == "ImagingAndCalculation") {
+            API_ImagingAndCalcPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ImagingAndCalcID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the imaging and calculation preferences.");
+            }
+            response.Add ("imagingAndCalculation", CreateImagingAndCalculationObjectState (prefs));
+        } else if (preferenceType == "Layouts") {
+            API_LayoutsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_LayoutsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the layouts preferences.");
+            }
+            response.Add ("layouts", CreateLayoutsObjectState (prefs));
+        } else if (preferenceType == "DataSafety") {
+            GS::ObjectState dataSafety;
+            const GSErrCode err = GetDataSafetyObjectState (dataSafety);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the data safety preferences.");
+            }
+            response.Add ("dataSafety", dataSafety);
+        } else if (preferenceType == "CalculationRules") {
+            API_CalcRulesPrefs prefs;
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_CalcRulesID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the calculation rules preferences.");
+            }
+            response.Add ("calculationRules", CreateCalculationRulesObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -7359,6 +8012,18 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += R"(,
             "floorPlanCutPlane": )";
     schema += GetFloorPlanCutPlaneSchema (false);
+    schema += R"(,
+            "legacy": )";
+    schema += GetLegacySchema (false);
+    schema += R"(,
+            "imagingAndCalculation": )";
+    schema += GetImagingAndCalculationSchema (false);
+    schema += R"(,
+            "layouts": )";
+    schema += GetLayoutsSchema (false);
+    schema += R"(,
+            "calculationRules": )";
+    schema += GetCalculationRulesSchema (false);
     schema += R"(
         },
         "additionalProperties": false,
@@ -7390,6 +8055,18 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
                 "$ref": "#/ExecutionResult"
             },
             "floorPlanCutPlane": {
+                "$ref": "#/ExecutionResult"
+            },
+            "legacy": {
+                "$ref": "#/ExecutionResult"
+            },
+            "imagingAndCalculation": {
+                "$ref": "#/ExecutionResult"
+            },
+            "layouts": {
+                "$ref": "#/ExecutionResult"
+            },
+            "calculationRules": {
                 "$ref": "#/ExecutionResult"
             }
         },
@@ -7441,8 +8118,32 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("floorPlanCutPlane", SetProjectPreferencesPage<API_FloorPlanCutDefinition> ("floor plan cut plane", APIPrefs_FloorPlanCutPlaneDef, floorPlanCutPlane, ApplyFloorPlanCutPlane));
     }
 
+    GS::ObjectState legacy;
+    if (parameters.Get ("legacy", legacy)) {
+        anyPage = true;
+        response.Add ("legacy", SetProjectPreferencesPage<API_LegacyPrefs> ("legacy", APIPrefs_LegacyID, legacy, ApplyLegacy));
+    }
+
+    GS::ObjectState imagingAndCalculation;
+    if (parameters.Get ("imagingAndCalculation", imagingAndCalculation)) {
+        anyPage = true;
+        response.Add ("imagingAndCalculation", SetProjectPreferencesPage<API_ImagingAndCalcPrefs> ("imaging and calculation", APIPrefs_ImagingAndCalcID, imagingAndCalculation, ApplyImagingAndCalculation));
+    }
+
+    GS::ObjectState layouts;
+    if (parameters.Get ("layouts", layouts)) {
+        anyPage = true;
+        response.Add ("layouts", SetProjectPreferencesPage<API_LayoutsPrefs> ("layouts", APIPrefs_LayoutsID, layouts, ApplyLayouts));
+    }
+
+    GS::ObjectState calculationRules;
+    if (parameters.Get ("calculationRules", calculationRules)) {
+        anyPage = true;
+        response.Add ("calculationRules", SetProjectPreferencesPage<API_CalcRulesPrefs> ("calculation rules", APIPrefs_CalcRulesID, calculationRules, ApplyCalculationRules));
+    }
+
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels or floorPlanCutPlane.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels, floorPlanCutPlane, legacy, imagingAndCalculation, layouts or calculationRules.");
     }
 
     return response;
