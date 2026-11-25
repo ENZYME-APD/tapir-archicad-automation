@@ -609,9 +609,14 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.",
                 "items": {
-                    "$ref": "#/AutoTextExpression"
+                    "type": "string",
+                    "minLength": 1
                 },
                 "minItems": 1
+            },
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "Optional. The element in whose context the autotexts are resolved, e.g. a Text on a layout for layout autotexts. When omitted, they are resolved without an element context."
             }
         },
         "additionalProperties": false,
@@ -632,7 +637,17 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetRawResponseSchema () c
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/InterpretedAutoText"
+                            "type": "object",
+                            "properties": {
+                                "value": {
+                                    "type": "string",
+                                    "description": "The resolved value of the autotext."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "value"
+                            ]
                         },
                         {
                             "$ref": "#/ErrorItem"
