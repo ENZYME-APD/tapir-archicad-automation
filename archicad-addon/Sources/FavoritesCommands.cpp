@@ -1778,15 +1778,6 @@ static GSErrCode RestoreStairFlightWidth (const API_Element& elementBefore)
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
-// Marks a whole member of the mask, every byte of it, the way ACAPI_ELEMENT_MASK_SETFULL marks
-// the whole element: ACAPI_ELEMENT_MASK_SET only marks the first byte, which for a struct member
-// (a story visibility, a cover fill transformation, an overridden pen) is only its first field.
-template <typename T>
-static void MaskWholeMember (T& maskMember)
-{
-    memset (&maskMember, 0xFF, sizeof (T));
-}
-
 // The mask of the settings on the Floor Plan and Section panel of the element's settings dialog,
 // for the 'FloorPlanAndSection' setting group of ApplyFavoritesToElements (#2802): story
 // visibility, floor plan display and projection, the pens and line types of the cut, uncut,
