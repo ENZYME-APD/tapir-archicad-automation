@@ -1710,6 +1710,86 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
     return {};
 }
 
+#ifdef ServerMainVers_2700
+
+// A view's own (Custom) layer settings: the layer states Archicad stores in the view when it stores
+// its layers (saveLaySet) under no layer combination name, as the View Settings dialog's "Get Current
+// Window's Settings" does. ACAPI_Navigator_GetNavigatorView allocates the table (FreeNavigatorView
+// deletes it). ACAPI_Navigator_ChangeNavigatorView keeps the stored table whatever it is given
+// (Archicad 29), so SetViewSettings only accepts the states the view already stores.
+using LayerStatTable = GS::HashTable<API_AttributeIndex, API_LayerStat>;
+
+static bool HasCustomLayers (const API_NavigatorView& navigatorView)
+{
+    return navigatorView.saveLaySet && navigatorView.layerCombination[0] == '\0' && navigatorView.layerStats != nullptr;
+}
+
+// The layer states ordered by layer index, so that the response does not depend on the order of
+// the hash table.
+static std::vector<std::pair<API_AttributeIndex, API_LayerStat>> SortedLayerStats (const LayerStatTable& stats)
+{
+    std::vector<std::pair<API_AttributeIndex, API_LayerStat>> sorted;
+    for (const auto& kv : stats) {
+#ifdef ServerMainVers_2800
+        sorted.emplace_back (kv.key, kv.value);
+#else
+        sorted.emplace_back (*kv.key, *kv.value);
+#endif
+    }
+    std::sort (sorted.begin (), sorted.end (), [] (const auto& a, const auto& b) {
+        return GetAttributeIndex (a.first) < GetAttributeIndex (b.first);
+    });
+    return sorted;
+}
+
+static GS::ObjectState CreateViewLayerStateObjectState (const API_AttributeIndex& layerIndex, const API_LayerStat& layerStat)
+{
+    return GS::ObjectState (
+        "attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LayerID, layerIndex)),
+        "isHidden", (layerStat.lFlags & APILay_Hidden) != 0,
+        "isLocked", (layerStat.lFlags & APILay_Locked) != 0,
+        "isWireframe", (layerStat.lFlags & APILay_ForceToWire) != 0,
+        "intersectionGroupNr", layerStat.conClassId);
+}
+
+static bool LayerFlagDiffers (const GS::ObjectState& layerState, const char* field, short flag, const API_LayerStat& stored)
+{
+    bool value = false;
+    return layerState.Get (field, value) && value != ((stored.lFlags & flag) != 0);
+}
+
+// What is wrong with customLayers given to SetViewSettings, if anything: each field given must be the
+// state the view already stores, because Archicad's API can't change them.
+static GS::Optional<GS::UniString> CheckCustomLayersUnchanged (const GS::Array<GS::ObjectState>& customLayers, const API_NavigatorView& navigatorView)
+{
+    const GS::UniString cantChange =
+        " Archicad's API can't change a view's own (custom) layer states, so customLayers must give the states the view stores, as GetViewSettings returns them."
+        " To change the layers a view shows, give it a layerCombination instead. Nothing was written.";
+    if (!HasCustomLayers (navigatorView)) {
+        return GS::UniString ("The view stores no custom layers.") + cantChange;
+    }
+    for (UIndex i = 0; i < customLayers.GetSize (); ++i) {
+        const GS::ObjectState& layerState = customLayers[i];
+        const GS::ObjectState* attributeIdOS = layerState.Get ("attributeId");
+        const API_Guid layerGuid = attributeIdOS != nullptr ? GetGuidFromObjectState (*attributeIdOS) : APINULLGuid;
+        const API_AttributeIndex layerIndex = GetAttributeIndexFromGuid (API_LayerID, layerGuid);
+        if (layerGuid == APINULLGuid || !navigatorView.layerStats->ContainsKey (layerIndex)) {
+            return GS::UniString::Printf ("customLayers[%u]: the attributeId names no layer the view stores.", i) + cantChange;
+        }
+        const API_LayerStat& stored = (*navigatorView.layerStats)[layerIndex];
+        Int32 intersectionGroupNr = 0;
+        if (LayerFlagDiffers (layerState, "isHidden", APILay_Hidden, stored) ||
+            LayerFlagDiffers (layerState, "isLocked", APILay_Locked, stored) ||
+            LayerFlagDiffers (layerState, "isWireframe", APILay_ForceToWire, stored) ||
+            (layerState.Get ("intersectionGroupNr", intersectionGroupNr) && intersectionGroupNr != stored.conClassId)) {
+            return GS::UniString::Printf ("customLayers[%u] differs from the state the view stores.", i) + cantChange;
+        }
+    }
+    return GS::NoValue;
+}
+
+#endif
+
 GetViewSettingsCommand::GetViewSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -1802,6 +1882,15 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             "dimensions", navigatorView.saveDim,
             "penSet", navigatorView.savePenSet,
             "structureDisplay", navigatorView.saveStructureDisplay));
+
+#ifdef ServerMainVers_2700
+        if (HasCustomLayers (navigatorView)) {
+            const auto& customLayers = viewSetting.AddList<GS::ObjectState> ("customLayers");
+            for (const auto& item : SortedLayerStats (*navigatorView.layerStats)) {
+                customLayers (CreateViewLayerStateObjectState (item.first, item.second));
+            }
+        }
+#endif
 
         if (navigatorView.saveZoom) {
             viewSetting.Add ("zoom", GS::ObjectState (
@@ -1963,6 +2052,20 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         }
         const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
+        GS::Array<GS::ObjectState> customLayers;
+        if (viewSettingsOS->Get ("customLayers", customLayers)) {
+#ifdef ServerMainVers_2700
+            const GS::Optional<GS::UniString> customLayersError = CheckCustomLayersUnchanged (customLayers, navigatorView);
+            if (customLayersError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, *customLayersError));
+                continue;
+            }
+#else
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "customLayers needs Archicad 27 or later. Nothing was written."));
+            continue;
+#endif
+        }
+
         SetCharProperty (viewSettingsOS, "modelViewOptions", navigatorView.modelViewOptName);
         SetCharProperty (viewSettingsOS, "layerCombination", navigatorView.layerCombination);
         SetCharProperty (viewSettingsOS, "dimensionStyle", navigatorView.dimName);
@@ -2097,6 +2200,27 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
                 executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
                     "The dimensionStyle '" + requestedDimensionStyle + "' was not applied, the view still uses '" + appliedDimensionStyle +
                     "'. Probably the project has no dimension standard with this name. The other view settings given were written."));
+                continue;
+            }
+        }
+
+        // Archicad keeps the view's layer combination without an error when it is given an empty
+        // name (custom layers), so the view is read back to report whether the name was applied.
+        GS::UniString requestedLayerCombination;
+        if (viewSettingsOS->Get ("layerCombination", requestedLayerCombination)) {
+            API_NavigatorView changedNavigatorView = {};
+            err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &changedNavigatorView);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the layerCombination."));
+                continue;
+            }
+            const GS::OnExit freeChangedView ([&changedNavigatorView] () { FreeNavigatorView (changedNavigatorView); });
+
+            const GS::UniString appliedLayerCombination (changedNavigatorView.layerCombination);
+            if (changedNavigatorView.saveLaySet && appliedLayerCombination.Compare (requestedLayerCombination, CaseInsensitive) != GS::UniString::Equal) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL,
+                    "The layerCombination '" + requestedLayerCombination + "' was not applied, the view still uses '" + appliedLayerCombination +
+                    "'. Archicad's API can't switch a view to custom layers (an empty name), and keeps the old one when no layer combination has the name given. The other view settings given were written."));
                 continue;
             }
         }

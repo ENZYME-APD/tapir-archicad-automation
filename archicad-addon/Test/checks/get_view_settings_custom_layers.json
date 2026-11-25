@@ -1,0 +1,458 @@
+{
+  "title": "GetViewSettings returns a view's own (custom) layer states; SetViewSettings refuses customLayers it can't write and an empty layerCombination Archicad doesn't apply",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "layer A hidden, layer B locked",
+      "command": "CreateLayers",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "layerDataArray": [
+          {
+            "name": "TapirCheck custom layers A",
+            "isHidden": true,
+            "isLocked": false,
+            "isWireframe": false,
+            "intersectionGroupNr": 1
+          },
+          {
+            "name": "TapirCheck custom layers B",
+            "isHidden": false,
+            "isLocked": true,
+            "isWireframe": false,
+            "intersectionGroupNr": 1
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "layerA": "attributeIds[0].attributeId.guid",
+        "layerB": "attributeIds[1].attributeId.guid"
+      },
+      "expect": [
+        {
+          "path": "attributeIds",
+          "len": 2,
+          "name": "both layers created"
+        }
+      ]
+    },
+    {
+      "id": "a story of the Project Map",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorMapId": "ProjectMap"
+      },
+      "save": {
+        "story": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.type",
+          "eq": "StoryItem",
+          "name": "first item of the Stories group is a story"
+        }
+      ]
+    },
+    {
+      "id": "folder at the View Map root",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "folderName": "TapirCheck custom layers folder"
+      },
+      "save": {
+        "folder": "navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItemId.guid",
+          "exists": true,
+          "name": "folder created"
+        }
+      ]
+    },
+    {
+      "id": "view of the story, storing the window's layers (A hidden, B locked) as its own",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "viewsData": [
+          {
+            "navigatorItemId": {
+              "guid": "${story}"
+            },
+            "parentNavigatorItemId": {
+              "guid": "${folder}"
+            },
+            "name": "TapirCheck custom layers view"
+          }
+        ]
+      },
+      "save": {
+        "view": "navigatorItems[0].navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItems[0].navigatorItemId.guid",
+          "exists": true,
+          "name": "view created"
+        }
+      ]
+    },
+    {
+      "id": "window layers changed: A shown, B unlocked",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          {
+            "name": "TapirCheck custom layers A",
+            "isHidden": false,
+            "isLocked": false,
+            "isWireframe": false,
+            "intersectionGroupNr": 1
+          },
+          {
+            "name": "TapirCheck custom layers B",
+            "isHidden": false,
+            "isLocked": false,
+            "isWireframe": false,
+            "intersectionGroupNr": 1
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        {
+          "path": "attributeIds[0].attributeId.guid",
+          "eq": "${layerA}",
+          "name": "same layer A"
+        }
+      ]
+    },
+    {
+      "id": "the view stores custom layers",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "scale": "viewSettings[0].drawingScale"
+      },
+      "expect": [
+        {
+          "path": "viewSettings[0].layerCombination",
+          "eq": "",
+          "name": "no layer combination name"
+        },
+        {
+          "path": "viewSettings[0].saveFlags.layers",
+          "eq": true,
+          "name": "the view stores its layers"
+        },
+        {
+          "path": "viewSettings[0].customLayers[0].attributeId.guid",
+          "exists": true,
+          "name": "customLayers returned"
+        }
+      ]
+    },
+    {
+      "id": "customLayers as the view stores them (not as the window shows them) is accepted",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "customLayers": [
+                {
+                  "attributeId": {
+                    "guid": "${layerA}"
+                  },
+                  "isHidden": true,
+                  "isLocked": false
+                },
+                {
+                  "attributeId": {
+                    "guid": "${layerB}"
+                  },
+                  "isHidden": false,
+                  "isLocked": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true,
+          "name": "GetViewSettings read the view's own states, A hidden and B locked"
+        }
+      ]
+    },
+    {
+      "id": "customLayers that differ from the stored states fail and write nothing",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "drawingScale": 17,
+              "customLayers": [
+                {
+                  "attributeId": {
+                    "guid": "${layerA}"
+                  },
+                  "isHidden": false
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "Archicad's API can't change them, so the item fails"
+        }
+      ]
+    },
+    {
+      "id": "customLayers naming no layer fail",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "customLayers": [
+                {
+                  "attributeId": {
+                    "guid": "00000000-0000-0000-0000-00000000BEEF"
+                  },
+                  "isHidden": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false
+        }
+      ]
+    },
+    {
+      "id": "nothing was written",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "viewSettings[0].drawingScale",
+          "eq": "${scale}",
+          "name": "drawingScale unchanged"
+        }
+      ]
+    },
+    {
+      "id": "a layer combination",
+      "command": "CreateLayerCombinations",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "layerCombinationDataArray": [
+          {
+            "name": "TapirCheck custom layers combination",
+            "layers": [
+              {
+                "attributeId": {
+                  "guid": "${layerA}"
+                },
+                "isHidden": true,
+                "isLocked": false,
+                "isWireframe": false,
+                "intersectionGroupNr": 1
+              }
+            ]
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        {
+          "path": "attributeIds[0].attributeId.guid",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "the view gets the layer combination",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "layerCombination": "TapirCheck custom layers combination",
+              "saveFlags": {
+                "layers": true
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "customLayers on a view without custom layers fail",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "customLayers": [
+                {
+                  "attributeId": {
+                    "guid": "${layerA}"
+                  },
+                  "isHidden": true
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false
+        }
+      ]
+    },
+    {
+      "id": "an empty layerCombination (custom layers) is not applied, and says so",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            },
+            "viewSettings": {
+              "layerCombination": ""
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "Archicad keeps the combination, so the item fails"
+        }
+      ]
+    },
+    {
+      "id": "the view keeps the combination and returns no customLayers",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "viewSettings[0].layerCombination",
+          "eq": "TapirCheck custom layers combination"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "id": "delete the view",
+      "command": "DeleteNavigatorItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${view}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "delete the folder",
+      "command": "DeleteNavigatorItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${folder}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

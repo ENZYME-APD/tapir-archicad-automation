@@ -10122,7 +10122,14 @@
             },
             "layerCombination": {
                 "type": "string",
-                "description": "The name of the layer combination. If empty, the view has custom layer combination."
+                "description": "The name of the layer combination. If empty, the view has custom layer combination. SetViewSettings reads the view back and fails the item when Archicad did not apply the name given: it keeps the old one when no layer combination of the project has the name, and its API can't switch a view from a layer combination to custom layers (an empty name)."
+            },
+            "customLayers": {
+                "type": "array",
+                "description": "The view's own layer settings (Archicad 27 and later): the layer states the view stores when it stores its layers (saveFlags.layers) under no layer combination name, as the View Settings dialog's \"Get Current Window's Settings\" stores them. GetViewSettings returns every layer of the set, ordered by layer index, and omits the field when the view stores no custom layers. Archicad's API can't change them (nor switch a view from a layer combination to custom layers), so SetViewSettings accepts customLayers only when each field given is the state the view already stores (so GetViewSettings' answer can be given back), and otherwise fails the item and writes nothing. To change the layers a view shows, give it a layerCombination.",
+                "items": {
+                    "$ref": "#/ViewLayerState"
+                }
             },
             "dimensionStyle": {
                 "type": "string",
@@ -10239,6 +10246,36 @@
         },
         "additionalProperties": false,
         "required": []
+    },
+    "ViewLayerState": {
+        "type": "object",
+        "description": "The state of one layer in a view's own (custom) layer settings. GetViewSettings returns every field; SetViewSettings checks only the fields given.",
+        "properties": {
+            "attributeId": {
+                "description": "The identifier of the Layer attribute.",
+                "$ref": "#/AttributeId"
+            },
+            "isHidden": {
+                "type": "boolean",
+                "description": "Whether the layer is hidden in the view."
+            },
+            "isLocked": {
+                "type": "boolean",
+                "description": "Whether the layer is locked in the view."
+            },
+            "isWireframe": {
+                "type": "boolean",
+                "description": "Whether the layer's elements are forced to wireframe in the view's 3D."
+            },
+            "intersectionGroupNr": {
+                "type": "integer",
+                "description": "Intersection group of the layer in the view. Elements on layers having the same group will be intersected."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId"
+        ]
     },
     "ViewSettingsOrError": {
         "type": "object",
