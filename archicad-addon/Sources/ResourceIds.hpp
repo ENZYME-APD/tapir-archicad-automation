@@ -49,6 +49,9 @@
 #define ID_SHORTCUTS_DIALOG_POPUP_6              19
 #define ID_SHORTCUTS_DIALOG_LABELEDIT_6          20
 #define ID_SHORTCUTS_DIALOG_CLOSE_BUTTON         21
+#define ID_SHORTCUTS_DIALOG_KEY_HEADER           22
+#define ID_SHORTCUTS_DIALOG_KEY_1                23   // the keys of slots 2-6 follow it (24-28)
+#define ID_SHORTCUTS_DIALOG_WE_HINT              29
 
 // Sharing a script (ShareDialog): the ids 32130-32134 and icons 32550-32559 are kept for it.
 #define ID_SHARE_DIALOG                      32130
@@ -150,6 +153,8 @@
 #define ID_PALETTE_STRINGS_UV_START_FAILED       32
 #define ID_PALETTE_STRINGS_EXECUTE_FAILED        33
 #define ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED    34
+#define ID_PALETTE_STRINGS_SHORTCUT_NO_KEY       35
+#define ID_PALETTE_STRINGS_SHORTCUT_WE_TEXT      36
 
 // The texts of the Script Manager's Scripts tab: where a script comes from, how its last run ended, and its right-click menu
 #define ID_LOCAL_SCRIPT_STRINGS         32111
@@ -181,6 +186,7 @@
 #define ID_LOCAL_SCRIPT_STRINGS_MENU_SHOW_IN_FOLDER       25
 #define ID_LOCAL_SCRIPT_STRINGS_MENU_OPEN_ON_GITHUB       26
 #define ID_LOCAL_SCRIPT_STRINGS_MENU_REMOVE               27
+#define ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT_KEY  28
 
 #define ID_AUTOUPDATE_STRINGS           32011
 #define ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE 1

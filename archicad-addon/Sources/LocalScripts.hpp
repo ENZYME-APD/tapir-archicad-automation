@@ -27,6 +27,7 @@ struct LocalScriptActions
     std::function<void (const IO::Location&)>                 stop;          // stops it with the processes it started
     std::function<void (const GS::UniString&)>                openWebpage;   // opens the URL in the browser
     std::function<void ()>                                    openShortcuts; // the Shortcuts dialog
+    std::function<GS::UniString (const IO::Location&)>        shortcutKeys;  // the keys of the script's shortcut slot, e.g. "Ctrl+Alt+H"; empty = none
     std::function<void (const IO::Location&)>                 editFile;      // opens the file in a text editor
     std::function<void (const IO::Location&)>                 showInFolder;  // opens the file's folder
     std::function<void (const IO::Location&)>                 remove;        // removes a script the user added

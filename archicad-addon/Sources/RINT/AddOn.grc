@@ -109,6 +109,8 @@
 /* [ 32] */ "Failed to start uv process. Ensure it is installed and executable."
 /* [ 33] */ "Failed to execute %T"
 /* [ 34] */ "Unexpected issue while executing %T"
+/* [ 35] */ "no key yet"
+/* [ 36] */ "Run Script Shortcut %d: %T"
 }
 
 'STR#' ID_SHARE_STRINGS "Tapir Share Strings" {
@@ -178,6 +180,7 @@
 /* [ 25] */ "Show in Folder"
 /* [ 26] */ "Open on GitHub"
 /* [ 27] */ "Remove"
+/* [ 28] */ "Assign Shortcut... (%T)"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -558,9 +561,9 @@
 12   "The adapted script still does what I meant"        ConfirmButton
 }
 
-'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
+'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  640  270  "Script Shortcuts" {
 /* [  1] */ LeftText     110    6  210   16    SmallPlain  vCenter  "Script"
-/* [  2] */ LeftText     330    6  150   16    SmallPlain  vCenter  "Toolbar label (optional)"
+/* [  2] */ LeftText     330    6  150   16    SmallPlain  vCenter  "Menu name (optional)"
 /* [  3] */ LeftText      10   32   90   18    SmallPlain  vCenter  "Shortcut 1:"
 /* [  4] */ PopupControl 110   30  210   22    80  3
 /* [  5] */ TextEdit     330   30  150   22    SmallPlain  60
@@ -579,7 +582,15 @@
 /* [ 18] */ LeftText      10  182   90   18    SmallPlain  vCenter  "Shortcut 6:"
 /* [ 19] */ PopupControl 110  180  210   22    80  3
 /* [ 20] */ TextEdit     330  180  150   22    SmallPlain  60
-/* [ 21] */ Button       410  224   70   24    LargePlain  "Close"
+/* [ 21] */ Button       550  224   70   24    LargePlain  "Close"
+/* [ 22] */ LeftText     490    6  130   16    SmallPlain  vCenter  "Key"
+/* [ 23] */ LeftText     490   32  130   18    SmallPlain  vCenter  ""
+/* [ 24] */ LeftText     490   62  130   18    SmallPlain  vCenter  ""
+/* [ 25] */ LeftText     490   92  130   18    SmallPlain  vCenter  ""
+/* [ 26] */ LeftText     490  122  130   18    SmallPlain  vCenter  ""
+/* [ 27] */ LeftText     490  152  130   18    SmallPlain  vCenter  ""
+/* [ 28] */ LeftText     490  182  130   18    SmallPlain  vCenter  ""
+/* [ 29] */ LeftText      10  224  530   24    SmallPlain  vCenter  "Give these commands keys in Options > Work Environment > Keyboard Shortcuts."
 }
 
 'DLGH' ID_SHORTCUTS_DIALOG Tapir_Shortcuts_Dialog {
@@ -604,4 +615,12 @@
 19   ""        ShortcutPopUp6
 20   ""        ShortcutLabelEdit6
 21   ""        CloseButton
+22   ""        KeyColumnHeader
+23   ""        ShortcutKey1
+24   ""        ShortcutKey2
+25   ""        ShortcutKey3
+26   ""        ShortcutKey4
+27   ""        ShortcutKey5
+28   ""        ShortcutKey6
+29   ""        WorkEnvironmentHint
 }

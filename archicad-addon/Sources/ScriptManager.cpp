@@ -1838,17 +1838,26 @@ void ScriptManager::ShowLocalContextMenu (const LocalScript& script)
 
     DG::Menu menu ("-");
     DG::CommandTable commandTable;
-    const auto addCommand = [&menu, &commandTable] (ULong commandId, Int32 textIndex) {
+    const auto addCommandWithText = [&menu, &commandTable] (ULong commandId, const GS::UniString& text) {
         const DG::Command command (commandId, TapirDeveloperId, TapirLocalId);
-        commandTable.Add (command, new DG::CommandDescriptor (command, LocalScriptText (textIndex)));
+        commandTable.Add (command, new DG::CommandDescriptor (command, text));
         menu.AddMenuItem (DG::MenuSimpleItem (command));
+    };
+    const auto addCommand = [&addCommandWithText] (ULong commandId, Int32 textIndex) {
+        addCommandWithText (commandId, LocalScriptText (textIndex));
     };
     if (isRunning) {
         addCommand (StopCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_STOP);
     } else {
         addCommand (RunCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_RUN);
     }
-    addCommand (AssignShortcutCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT);
+    // The key the script's shortcut slot has in Work Environment (Archicad 29 and later), e.g. "Assign Shortcut... (Ctrl+Alt+H)".
+    const GS::UniString shortcutKeys = localActions.shortcutKeys ? localActions.shortcutKeys (script.fileLocation) : GS::UniString ();
+    if (shortcutKeys.IsEmpty ()) {
+        addCommand (AssignShortcutCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT);
+    } else {
+        addCommandWithText (AssignShortcutCommand, GS::UniString::Printf (LocalScriptText (ID_LOCAL_SCRIPT_STRINGS_MENU_ASSIGN_SHORTCUT_KEY), shortcutKeys.ToPrintf ()));
+    }
     menu.AddMenuItem (DG::MenuSeparatorItem ());
     if (isLocalFile) {
         addCommand (EditCommand, ID_LOCAL_SCRIPT_STRINGS_MENU_EDIT);
