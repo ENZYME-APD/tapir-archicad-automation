@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-25 01:04 UTC",
+ "generatedAt": "2026-11-25 10:28 UTC",
  "counts": {
   "done": 789,
   "open": 42,
   "not applicable": 1
  },
  "parameters": {
-  "all": 718,
+  "all": 717,
   "partial": 11,
-  "json": 60
+  "json": 61
  },
  "items": [
   {
@@ -1376,9 +1376,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 1,
+   "parameterCount": 2,
    "coveredParameters": [
-    "autoTexts"
+    "autoTexts",
+    "elementId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -2067,7 +2068,7 @@
    "id": "GetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.3",
-   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Further pages may follow.",
+   "brief": "Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the calculation rules (conditional element rules and insulation and air fills), the zones, the reference levels, the legacy settings, the layouts settings and the data safety settings (the temporary folder), the Floor Plan Cut Plane Settings, and the Imaging and Calculation page of the Work Environment.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2089,7 +2090,7 @@
    "id": "SetProjectPreferences",
    "group": "Project Commands",
    "version": "1.7.3",
-   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
+   "brief": "Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the calculation rules, the zones, the reference levels, the legacy settings and the layouts settings, the Floor Plan Cut Plane Settings, and the Imaging and Calculation page of the Work Environment. The data safety page is read only. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -2098,9 +2099,10 @@
      "path": "Components/ProjectComponents/SetProjectPreferencesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 39,
+   "parameters": "json",
+   "parameterCount": 69,
    "coveredParameters": [
+    "calculationRules.elementRules.propertyType",
     "calculationUnits",
     "dimensions",
     "dimensions.dimensionStandardIndex",
@@ -2141,7 +2143,37 @@
     "zones.lowCeilingAreaReduction.heightLimits.reductionPercent",
     "zones.lowCeilingAreaReduction.reductionPercentAboveHeightLimits"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "calculationRules",
+    "calculationRules.elementRules",
+    "calculationRules.elementRules.elementTypes",
+    "calculationRules.elementRules.holeLimit",
+    "calculationRules.roofInsulationFills",
+    "calculationRules.shellInsulationFills",
+    "calculationRules.wallAirFills",
+    "calculationRules.wallInsulationFills",
+    "imagingAndCalculation",
+    "imagingAndCalculation.activate3DOnChange",
+    "imagingAndCalculation.autoRebuild3D",
+    "imagingAndCalculation.generate3DReport",
+    "imagingAndCalculation.interruptOnError",
+    "imagingAndCalculation.keepZoomedSection",
+    "imagingAndCalculation.progressSounds",
+    "imagingAndCalculation.reportLevel",
+    "imagingAndCalculation.selectedElementsListing",
+    "imagingAndCalculation.showProgressWindow",
+    "layouts",
+    "layouts.adjustDrawingFrameToViewZoom",
+    "layouts.masterItemsColor",
+    "layouts.useOwnMasterItemsColor",
+    "legacy",
+    "legacy.aboveHomeStoryLineTypeId",
+    "legacy.belowHomeStoryLineTypeId",
+    "legacy.columnIntersectionPriority",
+    "legacy.hideZonesOnSections",
+    "legacy.roofContourDisplay",
+    "legacy.useLegacyIntersections"
+   ],
    "pullRequests": [],
    "issues": []
   },

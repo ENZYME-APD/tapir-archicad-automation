@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-25 01:04 UTC",
+ "generatedAt": "2026-11-25 10:28 UTC",
  "versions": [
   25,
   26,
@@ -16159,10 +16159,6 @@
      "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
     },
     {
-     "number": 3038,
-     "title": "[2/3] Get/SetProjectPreferences: add the Calculation Rules page"
-    },
-    {
      "number": 3037,
      "title": "[1/3] GetProjectPreferences / SetProjectPreferences: Legacy, Imaging and Calculation, Layouts and Data Safety pages"
     }
@@ -16287,10 +16283,6 @@
     {
      "number": 3039,
      "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 3038,
-     "title": "[2/3] Get/SetProjectPreferences: add the Calculation Rules page"
     },
     {
      "number": 3037,
@@ -37425,10 +37417,6 @@
     {
      "number": 3039,
      "title": "[3/3] Grasshopper: the new pages in GetProjectPreferences and SetProjectPreferences"
-    },
-    {
-     "number": 3038,
-     "title": "[2/3] Get/SetProjectPreferences: add the Calculation Rules page"
     },
     {
      "number": 3037,

@@ -1,11 +1,11 @@
 **789 of 831** applicable Tapir commands have a Grasshopper component (94 %): ✅ 789 done, ⬜ 42 open, ➖ 1 not applicable.
 
-Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡 60 the rest through a JSON input, 🟠 11 some parameters missing.
+Parameters of the 789 used commands: 🟢 717 every parameter has an input, 🟡 61 the rest through a JSON input, 🟠 11 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
-| Project Commands | 94 % | 70 | 66 |  |  |  | 4 |  |  | 65 |  | 1 |
+| Project Commands | 94 % | 70 | 66 |  |  |  | 4 |  |  | 64 | 1 | 1 |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 87 % | 199 | 175 |  |  |  | 24 |  |  | 130 | 44 | 1 |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-25 01:04 UTC.
+Updated 2026-11-25 10:28 UTC.
