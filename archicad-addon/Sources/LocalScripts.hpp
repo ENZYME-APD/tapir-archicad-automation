@@ -30,6 +30,7 @@ struct LocalScriptActions
     std::function<GS::UniString (const IO::Location&)>        shortcutKeys;  // the keys of the script's shortcut slot, e.g. "Ctrl+Alt+H"; empty = none
     std::function<void (const IO::Location&)>                 editFile;      // opens the file in a text editor
     std::function<void (const IO::Location&)>                 showInFolder;  // opens the file's folder
+    std::function<void ()>                                    openScriptsFolder;   // opens the custom-scripts folder, made when missing
     std::function<void (const IO::Location&)>                 remove;        // removes a script the user added
     std::function<void (const GS::Array<IO::Location>&)>      addScripts;    // adds the files, as the Add script button does
     std::function<void ()>                                    addScriptWithDialog;   // asks for the files, then adds them

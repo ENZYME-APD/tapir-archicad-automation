@@ -32,6 +32,9 @@ not exist yet. Its list of scripts is built when Archicad starts and again when 
   the `.py` files directly in each subfolder are listed after the folder's own files, under a
   bold heading with the subfolder's name, by folder and file name. Only one level is read, and
   folders whose name starts with `.` or `_` and `utilities` folders (helper modules) are skipped.
+  The *Scripts folder* button at the top right of the Script Manager's Scripts tab opens
+  `custom-scripts` in Explorer or the Finder (and creates it when it is missing); scripts put
+  there are listed after *Reload scripts...*.
 
 By default only the `.py` files directly in `relativeLoc` (or the local folder) are listed; files in
 subfolders, like `utilities/` here, are downloaded but not listed. That is how helper modules and
