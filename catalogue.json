@@ -1253,7 +1253,8 @@
         "zones",
         "areas",
         "check",
-        "highlight"
+        "highlight",
+        "dimensions"
       ],
       "author": {
         "name": "Parikshit Wadhwa",
@@ -1261,8 +1262,24 @@
       },
       "license": "MIT",
       "entry": "ZoneAreaCheck.py",
-      "changes": "files",
+      "changes": "model",
       "versions": [
+        {
+          "version": "1.1.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "2.0.1",
+          "changelog": "New Dimension perimeters button: places a linear dimension along each straight edge of the zones, inside the room, with one dimension for parallel edges of the same length, and skips the edges that already have a dimension. You can choose a Dimension favorite, a layer, the offset from the edge, the shortest edge and whether to dimension holes. Curved edges and zones measured to the walls' reference lines are not dimensioned. The script now changes the model when you press that button.",
+          "commit": "30271967ee88cd8fb7356ed9ddbb3a22f7cb2c04",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/30271967ee88cd8fb7356ed9ddbb3a22f7cb2c04/marketplace/zone-area-check/ZoneAreaCheck.py",
+          "sha256": "8c75b3160c4cfc58eedcb39780481c1fde129eab4c18339b61cc226974c7bba8"
+        },
         {
           "version": "1.0.1",
           "archicadVersions": [
