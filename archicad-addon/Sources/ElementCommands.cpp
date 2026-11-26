@@ -2676,6 +2676,21 @@ static void AddFloorPlanPolygonsIfAvailable (const API_Guid& guid, GS::ObjectSta
     params.allStories = true;
     params.polygon    = nullptr;
 
+    // The floor plan primitives of a model element are only generated in the floor plan
+    // database: with the 3D window (or a section, ...) current, the same request returned no
+    // floorPlanPolygons for a wall that has them on the floor plan (#3090). So the CURRENT
+    // DATABASE - not the visible window - is switched to the floor plan for this read and put
+    // back on every exit path, as Get3DBoundingBoxes does it (#1482). From the floor plan nothing
+    // is touched.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+
 #if defined(ServerMainVers_2700)
     const GSErrCode fpErr = ACAPI_DrawingPrimitive_ShapePrimsExt (elemHead, CollectCutFillPolygons, &params);
 #else

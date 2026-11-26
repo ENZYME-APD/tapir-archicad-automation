@@ -1,0 +1,174 @@
+{
+  "title": "GetDetailsOfElements returns a wall's floorPlanPolygons from the 3D window, and CreateSolidElementLinks and GetSolidElementLinks work from a Section window as from the floor plan (#3090)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [ "Wall", "Slab", "CutPlane" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a slab, the target",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "thickness": 0.3,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 960.0, "y": 960.0 }, { "x": 966.0, "y": 960.0 },
+              { "x": 966.0, "y": 966.0 }, { "x": 960.0, "y": 966.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "slab": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "two walls across the slab, the operators",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 961.0, "y": 963.0 }, "endCoordinate": { "x": 965.0, "y": 963.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
+          { "begCoordinate": { "x": 963.0, "y": 961.0 }, "endCoordinate": { "x": 963.0, "y": 962.5 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "first wall created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second wall created" }
+      ]
+    },
+    {
+      "id": "floor plan polygons from the floor plan",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ], "fields": [ "type", "floorPlanPolygons" ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall" },
+        { "path": "detailsOfElements[0].floorPlanPolygons[0].coordinates[0].x", "exists": true, "name": "the wall has a polygon on the floor plan" }
+      ]
+    },
+    {
+      "id": "the 3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "3DModel" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "floor plan polygons from the 3D window (was only the type)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ], "fields": [ "type", "floorPlanPolygons" ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall" },
+        { "path": "detailsOfElements[0].floorPlanPolygons[0].coordinates[0].x", "exists": true, "name": "the same polygon from the 3D window" }
+      ]
+    },
+    {
+      "id": "back to the floor plan for the section",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a section across the slab",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          { "startCoordinate": { "x": 963.5, "y": 958.0 }, "endCoordinate": { "x": 963.5, "y": 968.0 }, "name": "TapirCheck 3090", "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "its viewpoint",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "save": { "sectionDb": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the Section window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "solid links from the Section window (failed with -2130313110)",
+      "command": "CreateSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          { "targetId": { "guid": "${slab}" }, "operation": "Subtraction", "operatorId": { "guid": "${w1}" } },
+          { "targetId": { "guid": "${slab}" }, "operation": "Subtraction", "operatorId": { "guid": "${w2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2 },
+        { "path": "executionResults[0].success", "eq": true, "name": "first link created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second link created" }
+      ]
+    },
+    {
+      "id": "solid links read from the Section window (were empty)",
+      "command": "GetSolidElementLinks",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${slab}" } }, { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "solidLinks", "len": 2 },
+        { "path": "solidLinks[0].solidLinksWithTheGivenTarget", "len": 2, "name": "the slab has both operators" },
+        { "path": "solidLinks[1].solidLinksWithTheGivenOperator", "len": 1, "name": "the first wall cuts one target" },
+        { "path": "solidLinks[1].solidLinksWithTheGivenOperator[0].targetId.guid", "eq": "${slab}", "name": "the slab" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the same links from the floor plan",
+      "command": "GetSolidElementLinks",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${slab}" } } ] },
+      "expect": [
+        { "path": "solidLinks[0].solidLinksWithTheGivenTarget", "len": 2, "name": "both links are in the model" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ]
+}

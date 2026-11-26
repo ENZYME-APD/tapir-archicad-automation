@@ -152,6 +152,20 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
     // the operators when their modification stamp changed.
     ElementChangeReporter changeReporter;
 
+    // ACAPI_Element_SolidLink_Create answers APIERR_BADDATABASE (-2130313110) when the current
+    // database is not the floor plan (a section, for example), while the same links are created
+    // from the floor plan (#3090). So create them in the floor plan database whatever window is
+    // active, as RemoveSolidElementLinks does (#1566); the previous database is restored after the
+    // undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+
     ACAPI_CallUndoableCommand ("CreateSolidElementLinks", [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -540,6 +554,19 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
 
     GS::ObjectState response;
     const auto& solidLinksAdder = response.AddList<GS::ObjectState> ("solidLinks");
+
+    // The solid links of the model are only listed in the floor plan database: from a section
+    // the targets and operators came back empty for elements whose links the floor plan lists
+    // (#3090). So read them there whatever window is active, as RemoveSolidElementLinks removes
+    // them (#1566), and put the previous database back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
 
     for (const GS::ObjectState& elemOs : elements) {
         const API_Guid elemGuid = GetGuidFromElementsArrayItem (elemOs);
