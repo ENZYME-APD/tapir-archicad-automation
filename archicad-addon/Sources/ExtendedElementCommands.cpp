@@ -4366,8 +4366,8 @@ const char* ShellBaseFloorPlanAndSectionSchemaProperties = R"(
                         "displayOption": { "$ref": "#/DisplayOption", "description": "Floor Plan Display of the element." },
                         "viewDepthLimitation": { "$ref": "#/ViewDepthLimitation", "description": "Show Projection: how far the element is shown on the floor plan." },
                         "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off." },
-                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's contour is shown on. Only the given fields change." },
-                        "fillVisibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's cover fill is shown on. Only the given fields change." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's contour is shown on. Only the given fields change. Archicad always shows the contour on the element's home story, so 'showOnHome' false is not applied; the item's result then fails and names it, the other details given are applied. A field Archicad does not apply is named in the result in the same way." },
+                        "fillVisibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's cover fill is shown on. Only the given fields change. A field Archicad does not apply makes the item's result fail and is named in it." },
                         "cutFillPen": { "$ref": "#/OverriddenPen", "description": "Overrides the pen of the cut fill." },
                         "cutFillBackgroundPen": { "$ref": "#/OverriddenPen", "description": "Overrides the background pen of the cut fill." },
                         "sectionContourPen": { "type": "integer", "description": "Pen of the element's contour where it is cut." },
@@ -4392,6 +4392,68 @@ void MergeStoryVisibility (const GS::ObjectState& os, API_StoryVisibility& visib
     if (os.Get ("showRelBelow", showRelBelow)) {
         visibility.showRelBelow = static_cast<short> (showRelBelow);
     }
+}
+
+// Reads a Roof or Shell back after ModifyRoofs or ModifyShells changed it, and names each field
+// of 'visibility' and 'fillVisibility' given in item that Archicad did not apply (#3091). Archicad
+// always shows the contour on the element's home story, so a contour 'showOnHome' false is
+// dropped. With the automatic story visibility on, the visibilities are recomputed, so they are
+// not compared then.
+GS::Optional<GS::UniString> GetUnappliedShellBaseVisibility (const API_Guid& guid, const GS::ObjectState& item, const char* elementName)
+{
+    if (!item.Contains ("visibility") && !item.Contains ("fillVisibility")) {
+        return {};
+    }
+    API_Element readBack = {};
+    readBack.header.guid = guid;
+    if (ACAPI_Element_Get (&readBack) != NoError) {
+        return GS::UniString ("Modified the ") + elementName + ", but failed to read it back to check 'visibility' and 'fillVisibility'.";
+    }
+    const API_ShellBaseType& base = GetElemTypeId (readBack.header) == API_RoofID ? readBack.roof.shellBase : readBack.shell.shellBase;
+    if (base.isAutoOnStoryVisibility) {
+        return {};
+    }
+
+    GS::UniString list;
+    bool contourOnHomeDropped = false;
+    const std::pair<const char*, const API_StoryVisibility*> visibilities[] = {
+        { "visibility", &base.visibilityCont },
+        { "fillVisibility", &base.visibilityFill }
+    };
+    for (const auto& visibility : visibilities) {
+        GS::ObjectState visibilityOs;
+        if (!item.Get (visibility.first, visibilityOs)) {
+            continue;
+        }
+        API_StoryVisibility requested = *visibility.second;
+        MergeStoryVisibility (visibilityOs, requested);
+        const API_StoryVisibility& actual = *visibility.second;
+        const std::pair<const char*, bool> flags[] = {
+            { "showOnHome", requested.showOnHome != actual.showOnHome },
+            { "showAllAbove", requested.showAllAbove != actual.showAllAbove },
+            { "showAllBelow", requested.showAllBelow != actual.showAllBelow },
+            { "showRelAbove", requested.showRelAbove != actual.showRelAbove },
+            { "showRelBelow", requested.showRelBelow != actual.showRelBelow }
+        };
+        for (const auto& flag : flags) {
+            if (!flag.second) {
+                continue;
+            }
+            list += (list.IsEmpty () ? "" : ", ") + GS::UniString (visibility.first) + "." + flag.first;
+            if (visibility.second == &base.visibilityCont && &flag == &flags[0] && !requested.showOnHome) {
+                contourOnHomeDropped = true;
+            }
+        }
+    }
+    if (list.IsEmpty ()) {
+        return {};
+    }
+    GS::UniString message = "Archicad did not apply " + list + " to the " + elementName + ".";
+    if (contourOnHomeDropped) {
+        message += " Archicad always shows the contour on the element's home story, so 'visibility.showOnHome' stays true; use 'fillVisibility' to hide the cover fill there.";
+    }
+    message += " The other details given were applied.";
+    return message;
 }
 
 GS::Optional<GS::UniString> CheckLineTypeId (const GS::ObjectState& details, const char* key)
@@ -21221,8 +21283,13 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             const API_Guid roofGuid = element.header.guid;
             const auto checkSegmentation = [&] (const GS::ObjectState& result) -> GS::ObjectState {
                 bool success = false;
-                if ((!segmentationGiven && !fitSkylightGiven) || !result.Get ("success", success) || !success) {
+                if (!result.Get ("success", success) || !success) {
                     return result;
+                }
+                // The story visibilities Archicad did not apply, e.g. the contour's showOnHome (#3091).
+                const auto visibilityError = GetUnappliedShellBaseVisibility (roofGuid, item, "Roof");
+                if (visibilityError.HasValue ()) {
+                    return CreateFailedExecutionResult (APIERR_GENERAL, visibilityError.Get ());
                 }
                 if (segmentationGiven) {
                     const auto checkError = CheckRoofSegmentation (roofGuid, item);
@@ -21583,7 +21650,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
                     polygonMemo.contourIDs = memo.contourIDs;
                     err = ACAPI_Element_ChangeMemo (element.header.guid, APIMemoMask_Polygon | APIMemoMask_EdgeTrims | APIMemoMask_SideMaterials | APIMemoMask_RoofEdgeTypes, &polygonMemo);
-                    results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
+                    results.Push (checkSegmentation (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry.")));
                     continue;
                 }
 
@@ -21987,7 +22054,13 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 memoMask = cutPolygonsChanged ? (APIMemoMask_Polygon | APIMemoMask_EdgeTrims) : APIMemoMask_Polygon;
             }
             err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoMask, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify shell."));
+                continue;
+            }
+            // The story visibilities Archicad did not apply, e.g. the contour's showOnHome (#3091).
+            const auto visibilityError = GetUnappliedShellBaseVisibility (element.header.guid, item, "Shell");
+            results.Push (visibilityError.HasValue () ? CreateFailedExecutionResult (APIERR_GENERAL, visibilityError.Get ()) : CreateSuccessfulExecutionResult ());
         }
     });
 }
