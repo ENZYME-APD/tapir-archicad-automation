@@ -101,6 +101,11 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+
+private:
+    // The segment length schemes SetTypeSpecificParameters gave the item being created, written
+    // again by AfterCreate when Archicad stored other ones (#3086).
+    mutable GS::Array<API_AssemblySegmentSchemeData> requestedSchemes;
 };
 
 class CreateStairsCommand : public CreateElementsCommandBase

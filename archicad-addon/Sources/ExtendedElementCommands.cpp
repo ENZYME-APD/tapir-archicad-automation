@@ -8773,6 +8773,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
+    requestedSchemes.Clear ();
     const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
     if (layerError.HasValue ()) {
         return layerError;
@@ -8896,7 +8897,74 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
         }
     }
 
+    // The lengths given by segmentCount or segments, which AfterCreate checks on the new beam (#3086).
+    if ((parameters.Contains ("segmentCount") || !segments.IsEmpty ()) && memo.assemblySegmentSchemes != nullptr) {
+        const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+        for (GSSize i = 0; i < nSchemes; ++i) {
+            requestedSchemes.Push (memo.assemblySegmentSchemes[i]);
+        }
+    }
+
     return {};
+}
+
+// Whether a stored length scheme gives the segment the length that was asked for: only the value
+// of its lengthType counts, as in ApplyAssemblySegmentLength.
+static bool IsSameAssemblySegmentLength (const API_AssemblySegmentSchemeData& stored, const API_AssemblySegmentSchemeData& requested)
+{
+    constexpr double Tolerance = 1e-6;
+    if (stored.lengthType != requested.lengthType) {
+        return false;
+    }
+    if (requested.lengthType == APIAssemblySegment_Fixed) {
+        return std::fabs (stored.fixedLength - requested.fixedLength) <= Tolerance;
+    }
+    if (requested.lengthType == APIAssemblySegment_Proportional) {
+        return std::fabs (stored.lengthProportion - requested.lengthProportion) <= Tolerance;
+    }
+    return true;
+}
+
+// ACAPI_Element_Create does not keep the proportional lengths of a beam with several segments:
+// three segments of 1/3 each are stored as 2/9, 4/9 and 1/3 (#3086). The lengths CreateBeams gave
+// are written again on the new beam, as ModifyBeams writes the lengths of an existing beam.
+static GSErrCode RewriteBeamSegmentSchemes (const API_Guid& beamGuid, const GS::Array<API_AssemblySegmentSchemeData>& requestedSchemes)
+{
+    API_Element element = {};
+    element.header.guid = beamGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (beamGuid, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.beamSegments == nullptr || memo.assemblySegmentSchemes == nullptr) {
+        return APIERR_GENERAL;
+    }
+    const GSSize nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    if (nSchemes != static_cast<GSSize> (requestedSchemes.GetSize ())) {
+        return APIERR_GENERAL;
+    }
+
+    bool changed = false;
+    for (GSSize i = 0; i < nSchemes; ++i) {
+        if (!IsSameAssemblySegmentLength (memo.assemblySegmentSchemes[i], requestedSchemes[static_cast<UIndex> (i)])) {
+            memo.assemblySegmentSchemes[i] = requestedSchemes[static_cast<UIndex> (i)];
+            changed = true;
+        }
+    }
+    if (!changed) {
+        return NoError;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    return ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme, true);
 }
 
 // A beam whose segmentCount Archicad did not keep is deleted again and the item fails (#2678).
@@ -8914,6 +8982,13 @@ GSErrCode CreateBeamsCommand::AfterCreate (const API_Element& requestedElement, 
         }
         if (created.beam.nSegments != requestedElement.beam.nSegments) {
             return APIERR_GENERAL;
+        }
+    }
+
+    if (!requestedSchemes.IsEmpty ()) {
+        const GSErrCode err = RewriteBeamSegmentSchemes (newElementGuid, requestedSchemes);
+        if (err != NoError) {
+            return err;
         }
     }
 
