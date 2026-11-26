@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 14:45 UTC",
+ "generatedAt": "2026-11-26 15:03 UTC",
  "versions": [
   25,
   26,
@@ -387,7 +387,12 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3079,
+     "title": "Script-backed file types: \"Import as Drawing\" (with update), Open and Merge, and drag and drop onto the plan"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_InstallFileTypeHandler3D",
@@ -735,7 +740,12 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3080,
+     "title": "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_RegisterClassificationVisibilityHandler",
@@ -773,7 +783,12 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3079,
+     "title": "Script-backed file types: \"Import as Drawing\" (with update), Open and Merge, and drag and drop onto the plan"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_RegisterInfoBoxPanel",
@@ -849,7 +864,12 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3078,
+     "title": "Publisher: a script-backed output format (post-process published files with a Python script)"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_RegisterRequiredService",
@@ -6253,7 +6273,12 @@
    "status": "not applicable",
    "reason": "temporary drawing-data database of the add-on, only useful inside one add-on call",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3079,
+     "title": "Script-backed file types: \"Import as Drawing\" (with update), Open and Merge, and drag and drop onto the plan"
+    }
+   ]
   },
   {
    "id": "ACAPI_Drawing_StopDrawingData",
@@ -12487,7 +12512,12 @@
    "status": "not applicable",
    "reason": "add-on registration at startup",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3080,
+     "title": "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryPart_Save",
@@ -20307,7 +20337,12 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 3078,
+     "title": "Publisher: a script-backed output format (post-process published files with a Python script)"
+    }
+   ]
   },
   {
    "id": "ACAPI_AddOnIntegration_RegisterAttributeImportFormat",
@@ -25314,6 +25349,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3077,
+     "title": "SetDetailsOfElements: write a Drawing's update type (manualUpdate); ChangeDrawingLink keeps it"
+    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -37375,6 +37414,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3077,
+     "title": "SetDetailsOfElements: write a Drawing's update type (manualUpdate); ChangeDrawingLink keeps it"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
