@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 16:56 UTC",
+ "generatedAt": "2026-11-26 17:32 UTC",
  "versions": [
   25,
   26,
@@ -740,12 +740,7 @@
    "status": "not applicable",
    "reason": "add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 3080,
-     "title": "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnIntegration_RegisterClassificationVisibilityHandler",
@@ -12512,12 +12507,7 @@
    "status": "not applicable",
    "reason": "add-on registration at startup",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 3080,
-     "title": "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Save",

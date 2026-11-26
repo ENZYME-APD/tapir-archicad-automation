@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1447 | 1441 | 6 |  |  |  | 11 | 369 |
 
-Archicad 25–30 DevKits; updated 2026-11-26 16:56 UTC.
+Archicad 25–30 DevKits; updated 2026-11-26 17:32 UTC.
 
 | | Status |
 |---|---|
@@ -450,7 +450,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryPart_Register` – Registers a Library Part. <sub>(was `ACAPI_LibPart_Register`)</sub>
 - ⛔ `ACAPI_LibraryPart_RegisterAll` – Registers an array of Library Parts. <sub>(was `ACAPI_LibPart_RegisterAll`)</sub> *(ACAPI_LibraryPart_Save already registers the parts Tapir creates, and AddFilesToEmbeddedLibrary registers its files one by one)*
 - ➖ `ACAPI_LibraryPart_RegisterESYM` <sub>AC27–30</sub> – Registers an external symbol type with Archicad. *(add-on registration at startup)*
-- ➖ `ACAPI_LibraryPart_RegisterSubtype` <sub>AC27–30</sub> – Registers a new library part subtype. — [#3080](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3080 "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes") *(add-on registration at startup)*
+- ➖ `ACAPI_LibraryPart_RegisterSubtype` <sub>AC27–30</sub> – Registers a new library part subtype. *(add-on registration at startup)*
 - ✅ `ACAPI_LibraryPart_Save` <sub>AC27–30</sub> – Saves the Library Part that has been created and registers it.
 - ✅ `ACAPI_LibraryPart_Search` <sub>AC27–30</sub> – Searches for a registered Library Part in the loaded libraries.
 - ✅ `ACAPI_LibraryPart_SetDetails_ParamDef` – Sets the detail parameters of a Library Part parameter section handle. <sub>(was `ACAPI_LibPart_SetDetails_ParamDef`)</sub>
@@ -565,7 +565,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_AddOnIntegration_InstallPublisherTranslatorGetter` <sub>AC27–30</sub> – Installs the translator getter function for the Publisher *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
 - ➖ `ACAPI_AddOnIntegration_InstallSettingsHandler` <sub>AC27–30</sub> – Installs the create and destroy handlers for the registered settings observer. *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
 - ➖ `ACAPI_AddOnIntegration_RegisterAttributePanel` <sub>AC27–30</sub> – Appends a custom panel to an attribute settings dialog. *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
-- ➖ `ACAPI_AddOnIntegration_RegisterBuiltInLibrary` <sub>AC27–30</sub> – Registers built-in library parts to be loaded. — [#3080](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3080 "Libraries shipped with Tapir tools: read-only built-in library and custom object subtypes") *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
+- ➖ `ACAPI_AddOnIntegration_RegisterBuiltInLibrary` <sub>AC27–30</sub> – Registers built-in library parts to be loaded. *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
 - ➖ `ACAPI_AddOnIntegration_RegisterClassificationVisibilityHandler` <sub>AC27–30</sub> – Tells Archicad that your add-on wants to modify classification visibility. *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
 - ➖ `ACAPI_AddOnIntegration_RegisterFileType` <sub>AC27–30</sub> – Registers a file type for I/O type add-ons. — [#3079](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3079 "Script-backed file types: Import as Drawing (with update), Open and Merge, and drag and drop onto the plan") *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
 - ➖ `ACAPI_AddOnIntegration_RegisterInfoBoxPanel` <sub>AC27–30</sub> – Appends a custom panel to the info box. *(add-on registration and menus: tells Archicad, while the add-on loads, which menus, tools and commands it adds; by the time a JSON command runs, Tapir is already registered)*
