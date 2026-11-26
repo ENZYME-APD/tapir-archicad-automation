@@ -1,0 +1,165 @@
+{
+  "title": "SetClassificationsOfElements says why it cannot classify an element on a hidden layer (#3092)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [ "Column" ],
+  "steps": [
+    {
+      "id": "create a system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check system 3092", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sys": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "create T1",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T1", "name": "Tapir check item 3092", "description": "" } }
+        ]
+      },
+      "save": { "t1": "classificationItemIds[0].classificationItemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "T1 created" }
+      ]
+    },
+    {
+      "id": "a shown layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer 3092", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "index of the layer",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "save": { "layerIndex": "layers[0].index" },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": false, "name": "the layer is shown" }
+      ]
+    },
+    {
+      "id": "a column on that layer, away from the origin",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "layerIndex": "${layerIndex}", "floorIndex": 0, "coordinates": { "x": 960.0, "y": 960.0, "z": 0.0 }, "height": 3.0 }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "hide the layer",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "attributeId": { "guid": "${layer}" }, "name": "Tapir check layer 3092", "isHidden": true, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      }
+    },
+    {
+      "id": "the layer is hidden",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": true, "name": "the layer is hidden" }
+      ]
+    },
+    {
+      "id": "dry run: classify the column on the hidden layer",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${c1}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the dry run reports the refusal" },
+        { "path": "executionResults[0].error.message", "contains": "its layer is hidden", "name": "the dry run says the layer is hidden" }
+      ]
+    },
+    {
+      "id": "classify the column on the hidden layer",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${c1}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the change is refused" },
+        { "path": "executionResults[0].error.message", "contains": "its layer is hidden", "name": "the error says the layer is hidden" }
+      ]
+    },
+    {
+      "id": "show the layer again",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "attributeId": { "guid": "${layer}" }, "name": "Tapir check layer 3092", "isHidden": false, "isLocked": false }
+        ],
+        "overwriteExisting": true
+      }
+    },
+    {
+      "id": "classify the column on the shown layer",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${c1}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the change is made once the layer is shown" }
+      ]
+    },
+    {
+      "id": "the column is classified T1",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1}" } } ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "expect": [
+        { "path": "elementClassifications[0].classificationIds[0].classificationItemId.guid", "eq": "${t1}", "name": "T1 read back" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ] } }
+  ]
+}

@@ -253,6 +253,36 @@ static GS::ObjectState CreateClassificationIdObjectState (const API_Guid& system
     return classificationId;
 }
 
+// Archicad refuses to change the classification of an element on a hidden layer with
+// APIERR_READONLY (#3092), which says nothing about the layer; the refusal is explained like an
+// element edit refusal (hidden or locked layer, Teamwork reservation, Edit > Locking).
+static GS::UniString GetClassificationChangeFailureMessage (GSErrCode err, const API_Guid& elemGuid, const char* message)
+{
+    API_Elem_Head elemHead = {};
+    elemHead.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+        return message;
+    }
+    const GS::UniString refusal = DescribeElementEditRefusal (err == APIERR_READONLY ? APIERR_GENERAL : err, elemHead);
+    if (refusal.IsEmpty ()) {
+        return message;
+    }
+    return GS::UniString (message) + ", because " + refusal;
+}
+
+static bool IsElementOnHiddenLayer (const API_Guid& elemGuid)
+{
+    API_Elem_Head elemHead = {};
+    elemHead.guid = elemGuid;
+    if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+        return false;
+    }
+    API_Attribute layerAttr = {};
+    layerAttr.header.typeID = API_LayerID;
+    layerAttr.header.index = elemHead.layer;
+    return ACAPI_Attribute_Get (&layerAttr) == NoError && (layerAttr.header.flags & APILay_Hidden) != 0;
+}
+
 GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementClassifications;
@@ -308,6 +338,11 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                         executionResults (CreateFailedExecutionResult (err, "Failed to set classification item for element"));
                         continue;
                     }
+                    // Archicad refuses the write on a hidden layer (#3092), so the dry run does too.
+                    if (IsElementOnHiddenLayer (elemGuid)) {
+                        executionResults (CreateFailedExecutionResult (APIERR_READONLY, "Failed to set classification item for element, because its layer is hidden"));
+                        continue;
+                    }
                     executionResults (CreateWouldChangeExecutionResult (GS::ObjectState (
                         "oldValue", CreateClassificationIdObjectState (system.guid, oldItem.guid),
                         "newValue", CreateClassificationIdObjectState (system.guid, classificationItemGuid))));
@@ -316,7 +351,7 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
 
                 const GSErrCode err = ACAPI_Element_AddClassificationItem (elemGuid, classificationItemGuid);
                 if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to set classification item for element"));
+                    executionResults (CreateFailedExecutionResult (err, GetClassificationChangeFailureMessage (err, elemGuid, "Failed to set classification item for element")));
                     continue;
                 }
             } else {
@@ -345,7 +380,7 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                 if (item.guid != APINULLGuid) {
                     err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
                     if (err != NoError) {
-                        executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
+                        executionResults (CreateFailedExecutionResult (err, GetClassificationChangeFailureMessage (err, elemGuid, "Failed to remove classification item for element")));
                         continue;
                     }
                 }
