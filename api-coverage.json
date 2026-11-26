@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 15:03 UTC",
+ "generatedAt": "2026-11-26 16:02 UTC",
  "versions": [
   25,
   26,
@@ -25350,10 +25350,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3077,
-     "title": "SetDetailsOfElements: write a Drawing's update type (manualUpdate); ChangeDrawingLink keeps it"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37414,10 +37410,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3077,
-     "title": "SetDetailsOfElements: write a Drawing's update type (manualUpdate); ChangeDrawingLink keeps it"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
