@@ -1,0 +1,221 @@
+{
+  "title": "SetDetailsOfElements writes a Drawing's update type (manualUpdate), GetDetailsOfElements reads it back, and ChangeDrawingLink keeps it on the new Drawing (#3076)",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": {
+        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset for the layout",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": { "subsetsData": [ { "name": "Tapir check drawing update type" } ] },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
+    },
+    {
+      "id": "subset second in the Layout Book",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${subset}" },
+        "parentNavigatorItemId": { "guid": "${bookRoot}" },
+        "previousNavigatorItemId": { "guid": "${bookFirst}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "source worksheets",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check update type one", "referenceId": "TCUT1" },
+          { "name": "Tapir check update type two", "referenceId": "TCUT2" }
+        ]
+      },
+      "save": {
+        "ws1Db": "databases[0].databaseId.guid",
+        "ws1": "databases[0].navigatorItemId.guid",
+        "ws2Db": "databases[1].databaseId.guid",
+        "ws2": "databases[1].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "content in worksheet one",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${ws1Db}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 2, "y": 0 }, { "x": 2, "y": 1 } ] } ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "content in worksheet two",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${ws2Db}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 3, "y": 0 }, { "x": 3, "y": 2 } ] } ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "layout in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check drawing update type layout",
+            "masterLayoutName": "Tapir check drawing update type master",
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "paperWidth": 420,
+            "paperHeight": 297
+          }
+        ]
+      },
+      "save": { "layoutDb": "databases[0].databaseId.guid" }
+    },
+    {
+      "id": "the layout in the Layout Book",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": { "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check drawing update type layout" }
+      ]
+    },
+    {
+      "id": "master of the layout",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layoutDb}" } } ] },
+      "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
+    },
+    {
+      "id": "Drawing of worksheet one on the layout",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws1}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.1, "y": 0.08 },
+            "scale": 1,
+            "angle": 0
+          }
+        ]
+      },
+      "save": { "drawing": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "switch the Drawing to Manual",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${drawing}" }, "details": { "typeSpecificDetails": { "manualUpdate": true } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the Drawing is Manual",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].details.manualUpdate", "eq": true }
+      ]
+    },
+    {
+      "id": "switch the Drawing to Automatic",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${drawing}" }, "details": { "typeSpecificDetails": { "manualUpdate": false } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the Drawing is Automatic",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.manualUpdate", "eq": false }
+      ]
+    },
+    {
+      "id": "switch the Drawing back to Manual",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          { "elementId": { "guid": "${drawing}" }, "details": { "typeSpecificDetails": { "manualUpdate": true } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "relink the Manual Drawing to worksheet two",
+      "command": "ChangeDrawingLink",
+      "params": {
+        "drawingsWithNewLinks": [
+          {
+            "elementId": { "guid": "${drawing}" },
+            "navigatorItemId": { "guid": "${ws2}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" }
+          }
+        ]
+      },
+      "save": { "relinked": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "id of the new Drawing" }
+      ]
+    },
+    {
+      "id": "the relinked Drawing is still Manual",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${relinked}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].details.manualUpdate", "eq": true, "name": "update type kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ChangeWindow", "params": { "windowType": "FloorPlan" } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws1}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws2}" } } ] } }
+  ]
+}

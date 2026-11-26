@@ -1616,6 +1616,9 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item, API_Coord*
     // undoable command, is unreliable) - which is also why ChangeDrawingLink passes them here.
     item.Get ("angle", element.drawing.angle);
     item.Get ("drawingScale", element.drawing.drawingScale);
+    // The Drawing Manager's Update Type. Only ChangeDrawingLink passes it, to keep the old
+    // Drawing's (#3076); without it the Drawing tool's default is kept.
+    item.Get ("manualUpdate", element.drawing.manualUpdate);
     const GS::ObjectState* modelOffsetState = item.Get ("modelOffset");
     if (modelOffsetState != nullptr) {
         element.drawing.modelOffset = Get2DCoordinateFromObjectState (*modelOffsetState);
@@ -1906,7 +1909,7 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
 // references to the old guid (dimensions, markers, IDs) will need updating separately.
 //
 // All of the old Drawing's appearance (pos, angle, ratio, drawingScale, modelOffset,
-// nameType, clipPolygon) is set on the new element BEFORE creation (via CreateOneDrawing), not through
+// nameType, clipPolygon) and its update type (manualUpdate) is set on the new element BEFORE creation (via CreateOneDrawing), not through
 // a follow-up ACAPI_Element_Change - calling Change on an element immediately after creating
 // it, within the same undoable command, crashed Archicad's command layer in testing.
 //
@@ -2072,6 +2075,7 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
             newDrawingItem.Add ("modelOffset", Create2DCoordinateObjectState (oldElement.drawing.modelOffset));
+            newDrawingItem.Add ("manualUpdate", oldElement.drawing.manualUpdate);
             // anchorPoint/useOwnOriginAsAnchor are deliberately NOT carried over here.
             // oldElement.drawing.anchorPoint cannot tell a deliberately set anchor from Archicad's
             // own default: a Drawing whose anchor was never touched already reads back BottomLeft

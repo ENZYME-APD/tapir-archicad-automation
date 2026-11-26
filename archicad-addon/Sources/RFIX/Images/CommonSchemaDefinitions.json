@@ -15137,7 +15137,7 @@
             },
             "manualUpdate": {
                 "type": "boolean",
-                "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic. Read-only."
+                "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic. SetDetailsOfElements writes it, and ChangeDrawingLink gives the new Drawing the old one's."
             },
             "storedInProject": {
                 "type": "boolean",
@@ -19792,6 +19792,10 @@
             "useOwnOriginAsAnchor": {
                 "type": "boolean",
                 "description": "Whether the drawing is placed by its own origin instead of anchorPoint (API_DrawingType::useOwnOrigoAsAnchor)."
+            },
+            "manualUpdate": {
+                "type": "boolean",
+                "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic (API_DrawingType::manualUpdate). The item fails when Archicad keeps the old value."
             }
         },
         "additionalProperties": false

@@ -5342,11 +5342,13 @@ struct RequestedDrawingSettings {
     GS::Optional<bool>                        isTransparentBk;
     GS::Optional<double>                      rasterizeDPI;
     GS::Optional<bool>                        useOwnOrigoAsAnchor;
+    GS::Optional<bool>                        manualUpdate;
 
     bool HasValue () const
     {
         return penTableUsageMode.HasValue () || penTableIndex.HasValue () || colorMode.HasValue () ||
-            isTransparentBk.HasValue () || rasterizeDPI.HasValue () || useOwnOrigoAsAnchor.HasValue ();
+            isTransparentBk.HasValue () || rasterizeDPI.HasValue () || useOwnOrigoAsAnchor.HasValue () ||
+            manualUpdate.HasValue ();
     }
 
     // The names of the given settings the drawing does not have, comma separated; empty when all were taken.
@@ -5365,6 +5367,8 @@ struct RequestedDrawingSettings {
             names.Push ("rasterizeDPI");
         if (useOwnOrigoAsAnchor.HasValue () && drawing.useOwnOrigoAsAnchor != *useOwnOrigoAsAnchor)
             names.Push ("useOwnOriginAsAnchor");
+        if (manualUpdate.HasValue () && drawing.manualUpdate != *manualUpdate)
+            names.Push ("manualUpdate");
 
         GS::UniString result;
         for (const GS::UniString& name : names) {
@@ -5802,6 +5806,11 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (typeSpecificDetails->Get ("rasterizeDPI", elem.drawing.rasterizeDPI)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, rasterizeDPI);
                             requestedDrawingSettings.rasterizeDPI = elem.drawing.rasterizeDPI;
+                        }
+                        // The Drawing Manager's Update Type (#3076): true is Manual, false Automatic.
+                        if (typeSpecificDetails->Get ("manualUpdate", elem.drawing.manualUpdate)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, manualUpdate);
+                            requestedDrawingSettings.manualUpdate = elem.drawing.manualUpdate;
                         }
                         // Drawing Settings > Size and Display: the anchor point the drawing is
                         // placed by. Graphisoft support confirmed ACAPI_Element_Change resets
