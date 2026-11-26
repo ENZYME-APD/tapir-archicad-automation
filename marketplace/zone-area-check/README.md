@@ -18,6 +18,19 @@ tolerance in percent, and highlights the zones that are over, under and on targe
    *Only over and under* hides the other zones.
 6. *Export...* saves the list as an Excel workbook (`.xlsx`) or a CSV file. *Clear highlight*
    removes the highlight; closing the window removes it too.
+7. *Dimension perimeters* places a linear dimension along each straight edge of the zones: those
+   of the selected rows, or every zone in the *Zones* scope when no row is selected (you do not
+   need to press *Check* first). Each dimension runs along its edge, attached to the zone's two
+   corners, with its line inside the room at the *Offset from the edge*, on the zone's story.
+   - Parallel edges of the same length (within 1 mm) in one zone, such as the opposite sides of a
+     rectangular room, get one dimension.
+   - An edge that already has a dimension (the same two points, the same direction) is skipped,
+     so pressing it again adds no second set. A wall face shared by two zones is dimensioned in
+     both rooms, because each room's zone ends at its own face of the wall.
+   - Under *Perimeter dimensions* choose a Dimension *Favorite* and a *Layer* (otherwise the
+     Dimension tool defaults are used), the *Offset from the edge*, the *Shortest edge* to
+     dimension (shorter jogs are skipped) and *Also the edges of holes*.
+   - The *Dimensions* column of the list and the export say what was done with each zone.
 
 The target property's value is read as a number, with a comma or a point as the decimal
 separator.
@@ -26,18 +39,27 @@ separator.
 
 - *Zones*: *Whole project*; *Measured area*: *Calculated area (as in the Zone Stamp)*.
 - *Target unit*: m²; *Tolerance (%)*: 5; *Only over and under*: off.
+- *Favorite* and *Layer*: the Dimension tool defaults; *Offset from the edge*: 0.3 m; *Shortest
+  edge*: 0.1 m; *Also the edges of holes*: off.
 
 ## What it changes
 
-Nothing in the project: the highlight is not saved, and *Select in Archicad* only changes the
-selection. *Export...* writes one file, where you choose in the save dialog; its default name is
-`Zone area check <date> <time>.xlsx`, with each zone's GUID.
+*Check* changes nothing in the project: the highlight is not saved, and *Select in Archicad* only
+changes the selection. *Dimension perimeters* adds Dimension elements to the project (*Edit > Undo*
+removes them). *Export...* writes one file, where you choose in the save dialog; its default name
+is `Zone area check <date> <time>.xlsx`, with each zone's GUID.
 
 ## Limits
 
 - A zone without a target value, or with a target of 0, is listed as *No target* and not
   highlighted.
-- Works in Archicad 25 to 30 with Tapir 1.8.0 or later. In Archicad 25 the other zones are not
+- *Dimension perimeters* skips curved edges, and zones whose boundary is measured to the walls'
+  reference lines (it lists them in the status line and the *Dimensions* column), since their
+  dimensions would run to the wall centres, not the wall faces.
+- When Archicad does not attach a dimension to the zone's corners, the dimension is placed with
+  fixed points instead and does not follow the zone when it changes; the status line says how
+  many.
+- Works in Archicad 25 to 30 with Tapir 2.0.1 or later. In Archicad 25 the other zones are not
   dimmed.
 - It needs the `utilities/` and `aclib/` folders of
   [`builtin-scripts/`](../../builtin-scripts/) next to it (see
@@ -45,4 +67,5 @@ selection. *Export...* writes one file, where you choose in the save dialog; its
 
 ## Credits
 
-Requested by @parikshit99 in #2007, written with the Tapir issue bot.
+Requested by @parikshit99 in #2007, written with the Tapir issue bot. *Dimension perimeters*
+requested by @parikshit99 in #3074.
