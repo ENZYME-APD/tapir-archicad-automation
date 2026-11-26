@@ -561,6 +561,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `Fixes #<n>`) skips the waiting time, and its merge starts `weekly_release.yml`;
   `claude_pr_review.yml` starts auto-merge when it records a passing verdict, so the
   merge follows the review at once.
+- `schema_refinement.yml` — keep the PR draft, review it, then run manually from
+  `main` with its PR number and `merge=true`. After validation and existing checks
+  pass, it marks the PR ready and requests a merge. No description marker is needed.
+  The default `merge=false` checks only and leaves draft status unchanged.
+  CLI: `gh workflow run schema_refinement.yml --ref main -f pr=123 -f merge=true`.
+  Results and differences appear in PR comments and the `schema-report` download.
+  The PR head is pinned; a main change after the final check can still race.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)
