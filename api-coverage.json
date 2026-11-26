@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 22:35 UTC",
+ "generatedAt": "2026-11-26 23:31 UTC",
  "versions": [
   25,
   26,
@@ -5783,10 +5783,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3097,
-     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6750,10 +6746,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3097,
-     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7004,10 +6996,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3097,
-     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -7294,10 +7282,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3097,
-     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
-    },
     {
      "number": 3096,
      "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
@@ -7822,10 +7806,6 @@
      "title": "SetClassificationsOfElements: say when the element's layer is hidden"
     },
     {
-     "number": 3094,
-     "title": "CreateGroups: name the stories when elements are on different stories"
-    },
-    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     }
@@ -7872,14 +7852,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3097,
-     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
-    },
-    {
-     "number": 3093,
-     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -10428,12 +10400,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3094,
-     "title": "CreateGroups: name the stories when elements are on different stories"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10456,12 +10423,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3094,
-     "title": "CreateGroups: name the stories when elements are on different stories"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31019,10 +30981,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3093,
-     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -44134,10 +44092,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3093,
-     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47257,10 +47211,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3093,
-     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
