@@ -2626,10 +2626,14 @@
             },
             "profileModifiers": {
                 "type": "array",
-                "description": "The offset modifiers of the profile with the values this element has, measured on its stretched profile the way GetProfiles measures them on the profile attribute. Empty when the stretched profile Archicad returns carries no modifiers. A modifier whose dimension crosses a stretch zone includes the stretch.",
+                "description": "The offset modifiers of the profile with the values this element has, measured the way GetProfiles measures them on the profile attribute: on the element's stretched profile, or, when the stretched profile Archicad returns carries no modifiers, on the element's original (unstretched) profile (see modifiersIncludeStretch). Empty when neither carries modifiers.",
                 "items": {
                     "$ref": "#/ProfileModifier"
                 }
+            },
+            "modifiersIncludeStretch": {
+                "type": "boolean",
+                "description": "True when profileModifiers were measured on the stretched profile, so a modifier whose dimension crosses a stretch zone includes the stretch; false when they were measured on the element's original (unstretched) profile, without the stretch. Absent when neither profile carries modifiers."
             }
         },
         "additionalProperties": false,

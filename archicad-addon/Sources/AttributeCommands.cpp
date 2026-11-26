@@ -14955,9 +14955,15 @@ GS::ObjectState RenameAttributesCommand::Execute (const GS::ObjectState& paramet
 
 // One item of GetProfileValuesOfElements (#2587): a profile as an element uses it, measured on
 // the element's stretched profile. The modifier names come from the profile attribute profileAttr;
-// segmentIndex is the beam or column segment, or -1 for a wall.
-static GS::ObjectState GetElementProfileValue (const ProfileVectorImage& stretchedProfile, const API_AttributeIndex& profileAttr, Int32 segmentIndex)
+// segmentIndex is the beam or column segment, or -1 for a wall. Either profile may be null, not
+// both. The size is measured on the stretched profile, else on the original one. Archicad may
+// return a stretched profile without the offset modifiers of the original (#3085); the modifiers
+// are then measured on the element's original (unstretched) profile, and modifiersIncludeStretch
+// says which one they come from.
+static GS::ObjectState GetElementProfileValue (const ProfileVectorImage* stretchedProfile, const ProfileVectorImage* originalProfile, const API_AttributeIndex& profileAttr, Int32 segmentIndex)
 {
+    const ProfileVectorImage& sizeProfile = stretchedProfile != nullptr ? *stretchedProfile : *originalProfile;
+
     GS::ObjectState profile;
     if (segmentIndex >= 0) {
         profile.Add ("segmentIndex", segmentIndex);
@@ -14966,15 +14972,25 @@ static GS::ObjectState GetElementProfileValue (const ProfileVectorImage& stretch
     if (profileId.HasValue ()) {
         profile.Add ("profileId", *profileId);
     }
-    const Box2DData bounds = stretchedProfile.GetBuildingBounds ();
+    const Box2DData bounds = sizeProfile.GetBuildingBounds ();
     profile.Add ("width", bounds.xMax - bounds.xMin);
     profile.Add ("height", bounds.yMax - bounds.yMin);
+
+    const ProfileVectorImage* modifiersProfile = nullptr;
+    if (stretchedProfile != nullptr && !stretchedProfile->GetParameterTable ().IsEmpty ()) {
+        modifiersProfile = stretchedProfile;
+    } else if (originalProfile != nullptr && !originalProfile->GetParameterTable ().IsEmpty ()) {
+        modifiersProfile = originalProfile;
+    }
 
     API_AttributeDefExt profileDefs = {};
     const bool hasDefs = IsPositiveAttributeIndex (profileAttr) && ACAPI_Attribute_GetDefExt (API_ProfileID, profileAttr, &profileDefs) == NoError;
     const auto& modifiersList = profile.AddList<GS::ObjectState> ("profileModifiers");
-    for (const GS::ObjectState& modifier : GetProfileModifiers (stretchedProfile, hasDefs ? profileDefs.profile_vectorImageParameterNames : nullptr)) {
-        modifiersList (modifier);
+    if (modifiersProfile != nullptr) {
+        profile.Add ("modifiersIncludeStretch", modifiersProfile == stretchedProfile);
+        for (const GS::ObjectState& modifier : GetProfileModifiers (*modifiersProfile, hasDefs ? profileDefs.profile_vectorImageParameterNames : nullptr)) {
+            modifiersList (modifier);
+        }
     }
     if (hasDefs) {
         ACAPI_DisposeAttrDefsHdlsExt (&profileDefs);
@@ -15066,19 +15082,20 @@ GS::ObjectState GetProfileValuesOfElementsCommand::Execute (const GS::ObjectStat
         const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
         if (typeId == API_WallID) {
             if (element.wall.modelElemStructureType == API_ProfileStructure) {
-                err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_StretchedProfile);
+                err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_StretchedProfile | APIMemoMask_CustomOrigProfile);
                 if (err != NoError) {
                     profileValuesOfElements (CreateErrorResponse (err, "Failed to get the stretched profile of the wall."));
                     continue;
                 }
-                if (memo.stretchedProfile != nullptr) {
-                    profiles.Push (GetElementProfileValue (*memo.stretchedProfile, element.wall.profileAttr, -1));
+                if (memo.stretchedProfile != nullptr || memo.customOrigProfile != nullptr) {
+                    profiles.Push (GetElementProfileValue (memo.stretchedProfile, memo.customOrigProfile, element.wall.profileAttr, -1));
                 }
             }
         } else {
             // A beam or column keeps a profile per Profile segment, each naming its segment.
             const bool isBeam = typeId == API_BeamID;
-            err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_AssemblySegmentProfile | (isBeam ? APIMemoMask_BeamSegment : APIMemoMask_ColumnSegment));
+            err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_AssemblySegmentProfile | APIMemoMask_StretchedProfile | APIMemoMask_CustomOrigProfile |
+                (isBeam ? APIMemoMask_BeamSegment : APIMemoMask_ColumnSegment));
             if (err != NoError) {
                 profileValuesOfElements (CreateErrorResponse (err, "Failed to get the segment profiles of the element."));
                 continue;
@@ -15089,7 +15106,7 @@ GS::ObjectState GetProfileValuesOfElementsCommand::Execute (const GS::ObjectStat
             const GSSize nProfiles = memo.assemblySegmentProfiles == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentProfiles)) / sizeof (API_AssemblySegmentProfileData);
             for (GSSize i = 0; i < nProfiles; ++i) {
                 const API_AssemblySegmentProfileData& segmentProfile = memo.assemblySegmentProfiles[i];
-                if (segmentProfile.stretchedProfile == nullptr) {
+                if (segmentProfile.stretchedProfile == nullptr && segmentProfile.customOrigProfile == nullptr) {
                     continue;
                 }
                 const GSSize segmentIndex = static_cast<GSSize> (segmentProfile.segmentIndex);
@@ -15099,7 +15116,27 @@ GS::ObjectState GetProfileValuesOfElementsCommand::Execute (const GS::ObjectStat
                         ? memo.beamSegments[segmentIndex].assemblySegmentData.profileAttr
                         : memo.columnSegments[segmentIndex].assemblySegmentData.profileAttr;
                 }
-                profiles.Push (GetElementProfileValue (*segmentProfile.stretchedProfile, profileAttr, static_cast<Int32> (segmentProfile.segmentIndex)));
+                profiles.Push (GetElementProfileValue (segmentProfile.stretchedProfile, segmentProfile.customOrigProfile, profileAttr, static_cast<Int32> (segmentProfile.segmentIndex)));
+            }
+            // No segment profile came back, as for a single-segment Profile beam (#3085): Archicad may
+            // keep that profile in the element's own customOrigProfile and stretchedProfile memos. They
+            // are given to the element's only Profile segment; with more than one they cannot be told apart.
+            if (profiles.IsEmpty () && (memo.stretchedProfile != nullptr || memo.customOrigProfile != nullptr)) {
+                GSSize profileSegment = -1;
+                GSSize nProfileSegments = 0;
+                for (GSSize i = 0; i < nSegments; ++i) {
+                    const API_AssemblySegmentData& segmentData = isBeam ? memo.beamSegments[i].assemblySegmentData : memo.columnSegments[i].assemblySegmentData;
+                    if (segmentData.modelElemStructureType == API_ProfileStructure) {
+                        profileSegment = i;
+                        ++nProfileSegments;
+                    }
+                }
+                if (nProfileSegments == 1) {
+                    const API_AttributeIndex profileAttr = isBeam
+                        ? memo.beamSegments[profileSegment].assemblySegmentData.profileAttr
+                        : memo.columnSegments[profileSegment].assemblySegmentData.profileAttr;
+                    profiles.Push (GetElementProfileValue (memo.stretchedProfile, memo.customOrigProfile, profileAttr, static_cast<Int32> (profileSegment)));
+                }
             }
         }
 
