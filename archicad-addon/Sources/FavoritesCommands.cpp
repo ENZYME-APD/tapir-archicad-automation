@@ -6,6 +6,9 @@
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
+#include "HashSet.hpp"
+#include <algorithm>
+#include <vector>
 
 #ifdef ServerMainVers_2900
 #include "ACAPI/Result.hpp"
@@ -13,7 +16,6 @@
 #include "ACAPI/Element/Opening/OpeningDefault.hpp"
 #include <cmath>
 #include <optional>
-#include <vector>
 #endif
 
 
@@ -936,6 +938,58 @@ static API_FavoriteNameConflictResolutionPolicy ParseConflictPolicy (
     return fallback;
 }
 
+// The names of every Favorite of the project, of all element types; a type ACAPI_Favorite_GetNum
+// refuses is skipped, as in SearchFavorites.
+static std::vector<GS::UniString> GetAllFavoriteNames ()
+{
+    std::vector<GS::UniString> allNames;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        GS::Array<GS::UniString> names;
+#ifdef ServerMainVers_2600
+        const GSErrCode err = ACAPI_Favorite_GetNum (static_cast<API_ElemTypeID> (type), nullptr, nullptr, &names);
+#else
+        const GSErrCode err = ACAPI_Favorite_GetNum (static_cast<API_ElemTypeID> (type), APIVarId_Generic, nullptr, nullptr, &names);
+#endif
+        if (err != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            allNames.push_back (name);
+        }
+    }
+    return allNames;
+}
+
+static GS::HashSet<GS::UniString> GetAllFavoriteNameSet ()
+{
+    GS::HashSet<GS::UniString> nameSet;
+    for (const GS::UniString& name : GetAllFavoriteNames ()) {
+        nameSet.Add (name);
+    }
+    return nameSet;
+}
+
+// The successful answer of ImportFavorites: success, and the Favorites the project has now and
+// did not have before the import (namesBefore).
+static GS::ObjectState CreateImportFavoritesResponse (const GS::HashSet<GS::UniString>& namesBefore)
+{
+    std::vector<GS::UniString> addedNames;
+    for (const GS::UniString& name : GetAllFavoriteNames ()) {
+        if (!namesBefore.Contains (name)) {
+            addedNames.push_back (name);
+        }
+    }
+    std::sort (addedNames.begin (), addedNames.end ());
+
+    GS::ObjectState response;
+    response.Add ("success", true);
+    const auto& addedNamesList = response.AddList<GS::UniString> ("addedFavoriteNames");
+    for (const GS::UniString& name : addedNames) {
+        addedNamesList (name);
+    }
+    return response;
+}
+
 #ifdef ServerMainVers_2900
 
 // The conflict policies of the ACAPI::Favorite::FavoriteManager calls (Archicad 29+), which differ
@@ -1129,11 +1183,21 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetRawResponseSchema () cons
     return R"({
         "type": "object",
         "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "True when the Favorites were imported. False when conflictPolicy=Error with the prefs format stopped the import on a name that already exists (firstConflictName); nothing was imported then."
+            },
+            "addedFavoriteNames": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Set when success is true: the names of the Favorites the project has after the import and did not have before it, sorted. A Favorite that replaced one of the same name (Overwrite, OverwriteExisting) is not listed, and one RenameNew or Append renamed is listed under its new name."
+            },
             "firstConflictName": {
                 "type": "string",
-                "description": "Set when conflictPolicy=Error and a name collided; absent otherwise."
+                "description": "Set when conflictPolicy=Error with the prefs format and a name collided (success is false then); absent otherwise."
             }
         },
+        "required": ["success"],
         "additionalProperties": false
     })";
 }
@@ -1188,6 +1252,8 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
             }
         }
 
+        const GS::HashSet<GS::UniString> namesBefore = GetAllFavoriteNameSet ();
+
         // The import changes the project's Favorites, so it runs in an undoable command like every
         // other Favorites change: outside one, a Teamwork project drops it without an error (#1756).
         GS::UniString importErrorText;
@@ -1216,7 +1282,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         if (importErr != NoError) {
             return CreateErrorResponse (importErr, GS::UniString::Printf ("Failed to import favorites: %T", importErrorText.ToPrintf ()));
         }
-        return GS::ObjectState ();
+        return CreateImportFavoritesResponse (namesBefore);
 #else
         UNUSED_VARIABLE (hasTargetFolder);
         return CreateErrorResponse (APIERR_NOTSUPPORTED, GS::UniString::Printf ("The %T format requires Archicad 29 or newer.", format.ToPrintf ()));
@@ -1229,6 +1295,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::UniString policyStr = "Overwrite";
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
+    const GS::HashSet<GS::UniString> namesBefore = GetAllFavoriteNameSet ();
     GS::UniString firstConflictName;
     // In an undoable command like every other Favorites change: outside one, a Teamwork project
     // drops the import without an error (#1756).
@@ -1244,6 +1311,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     // shape response so the field reaches the caller.
     if (err == APIERR_NAMEALREADYUSED && !firstConflictName.IsEmpty ()) {
         GS::ObjectState response;
+        response.Add ("success", false);
         response.Add ("firstConflictName", firstConflictName);
         return response;
     }
@@ -1254,7 +1322,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
     }
 
-    GS::ObjectState response;
+    GS::ObjectState response = CreateImportFavoritesResponse (namesBefore);
     if (!firstConflictName.IsEmpty ()) {
         response.Add ("firstConflictName", firstConflictName);
     }
@@ -1277,7 +1345,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
         "properties": {
             "path": {
                 "type": "string",
-                "description": "Absolute path on the AC host. With the prefs format: if extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
+                "description": "Absolute path on the AC host. With the prefs format: Archicad writes a single file when the path has the extension of its Favorite binary file, otherwise a folder of that name. Archicad 29 creates a folder even at a .prefs path (seen with build 3200, #3087); ImportFavorites with the prefs format reads that folder back, and the legacyPRF format writes a single file. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
             },
             "names": {
                 "type": "array",
@@ -1290,7 +1358,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
             },
             "overwrite": {
                 "type": "boolean",
-                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
+                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file or folder already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
             }
         },
         "required": ["path"],
