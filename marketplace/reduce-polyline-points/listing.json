@@ -1,0 +1,18 @@
+{
+    "slug": "reduce-polyline-points",
+    "name": "Reduce Polyline Points",
+    "summary": "Reduces the number of points of the selected polylines, e.g. contour lines, with a live preview; can smooth them and turn them into splines.",
+    "category": "modeling-geometry",
+    "tags": ["polylines", "splines", "contours", "simplify", "terrain", "drafting"],
+    "author": { "name": "pumaka", "discord": "pumaka" },
+    "license": "MIT",
+    "entry": "reduce_polyline_points.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.5.9",
+            "changelog": "First version."
+        }
+    ]
+}
