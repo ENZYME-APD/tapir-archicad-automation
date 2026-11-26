@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 21:54 UTC",
+ "generatedAt": "2026-11-26 22:22 UTC",
  "versions": [
   25,
   26,
@@ -2923,6 +2923,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3098,
+     "title": "SetClassificationsOfElements: say when the element's layer is hidden"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -4773,7 +4777,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3095,
+     "title": "Read floor plan polygons and solid element links from the floor plan database in any window"
+    }
+   ],
    "issues": []
   },
   {
@@ -5774,6 +5783,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3097,
+     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6737,6 +6750,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3097,
+     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
+    },
+    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -6987,6 +7004,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3097,
+     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -7273,6 +7294,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3097,
+     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
+    },
+    {
+     "number": 3096,
+     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
+    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -7789,6 +7818,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3098,
+     "title": "SetClassificationsOfElements: say when the element's layer is hidden"
+    },
+    {
+     "number": 3094,
+     "title": "CreateGroups: name the stories when elements are on different stories"
+    },
+    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     }
@@ -7835,6 +7872,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3097,
+     "title": "CreateBeams: keep the requested segment lengths (segmentCount 3+)"
+    },
+    {
+     "number": 3093,
+     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -8881,7 +8926,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3095,
+     "title": "Read floor plan polygons and solid element links from the floor plan database in any window"
+    }
+   ],
    "issues": []
   },
   {
@@ -9303,7 +9353,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3099,
+     "title": "ImportFavorites answers success and the added Favorite names; document the Archicad 29 prefs export"
+    }
+   ],
    "issues": []
   },
   {
@@ -10373,7 +10428,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3094,
+     "title": "CreateGroups: name the stories when elements are on different stories"
+    }
+   ],
    "issues": []
   },
   {
@@ -10396,7 +10456,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3094,
+     "title": "CreateGroups: name the stories when elements are on different stories"
+    }
+   ],
    "issues": []
   },
   {
@@ -25340,6 +25405,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3096,
+     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
+    },
+    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -30949,6 +31018,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3093,
+     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -37400,6 +37473,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3096,
+     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -44057,6 +44134,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3093,
+     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47176,6 +47257,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3093,
+     "title": "GetProfileValuesOfElements: modifiers from the original profile, profile of a single-segment beam"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
