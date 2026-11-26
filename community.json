@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-25T12:48:57Z",
+ "generatedAt": "2026-11-26T12:27:10Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,14 +420,14 @@
   }
  ],
  "totals": {
-  "commits": 1481,
-  "discordMessages": 12591,
-  "discordMembers": 699,
+  "commits": 1492,
+  "discordMessages": 12638,
+  "discordMembers": 703,
   "discordMembersChange": {
-   "diff": 59,
-   "days": 19
+   "diff": 63,
+   "days": 20
   },
-  "participants": 545
+  "participants": 551
  },
  "topContributors": [
   {
@@ -462,7 +462,7 @@
    "name": "MathiasJon",
    "login": "MathiasJon",
    "commits": 116,
-   "reports": 24,
+   "reports": 25,
    "tests": 1
   },
   {
@@ -496,8 +496,8 @@
   {
    "name": "Ben Tristem",
    "login": "BenTristem",
-   "commits": 52,
-   "reports": 20,
+   "commits": 61,
+   "reports": 21,
    "tests": 0
   },
   {
@@ -515,17 +515,17 @@
    "tests": 0
   },
   {
+   "name": "cmartif",
+   "login": "cmartif",
+   "commits": 20,
+   "reports": 20,
+   "tests": 0
+  },
+  {
    "name": "Drew Parkinson",
    "login": "kozure-dev",
    "commits": 32,
    "reports": 6,
-   "tests": 0
-  },
-  {
-   "name": "cmartif",
-   "login": "cmartif",
-   "commits": 14,
-   "reports": 20,
    "tests": 0
   },
   {
@@ -788,6 +788,10 @@
   {
    "date": "2026-11-25",
    "members": 699
+  },
+  {
+   "date": "2026-11-26",
+   "members": 703
   }
  ]
 }
