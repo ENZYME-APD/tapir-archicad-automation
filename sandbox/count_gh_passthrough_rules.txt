@@ -1,0 +1,11 @@
+(?s)\A
+(?=.*\bComponentGuid\b)
+(?!.*\babstract\s+class\b)
+(?!.*\bComponentGuid\b.*\bComponentGuid\b)
+(?=.*\b(?:TryGetCadResponse|SetCadValuesWithErrorMessages|TryGetConvertedCadValues|SetCadValues|ElementMetadata|ToAddOn|ToArchicad|SendArchicadCommand)\s*\()
+(?!.*\b(?:TryGetCadResponse|SetCadValuesWithErrorMessages|TryGetConvertedCadValues|SetCadValues|ElementMetadata|ToAddOn|ToArchicad|SendArchicadCommand)\s*\(.*\b(?:TryGetCadResponse|SetCadValuesWithErrorMessages|TryGetConvertedCadValues|SetCadValues|ElementMetadata|ToAddOn|ToArchicad|SendArchicadCommand)\s*\()
+(?=.*\bToAddOn\b)
+(?!.*\bToArchicad\b)
+(?!.*(?:\b(?:for|foreach|while|switch)\s*\(|\belse\b\s*(?:\{|if\b)|\.(?:Select|SelectMany|Where|Zip|Aggregate|GroupBy|OrderBy|OrderByDescending|ToDictionary|Any|All|Distinct|Sum|Count|First|FirstOrDefault|Last)\s*\(|\s\?\s|\?\?))
+(?!.*\n[ \t]*if\s*\((?:(?!\breturn\b)[^}])*\})
+(?!.*\n[ \t]*(?:(?:private|internal)\b|(?:public|protected)\s+static\b|protected\s+(?!override\b)|public\s+(?!override\b|class\b|sealed\b|partial\b)[\w<>\[\],.?]+\s+\w+|(?:public|protected)\s+override\s+[\w<>\[\],.?]+\s+(?!(?:AddInputs|AddOutputs|Solve|Icon|ComponentGuid|CommandName|Exposure)\b)\w+))
