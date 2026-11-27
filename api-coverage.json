@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-26 23:31 UTC",
+ "generatedAt": "2026-11-27 01:01 UTC",
  "versions": [
   25,
   26,
@@ -2923,10 +2923,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3098,
-     "title": "SetClassificationsOfElements: say when the element's layer is hidden"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -4777,12 +4773,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3095,
-     "title": "Read floor plan polygons and solid element links from the floor plan database in any window"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7283,10 +7274,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3096,
-     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -7801,10 +7788,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3098,
-     "title": "SetClassificationsOfElements: say when the element's layer is hidden"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -8898,12 +8881,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3095,
-     "title": "Read floor plan polygons and solid element links from the floor plan database in any window"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9325,12 +9303,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3099,
-     "title": "ImportFavorites answers success and the added Favorite names; document the Archicad 29 prefs export"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25367,10 +25340,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3096,
-     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37431,10 +37400,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3096,
-     "title": "ModifyShells and ModifyRoofs name the contour showOnHome Archicad keeps on"
-    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
