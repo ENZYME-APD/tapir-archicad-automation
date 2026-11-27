@@ -32107,6 +32107,959 @@
         "type": "string",
         "minLength": 1
     },
+    "ProjectPreferenceType": {
+        "type": "string",
+        "enum": [
+            "WorkingUnits",
+            "Dimensions",
+            "CalculationUnits",
+            "Zones",
+            "ReferenceLevels",
+            "FloorPlanCutPlane",
+            "Legacy",
+            "ImagingAndCalculation",
+            "Layouts",
+            "DataSafety",
+            "CalculationRules"
+        ]
+    },
+    "WorkingUnitPreferences": {
+        "type": "object",
+        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
+        "properties": {
+            "length": {
+                "$ref": "#/WorkingUnitLengthFormat"
+            },
+            "area": {
+                "$ref": "#/WorkingUnitAreaFormat"
+            },
+            "volume": {
+                "$ref": "#/WorkingUnitVolumeFormat"
+            },
+            "angle": {
+                "$ref": "#/AngleUnitFormat"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "length",
+            "area",
+            "volume",
+            "angle"
+        ]
+    },
+    "WorkingUnitLengthFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for length values."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "roundInch"
+        ]
+    },
+    "WorkingUnitAreaFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/AreaType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for area values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals"
+        ]
+    },
+    "WorkingUnitVolumeFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/VolumeType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for volume values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals"
+        ]
+    },
+    "CalculationUnitPreferences": {
+        "type": "object",
+        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
+        "properties": {
+            "length": {
+                "$ref": "#/CalculationUnitLengthFormat"
+            },
+            "area": {
+                "$ref": "#/CalculationUnitAreaFormat"
+            },
+            "volume": {
+                "$ref": "#/CalculationUnitVolumeFormat"
+            },
+            "angle": {
+                "$ref": "#/AngleUnitFormat"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "length",
+            "area",
+            "volume",
+            "angle"
+        ]
+    },
+    "CalculationUnitLengthFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for length values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "accuracy",
+            "decimals"
+        ]
+    },
+    "DimensionPreferences": {
+        "type": "object",
+        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
+        "properties": {
+            "dimensionStandardIndex": {
+                "type": "integer",
+                "description": "The index of the dimension standard the page follows."
+            },
+            "linear": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the linear dimensions."
+            },
+            "angle": {
+                "$ref": "#/AngleDimensionFormat"
+            },
+            "radial": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the radial dimensions."
+            },
+            "level": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the level dimensions."
+            },
+            "elevation": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the elevation dimensions."
+            },
+            "doorWindow": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the door, window and skylight dimensions."
+            },
+            "parapet": {
+                "$ref": "#/LengthDimensionFormat",
+                "description": "The format of the sill height (parapet) dimensions."
+            },
+            "area": {
+                "$ref": "#/AreaDimensionFormat"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dimensionStandardIndex",
+            "linear",
+            "angle",
+            "radial",
+            "level",
+            "elevation",
+            "doorWindow",
+            "parapet",
+            "area"
+        ]
+    },
+    "LengthDimensionFormat": {
+        "type": "object",
+        "description": "The display format of a length dimension.",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "showZeroWhole": {
+                "type": "boolean",
+                "description": "Show the zero before the decimal point of values below one."
+            },
+            "showZeroInch": {
+                "type": "boolean",
+                "description": "Show zero inches in feet and inches values."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "roundInch",
+            "accuracy",
+            "showZeroWhole",
+            "showZeroInch",
+            "hideZeroDecimals"
+        ]
+    },
+    "AngleDimensionFormat": {
+        "type": "object",
+        "description": "The format of the angle dimensions.",
+        "properties": {
+            "unit": {
+                "$ref": "#/AngleType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "hideZeroDecimals"
+        ]
+    },
+    "AreaDimensionFormat": {
+        "type": "object",
+        "description": "The format of the area values the dimensions show (area calculations).",
+        "properties": {
+            "unit": {
+                "$ref": "#/AreaType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "hideZeroDecimals"
+        ]
+    },
+    "WorkingUnitPreferencesUpdate": {
+        "type": "object",
+        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
+        "properties": {
+            "length": {
+                "$ref": "#/WorkingUnitLengthFormatUpdate"
+            },
+            "area": {
+                "$ref": "#/WorkingUnitAreaFormatUpdate"
+            },
+            "volume": {
+                "$ref": "#/WorkingUnitVolumeFormatUpdate"
+            },
+            "angle": {
+                "$ref": "#/AngleUnitFormatUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "WorkingUnitLengthFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for length values."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "WorkingUnitAreaFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/AreaType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for area values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "WorkingUnitVolumeFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/VolumeType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for volume values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "AngleUnitFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/AngleType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for angle values."
+            },
+            "accuracy": {
+                "type": "integer",
+                "description": "Accuracy for angle values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "CalculationUnitPreferencesUpdate": {
+        "type": "object",
+        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
+        "properties": {
+            "length": {
+                "$ref": "#/CalculationUnitLengthFormatUpdate"
+            },
+            "area": {
+                "$ref": "#/CalculationUnitAreaFormatUpdate"
+            },
+            "volume": {
+                "$ref": "#/CalculationUnitVolumeFormatUpdate"
+            },
+            "angle": {
+                "$ref": "#/AngleUnitFormatUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "CalculationUnitLengthFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for length values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "CalculationUnitAreaFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/AreaType"
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for area values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "CalculationUnitVolumeFormatUpdate": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/VolumeType"
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display for volume values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "DimensionPreferencesUpdate": {
+        "type": "object",
+        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
+        "properties": {
+            "dimensionStandardIndex": {
+                "type": "integer",
+                "description": "The index of the dimension standard the page follows."
+            },
+            "linear": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the linear dimensions."
+            },
+            "angle": {
+                "$ref": "#/AngleDimensionFormatUpdate"
+            },
+            "radial": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the radial dimensions."
+            },
+            "level": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the level dimensions."
+            },
+            "elevation": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the elevation dimensions."
+            },
+            "doorWindow": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the door, window and skylight dimensions."
+            },
+            "parapet": {
+                "$ref": "#/LengthDimensionFormatUpdate",
+                "description": "The format of the sill height (parapet) dimensions."
+            },
+            "area": {
+                "$ref": "#/AreaDimensionFormatUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "LengthDimensionFormatUpdate": {
+        "type": "object",
+        "description": "Partial changes to the display format of a length dimension.",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
+            },
+            "accuracy": {
+                "$ref": "#/AccuracyType"
+            },
+            "showZeroWhole": {
+                "type": "boolean",
+                "description": "Show the zero before the decimal point of values below one."
+            },
+            "showZeroInch": {
+                "type": "boolean",
+                "description": "Show zero inches in feet and inches values."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "AngleDimensionFormatUpdate": {
+        "type": "object",
+        "description": "The format of the angle dimensions.",
+        "properties": {
+            "unit": {
+                "$ref": "#/AngleType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "AreaDimensionFormatUpdate": {
+        "type": "object",
+        "description": "The format of the area values the dimensions show (area calculations).",
+        "properties": {
+            "unit": {
+                "$ref": "#/AreaType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals to display."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Hide the zero decimals at the end of the values."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "DimensionStandard": {
+        "type": "object",
+        "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The 1-based index of the dimension standard."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
+            },
+            "settings": {
+                "$ref": "#/DimensionStandardSettings"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "name",
+            "settings"
+        ]
+    },
+    "DimensionStandardSettings": {
+        "type": "object",
+        "properties": {
+            "linear": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "angle": {
+                "$ref": "#/StandardAngleDimensionFormat"
+            },
+            "radial": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "level": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "elevation": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "doorWindow": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "parapet": {
+                "$ref": "#/StandardLengthDimensionFormat"
+            },
+            "area": {
+                "$ref": "#/AreaDimensionFormat"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linear",
+            "angle",
+            "radial",
+            "level",
+            "elevation",
+            "doorWindow",
+            "parapet",
+            "area"
+        ]
+    },
+    "StandardLengthDimensionFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/LengthType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals displayed."
+            },
+            "showSmall5": {
+                "type": "integer",
+                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
+            },
+            "roundInch": {
+                "type": "integer",
+                "description": "Rounding of fractional inches."
+            },
+            "showZeroWhole": {
+                "type": "boolean",
+                "description": "Whether a zero whole part is displayed."
+            },
+            "showZeroInch": {
+                "type": "integer",
+                "description": "Whether zero inches are displayed, as Archicad stores it."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Whether trailing zero decimals are hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "showSmall5",
+            "roundInch",
+            "showZeroWhole",
+            "showZeroInch",
+            "hideZeroDecimals"
+        ]
+    },
+    "StandardAngleDimensionFormat": {
+        "type": "object",
+        "properties": {
+            "unit": {
+                "$ref": "#/AngleType"
+            },
+            "decimals": {
+                "type": "integer",
+                "description": "Number of decimals displayed."
+            },
+            "accuracy": {
+                "type": "integer",
+                "description": "Accuracy of the angle values."
+            },
+            "hideZeroDecimals": {
+                "type": "boolean",
+                "description": "Whether trailing zero decimals are hidden."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unit",
+            "decimals",
+            "accuracy",
+            "hideZeroDecimals"
+        ]
+    },
+    "ZonePreferences": {
+        "type": "object",
+        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
+        "properties": {
+            "lowCeilingAreaReduction": {
+                "$ref": "#/LowCeilingAreaReduction"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lowCeilingAreaReduction"
+        ]
+    },
+    "LowCeilingAreaReduction": {
+        "type": "object",
+        "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
+        "properties": {
+            "activeHeightLimits": {
+                "type": "integer",
+                "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
+            },
+            "heightLimits": {
+                "type": "array",
+                "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
+                "items": {
+                    "$ref": "#/ZoneHeightLimit"
+                },
+                "minItems": 3,
+                "maxItems": 3
+            },
+            "reductionPercentAboveHeightLimits": {
+                "type": "number",
+                "description": "The reduction of the area above the highest height limit, in percent."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "activeHeightLimits",
+            "heightLimits",
+            "reductionPercentAboveHeightLimits"
+        ]
+    },
+    "ZoneHeightLimit": {
+        "type": "object",
+        "properties": {
+            "height": {
+                "type": "number",
+                "description": "The ceiling height limit in meters."
+            },
+            "reductionPercent": {
+                "type": "number",
+                "description": "The reduction of the area under this limit, in percent."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "height",
+            "reductionPercent"
+        ]
+    },
+    "ZonePreferencesUpdate": {
+        "type": "object",
+        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
+        "properties": {
+            "lowCeilingAreaReduction": {
+                "$ref": "#/LowCeilingAreaReductionUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "LowCeilingAreaReductionUpdate": {
+        "type": "object",
+        "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
+        "properties": {
+            "activeHeightLimits": {
+                "type": "integer",
+                "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
+            },
+            "heightLimits": {
+                "type": "array",
+                "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
+                "items": {
+                    "$ref": "#/ZoneHeightLimitUpdate"
+                },
+                "minItems": 1,
+                "maxItems": 3
+            },
+            "reductionPercentAboveHeightLimits": {
+                "type": "number",
+                "description": "The reduction of the area above the highest height limit, in percent."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ZoneHeightLimitUpdate": {
+        "type": "object",
+        "properties": {
+            "height": {
+                "type": "number",
+                "description": "The ceiling height limit in meters."
+            },
+            "reductionPercent": {
+                "type": "number",
+                "description": "The reduction of the area under this limit, in percent."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "FloorPlanCutPlanePreferences": {
+        "type": "object",
+        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
+        "properties": {
+            "cutPlaneHeight": {
+                "type": "number",
+                "description": "The height of the cut plane from the current story in meters."
+            },
+            "topLevel": {
+                "$ref": "#/FloorPlanCutPlaneLevel",
+                "description": "The top of the floor plan range: elements are shown up to this level."
+            },
+            "bottomLevel": {
+                "$ref": "#/FloorPlanCutPlaneLevel",
+                "description": "The bottom of the floor plan range: elements are shown down to this level."
+            },
+            "absoluteDisplayLimit": {
+                "type": "number",
+                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "cutPlaneHeight",
+            "topLevel",
+            "bottomLevel",
+            "absoluteDisplayLimit"
+        ]
+    },
+    "FloorPlanCutPlaneLevel": {
+        "type": "object",
+        "description": "A floor plan display limit measured from a relative story.",
+        "properties": {
+            "relativeStory": {
+                "type": "integer",
+                "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the level from that story in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "relativeStory",
+            "offset"
+        ]
+    },
+    "FloorPlanCutPlanePreferencesUpdate": {
+        "type": "object",
+        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
+        "properties": {
+            "cutPlaneHeight": {
+                "type": "number",
+                "description": "The height of the cut plane from the current story in meters."
+            },
+            "topLevel": {
+                "$ref": "#/FloorPlanCutPlaneLevelUpdate",
+                "description": "The top of the floor plan range: elements are shown up to this level."
+            },
+            "bottomLevel": {
+                "$ref": "#/FloorPlanCutPlaneLevelUpdate",
+                "description": "The bottom of the floor plan range: elements are shown down to this level."
+            },
+            "absoluteDisplayLimit": {
+                "type": "number",
+                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "FloorPlanCutPlaneLevelUpdate": {
+        "type": "object",
+        "description": "Partial changes to a floor plan display limit measured from a relative story.",
+        "properties": {
+            "relativeStory": {
+                "type": "integer",
+                "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
+            },
+            "offset": {
+                "type": "number",
+                "description": "The offset of the level from that story in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ProjectReferenceLevels": {
+        "type": "object",
+        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
+        "properties": {
+            "level1": {
+                "$ref": "#/ProjectReferenceLevel",
+                "description": "The first reference level."
+            },
+            "level2": {
+                "$ref": "#/ProjectReferenceLevel",
+                "description": "The second reference level."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "level1",
+            "level2"
+        ]
+    },
+    "ProjectReferenceLevel": {
+        "type": "object",
+        "description": "A named reference level measured from Project Zero.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the reference level, e.g. Sea Level."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "The elevation of the reference level from Project Zero in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "elevation"
+        ]
+    },
+    "ProjectReferenceLevelsUpdate": {
+        "type": "object",
+        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
+        "properties": {
+            "level1": {
+                "$ref": "#/ProjectReferenceLevelUpdate",
+                "description": "The first reference level."
+            },
+            "level2": {
+                "$ref": "#/ProjectReferenceLevelUpdate",
+                "description": "The second reference level."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "ProjectReferenceLevelUpdate": {
+        "type": "object",
+        "description": "Partial changes to a named reference level measured from Project Zero.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the reference level, e.g. Sea Level."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "The elevation of the reference level from Project Zero in meters."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
     "AngleUnitFormat": {
         "type": "object",
         "properties": {

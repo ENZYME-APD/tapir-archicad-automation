@@ -5643,144 +5643,13 @@ GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetInputParametersSche
 
 GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema () const
 {
-    const GS::UniString lengthDimFormatSchema = R"({
-        "type": "object",
-        "properties": {
-            "unit": {
-                "$ref": "#/LengthType"
-            },
-            "decimals": {
-                "type": "integer",
-                "description": "Number of decimals displayed."
-            },
-            "showSmall5": {
-                "type": "integer",
-                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
-            },
-            "roundInch": {
-                "type": "integer",
-                "description": "Rounding of fractional inches."
-            },
-            "showZeroWhole": {
-                "type": "boolean",
-                "description": "Whether a zero whole part is displayed."
-            },
-            "showZeroInch": {
-                "type": "integer",
-                "description": "Whether zero inches are displayed, as Archicad stores it."
-            },
-            "hideZeroDecimals": {
-                "type": "boolean",
-                "description": "Whether trailing zero decimals are hidden."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "unit",
-            "decimals",
-            "showSmall5",
-            "roundInch",
-            "showZeroWhole",
-            "showZeroInch",
-            "hideZeroDecimals"
-        ]
-    })";
-
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionStandards": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The 1-based index of the dimension standard."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
-                        },
-                        "settings": {
-                            "type": "object",
-                            "properties": {
-                                "linear": )") + lengthDimFormatSchema + R"(,
-                                "angle": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AngleType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "accuracy": {
-                                            "type": "integer",
-                                            "description": "Accuracy of the angle values."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "accuracy",
-                                        "hideZeroDecimals"
-                                    ]
-                                },
-                                "radial": )" + lengthDimFormatSchema + R"(,
-                                "level": )" + lengthDimFormatSchema + R"(,
-                                "elevation": )" + lengthDimFormatSchema + R"(,
-                                "doorWindow": )" + lengthDimFormatSchema + R"(,
-                                "parapet": )" + lengthDimFormatSchema + R"(,
-                                "area": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AreaType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "hideZeroDecimals"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "linear",
-                                "angle",
-                                "radial",
-                                "level",
-                                "elevation",
-                                "doorWindow",
-                                "parapet",
-                                "area"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index",
-                        "name",
-                        "settings"
-                    ]
+                    "$ref": "#/DimensionStandard"
                 }
             }
         },
@@ -7076,485 +6945,50 @@ static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired
 
 static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetLengthDimFormatSchema (bool allFieldsRequired, const GS::UniString& description)
-{
-    GS::UniString schema = GS::UniString (R"({
-                "type": "object",
-                "description": ")") + description + R"(",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "showZeroWhole": {
-                        "type": "boolean",
-                        "description": "Show the zero before the decimal point of values below one."
-                    },
-                    "showZeroInch": {
-                        "type": "boolean",
-                        "description": "Show zero inches in feet and inches values."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch", "accuracy", "showZeroWhole", "showZeroInch", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAngleDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the angle dimensions.",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAreaDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the area values the dimensions show (area calculations).",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/WorkingUnitPreferences"})";
+    }
+    return R"({"$ref": "#/WorkingUnitPreferencesUpdate"})";
 }
 
 static GS::UniString GetDimensionsSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
-        "properties": {
-            "dimensionStandardIndex": {
-                "type": "integer",
-                "description": "The index of the dimension standard the page follows."
-            },
-            "linear": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the linear dimensions.");
-    schema += R"(,
-            "angle": )";
-    schema += GetAngleDimFormatSchema (allFieldsRequired);
-    schema += R"(,
-            "radial": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the radial dimensions.");
-    schema += R"(,
-            "level": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the level dimensions.");
-    schema += R"(,
-            "elevation": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the elevation dimensions.");
-    schema += R"(,
-            "doorWindow": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the door, window and skylight dimensions.");
-    schema += R"(,
-            "parapet": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the sill height (parapet) dimensions.");
-    schema += R"(,
-            "area": )";
-    schema += GetAreaDimFormatSchema (allFieldsRequired);
-    schema += R"(
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("dimensionStandardIndex", "linear", "angle", "radial", "level", "elevation", "doorWindow", "parapet", "area")");
-    schema += R"(
-    })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/DimensionPreferences"})";
+    }
+    return R"({"$ref": "#/DimensionPreferencesUpdate"})";
 }
 
 static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-// The item count of the height limits list: all three in the response of
-// GetProjectPreferences, one to three in the input of SetProjectPreferences,
-// where the given items change the limits of the same index.
-static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
-{
     if (allFieldsRequired) {
-        return "\"minItems\": 3, \"maxItems\": 3";
+        return R"({"$ref": "#/CalculationUnitPreferences"})";
     }
-    return "\"minItems\": 1, \"maxItems\": 3";
+    return R"({"$ref": "#/CalculationUnitPreferencesUpdate"})";
 }
 
 static GS::UniString GetZonesSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
-        "properties": {
-            "lowCeilingAreaReduction": {
-                "type": "object",
-                "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
-                "properties": {
-                    "activeHeightLimits": {
-                        "type": "integer",
-                        "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
-                    },
-                    "heightLimits": {
-                        "type": "array",
-                        "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "height": {
-                                    "type": "number",
-                                    "description": "The ceiling height limit in meters."
-                                },
-                                "reductionPercent": {
-                                    "type": "number",
-                                    "description": "The reduction of the area under this limit, in percent."
-                                }
-                            },
-                            "additionalProperties": false,
-                            )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("height", "reductionPercent")");
-    schema += R"(
-                        },
-                        )";
-    schema += GetProjectPreferencesHeightLimitsItemCount (allFieldsRequired);
-    schema += R"(
-                    },
-                    "reductionPercentAboveHeightLimits": {
-                        "type": "number",
-                        "description": "The reduction of the area above the highest height limit, in percent."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetReferenceLevelSchema (bool allFieldsRequired, const char* description)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": ")";
-    schema += description;
-    schema += R"(",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the reference level, e.g. Sea Level."
-                    },
-                    "elevation": {
-                        "type": "number",
-                        "description": "The elevation of the reference level from Project Zero in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "elevation")");
-    schema += R"(
-            })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/ZonePreferences"})";
+    }
+    return R"({"$ref": "#/ZonePreferencesUpdate"})";
 }
 
 static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
-        "properties": {
-            "level1": )";
-    schema += GetReferenceLevelSchema (allFieldsRequired, "The first reference level.");
-    schema += R"(,
-            "level2": )";
-    schema += GetReferenceLevelSchema (allFieldsRequired, "The second reference level.");
-    schema += R"(
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetFloorPlanCutLevelSchema (bool allFieldsRequired, const char* description)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": ")";
-    schema += description;
-    schema += R"(",
-                "properties": {
-                    "relativeStory": {
-                        "type": "integer",
-                        "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
-                    },
-                    "offset": {
-                        "type": "number",
-                        "description": "The offset of the level from that story in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("relativeStory", "offset")");
-    schema += R"(
-            })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/ProjectReferenceLevels"})";
+    }
+    return R"({"$ref": "#/ProjectReferenceLevelsUpdate"})";
 }
 
 static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
-        "properties": {
-            "cutPlaneHeight": {
-                "type": "number",
-                "description": "The height of the cut plane from the current story in meters."
-            },
-            "topLevel": )";
-    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The top of the floor plan range: elements are shown up to this level.");
-    schema += R"(,
-            "bottomLevel": )";
-    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The bottom of the floor plan range: elements are shown down to this level.");
-    schema += R"(,
-            "absoluteDisplayLimit": {
-                "type": "number",
-                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("cutPlaneHeight", "topLevel", "bottomLevel", "absoluteDisplayLimit")");
-    schema += R"(
-    })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/FloorPlanCutPlanePreferences"})";
+    }
+    return R"({"$ref": "#/FloorPlanCutPlanePreferencesUpdate"})";
 }
 
 static GS::UniString GetLegacySchema (bool allFieldsRequired)
@@ -7804,27 +7238,13 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The preference pages to get. Every page when missing.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "WorkingUnits",
-                        "Dimensions",
-                        "CalculationUnits",
-                        "Zones",
-                        "ReferenceLevels",
-                        "FloorPlanCutPlane",
-                        "Legacy",
-                        "ImagingAndCalculation",
-                        "Layouts",
-                        "DataSafety",
-                        "CalculationRules"
-                    ]
+                    "$ref": "#/ProjectPreferenceType"
                 },
                 "minItems": 1
             }
         },
         "additionalProperties": false,
-        "required": [
-        ]
+        "required": []
     })";
 }
 
