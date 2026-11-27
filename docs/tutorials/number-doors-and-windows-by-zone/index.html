@@ -100,7 +100,7 @@
                     <span class="n" aria-hidden="true">2</span>
                     <div class="body">
                         <h2 id="elements" data-i18n>Choose the elements</h2>
-                        <p data-i18n>In <em>Elements</em>, choose <em>Selection</em>, <em>Current story</em> or <em>Whole project</em>, then press <em>Read elements</em>.</p>
+                        <p data-i18n>In <em>Elements</em>, choose <em>Selection</em>, <em>Current story</em> or <em>Whole project</em>. In <em>Write to</em>, keep <em>Element ID</em> or choose an editable text property to write the new IDs to instead. Then press <em>Read elements</em>.</p>
                     </div>
                 </li>
                 <li>
@@ -109,18 +109,18 @@
                         <h2 id="patterns" data-i18n>Set the patterns</h2>
                         <p data-i18n>The list of new IDs updates as you type.</p>
                         <ul>
-                            <li data-i18n><em>Doors</em> and <em>Windows</em> are the patterns of the IDs, <code>{zone}-D{n}</code> and <code>{zone}-W{n}</code> at first. <code>{zone}</code> is the zone number, <code>{name}</code> the zone name (also used for <code>{zone}</code> when the zone has no number) and <code>{n}</code> the running number within the zone.</li>
+                            <li data-i18n><em>Doors</em> and <em>Windows</em> are the patterns of the IDs, <code>{zone}-D{n}</code> and <code>{zone}-W{n}</code> at first. <code>{zone}</code> is the zone number, <code>{name}</code> the zone name (also used for <code>{zone}</code> when the zone has no number), <code>{n}</code> the running number within the zone and <code>{id}</code> the current Element ID.</li>
                             <li data-i18n><em>Start at</em> is the first number in each zone, 1 at first.</li>
                             <li data-i18n><em>Digits</em> is the least number of digits of <code>{n}</code>, padded with zeros: 2 gives <code>01</code>.</li>
                         </ul>
-                        <p data-i18n>The script warns when new IDs repeat.</p>
+                        <p data-i18n>The script warns when new IDs repeat. Tick <em>Number repeated IDs</em> to add <code>.{k}</code> to them, counting <code>01</code>, <code>02</code> and on, so <code>{id}.{zone}</code> gives <code>D1.1.04.01</code> and <code>D1.1.04.02</code>.</p>
                     </div>
                 </li>
                 <li>
                     <span class="n" aria-hidden="true">4</span>
                     <div class="body">
                         <h2 id="rename" data-i18n>Rename</h2>
-                        <p data-i18n>Press <em>Rename</em> and confirm. The script changes the Element ID of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.</p>
+                        <p data-i18n>Press <em>Rename</em> and confirm. The script changes the Element ID, or the property chosen in <em>Write to</em>, of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.</p>
                     </div>
                 </li>
             </ol>
@@ -130,8 +130,8 @@
             <div class="sec-head">
                 <h2 id="zone" data-i18n>How it finds the <em>zone.</em></h2>
             </div>
-            <p data-i18n>Each door or window belongs to the zone on its "to" side, or to the zone on its "from" side when there is none. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.</p>
-            <p data-i18n>The script reads the zones of the doors and windows with <a href="../../archicad-addon/#GetRelationsOfElements"><code>GetRelationsOfElements</code></a> and their positions with <a href="../../archicad-addon/#Get3DBoundingBoxes"><code>Get3DBoundingBoxes</code></a>, and writes the IDs with <a href="../../archicad-addon/#SetElementInfoStrings"><code>SetElementInfoStrings</code></a>. Its code is <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py"><code>builtin-scripts/DoorWindowNumberingByZone.py</code></a>. It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.</p>
+            <p data-i18n>Each door or window belongs to the zone on the side chosen in <em>Zone side first</em> (<em>To zone</em> or <em>From zone</em>, as Archicad's To Zone and From Zone properties name them), or to the zone on the other side when there is none; the <em>Zone</em> column shows which side was used. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.</p>
+            <p data-i18n>The script reads the zones of the doors and windows with <a href="../../archicad-addon/#GetRelationsOfElements"><code>GetRelationsOfElements</code></a> and their positions with <a href="../../archicad-addon/#Get3DBoundingBoxes"><code>Get3DBoundingBoxes</code></a>, and writes the IDs with <a href="../../archicad-addon/#SetElementInfoStrings"><code>SetElementInfoStrings</code></a> or <a href="../../archicad-addon/#SetPropertyValuesOfElements"><code>SetPropertyValuesOfElements</code></a>. Its code is <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py"><code>builtin-scripts/DoorWindowNumberingByZone.py</code></a>. It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.</p>
         </section>
 
         <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next tutorial</span><i></i></div>
