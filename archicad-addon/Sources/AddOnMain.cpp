@@ -1690,12 +1690,14 @@ GSErrCode Initialize (void)
             "Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be "
             "imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy "
             ".prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew. "
+            "The answer says whether the import succeeded and names the Favorites it added to the project. "
             "In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet)."
         );
         err |= RegisterCommand<ExportFavoritesCommand> (
             favoritesCommands, "1.5.0",
             "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be "
             "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format). "
+            "Archicad 29 writes a folder with the prefs format even at a .prefs path; ImportFavorites reads it back. "
             "With overwrite false an export to a single file refuses to replace an existing file."
         );
         err |= RegisterCommand<ApplyFavoritesToElementsCommand> (
