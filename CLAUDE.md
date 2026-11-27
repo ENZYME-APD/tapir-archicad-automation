@@ -468,7 +468,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   documents the security bounds and the repository rulesets they rely on.
 - `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
   any human PR comment, without re-posting open findings, and resolves the threads it
-  opened once the change or the discussion settles them. On the issue bot's PRs it
+  opened once the change or the discussion settles them. Automatic events skip
+  drafts; a manual dispatch with `pr_number` can review a draft. On the issue bot's PRs it
   also records its verdict as the `claude-review` commit status (set by a job
   without a model, from a nonce-tagged marker in the review).
 - The Claude jobs of `claude_issue_triage.yml` (`fix`, `reply`),

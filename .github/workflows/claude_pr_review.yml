@@ -109,9 +109,9 @@ jobs:
 
     # Pull requests the issue bot opened are reviewed as well: the review runs
     # separately from the run that wrote the change, and its verdict gates the
-    # bot's automatic merge (see the header). Drafts are skipped (for
-    # conversation comments and dispatches the payload does not say, so the
-    # first step checks). Comments by bots never start a review, so the bot
+    # bot's automatic merge (see the header). Automatic events skip drafts;
+    # an explicit workflow_dispatch can review them. The first step checks
+    # the current PR state. Comments by bots never start a review, so the bot
     # cannot re-review itself in a loop. A person's comment on a bot pull
     # request does - that is how a tester's report reaches the verdict. A
     # community test result (first line `tapir-test:`) does not: it becomes
@@ -190,8 +190,9 @@ jobs:
           fi
           # Proves that a verdict marker was written by this run's review.
           echo "nonce=$(openssl rand -hex 16)" >> "$GITHUB_OUTPUT"
-          if [ "$(jq -r '.isDraft' <<<"$info")" = "true" ] || [ "$(jq -r '.state' <<<"$info")" != "OPEN" ]; then
-            echo "Draft or not open - nothing to review."
+          if [ "$(jq -r '.state' <<<"$info")" != "OPEN" ] ||
+             { [ "$(jq -r '.isDraft' <<<"$info")" = "true" ] && [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; }; then
+            echo "Not open, or draft without an explicit dispatch - nothing to review."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
@@ -344,6 +345,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          allow_fork_prs: "true"
 
           # The action gates on the triggering actor having write access to
           # the repository, which every fork contributor by definition lacks -
