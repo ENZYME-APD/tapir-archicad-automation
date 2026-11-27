@@ -34,7 +34,7 @@ Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-27 20:32 UTC.
+Updated 2026-11-27 21:45 UTC.
 
 | | Status |
 |---|---|
@@ -150,7 +150,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetLast3DDefaultLevels` 🟢 1/1 parameters – `GetLast3DDefaultLevelsComponent`
 - ✅ `SetLast3DDefaultLevels` 🟢 2/2 parameters – `SetLast3DDefaultLevelsComponent`
 - ✅ `GetProjectPreferences` 🟢 1/1 parameters – `GetProjectPreferencesComponent`
-- ✅ `SetProjectPreferences` 🟢 69/69 parameters – `SetProjectPreferencesComponent`
+- ✅ `SetProjectPreferences` 🟢 36/36 parameters – `SetProjectPreferencesComponent`
 - ✅ `ConvertUnitValues` 🟢 1/1 parameters – `ConvertUnitValuesComponent`
 - ✅ `GetRenovationStatusNames` 🟢 0/0 parameters – `GetRenovationStatusNamesComponent`
 - ✅ `GetGeoLocation` 🟢 0/0 parameters – `GetProjectLocationComponent`
