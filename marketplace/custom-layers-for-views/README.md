@@ -1,5 +1,9 @@
 # Custom Layers for Views
 
+**macOS only, and only with Archicad's interface in English.** Tested on Archicad 29
+alone. It is a stand-in for something the Archicad API cannot do, not a Tapir
+command: it presses Archicad's own buttons for you.
+
 Stores custom layers in views of the View Map: each view keeps the layers it shows
 now, with the layers you choose shown, hidden, locked or unlocked. A view that uses
 a layer combination gets the combination's layer states as its own custom layers.
@@ -34,9 +38,7 @@ Leave Archicad alone while the script runs.
 
 ## Settings
 
-None in the window. At the top of the script are the names of the four controls it
-presses (`Settings…`, `View Settings`, `Get Current Window's Settings`, `OK`), as
-Archicad's English interface names them.
+None.
 
 ## What it changes
 
@@ -60,15 +62,20 @@ Archicad's English interface names them.
 ## Limits
 
 - macOS only. On Windows it says so and stops.
-- Archicad's interface in English: the script finds the buttons by their names.
-  For another language, change the four names at the top of the script.
+- Archicad's interface in English only: the script finds four controls by their
+  English names, and stops with a message when it does not find one. Their names
+  are constants at the top of the script; another language's names there are
+  untried.
 - The app the script runs in needs Accessibility (System Settings > Privacy &
   Security > Accessibility).
 - The project must be saved (the script finds its Archicad by the project's file),
   and the Navigator docked with its Properties panel open.
-- Tested on Archicad 29 (build 5101) on macOS 26, with floor plan, section and 3D
-  views. It needs a Tapir Add-On that returns `customLayers` in GetViewSettings
-  (2.0.2 or later).
+- Tested only on Archicad 29 (build 5101) on macOS 26, with floor plan, section
+  and 3D views, in a solo project. Other Archicad versions, Teamwork and other
+  kinds of view are untried. It needs a Tapir Add-On that returns `customLayers`
+  in GetViewSettings (2.0.2 or later).
+- It depends on how Archicad 29 lays out the Navigator and the View Settings
+  dialog, so an Archicad update can break it; it then stops with a message.
 - Of a view's design option combination it compares the status and the name only.
 - After a view with custom layers was put back, it also stores the layers made
   since it was saved, hidden, where before they were absent from it; it shows the

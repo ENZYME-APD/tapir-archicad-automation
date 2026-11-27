@@ -1,9 +1,9 @@
 {
     "slug": "custom-layers-for-views",
     "name": "Custom Layers for Views",
-    "summary": "Stores custom layers in the views you pick: each view's own layers with the layers you choose shown, hidden, locked or unlocked. macOS only.",
+    "summary": "macOS and English Archicad only. Stores custom layers in the views you pick, with the layers you choose shown, hidden, locked or unlocked.",
     "category": "navigator-views",
-    "tags": ["views", "view-map", "layers", "view-settings", "navigator", "macos"],
+    "tags": ["views", "view-map", "layers", "view-settings", "navigator", "macos", "english-only"],
     "author": { "name": "Ben Tristem", "github": "BenTristem" },
     "license": "MIT",
     "entry": "custom_layers_for_views.py",
@@ -12,7 +12,7 @@
             "version": "1.0.0",
             "archicadVersions": [29],
             "minTapirVersion": "2.0.2",
-            "changelog": "First version."
+            "changelog": "First version. macOS only, Archicad in English only, tested on Archicad 29."
         }
     ]
 }

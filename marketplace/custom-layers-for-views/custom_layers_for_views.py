@@ -27,8 +27,8 @@ through macOS Accessibility, without bringing Archicad to the front. That button
 of the window, so the script then writes the view's other settings (zoom, scale, pen set, ...) back and
 reads the view again: a view that does not read back as asked is put back as it was and reported.
 
-macOS only, and only where Archicad's interface is in English (the script finds the buttons by their
-names, the constants below).
+macOS only, and only where Archicad's interface is in English: the script finds the buttons by their
+names (the constants below). Tested on Archicad 29 alone.
 """
 
 import sys
@@ -52,8 +52,8 @@ except ModuleNotFoundError as error:
 
 SCRIPT_NAME = "Custom Layers for Views"
 
-# The names Archicad's English interface gives the controls the script presses. In another language, put that
-# language's names here.
+# The names Archicad's English interface gives the controls the script presses. English is the only language
+# the script was tried in.
 NAVIGATOR_SETTINGS_BUTTON = "Settings…"
 VIEW_SETTINGS_DIALOG = "View Settings"
 GET_WINDOW_SETTINGS_BUTTON = "Get Current Window's Settings"
@@ -495,7 +495,7 @@ class CustomLayersForViews:
     def __init__(self):
         self.window = ScriptWindow(
             SCRIPT_NAME,
-            "Stores custom layers in the views you select: each view's own layers, with the layers below shown, "
+            "macOS and English Archicad only. Stores custom layers in the views you select: each view's own layers, with the layers below shown, "
             "hidden, locked or unlocked. A view that uses a layer combination gets the combination's states as "
             "custom layers. The script opens each view in Archicad and presses View Settings > Get Current "
             "Window's Settings for it, then puts the view's zoom and other settings back and checks the result. "
