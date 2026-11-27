@@ -11926,7 +11926,15 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
             // returning an error (#686). Deliberately no CalcBounds fallback for the Slab:
             // the situations that leave it without a solid body are the very ones in which
             // CalcBounds crashes.
-            err = CalculateSolidBodyBounds (elemHead, box3D);
+            InitializeEmptyBounds (box3D);
+            bool foundSolidBody = false;
+            err = AccumulateSolidBodyBounds (elemHead, box3D, foundSolidBody);
+            if (err == NoError && !foundSolidBody) {
+                // Archicad's 3D model of the element is there but holds no solid body: a trim can
+                // remove the whole body, e.g. of an in-place copy trimmed like its original (#3088).
+                boundingBoxes3D (CreateErrorResponse (APIERR_GENERAL, "Archicad's 3D model of the element has no solid body (it may be trimmed away entirely), so there is no 3D bounding box"));
+                continue;
+            }
         } else if (typeID == API_WallID) {
             // ACAPI_Element_CalcBounds measures a Wall along its reference line, so it leaves
             // out what the wall connections add: at an L or T corner the 3D body reaches up to

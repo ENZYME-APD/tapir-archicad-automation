@@ -1,0 +1,79 @@
+{
+  "title": "Get3DBoundingBoxes says that a roof trimmed away entirely has no solid body (#3088)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "thickness": 0.25, "structureType": "Basic", "floorIndex": 0, "level": 4.4,
+            "polygonCoordinates": [ { "x": 1349, "y": 1340 }, { "x": 1357, "y": 1340 }, { "x": 1357, "y": 1347 }, { "x": 1349, "y": 1347 } ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "in-place copy of the roof",
+      "command": "CopyElements",
+      "params": {
+        "elements": [ { "elementId": { "guid": "${r1}" } } ],
+        "offset": { "x": 0, "y": 0, "z": 0 }
+      },
+      "save": { "r2": "copies[0].elements[0].elementId.guid" }
+    },
+    {
+      "id": "extruded shell over both roofs",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded", "floorIndex": 0, "thickness": 0.2, "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1348, "y": 1348, "z": 4.8 } },
+            "profile": { "coordinates": [ { "x": 0, "y": 0 }, { "x": 4, "y": 1 }, { "x": 8, "y": 0 } ] },
+            "extrusionVector": { "x": 9, "y": 0, "z": 0 }
+          }
+        ]
+      },
+      "save": { "sh": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "both roofs before the trim",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ] },
+      "expect": [
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "exists": true, "name": "original: bounding box before the trim" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMin", "exists": true, "name": "copy: bounding box before the trim" }
+      ]
+    },
+    {
+      "id": "trim the original with the shell",
+      "command": "TrimElements",
+      "creates": false,
+      "params": { "trimType": "KeepOutside", "elements": [ { "elementId": { "guid": "${r1}" } } ], "trimmingElement": { "guid": "${sh}" } },
+      "expect": [ { "path": "success", "eq": true, "name": "original trimmed" } ]
+    },
+    {
+      "id": "trim the copy with the shell",
+      "command": "TrimElements",
+      "creates": false,
+      "params": { "trimType": "KeepOutside", "elements": [ { "elementId": { "guid": "${r2}" } } ], "trimmingElement": { "guid": "${sh}" } },
+      "expect": [ { "path": "success", "eq": true, "name": "copy trimmed" } ]
+    },
+    {
+      "id": "[original, copy] after the trim",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ] },
+      "expect": [
+        { "path": "boundingBoxes3D", "len": 2, "name": "one item per roof" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "exists": true, "name": "original: still has its trimmed bounding box" },
+        { "path": "boundingBoxes3D[1].error.message", "contains": "no solid body", "name": "copy trimmed away (as in #3088): the error says it has no solid body" }
+      ]
+    }
+  ]
+}
