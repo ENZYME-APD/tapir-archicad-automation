@@ -24883,16 +24883,7 @@
                 "$ref": "#/AnalyticalPointLoad"
             },
             "geometry": {
-                "type": "object",
-                "properties": {
-                    "coordinate": {
-                        "$ref": "#/Coordinate3D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "coordinate"
-                ]
+                "$ref": "#/AnalyticalPointLoadGeometry"
             }
         },
         "additionalProperties": false,
@@ -28099,22 +28090,7 @@
                             "type": "integer"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "layerIndex": {
-                                    "type": "integer",
-                                    "description": "The attribute index of the layer."
-                                },
-                                "connectionClassId": {
-                                    "type": "integer",
-                                    "description": "The connection class of the layer."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "layerIndex",
-                                "connectionClassId"
-                            ]
+                            "$ref": "#/AnalyticalLayerConnectionClass"
                         }
                     ]
                 }
@@ -28139,12 +28115,7 @@
         "description": "The visibility settings of the Structural Analytical Model. Archicad 26 and newer.",
         "properties": {
             "visibilityMode": {
-                "type": "string",
-                "description": "Whether only the analytical model is shown or the analytical model within the entire model.",
-                "enum": [
-                    "AnalyticalModelOnly",
-                    "AnalyticalModelWithinEntireModel"
-                ]
+                "$ref": "#/AnalyticalVisibilityMode"
             },
             "isAnalyticalModelVisible": {
                 "type": "boolean"
@@ -28171,13 +28142,7 @@
                 "type": "boolean"
             },
             "loadVisibilityMode": {
-                "type": "string",
-                "description": "Which loads are shown: filtered by the active settings, none or all.",
-                "enum": [
-                    "FilterByActive",
-                    "HideAll",
-                    "ShowAll"
-                ]
+                "$ref": "#/AnalyticalLoadVisibilityMode"
             }
         },
         "additionalProperties": false
@@ -28428,15 +28393,7 @@
         "description": "A curve of the Structural Analytical Model.",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "The type of the curve. Bezier exists from Archicad 26.",
-                "enum": [
-                    "Line",
-                    "Arc",
-                    "Spline",
-                    "Bezier",
-                    "Ellipse"
-                ]
+                "$ref": "#/AnalyticalCurveType"
             },
             "begNode": {
                 "$ref": "#/AnalyticalNode"
@@ -28459,18 +28416,715 @@
             "midCoords"
         ]
     },
+    "AnalyticalCrossSectionType": {
+        "type": "string",
+        "enum": [
+            "Rectangle",
+            "Circle",
+            "Attribute",
+            "Custom"
+        ]
+    },
+    "AnalyticalProfileParameter": {
+        "type": "object",
+        "properties": {
+            "parameterId": {
+                "$ref": "#/GuidId"
+            },
+            "value": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "parameterId",
+            "value"
+        ]
+    },
+    "AnalyticalCrossSectionAlignment": {
+        "type": "string",
+        "description": "The alignment of the cross section. Archicad 26 and newer.",
+        "enum": [
+            "TopLeft",
+            "Top",
+            "TopRight",
+            "Left",
+            "Center",
+            "Right",
+            "BottomLeft",
+            "Bottom",
+            "BottomRight",
+            "None"
+        ]
+    },
+    "AnalyticalCurveType": {
+        "type": "string",
+        "description": "The type of the curve. Bezier exists from Archicad 26.",
+        "enum": [
+            "Line",
+            "Arc",
+            "Spline",
+            "Bezier",
+            "Ellipse"
+        ]
+    },
+    "AnalyticalCurveMemberFEMType": {
+        "type": "string",
+        "enum": [
+            "Standard",
+            "AxialForceOnly",
+            "CompressionOnly",
+            "TensionOnly"
+        ]
+    },
+    "AnalyticalVaryingSegment": {
+        "type": "object",
+        "properties": {
+            "begProfile": {
+                "$ref": "#/AnalyticalCrossSection"
+            },
+            "endProfile": {
+                "$ref": "#/AnalyticalCrossSection",
+                "description": "Only for a tapered segment."
+            },
+            "span": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begProfile",
+            "span"
+        ]
+    },
+    "AnalyticalEdgeLoadSettings": {
+        "type": "object",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId",
+                "description": "The load case the load belongs to."
+            },
+            "loadForceType": {
+                "$ref": "#/AnalyticalLoadForceType"
+            },
+            "loadDistributionType": {
+                "$ref": "#/AnalyticalLoadDistributionType"
+            },
+            "coordinateSystemType": {
+                "$ref": "#/AnalyticalCoordSysDirection"
+            },
+            "startValue": {
+                "$ref": "#/Coordinate3D"
+            },
+            "endValue": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "loadForceType",
+            "loadDistributionType",
+            "coordinateSystemType",
+            "startValue",
+            "endValue"
+        ]
+    },
+    "AnalyticalLoadDistributionType": {
+        "type": "string",
+        "description": "Whether the load is the same along the edge or changes from the start value to the end value.",
+        "enum": [
+            "Uniform",
+            "Trapezoid"
+        ]
+    },
+    "AnalyticalExportMappingItem": {
+        "type": "object",
+        "properties": {
+            "partId": {
+                "$ref": "#/AnalyticalInternalMemberPartId"
+            },
+            "elemPartIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalElementPartId"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "partId",
+            "elemPartIds"
+        ]
+    },
+    "AnalyticalElementPartId": {
+        "type": "object",
+        "properties": {
+            "memberGuid": {
+                "$ref": "#/GuidId"
+            },
+            "contourIndex": {
+                "type": "integer"
+            },
+            "edgeOrVertexIndex": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "memberGuid",
+            "contourIndex",
+            "edgeOrVertexIndex"
+        ]
+    },
+    "AnalyticalLinkSettings": {
+        "type": "object",
+        "properties": {
+            "geometry": {
+                "$ref": "#/AnalyticalLinkGeometryType"
+            },
+            "type": {
+                "$ref": "#/AnalyticalLinkType"
+            },
+            "rigidSettings": {
+                "$ref": "#/AnalyticalRigidLinkSettings"
+            },
+            "springSettings": {
+                "$ref": "#/AnalyticalSpringLinkSettings"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "geometry",
+            "type",
+            "rigidSettings",
+            "springSettings"
+        ]
+    },
+    "AnalyticalLinkGeometryType": {
+        "type": "string",
+        "enum": [
+            "Link1D",
+            "Link2D"
+        ]
+    },
+    "AnalyticalLinkType": {
+        "type": "string",
+        "enum": [
+            "Rigid",
+            "Spring"
+        ]
+    },
+    "AnalyticalRigidLinkSettings": {
+        "type": "object",
+        "properties": {
+            "startConnectionType": {
+                "$ref": "#/AnalyticalLinkConnectionType"
+            },
+            "endConnectionType": {
+                "$ref": "#/AnalyticalLinkConnectionType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "startConnectionType",
+            "endConnectionType"
+        ]
+    },
+    "AnalyticalLinkConnectionType": {
+        "type": "string",
+        "enum": [
+            "RigidConnection",
+            "HingeConnection"
+        ],
+        "description": "The connection type at an end of an analytical rigid link."
+    },
+    "AnalyticalSpringLinkSettings": {
+        "type": "object",
+        "properties": {
+            "direction": {
+                "$ref": "#/AnalyticalCoordSysDirection"
+            },
+            "translation": {
+                "$ref": "#/AnalyticalSpringTranslation"
+            },
+            "rotation": {
+                "$ref": "#/AnalyticalSpringRotation"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "direction",
+            "translation",
+            "rotation"
+        ]
+    },
+    "AnalyticalSpringTranslation": {
+        "type": "object",
+        "properties": {
+            "kxType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kxValue": {
+                "type": "number"
+            },
+            "kyType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kyValue": {
+                "type": "number"
+            },
+            "kzType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kzValue": {
+                "type": "number"
+            },
+            "resistanceFx": {
+                "type": "boolean"
+            },
+            "fxValue": {
+                "type": "number"
+            },
+            "resistanceFy": {
+                "type": "boolean"
+            },
+            "fyValue": {
+                "type": "number"
+            },
+            "resistanceFz": {
+                "type": "boolean"
+            },
+            "fzValue": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kxType",
+            "kyType",
+            "kzType"
+        ]
+    },
+    "AnalyticalSpringRotation": {
+        "type": "object",
+        "properties": {
+            "kxxType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kxxValue": {
+                "type": "number"
+            },
+            "kyyType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kyyValue": {
+                "type": "number"
+            },
+            "kzzType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "kzzValue": {
+                "type": "number"
+            },
+            "resistanceMx": {
+                "type": "boolean"
+            },
+            "mxValue": {
+                "type": "number"
+            },
+            "resistanceMy": {
+                "type": "boolean"
+            },
+            "myValue": {
+                "type": "number"
+            },
+            "resistanceMz": {
+                "type": "boolean"
+            },
+            "mzValue": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kxxType",
+            "kyyType",
+            "kzzType"
+        ]
+    },
+    "AnalyticalMemberPartRefType": {
+        "type": "string",
+        "enum": [
+            "BegVertex",
+            "EndVertex",
+            "CustomVertex",
+            "Edge",
+            "RatioEdge",
+            "Surface",
+            "CustomSurface",
+            "CustomEdge"
+        ]
+    },
+    "AnalyticalCustomVertexData": {
+        "type": "object",
+        "description": "The point of a CustomVertex.",
+        "properties": {
+            "customVertexCoord": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalRatioEdgeData": {
+        "type": "object",
+        "description": "The part of the edge of a RatioEdge.",
+        "properties": {
+            "ratioStart": {
+                "type": "number"
+            },
+            "ratioEnd": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalLayerConnectionClass": {
+        "type": "object",
+        "properties": {
+            "layerIndex": {
+                "type": "integer",
+                "description": "The attribute index of the layer."
+            },
+            "connectionClassId": {
+                "type": "integer",
+                "description": "The connection class of the layer."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layerIndex",
+            "connectionClassId"
+        ]
+    },
+    "AnalyticalPointLoadSettings": {
+        "type": "object",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId",
+                "description": "The load case the load belongs to."
+            },
+            "loadForceType": {
+                "$ref": "#/AnalyticalLoadForceType"
+            },
+            "coordinateSystemType": {
+                "$ref": "#/AnalyticalCoordSysDirection"
+            },
+            "xValue": {
+                "type": "number"
+            },
+            "yValue": {
+                "type": "number"
+            },
+            "zValue": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "loadForceType",
+            "coordinateSystemType",
+            "xValue",
+            "yValue",
+            "zValue"
+        ]
+    },
+    "AnalyticalReleaseDescription": {
+        "type": "object",
+        "properties": {
+            "ux": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessX": {
+                "type": "number"
+            },
+            "uy": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessY": {
+                "type": "number"
+            },
+            "uz": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessZ": {
+                "type": "number"
+            },
+            "fix": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessFix": {
+                "type": "number"
+            },
+            "fiy": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessFiy": {
+                "type": "number"
+            },
+            "fiz": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "stiffnessFiz": {
+                "type": "number"
+            },
+            "amPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "ux",
+            "uy",
+            "uz",
+            "fix",
+            "fiy",
+            "fiz",
+            "amPartRef"
+        ]
+    },
+    "AnalyticalSupportSettings": {
+        "type": "object",
+        "properties": {
+            "supportType": {
+                "$ref": "#/AnalyticalSupportType"
+            },
+            "supportValues": {
+                "$ref": "#/AnalyticalSupportValues"
+            },
+            "coordinateSystem": {
+                "$ref": "#/AnalyticalCoordSysDirection"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "supportType",
+            "supportValues",
+            "coordinateSystem"
+        ]
+    },
+    "AnalyticalSupportType": {
+        "type": "string",
+        "enum": [
+            "SimplePoint",
+            "SingleLine",
+            "Surface"
+        ]
+    },
+    "AnalyticalSupportValues": {
+        "type": "object",
+        "description": "The rigidity and the value of the three translations and the three rotations.",
+        "properties": {
+            "xType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "xValue": {
+                "type": "number"
+            },
+            "yType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "yValue": {
+                "type": "number"
+            },
+            "zType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "zValue": {
+                "type": "number"
+            },
+            "rxType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "rxValue": {
+                "type": "number"
+            },
+            "ryType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "ryValue": {
+                "type": "number"
+            },
+            "rzType": {
+                "$ref": "#/AnalyticalRigidityType"
+            },
+            "rzValue": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "xType",
+            "yType",
+            "zType",
+            "rxType",
+            "ryType",
+            "rzType"
+        ]
+    },
+    "AnalyticalSurfaceLoadSettings": {
+        "type": "object",
+        "properties": {
+            "loadCaseId": {
+                "$ref": "#/GuidId",
+                "description": "The load case the load belongs to."
+            },
+            "coordinateSystemType": {
+                "$ref": "#/AnalyticalCoordSysDirection"
+            },
+            "xValue": {
+                "type": "number"
+            },
+            "yValue": {
+                "type": "number"
+            },
+            "zValue": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "loadCaseId",
+            "coordinateSystemType",
+            "xValue",
+            "yValue",
+            "zValue"
+        ]
+    },
+    "AnalyticalSurface": {
+        "type": "object",
+        "properties": {
+            "surfaceType": {
+                "$ref": "#/AnalyticalSurfaceType"
+            },
+            "planeSurface": {
+                "$ref": "#/AnalyticalPlaneSurface"
+            },
+            "cylinderSurface": {
+                "$ref": "#/AnalyticalCylinderSurface"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalSurfaceType": {
+        "type": "string",
+        "enum": [
+            "Plane",
+            "Cylinder"
+        ]
+    },
+    "AnalyticalPlaneSurface": {
+        "type": "object",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/Coordinate3D"
+            },
+            "normalVector": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalCylinderSurface": {
+        "type": "object",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/Coordinate3D"
+            },
+            "axisDirection": {
+                "$ref": "#/Coordinate3D"
+            },
+            "referenceRay": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false
+    },
+    "AnalyticalHoleContour": {
+        "type": "object",
+        "properties": {
+            "contour": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AnalyticalCurve"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "contour"
+        ]
+    },
+    "AnalyticalSurfaceMemberFEMType": {
+        "type": "string",
+        "enum": [
+            "Plate",
+            "Wall",
+            "Shell"
+        ]
+    },
+    "AnalyticalVisibilityMode": {
+        "type": "string",
+        "description": "Whether only the analytical model is shown or the analytical model within the entire model.",
+        "enum": [
+            "AnalyticalModelOnly",
+            "AnalyticalModelWithinEntireModel"
+        ]
+    },
+    "AnalyticalLoadVisibilityMode": {
+        "type": "string",
+        "description": "Which loads are shown: filtered by the active settings, none or all.",
+        "enum": [
+            "FilterByActive",
+            "HideAll",
+            "ShowAll"
+        ]
+    },
+    "AnalyticalPointLoadGeometry": {
+        "type": "object",
+        "properties": {
+            "coordinate": {
+                "$ref": "#/Coordinate3D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinate"
+        ]
+    },
+    "AnalyticalImportMapping": {
+        "type": "object",
+        "properties": {
+            "elemPartId": {
+                "$ref": "#/AnalyticalElementPartId"
+            },
+            "memberPartRef": {
+                "$ref": "#/AnalyticalMemberPartRef"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elemPartId",
+            "memberPartRef"
+        ]
+    },
     "AnalyticalCrossSection": {
         "type": "object",
         "description": "The cross section of a curve member. The profile image of Archicad 26 and newer is not returned.",
         "properties": {
             "crossSectionType": {
-                "type": "string",
-                "enum": [
-                    "Rectangle",
-                    "Circle",
-                    "Attribute",
-                    "Custom"
-                ]
+                "$ref": "#/AnalyticalCrossSectionType"
             },
             "width": {
                 "type": "number"
@@ -28496,37 +29150,11 @@
                 "type": "array",
                 "description": "The parameters of the profile.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "parameterId": {
-                            "$ref": "#/GuidId"
-                        },
-                        "value": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "parameterId",
-                        "value"
-                    ]
+                    "$ref": "#/AnalyticalProfileParameter"
                 }
             },
             "alignment": {
-                "type": "string",
-                "description": "The alignment of the cross section. Archicad 26 and newer.",
-                "enum": [
-                    "TopLeft",
-                    "Top",
-                    "TopRight",
-                    "Left",
-                    "Center",
-                    "Right",
-                    "BottomLeft",
-                    "Bottom",
-                    "BottomRight",
-                    "None"
-                ]
+                "$ref": "#/AnalyticalCrossSectionAlignment"
             }
         },
         "additionalProperties": false
@@ -28573,36 +29201,13 @@
                 "description": "The attribute index of the layer."
             },
             "FEMType": {
-                "type": "string",
-                "enum": [
-                    "Standard",
-                    "AxialForceOnly",
-                    "CompressionOnly",
-                    "TensionOnly"
-                ]
+                "$ref": "#/AnalyticalCurveMemberFEMType"
             },
             "varyingSegmentList": {
                 "type": "array",
                 "description": "The segments of a member with varying cross section. Archicad 26 and newer.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "begProfile": {
-                            "$ref": "#/AnalyticalCrossSection"
-                        },
-                        "endProfile": {
-                            "$ref": "#/AnalyticalCrossSection",
-                            "description": "Only for a tapered segment."
-                        },
-                        "span": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "begProfile",
-                        "span"
-                    ]
+                    "$ref": "#/AnalyticalVaryingSegment"
                 }
             }
         },
@@ -28619,44 +29224,7 @@
                 "$ref": "#/GuidId"
             },
             "surface": {
-                "type": "object",
-                "properties": {
-                    "surfaceType": {
-                        "type": "string",
-                        "enum": [
-                            "Plane",
-                            "Cylinder"
-                        ]
-                    },
-                    "planeSurface": {
-                        "type": "object",
-                        "properties": {
-                            "basePoint": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "normalVector": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        },
-                        "additionalProperties": false
-                    },
-                    "cylinderSurface": {
-                        "type": "object",
-                        "properties": {
-                            "basePoint": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "axisDirection": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "referenceRay": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/AnalyticalSurface"
             },
             "contour": {
                 "type": "array",
@@ -28669,19 +29237,7 @@
                 "type": "array",
                 "description": "The contours of the holes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "contour": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/AnalyticalCurve"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "contour"
-                    ]
+                    "$ref": "#/AnalyticalHoleContour"
                 }
             },
             "internalNodes": {
@@ -28712,12 +29268,7 @@
                 "description": "The attribute index of the layer."
             },
             "FEMType": {
-                "type": "string",
-                "enum": [
-                    "Plate",
-                    "Wall",
-                    "Shell"
-                ]
+                "$ref": "#/AnalyticalSurfaceMemberFEMType"
             },
             "groupId": {
                 "$ref": "#/GuidId"
@@ -28754,40 +29305,7 @@
             "items": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "partId": {
-                            "$ref": "#/AnalyticalInternalMemberPartId"
-                        },
-                        "elemPartIds": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "memberGuid": {
-                                        "$ref": "#/GuidId"
-                                    },
-                                    "contourIndex": {
-                                        "type": "integer"
-                                    },
-                                    "edgeOrVertexIndex": {
-                                        "type": "integer"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "memberGuid",
-                                    "contourIndex",
-                                    "edgeOrVertexIndex"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "partId",
-                        "elemPartIds"
-                    ]
+                    "$ref": "#/AnalyticalExportMappingItem"
                 }
             }
         },
@@ -28822,43 +29340,16 @@
                 "description": "The element of the analytical member."
             },
             "partRefType": {
-                "type": "string",
-                "enum": [
-                    "BegVertex",
-                    "EndVertex",
-                    "CustomVertex",
-                    "Edge",
-                    "RatioEdge",
-                    "Surface",
-                    "CustomSurface",
-                    "CustomEdge"
-                ]
+                "$ref": "#/AnalyticalMemberPartRefType"
             },
             "partId": {
                 "$ref": "#/AnalyticalInternalMemberPartId"
             },
             "customVertexData": {
-                "type": "object",
-                "description": "The point of a CustomVertex.",
-                "properties": {
-                    "customVertexCoord": {
-                        "$ref": "#/Coordinate3D"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/AnalyticalCustomVertexData"
             },
             "ratioEdgeData": {
-                "type": "object",
-                "description": "The part of the edge of a RatioEdge.",
-                "properties": {
-                    "ratioStart": {
-                        "type": "number"
-                    },
-                    "ratioEnd": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/AnalyticalRatioEdgeData"
             }
         },
         "additionalProperties": false,
@@ -28892,58 +29383,7 @@
                 "type": "array",
                 "description": "The releases of the member parts. Each needs all six rigidities; a stiffness left out is 0.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "ux": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessX": {
-                            "type": "number"
-                        },
-                        "uy": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessY": {
-                            "type": "number"
-                        },
-                        "uz": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessZ": {
-                            "type": "number"
-                        },
-                        "fix": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessFix": {
-                            "type": "number"
-                        },
-                        "fiy": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessFiy": {
-                            "type": "number"
-                        },
-                        "fiz": {
-                            "$ref": "#/AnalyticalRigidityType"
-                        },
-                        "stiffnessFiz": {
-                            "type": "number"
-                        },
-                        "amPartRef": {
-                            "$ref": "#/AnalyticalMemberPartRef"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "ux",
-                        "uy",
-                        "uz",
-                        "fix",
-                        "fiy",
-                        "fiz",
-                        "amPartRef"
-                    ]
+                    "$ref": "#/AnalyticalReleaseDescription"
                 }
             }
         },
@@ -28983,53 +29423,7 @@
         "description": "An analytical support: its settings and the member part it supports. Every rigidity type is required; a value left out is 0.",
         "properties": {
             "supportSettings": {
-                "type": "object",
-                "properties": {
-                    "supportType": {
-                        "type": "string",
-                        "enum": [
-                            "SimplePoint",
-                            "SingleLine",
-                            "Surface"
-                        ]
-                    },
-                    "supportValues": {
-                        "type": "object",
-                        "description": "The rigidity and the value of the three translations and the three rotations.",
-                        "properties": {
-                            "xType": { "$ref": "#/AnalyticalRigidityType" },
-                            "xValue": { "type": "number" },
-                            "yType": { "$ref": "#/AnalyticalRigidityType" },
-                            "yValue": { "type": "number" },
-                            "zType": { "$ref": "#/AnalyticalRigidityType" },
-                            "zValue": { "type": "number" },
-                            "rxType": { "$ref": "#/AnalyticalRigidityType" },
-                            "rxValue": { "type": "number" },
-                            "ryType": { "$ref": "#/AnalyticalRigidityType" },
-                            "ryValue": { "type": "number" },
-                            "rzType": { "$ref": "#/AnalyticalRigidityType" },
-                            "rzValue": { "type": "number" }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "xType",
-                            "yType",
-                            "zType",
-                            "rxType",
-                            "ryType",
-                            "rzType"
-                        ]
-                    },
-                    "coordinateSystem": {
-                        "$ref": "#/AnalyticalCoordSysDirection"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "supportType",
-                    "supportValues",
-                    "coordinateSystem"
-                ]
+                "$ref": "#/AnalyticalSupportSettings"
             },
             "supportedMemberPartRef": {
                 "$ref": "#/AnalyticalMemberPartRef"
@@ -29070,114 +29464,7 @@
         "description": "An analytical link: its settings and the member parts it connects. The rigid and the spring settings are both required, whichever type the link has. Every rigidity type is required; a value left out is 0 and a resistance left out is false.",
         "properties": {
             "linkSettings": {
-                "type": "object",
-                "properties": {
-                    "geometry": {
-                        "type": "string",
-                        "enum": [
-                            "Link1D",
-                            "Link2D"
-                        ]
-                    },
-                    "type": {
-                        "type": "string",
-                        "enum": [
-                            "Rigid",
-                            "Spring"
-                        ]
-                    },
-                    "rigidSettings": {
-                        "type": "object",
-                        "properties": {
-                            "startConnectionType": {
-                                "type": "string",
-                                "enum": [
-                                    "RigidConnection",
-                                    "HingeConnection"
-                                ]
-                            },
-                            "endConnectionType": {
-                                "type": "string",
-                                "enum": [
-                                    "RigidConnection",
-                                    "HingeConnection"
-                                ]
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "startConnectionType",
-                            "endConnectionType"
-                        ]
-                    },
-                    "springSettings": {
-                        "type": "object",
-                        "properties": {
-                            "direction": {
-                                "$ref": "#/AnalyticalCoordSysDirection"
-                            },
-                            "translation": {
-                                "type": "object",
-                                "properties": {
-                                    "kxType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kxValue": { "type": "number" },
-                                    "kyType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kyValue": { "type": "number" },
-                                    "kzType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kzValue": { "type": "number" },
-                                    "resistanceFx": { "type": "boolean" },
-                                    "fxValue": { "type": "number" },
-                                    "resistanceFy": { "type": "boolean" },
-                                    "fyValue": { "type": "number" },
-                                    "resistanceFz": { "type": "boolean" },
-                                    "fzValue": { "type": "number" }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "kxType",
-                                    "kyType",
-                                    "kzType"
-                                ]
-                            },
-                            "rotation": {
-                                "type": "object",
-                                "properties": {
-                                    "kxxType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kxxValue": { "type": "number" },
-                                    "kyyType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kyyValue": { "type": "number" },
-                                    "kzzType": { "$ref": "#/AnalyticalRigidityType" },
-                                    "kzzValue": { "type": "number" },
-                                    "resistanceMx": { "type": "boolean" },
-                                    "mxValue": { "type": "number" },
-                                    "resistanceMy": { "type": "boolean" },
-                                    "myValue": { "type": "number" },
-                                    "resistanceMz": { "type": "boolean" },
-                                    "mzValue": { "type": "number" }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "kxxType",
-                                    "kyyType",
-                                    "kzzType"
-                                ]
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "direction",
-                            "translation",
-                            "rotation"
-                        ]
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "geometry",
-                    "type",
-                    "rigidSettings",
-                    "springSettings"
-                ]
+                "$ref": "#/AnalyticalLinkSettings"
             },
             "startElementPartRef": {
                 "$ref": "#/AnalyticalMemberPartRef"
@@ -29237,31 +29524,7 @@
         "description": "An analytical point load: its settings and the member part it loads.",
         "properties": {
             "loadSettings": {
-                "type": "object",
-                "properties": {
-                    "loadCaseId": {
-                        "$ref": "#/GuidId",
-                        "description": "The load case the load belongs to."
-                    },
-                    "loadForceType": {
-                        "$ref": "#/AnalyticalLoadForceType"
-                    },
-                    "coordinateSystemType": {
-                        "$ref": "#/AnalyticalCoordSysDirection"
-                    },
-                    "xValue": { "type": "number" },
-                    "yValue": { "type": "number" },
-                    "zValue": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "loadCaseId",
-                    "loadForceType",
-                    "coordinateSystemType",
-                    "xValue",
-                    "yValue",
-                    "zValue"
-                ]
+                "$ref": "#/AnalyticalPointLoadSettings"
             },
             "loadedMemberPartRef": {
                 "$ref": "#/AnalyticalMemberPartRef"
@@ -29278,42 +29541,7 @@
         "description": "An analytical edge load: its settings and the member part it loads.",
         "properties": {
             "loadSettings": {
-                "type": "object",
-                "properties": {
-                    "loadCaseId": {
-                        "$ref": "#/GuidId",
-                        "description": "The load case the load belongs to."
-                    },
-                    "loadForceType": {
-                        "$ref": "#/AnalyticalLoadForceType"
-                    },
-                    "loadDistributionType": {
-                        "type": "string",
-                        "description": "Whether the load is the same along the edge or changes from the start value to the end value.",
-                        "enum": [
-                            "Uniform",
-                            "Trapezoid"
-                        ]
-                    },
-                    "coordinateSystemType": {
-                        "$ref": "#/AnalyticalCoordSysDirection"
-                    },
-                    "startValue": {
-                        "$ref": "#/Coordinate3D"
-                    },
-                    "endValue": {
-                        "$ref": "#/Coordinate3D"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "loadCaseId",
-                    "loadForceType",
-                    "loadDistributionType",
-                    "coordinateSystemType",
-                    "startValue",
-                    "endValue"
-                ]
+                "$ref": "#/AnalyticalEdgeLoadSettings"
             },
             "loadedMemberPartRef": {
                 "$ref": "#/AnalyticalMemberPartRef"
@@ -29330,27 +29558,7 @@
         "description": "An analytical surface load: its settings and the member part it loads.",
         "properties": {
             "loadSettings": {
-                "type": "object",
-                "properties": {
-                    "loadCaseId": {
-                        "$ref": "#/GuidId",
-                        "description": "The load case the load belongs to."
-                    },
-                    "coordinateSystemType": {
-                        "$ref": "#/AnalyticalCoordSysDirection"
-                    },
-                    "xValue": { "type": "number" },
-                    "yValue": { "type": "number" },
-                    "zValue": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "loadCaseId",
-                    "coordinateSystemType",
-                    "xValue",
-                    "yValue",
-                    "zValue"
-                ]
+                "$ref": "#/AnalyticalSurfaceLoadSettings"
             },
             "loadedMemberPartRef": {
                 "$ref": "#/AnalyticalMemberPartRef"
@@ -29401,37 +29609,7 @@
             "items": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elemPartId": {
-                            "type": "object",
-                            "properties": {
-                                "memberGuid": {
-                                    "$ref": "#/GuidId"
-                                },
-                                "contourIndex": {
-                                    "type": "integer"
-                                },
-                                "edgeOrVertexIndex": {
-                                    "type": "integer"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "memberGuid",
-                                "contourIndex",
-                                "edgeOrVertexIndex"
-                            ]
-                        },
-                        "memberPartRef": {
-                            "$ref": "#/AnalyticalMemberPartRef"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elemPartId",
-                        "memberPartRef"
-                    ]
+                    "$ref": "#/AnalyticalImportMapping"
                 }
             }
         },
