@@ -6967,17 +6967,6 @@ static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
     return R"({"$ref": "#/CalculationUnitPreferencesUpdate"})";
 }
 
-// The item count of the height limits list: all three in the response of
-// GetProjectPreferences, one to three in the input of SetProjectPreferences,
-// where the given items change the limits of the same index.
-static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
-{
-    if (allFieldsRequired) {
-        return "\"minItems\": 3, \"maxItems\": 3";
-    }
-    return "\"minItems\": 1, \"maxItems\": 3";
-}
-
 static GS::UniString GetZonesSchema (bool allFieldsRequired)
 {
     if (allFieldsRequired) {
