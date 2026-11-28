@@ -14953,6 +14953,335 @@ GS::ObjectState RenameAttributesCommand::Execute (const GS::ObjectState& paramet
     return response;
 }
 
+DuplicateAttributesCommand::DuplicateAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DuplicateAttributesCommand::GetName () const
+{
+    return "DuplicateAttributes";
+}
+
+GS::Optional<GS::UniString> DuplicateAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "The attributes to duplicate, of any type that can be created (pens and fonts cannot).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The attribute to duplicate. Either attributeId, or attributeType together with attributeIndex, must be given."
+                        },
+                        "attributeType": {
+                            "$ref": "#/AttributeType",
+                            "description": "The type of the attribute to duplicate, used with attributeIndex when attributeId is not given."
+                        },
+                        "attributeIndex": {
+                            "type": "integer",
+                            "description": "The index of the attribute to duplicate, used with attributeType when attributeId is not given."
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The name of the copy. It must not be empty or the name of another attribute of the same type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "newName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DuplicateAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeIds": {
+                "type": "array",
+                "description": "One item per input attribute, in the input order: the copy, or an error when no copy was made.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "attributeId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The identifier of the copy."
+                                },
+                                "warnings": {
+                                    "type": "array",
+                                    "description": "What of the source could not be copied: a classification item, a property value or the attribute folder. Only present when something could not be copied; the copy itself exists.",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "attributeId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeIds"
+        ]
+    })";
+}
+
+// The attribute types ACAPI_Attribute_CreateExt can create. Pens and fonts (attribute types before Archicad 27)
+// cannot be created ("You cannot create pen and font attributes").
+static bool IsDuplicableAttributeType (API_AttrTypeID typeID)
+{
+    switch (typeID) {
+        case API_LayerID:
+        case API_LinetypeID:
+        case API_FilltypeID:
+        case API_CompWallID:
+        case API_MaterialID:
+        case API_LayerCombID:
+        case API_ZoneCatID:
+        case API_ProfileID:
+        case API_PenTableID:
+        case API_MEPSystemID:
+        case API_OperationProfileID:
+        case API_BuildingMaterialID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+#ifdef ServerMainVers_2600
+
+// The attribute folder below folder that holds the attribute, or no value when it is directly in the root folder
+// (where a new attribute is created) or not found.
+static GS::Optional<API_AttributeFolder> FindFolderOfAttribute (const API_AttributeFolder& folder, const GS::Guid& attributeGuid, bool isRoot)
+{
+    API_AttributeFolderContent content;
+    if (ACAPI_Attribute_GetFolderContent (folder, content) != NoError) {
+        return GS::NoValue;
+    }
+    if (content.attributeIds.Contains (attributeGuid)) {
+        return isRoot ? GS::Optional<API_AttributeFolder> () : GS::Optional<API_AttributeFolder> (folder);
+    }
+    for (const API_AttributeFolder& subFolder : content.subFolders) {
+        API_AttributeFolder typedSubFolder = subFolder;
+        typedSubFolder.typeID = folder.typeID;
+        GS::Optional<API_AttributeFolder> found = FindFolderOfAttribute (typedSubFolder, attributeGuid, false);
+        if (found.HasValue ()) {
+            return found;
+        }
+    }
+    return GS::NoValue;
+}
+
+#endif
+
+// Gives the copy the classification items of the source: the items the source has are added, and any other item
+// the copy got is removed, so the copy ends up with the same item in each classification system.
+static void CopyAttributeClassifications (const API_Attr_Head& sourceHead, const API_Attr_Head& copyHead, GS::Array<GS::UniString>& warnings)
+{
+    GS::Array<GS::Pair<API_Guid, API_Guid>> sourceItems;
+    if (ACAPI_Attribute_GetClassificationItems (sourceHead, sourceItems) != NoError) {
+        return;   // the type has no classifications
+    }
+    GS::Array<API_Guid> sourceItemGuids;
+    for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : sourceItems) {
+        sourceItemGuids.Push (systemItemPair.second);
+    }
+    GS::Array<GS::Pair<API_Guid, API_Guid>> copyItems;
+    if (ACAPI_Attribute_GetClassificationItems (copyHead, copyItems) == NoError) {
+        for (const GS::Pair<API_Guid, API_Guid>& systemItemPair : copyItems) {
+            if (!sourceItemGuids.Contains (systemItemPair.second)) {
+                ACAPI_Attribute_RemoveClassificationItem (copyHead, systemItemPair.second);
+            }
+        }
+    }
+    for (const API_Guid& itemGuid : sourceItemGuids) {
+        if (ACAPI_Attribute_AddClassificationItem (copyHead, itemGuid) != NoError) {
+            warnings.Push (GS::UniString ("The classification item ") + APIGuidToString (itemGuid) + " could not be added to the copy.");
+        }
+    }
+}
+
+// Writes the custom property values the source has (those that are not the default value) to the copy. Built-in
+// properties are not written: they are read from the attribute's own settings, which the copy already has.
+static void CopyAttributePropertyValues (const API_Attr_Head& sourceHead, const API_Attr_Head& copyHead, GS::Array<GS::UniString>& warnings)
+{
+    GS::Array<API_PropertyDefinition> definitions;
+    if (ACAPI_Attribute_GetPropertyDefinitions (sourceHead, API_PropertyDefinitionFilter_UserDefined, definitions) != NoError || definitions.IsEmpty ()) {
+        return;   // the type has no properties, or the source none
+    }
+    GS::Array<API_Property> properties;
+    if (ACAPI_Attribute_GetPropertyValues (sourceHead, definitions, properties) != NoError) {
+        warnings.Push ("The property values of the source could not be read, so the copy has the default values.");
+        return;
+    }
+    for (const API_Property& property : properties) {
+        if (property.status != API_Property_HasValue || property.isDefault) {
+            continue;
+        }
+        if (ACAPI_Attribute_SetProperty (copyHead, property) != NoError) {
+            warnings.Push (GS::UniString ("The value of the property '") + property.definition.name + "' could not be set on the copy.");
+        }
+    }
+}
+
+// Makes one copy, as described in the command's registration.
+static GS::ObjectState DuplicateAttribute (const GS::ObjectState& item)
+{
+    GS::UniString newName;
+    if (!item.Get ("newName", newName) || newName.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "newName is missing or empty.");
+    }
+
+    API_Attr_Head sourceHead = {};
+    const GS::ObjectState* attributeId = item.Get ("attributeId");
+    if (attributeId != nullptr) {
+        sourceHead = GetAttributeHeadFromGuid (GetGuidFromObjectState (*attributeId));
+        if (sourceHead.typeID == API_ZombieAttrID) {
+            return CreateErrorResponse (APIERR_BADID, "Attribute not found.");
+        }
+    } else {
+        GS::UniString typeStr;
+        Int32 index = 0;
+        if (!item.Get ("attributeType", typeStr) || !item.Get ("attributeIndex", index)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Either attributeId, or attributeType together with attributeIndex, must be given.");
+        }
+        sourceHead.typeID = ConvertAttributeTypeStringToID (typeStr);
+        if (sourceHead.typeID == API_ZombieAttrID) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Invalid attributeType '%T'.", typeStr.ToPrintf ()));
+        }
+        sourceHead.index = ACAPI_CreateAttributeIndex (index);
+    }
+
+    if (!IsDuplicableAttributeType (sourceHead.typeID)) {
+        return CreateErrorResponse (APIERR_BADID, "Attributes of this type cannot be created, so they cannot be duplicated (pens and fonts).");
+    }
+
+    GS::UniString sourceName;
+    API_Attribute source = {};
+    source.header.typeID = sourceHead.typeID;
+    source.header.index = sourceHead.index;
+    source.header.guid = sourceHead.guid;
+    source.header.uniStringNamePtr = &sourceName;
+    GSErrCode err = ACAPI_Attribute_Get (&source);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Attribute not found.");
+    }
+    sourceHead.index = source.header.index;
+    sourceHead.guid = source.header.guid;
+
+    // ACAPI_Attribute_CreateExt does not fail for a name that is already used: it returns the existing attribute's
+    // index. So the name is looked up first, by type and Unicode name (ACAPI_Attribute_Search tries the guid first,
+    // so it is left null).
+    GS::UniString searchedName = newName;
+    API_Attr_Head sameName = {};
+    sameName.typeID = sourceHead.typeID;
+    sameName.uniStringNamePtr = &searchedName;
+    if (ACAPI_Attribute_Search (&sameName) == NoError) {
+        DisposeAttribute (source);
+        return CreateErrorResponse (APIERR_ATTREXIST, GS::UniString ("Another attribute of the same type is already called '") + newName + "'.");
+    }
+
+    // The attribute and its extended definition (composite skins, profile geometry, fill pattern, layer combination
+    // and pen table items, ...) are written back as they were read, only the name changed.
+    API_AttributeDefExt defs = {};
+    const bool hasDefs = (ACAPI_Attribute_GetDefExt (source.header.typeID, source.header.index, &defs) == NoError);
+
+    API_Attribute copy = source;
+    copy.header.index = APIInvalidAttributeIndex;
+    copy.header.guid = APINULLGuid;
+    GS::UniString copyName = newName;
+    copy.header.uniStringNamePtr = &copyName;
+    err = hasDefs ? ACAPI_Attribute_CreateExt (&copy, &defs) : ACAPI_Attribute_Create (&copy, nullptr);
+    copy.header.uniStringNamePtr = nullptr;
+
+    if (hasDefs) {
+        ACAPI_DisposeAttrDefsHdlsExt (&defs);
+    }
+    DisposeAttribute (source);
+
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to create the copy.");
+    }
+    if (copy.header.guid == sourceHead.guid || GetAttributeIndex (copy.header.index) == GetAttributeIndex (sourceHead.index)) {
+        return CreateErrorResponse (APIERR_GENERAL, "Archicad returned the source attribute instead of a new copy.");
+    }
+
+    API_Attr_Head copyHead = {};
+    copyHead.typeID = copy.header.typeID;
+    copyHead.index = copy.header.index;
+    copyHead.guid = copy.header.guid;
+
+    GS::Array<GS::UniString> warnings;
+    // The classification decides which properties are available, so it is copied before the property values.
+    CopyAttributeClassifications (sourceHead, copyHead, warnings);
+    CopyAttributePropertyValues (sourceHead, copyHead, warnings);
+
+#ifdef ServerMainVers_2600
+    API_AttributeFolder root = {};
+    root.typeID = sourceHead.typeID;
+    if (ACAPI_Attribute_GetFolder (root) == NoError) {
+        const GS::Optional<API_AttributeFolder> folder = FindFolderOfAttribute (root, APIGuid2GSGuid (sourceHead.guid), true);
+        if (folder.HasValue () && ACAPI_Attribute_Move ({}, { APIGuid2GSGuid (copyHead.guid) }, folder.Get ()) != NoError) {
+            warnings.Push ("The copy could not be moved into the attribute folder of the source, so it is in the root folder.");
+        }
+    }
+#endif
+
+    GS::ObjectState result = CreateAttributeIdObjectState (copyHead.guid);
+    if (!warnings.IsEmpty ()) {
+        result.Add ("warnings", warnings);
+    }
+    return result;
+}
+
+GS::ObjectState DuplicateAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributes;
+    parameters.Get ("attributes", attributes);
+
+    GS::ObjectState response;
+    const auto& attributeIds = response.AddList<GS::ObjectState> ("attributeIds");
+
+    GS::Array<GS::ObjectState> results;
+    ACAPI_CallUndoableCommand ("DuplicateAttributesCommand", [&]() -> GSErrCode {
+        for (const GS::ObjectState& item : attributes) {
+            results.Push (DuplicateAttribute (item));
+        }
+        return NoError;
+    });
+
+    for (const GS::ObjectState& result : results) {
+        attributeIds (result);
+    }
+
+    return response;
+}
+
 // One item of GetProfileValuesOfElements (#2587): a profile as an element uses it, measured on
 // the element's stretched profile. The modifier names come from the profile attribute profileAttr;
 // segmentIndex is the beam or column segment, or -1 for a wall. Either profile may be null, not
