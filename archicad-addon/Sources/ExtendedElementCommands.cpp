@@ -6428,6 +6428,121 @@ static GS::Optional<GS::UniString> GetIgnoredColumnSectionSize (API_Guid elemGui
     return GetIgnoredProfiledSectionSize (memo.columnSegments, details, "depth");
 }
 
+// The values ModifyColumns and ModifyBeams write that Archicad can leave as they were while still
+// returning NoError (#3054). The element is read back after the command, only the fields given are
+// compared, and each one that did not apply becomes a warning of the item's successful result:
+// the field, the value sent, the value read back and, where known, the condition. The item stays
+// a success, so a whole GetDetailsOfElements result can still be written back.
+static const double ValueReadBackTolerance = 1e-6;
+static const double ColumnMaxSlantAngle = 1.5707963267948966; // pi/2
+
+static const char* BoolToJsonString (bool value)
+{
+    return value ? "true" : "false";
+}
+
+static const char* BeamShapeToString (API_BeamShapeTypeID beamShape)
+{
+    switch (beamShape) {
+        case API_HorizontallyCurvedBeam: return "HorizontallyCurved";
+        case API_VerticallyCurvedBeam:   return "VerticallyCurved";
+        default:                         return "Straight";
+    }
+}
+
+// One warning: "<field>: sent <value>, read back <value>; <condition>"
+static GS::UniString ValueNotAppliedWarning (const char* field, const GS::UniString& sent, const GS::UniString& readBack, const GS::UniString& condition)
+{
+    return GS::UniString (field) + ": sent " + sent + ", read back " + readBack + "; " + condition;
+}
+
+static GS::UniString ReadBackNumberToString (double value)
+{
+    return GS::UniString::Printf ("%g", value);
+}
+
+static GS::Array<GS::UniString> GetColumnValuesNotApplied (const API_ColumnType& column, const GS::ObjectState& details)
+{
+    GS::Array<GS::UniString> warnings;
+
+    bool isFlipped = false;
+    if (details.Get ("isFlipped", isFlipped)) {
+        // Archicad never applies isFlipped to a column (tested on rectangular, circular, slanted
+        // and profiled columns, #3054), so it is reported whenever it is given.
+        warnings.Push (ValueNotAppliedWarning ("isFlipped", BoolToJsonString (isFlipped), BoolToJsonString (column.isFlipped),
+            "Archicad does not apply isFlipped to a column."));
+    }
+
+    const auto slantAngle = GetOptionalDouble (details, "slantAngle");
+    if (slantAngle.HasValue () && std::abs (column.slantAngle - slantAngle.Get ()) > ValueReadBackTolerance) {
+        const bool clamped = slantAngle.Get () > ColumnMaxSlantAngle && std::abs (column.slantAngle - ColumnMaxSlantAngle) <= ValueReadBackTolerance;
+        warnings.Push (ValueNotAppliedWarning ("slantAngle", ReadBackNumberToString (slantAngle.Get ()), ReadBackNumberToString (column.slantAngle),
+            clamped ? "Archicad limits the slant angle of a column to pi/2 (90 degrees)." : "Archicad did not apply it."));
+    }
+
+    return warnings;
+}
+
+static GS::Array<GS::UniString> GetBeamValuesNotApplied (const API_Guid& guid, const API_BeamType& beam, const GS::ObjectState& details)
+{
+    GS::Array<GS::UniString> warnings;
+    const GS::UniString storedShape (BeamShapeToString (beam.beamShape));
+
+    const auto verticalCurveHeight = GetOptionalDouble (details, "verticalCurveHeight");
+    if (verticalCurveHeight.HasValue () && std::abs (beam.verticalCurveHeight - verticalCurveHeight.Get ()) > ValueReadBackTolerance) {
+        const GS::UniString condition = beam.beamShape != API_VerticallyCurvedBeam
+            ? GS::UniString ("it needs beamShape VerticallyCurved, stored already or sent in the same call, and the beam is ") + storedShape + "."
+            : GS::UniString ("Archicad did not apply it.");
+        warnings.Push (ValueNotAppliedWarning ("verticalCurveHeight", ReadBackNumberToString (verticalCurveHeight.Get ()), ReadBackNumberToString (beam.verticalCurveHeight), condition));
+    }
+
+    GS::UniString beamShape;
+    if (details.Get ("beamShape", beamShape) && beamShape != storedShape) {
+        const bool needsArcAngle = beamShape == "HorizontallyCurved" && std::abs (beam.curveAngle) <= ValueReadBackTolerance;
+        warnings.Push (ValueNotAppliedWarning ("beamShape", beamShape, storedShape,
+            needsArcAngle ? "HorizontallyCurved needs a non-zero arcAngle, sent in the same call." : "Archicad did not apply it."));
+    }
+
+    // The cross section flags are compared with the first segment, the one GetDetailsOfElements
+    // returns them from. A segments list may give them per segment, so they are not compared then.
+    bool isWidthAndHeightLinked = false;
+    const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
+    bool circleBased = false;
+    const bool hasCircleBased = details.Get ("circleBased", circleBased);
+    if ((hasIsWidthAndHeightLinked || hasCircleBased) && !details.Contains ("segments")) {
+        API_ElementMemo memo = {};
+        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_BeamSegment) == NoError && memo.beamSegments != nullptr &&
+            BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) >= static_cast<GSSize> (sizeof (API_BeamSegmentType)))
+        {
+            const API_AssemblySegmentData& segment = memo.beamSegments[0].assemblySegmentData;
+            GS::UniString condition ("Archicad did not apply it.");
+            if (segment.modelElemStructureType == API_ProfileStructure) {
+                condition = GS::UniString ("it is not applied on a beam with a custom profile (the cross section is the profile ") + GetProfileNameForMessage (segment.profileAttr) +
+                    "); send buildingMaterialId to switch to a basic cross section first.";
+            }
+            if (hasIsWidthAndHeightLinked && segment.isWidthAndHeightLinked != isWidthAndHeightLinked) {
+                warnings.Push (ValueNotAppliedWarning ("isWidthAndHeightLinked", BoolToJsonString (isWidthAndHeightLinked), BoolToJsonString (segment.isWidthAndHeightLinked), condition));
+            }
+            if (hasCircleBased && segment.circleBased != circleBased) {
+                warnings.Push (ValueNotAppliedWarning ("circleBased", BoolToJsonString (circleBased), BoolToJsonString (segment.circleBased), condition));
+            }
+        }
+    }
+
+    return warnings;
+}
+
+static GS::ObjectState CreateSuccessfulExecutionResultWithWarnings (const GS::Array<GS::UniString>& warnings)
+{
+    GS::ObjectState result = CreateSuccessfulExecutionResult ();
+    const auto& warningList = result.AddList<GS::UniString> ("warnings");
+    for (const GS::UniString& warning : warnings) {
+        warningList (warning);
+    }
+    return result;
+}
+
 // The segments array of CreateBeams and ModifyBeams (#2551): each item changes the cross section,
 // taper and length (its geometry) of one existing segment of the beam, chosen by segmentIndex or
 // else by the item's position in the array. Only the keys given are written, so the other
@@ -18298,17 +18413,17 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "level": { "type": "number", "description": "Elevation of the reference line relative to the home story." },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
-                        "arcAngle": { "type": "number" },
-                        "verticalCurveHeight": { "type": "number" },
-                        "beamShape": { "type": "string", "enum": ["Straight", "HorizontallyCurved", "VerticallyCurved"] },
+                        "arcAngle": { "type": "number", "description": "Arc angle of a horizontally curved beam, in radians." },
+                        "verticalCurveHeight": { "type": "number", "description": "Curve height of a vertically curved beam. Applied only when beamShape is VerticallyCurved, stored already or given in the same call; otherwise the item's result carries a warning." },
+                        "beamShape": { "type": "string", "enum": ["Straight", "HorizontallyCurved", "VerticallyCurved"], "description": "HorizontallyCurved needs a non-zero arcAngle, stored already or given in the same call; otherwise the beam stays as it was and the item's result carries a warning." },
                         "isSlanted": { "type": "boolean" },
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
                         "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
                         "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
-                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments." },
-                        "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
+                        "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, width and height are kept equal (a round cross section too): a width, or else a height, given alone sets both. A width and a height given together with different values make them independent, unless this is given too. When omitted, the current setting is kept. Applied to all segments. Not applied on a beam with a custom profile: the item's result then carries a warning." },
+                        "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape, and not applied on a beam that has one: the item's result then carries a warning. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
                         "profileId": { "$ref": "#/AttributeId", "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments." },
                         "holes": {
@@ -18338,7 +18453,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::UniString> ModifyBeamsCommand::GetRawResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    // A success may carry warnings about values Archicad did not apply (#3054).
+    return R"({"type":"object","properties":{"executionResults":{"$ref":"#/ExecutionResultsWithWarnings"}},"additionalProperties":false,"required":["executionResults"]})";
 }
 
 GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -18359,6 +18475,14 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
     };
     GS::Array<BeamDisplayCheck> displayChecks;
 
+    // The items with a value Archicad may leave as it was (#3054), read back after the command.
+    struct BeamValueCheck {
+        UIndex                  resultIndex;
+        API_Guid                guid;
+        const GS::ObjectState*  item;
+    };
+    GS::Array<BeamValueCheck> valueChecks;
+
     return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -18371,6 +18495,14 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             if (err != NoError) {
                 results.Push (CreateFailedExecutionResult (err, "Failed to load beam."));
                 continue;
+            }
+            if (item.Contains ("verticalCurveHeight") || item.Contains ("beamShape") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased")) {
+                // This item's result is the next one pushed; it is checked after the command.
+                BeamValueCheck check = {};
+                check.resultIndex = results.GetSize ();
+                check.guid = element.header.guid;
+                check.item = &item;
+                valueChecks.Push (check);
             }
 
             API_Element mask = {};
@@ -18488,6 +18620,23 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             const GS::UniString notApplied = GetBeamDisplaySettingsNotApplied (check.wanted, changed.beam, *check.item);
             if (!notApplied.IsEmpty ()) {
                 results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every given display setting to the beam; the other given fields were changed.") + notApplied);
+            }
+        }
+        // A value Archicad left as it was keeps the item a success, with a warning naming the
+        // field and, where known, the condition it needs (#3054).
+        for (const BeamValueCheck& check : valueChecks) {
+            bool success = false;
+            if (check.resultIndex >= results.GetSize () || !results[check.resultIndex].Get ("success", success) || !success) {
+                continue;
+            }
+            API_Element changed = {};
+            changed.header.guid = check.guid;
+            if (ACAPI_Element_Get (&changed) != NoError || GetElemTypeId (changed.header) != API_BeamID) {
+                continue;
+            }
+            const GS::Array<GS::UniString> warnings = GetBeamValuesNotApplied (check.guid, changed.beam, *check.item);
+            if (!warnings.IsEmpty ()) {
+                results[check.resultIndex] = CreateSuccessfulExecutionResultWithWarnings (warnings);
             }
         }
     });
@@ -22591,9 +22740,9 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "axisRotationAngle": { "type": "number" },
                         "coreAnchor": { "$ref": "#/ColumnCoreAnchor" },
                         "isSlanted": { "type": "boolean" },
-                        "slantAngle": { "type": "number" },
+                        "slantAngle": { "type": "number", "description": "Slant angle in radians. Archicad limits it to pi/2 (90 degrees): a larger value is stored as pi/2 and the item's result carries a warning." },
                         "slantDirectionAngle": { "type": "number" },
-                        "isFlipped": { "type": "boolean", "description": "Has no visible effect on a circular column (circleBased cross section) - Archicad ignores it there." },
+                        "isFlipped": { "type": "boolean", "description": "Archicad does not apply isFlipped to a column (rectangular, circular, slanted or with a custom profile): the value stays as it is, and the item's result carries a warning whenever isFlipped is given." },
                         "wrapping": { "type": "boolean" },
                         "topOffset": { "type": "number" },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
@@ -22624,7 +22773,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
 
 GS::Optional<GS::UniString> ModifyColumnsCommand::GetRawResponseSchema () const
 {
-    return ModifyWallsCommand ().GetRawResponseSchema ();
+    // Same as ModifyBeams: a success may carry warnings about values Archicad did not apply (#3054).
+    return ModifyBeamsCommand ().GetRawResponseSchema ();
 }
 
 GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -22645,6 +22795,14 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
     };
     GS::Array<ColumnDisplayCheck> displayChecks;
 
+    // The items with a value Archicad may leave as it was (#3054), read back after the command.
+    struct ColumnValueCheck {
+        UIndex                  resultIndex;
+        API_Guid                guid;
+        const GS::ObjectState*  item;
+    };
+    GS::Array<ColumnValueCheck> valueChecks;
+
     return ExecuteModifyWithResults ("Modify Columns", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -22657,6 +22815,14 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             if (err != NoError) {
                 results.Push (CreateFailedExecutionResult (err, "Failed to load column."));
                 continue;
+            }
+            if (item.Contains ("isFlipped") || item.Contains ("slantAngle")) {
+                // This item's result is the next one pushed; it is checked after the command.
+                ColumnValueCheck check = {};
+                check.resultIndex = results.GetSize ();
+                check.guid = element.header.guid;
+                check.item = &item;
+                valueChecks.Push (check);
             }
 
             // Checked before anything changes, so an invalid veneer leaves the column as it was.
@@ -22758,6 +22924,23 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             const GS::UniString notApplied = GetColumnDisplaySettingsNotApplied (check.wanted, changedElement.column, *check.item);
             if (!notApplied.IsEmpty ()) {
                 results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every given display setting to the column; the other given fields were changed.") + notApplied);
+            }
+        }
+        // A value Archicad left as it was keeps the item a success, with a warning naming the
+        // field and, where known, the condition it needs (#3054).
+        for (const ColumnValueCheck& check : valueChecks) {
+            bool success = false;
+            if (check.resultIndex >= results.GetSize () || !results[check.resultIndex].Get ("success", success) || !success) {
+                continue;
+            }
+            API_Element changedElement = {};
+            changedElement.header.guid = check.guid;
+            if (ACAPI_Element_Get (&changedElement) != NoError || GetElemTypeId (changedElement.header) != API_ColumnID) {
+                continue;
+            }
+            const GS::Array<GS::UniString> warnings = GetColumnValuesNotApplied (changedElement.column, *check.item);
+            if (!warnings.IsEmpty ()) {
+                results[check.resultIndex] = CreateSuccessfulExecutionResultWithWarnings (warnings);
             }
         }
     });
