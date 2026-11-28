@@ -18413,7 +18413,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "level": { "type": "number", "description": "Elevation of the reference line relative to the home story." },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
-                        "arcAngle": { "type": "number", "description": "Arc angle of a horizontally curved beam, in radians. A non-zero value also makes the beam HorizontallyCurved." },
+                        "arcAngle": { "type": "number", "description": "Arc angle of a horizontally curved beam, in radians." },
                         "verticalCurveHeight": { "type": "number", "description": "Curve height of a vertically curved beam. Applied only when beamShape is VerticallyCurved, stored already or given in the same call; otherwise the item's result carries a warning." },
                         "beamShape": { "type": "string", "enum": ["Straight", "HorizontallyCurved", "VerticallyCurved"], "description": "HorizontallyCurved needs a non-zero arcAngle, stored already or given in the same call; otherwise the beam stays as it was and the item's result carries a warning." },
                         "isSlanted": { "type": "boolean" },
