@@ -735,6 +735,10 @@ static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
     }
 }
 
+} // namespace
+
+// Declared in ExtendedElementCommands.hpp, so outside the anonymous namespace (the angle dimension
+// commands of ElementCreationCommands.cpp use them too).
 GS::UniString WitnessFormToString (API_WitnessID witnessForm)
 {
     switch (witnessForm) {
@@ -796,6 +800,8 @@ bool ParseDimensionMarkerName (const GS::UniString& markerName, API_MarkerID& re
     }
     return false;
 }
+
+namespace {
 
 // The text placement methods of the Dimension Settings, named as the dialog names them; Classic is
 // the API's API_Legacy (#2663).
