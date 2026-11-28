@@ -21168,7 +21168,8 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "type": "object",
                                 "properties": {
                                     "trimType": {
-                                        "$ref": "#/EdgeTrimTypeUpdate"
+                                        "$ref": "#/EdgeTrimTypeUpdate",
+                                        "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle)."
                                     },
                                     "angle": {
                                         "type": "number",

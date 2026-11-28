@@ -10876,7 +10876,7 @@
         ],
         "description": "Gable for a vertical gable plane, Sloped otherwise."
     },
-    "RoofCutBodyType": {
+    "ShellBaseCutBodyType": {
         "type": "string",
         "enum": [
             "Editable",
@@ -10885,7 +10885,7 @@
             "UpwardsExtrusion",
             "DownwardsExtrusion"
         ],
-        "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel of Roof Settings). A roof uses ContoursDown or PivotLinesDown, which ModifyRoofs sets."
+        "description": "How a roof or shell body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel)."
     },
     "RoofPivotEdgeLevelUpdate": {
         "type": "object",
@@ -10955,17 +10955,6 @@
             "CustomAngle"
         ],
         "description": "The trim direction of a roof or shell edge: Vertical, Perpendicular to its plane, Horizontal, or at angle (CustomAngle)."
-    },
-    "ShellCutBodyType": {
-        "type": "string",
-        "enum": [
-            "Editable",
-            "ContoursDown",
-            "PivotLinesDown",
-            "UpwardsExtrusion",
-            "DownwardsExtrusion"
-        ],
-        "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
     },
     "SkylightAnchorPoint": {
         "type": "string",
@@ -11318,7 +11307,8 @@
                 "description": "The stories the roof's cover fill is shown on (API_ShellBaseType::visibilityFill)."
             },
             "cutBodyType": {
-                "$ref": "#/RoofCutBodyType"
+                "$ref": "#/ShellBaseCutBodyType",
+                "description": "A roof uses ContoursDown or PivotLinesDown; ModifyRoofs sets these values."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -11544,7 +11534,8 @@
                 "description": "The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill)."
             },
             "cutBodyType": {
-                "$ref": "#/ShellCutBodyType"
+                "$ref": "#/ShellBaseCutBodyType",
+                "description": "A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
