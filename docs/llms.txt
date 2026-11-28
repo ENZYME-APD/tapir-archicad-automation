@@ -84,6 +84,7 @@ plugin send the same JSON. Every command is listed in [commands.md](https://arch
 - [archicad-addon](https://archicad-api.com/archicad-addon/): The command reference, also as Markdown and JSON: commands.md and commands.json (the index) and one file per command group under commands/.
 - [api-coverage](https://archicad-api.com/api-coverage/): Which parts of the Archicad API Tapir uses, updated hourly; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.md
 - [gh-coverage](https://archicad-api.com/gh-coverage/): Which Tapir commands have a Grasshopper component; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage.md
+- [field-coverage](https://archicad-api.com/field-coverage/): Which settings of each Archicad element type a Tapir command has a key of its own for, and which only GetElementFields / SetElementFields reach; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/field-coverage.md
 - [grasshopper-components](https://archicad-api.com/grasshopper-components/): Every Grasshopper component with its inputs, outputs, Tapir commands and JSON keys; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/docs/grasshopper-components/components.js
 
 ## Optional

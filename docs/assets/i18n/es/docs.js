@@ -67,5 +67,13 @@
     'Use Tapir with AI': 'Usar Tapir con IA',
     'Learn by watching': 'Aprende viendo',
     'Six videos, from installing Tapir to whole workflows.': 'Seis vídeos, desde la instalación de Tapir hasta flujos de trabajo completos.',
-    'Watch the tutorials': 'Ver los tutoriales'
+    'Watch the tutorials': 'Ver los tutoriales',
+
+    // The field coverage teaser
+    'Element settings':
+        'Ajustes de elementos',
+    'Field coverage':
+        'Cobertura de campos',
+    'Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.':
+        'Qué ajustes de cada tipo de elemento de Archicad tienen una clave en un comando de Tapir, y a cuáles llega un script solo mediante los comandos genéricos de campos.'
 });

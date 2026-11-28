@@ -14,27 +14,27 @@ Door and Window Numbering by Zone is a built-in script: open the floor plan, pic
 
 ## Choose the elements
 
-In *Elements*, choose *Selection*, *Current story* or *Whole project*, then press *Read elements*.
+In *Elements*, choose *Selection*, *Current story* or *Whole project*. In *Write to*, keep *Element ID* or choose an editable text property to write the new IDs to instead. Then press *Read elements*.
 
 ## Set the patterns
 
 The list of new IDs updates as you type.
 
-  - *Doors* and *Windows* are the patterns of the IDs, `{zone}-D{n}` and `{zone}-W{n}` at first. `{zone}` is the zone number, `{name}` the zone name (also used for `{zone}` when the zone has no number) and `{n}` the running number within the zone.
+  - *Doors* and *Windows* are the patterns of the IDs, `{zone}-D{n}` and `{zone}-W{n}` at first. `{zone}` is the zone number, `{name}` the zone name (also used for `{zone}` when the zone has no number), `{n}` the running number within the zone and `{id}` the current Element ID.
   - *Start at* is the first number in each zone, 1 at first.
   - *Digits* is the least number of digits of `{n}`, padded with zeros: 2 gives `01`.
 
-The script warns when new IDs repeat.
+The script warns when new IDs repeat. Tick *Number repeated IDs* to add `.{k}` to them, counting `01`, `02` and on, so `{id}.{zone}` gives `D1.1.04.01` and `D1.1.04.02`.
 
 ## Rename
 
-Press *Rename* and confirm. The script changes the Element ID of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.
+Press *Rename* and confirm. The script changes the Element ID, or the property chosen in *Write to*, of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.
 
 ## How it finds the *zone.*
 
-Each door or window belongs to the zone on its "to" side, or to the zone on its "from" side when there is none. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.
+Each door or window belongs to the zone on the side chosen in *Zone side first* (*To zone* or *From zone*, as Archicad's To Zone and From Zone properties name them), or to the zone on the other side when there is none; the *Zone* column shows which side was used. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.
 
-The script reads the zones of the doors and windows with [`GetRelationsOfElements`](https://archicad-api.com/archicad-addon/#GetRelationsOfElements) and their positions with [`Get3DBoundingBoxes`](https://archicad-api.com/archicad-addon/#Get3DBoundingBoxes), and writes the IDs with [`SetElementInfoStrings`](https://archicad-api.com/archicad-addon/#SetElementInfoStrings). Its code is [`builtin-scripts/DoorWindowNumberingByZone.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py). It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.
+The script reads the zones of the doors and windows with [`GetRelationsOfElements`](https://archicad-api.com/archicad-addon/#GetRelationsOfElements) and their positions with [`Get3DBoundingBoxes`](https://archicad-api.com/archicad-addon/#Get3DBoundingBoxes), and writes the IDs with [`SetElementInfoStrings`](https://archicad-api.com/archicad-addon/#SetElementInfoStrings) or [`SetPropertyValuesOfElements`](https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElements). Its code is [`builtin-scripts/DoorWindowNumberingByZone.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py). It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.
 
 Python
 

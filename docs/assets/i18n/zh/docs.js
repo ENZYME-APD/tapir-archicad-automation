@@ -67,5 +67,13 @@
     'Use Tapir with AI': '用 AI 使用 Tapir',
     'Learn by watching': '看视频学习',
     'Six videos, from installing Tapir to whole workflows.': '六个视频，从安装 Tapir 到完整的工作流程。',
-    'Watch the tutorials': '观看教程'
+    'Watch the tutorials': '观看教程',
+
+    // The field coverage teaser
+    'Element settings':
+        '元素设置',
+    'Field coverage':
+        '字段覆盖率',
+    'Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.':
+        '每种 Archicad 元素类型的哪些设置在 Tapir 命令中有对应的键，哪些只能由脚本通过通用字段命令访问。'
 });

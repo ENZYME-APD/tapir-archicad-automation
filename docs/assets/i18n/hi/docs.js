@@ -67,5 +67,13 @@
     'Use Tapir with AI': 'AI के साथ Tapir इस्तेमाल करें',
     'Learn by watching': 'देखकर सीखें',
     'Six videos, from installing Tapir to whole workflows.': 'छह वीडियो, Tapir इंस्टॉल करने से लेकर पूरे workflows तक।',
-    'Watch the tutorials': 'ट्यूटोरियल देखें'
+    'Watch the tutorials': 'ट्यूटोरियल देखें',
+
+    // The field coverage teaser
+    'Element settings':
+        'Element की settings',
+    'Field coverage':
+        'Field कवरेज',
+    'Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.':
+        'हर Archicad element type की किन settings के लिए Tapir कमांड में key है, और किन तक script सिर्फ़ generic field कमांड से पहुँचती है।'
 });

@@ -46,6 +46,14 @@ Which Tapir commands have a Grasshopper component, and which inputs each compone
 
 See the coverage
 
+Element settings
+
+### [Field coverage](https://archicad-api.com/field-coverage/)
+
+Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.
+
+See the coverage
+
 Archicad API
 
 ### [API limits](https://archicad-api.com/limits/)
