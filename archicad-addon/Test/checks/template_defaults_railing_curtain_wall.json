@@ -20,7 +20,9 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${r}" } } ], "fields": [ "defSegment.zOffset", "defNode.postOffset" ] },
       "expect": [
+        { "path": "elementFields[0].fields.defSegment.zOffset", "exists": true, "name": "the segment default is read" },
         { "path": "elementFields[0].fields.defSegment.zOffset", "ne": 0.037, "name": "the segment default differs from the value to write" },
+        { "path": "elementFields[0].fields.defNode.postOffset", "exists": true, "name": "the node default is read" },
         { "path": "elementFields[0].fields.defNode.postOffset", "ne": 0.043, "name": "the node default differs from the value to write" }
       ]
     },
@@ -105,7 +107,9 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ], "fields": [ "cornerFrameData.pen", "boundaryFrameData.pen" ] },
       "expect": [
+        { "path": "elementFields[0].fields.cornerFrameData.pen", "exists": true, "name": "the corner frame default pen is read" },
         { "path": "elementFields[0].fields.cornerFrameData.pen", "ne": 37, "name": "the corner frame default pen is not 37 yet" },
+        { "path": "elementFields[0].fields.boundaryFrameData.pen", "exists": true, "name": "the boundary frame default pen is read" },
         { "path": "elementFields[0].fields.boundaryFrameData.pen", "ne": 38, "name": "the boundary frame default pen is not 38 yet" }
       ]
     },
