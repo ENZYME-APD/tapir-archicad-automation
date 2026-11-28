@@ -316,6 +316,7 @@
       "id": "unknown enum value",
       "command": "CreateGraphicOverrideRules",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "graphicOverrideRules": [
           {
@@ -329,9 +330,9 @@
       },
       "expect": [
         {
-          "path": "graphicOverrideRuleIds[0].error.code",
+          "path": "__envelopeError__",
           "exists": true,
-          "name": "rejected"
+          "name": "refused by the input schema"
         }
       ]
     },
@@ -339,6 +340,7 @@
       "id": "unknown text style",
       "command": "CreateGraphicOverrideRules",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "graphicOverrideRules": [
           {
@@ -355,9 +357,9 @@
       },
       "expect": [
         {
-          "path": "graphicOverrideRuleIds[0].error.code",
+          "path": "__envelopeError__",
           "exists": true,
-          "name": "rejected"
+          "name": "refused by the input schema"
         }
       ]
     },
