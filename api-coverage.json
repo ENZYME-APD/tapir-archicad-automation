@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 13:06 UTC",
+ "generatedAt": "2026-11-28 13:40 UTC",
  "versions": [
   25,
   26,
@@ -4018,12 +4018,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2904,
-     "title": "ImportFavorites: run the import in a NotUndoable command scope (Archicad quit after it)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5774,6 +5769,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3113,
+     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -6737,6 +6736,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3112,
+     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
+    },
+    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7274,6 +7277,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3112,
+     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
+    },
+    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -7606,7 +7613,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3113,
+     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
+    }
+   ],
    "issues": []
   },
   {
@@ -7835,6 +7847,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3113,
+     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -9736,44 +9752,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2421,
-     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
-    },
-    {
-     "number": 2420,
-     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
-    },
-    {
-     "number": 2419,
-     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
-    },
-    {
-     "number": 2418,
-     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
-    },
-    {
-     "number": 2417,
-     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2416,
-     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2414,
-     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
-    },
-    {
-     "number": 2413,
-     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
-    },
-    {
-     "number": 2411,
-     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13216,44 +13195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2421,
-     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
-    },
-    {
-     "number": 2420,
-     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
-    },
-    {
-     "number": 2419,
-     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
-    },
-    {
-     "number": 2418,
-     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
-    },
-    {
-     "number": 2417,
-     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2416,
-     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2414,
-     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
-    },
-    {
-     "number": 2413,
-     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
-    },
-    {
-     "number": 2411,
-     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13272,44 +13214,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2421,
-     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
-    },
-    {
-     "number": 2420,
-     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
-    },
-    {
-     "number": 2419,
-     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
-    },
-    {
-     "number": 2418,
-     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
-    },
-    {
-     "number": 2417,
-     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2416,
-     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
-    },
-    {
-     "number": 2414,
-     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
-    },
-    {
-     "number": 2413,
-     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
-    },
-    {
-     "number": 2411,
-     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16768,24 +16673,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2420,
-     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
-    },
-    {
-     "number": 2418,
-     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
-    },
-    {
-     "number": 2417,
-     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2414,
-     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20243,28 +20131,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2420,
-     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
-    },
-    {
-     "number": 2418,
-     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
-    },
-    {
-     "number": 2417,
-     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
-    },
-    {
-     "number": 2414,
-     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
-    },
-    {
-     "number": 2411,
-     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25329,6 +25196,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3113,
+     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
+    },
+    {
+     "number": 3112,
+     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
+    },
     {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
@@ -37390,6 +37265,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3113,
+     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
+    },
+    {
+     "number": 3112,
+     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
