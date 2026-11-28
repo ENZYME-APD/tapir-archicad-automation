@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 15:58 UTC",
+ "generatedAt": "2026-11-28 17:07 UTC",
  "versions": [
   25,
   26,
@@ -2737,7 +2737,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -2758,7 +2763,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -2799,7 +2809,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -2923,6 +2938,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -3008,7 +3027,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3109,7 +3133,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3148,7 +3177,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3168,7 +3202,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3248,7 +3287,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3290,7 +3334,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3495,7 +3544,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3516,7 +3570,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3557,7 +3616,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3599,7 +3663,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -4039,7 +4108,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -5704,7 +5778,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -5768,6 +5847,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3128,
+     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -6818,10 +6901,6 @@
     {
      "number": 2780,
      "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
-    },
-    {
-     "number": 1914,
-     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
     }
    ]
   },
@@ -7011,10 +7090,6 @@
     {
      "number": 2970,
      "title": "ChangeDrawingLink creates the new drawing with anchorPoint BottomLeft and shifts content vs. clip frame (native relink keeps everything)"
-    },
-    {
-     "number": 1914,
-     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
     }
    ]
   },
@@ -7281,6 +7356,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3128,
+     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
+    },
+    {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
@@ -7297,12 +7376,7 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     }
    ],
-   "issues": [
-    {
-     "number": 1914,
-     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetActualOverrideStyle",
@@ -7527,10 +7601,6 @@
     {
      "number": 2780,
      "title": "Expose Zone tool defaults (stamp libInd/catInd): CreateZones fails when the template's default stamp is missing"
-    },
-    {
-     "number": 1914,
-     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
     }
    ]
   },
@@ -7847,6 +7917,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3128,
+     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -7855,12 +7929,7 @@
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     }
    ],
-   "issues": [
-    {
-     "number": 1914,
-     "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetMemo_ExternalHierarchical",
@@ -25202,6 +25271,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3128,
+     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
+    },
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
+    {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
@@ -26655,7 +26732,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    }
+   ],
    "issues": []
   },
   {
@@ -29526,6 +29608,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
+    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -30815,6 +30901,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -37266,6 +37356,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3128,
+     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
+    },
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
     {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
@@ -43927,6 +44025,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
+    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47046,6 +47148,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -53561,6 +53667,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3127,
+     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
