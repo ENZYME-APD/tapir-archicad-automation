@@ -24,6 +24,8 @@ from typing import Any, Protocol, cast
 
 DEFAULT_REPO = "ENZYME-APD/tapir-archicad-automation"
 WORKFLOW = "schema_refinement.yml"
+RUN_IDENTITY_ATTEMPTS = 6
+RUN_IDENTITY_INTERVAL = 5
 PREPARATION_MAIN_MOVED = "Main moved while fetching the candidate. Start a new workflow run."
 FINALIZATION_STALE_MESSAGES = {
     "The base or PR head changed during validation. Start a new workflow run.",
@@ -126,20 +128,46 @@ def parse_dispatched_run(repo: str, number: int, output: str) -> WorkflowRun:
     return WorkflowRun(run_id, url)
 
 
+def dispatched_run_mismatches(
+    run: JsonObject, number: int, dispatched: WorkflowRun,
+) -> list[str]:
+    expected = {
+        "id": dispatched.id,
+        "event": "workflow_dispatch",
+        "path": f".github/workflows/{WORKFLOW}",
+        "display_title": f"Validate and merge PR #{number}",
+    }
+    return [
+        f"{field}: expected {value!r}, received {run.get(field)!r}"
+        for field, value in expected.items() if run.get(field) != value
+    ]
+
+
 def verify_dispatched_run(
     gh: GitHubClient, repo: str, number: int, dispatched: WorkflowRun,
 ) -> None:
-    try:
-        run = gh.json("api", f"repos/{repo}/actions/runs/{dispatched.id}")
-    except (ItemFailed, subprocess.TimeoutExpired) as error:
-        raise QueueBlocked(f"Cannot identify dispatched action {dispatched.url}: {error}") from None
-    if (
-        run.get("id") != dispatched.id
-        or run.get("event") != "workflow_dispatch"
-        or run.get("path") != f".github/workflows/{WORKFLOW}"
-        or run.get("display_title") != f"Validate and merge PR #{number}"
-    ):
-        raise QueueBlocked(f"Unexpected dispatched run identity. Inspect {dispatched.url}; queue stopped.")
+    """Allow dispatch metadata to settle without ever dispatching another run."""
+    for attempt in range(1, RUN_IDENTITY_ATTEMPTS + 1):
+        try:
+            run = gh.json("api", f"repos/{repo}/actions/runs/{dispatched.id}")
+        except (ItemFailed, subprocess.TimeoutExpired) as error:
+            detail = f"Cannot read dispatched run metadata: {error}"
+        else:
+            mismatches = dispatched_run_mismatches(run, number, dispatched)
+            if not mismatches:
+                return
+            detail = "Unexpected dispatched run identity: " + "; ".join(mismatches)
+        if attempt == RUN_IDENTITY_ATTEMPTS:
+            raise QueueBlocked(
+                f"{detail}. Could not verify the action after {attempt} metadata reads. "
+                f"Inspect {dispatched.url}; queue stopped. No additional dispatch was sent."
+            ) from None
+        print(
+            f"#{number}: {detail}. Retrying metadata for the same action in "
+            f"{RUN_IDENTITY_INTERVAL}s ({attempt}/{RUN_IDENTITY_ATTEMPTS}): {dispatched.url}",
+            flush=True,
+        )
+        time.sleep(RUN_IDENTITY_INTERVAL)
 
 
 def wait_for_checks(
