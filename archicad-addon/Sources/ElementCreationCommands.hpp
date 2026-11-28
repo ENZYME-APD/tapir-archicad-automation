@@ -276,6 +276,7 @@ public:
     CreateLevelDimensionsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GS::UniString GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 
 private:
     // Kept here because CreateElementsCommandBase calls ACAPI_Element_Create after
@@ -320,6 +321,10 @@ LevelDimensionTexts GetLevelDimensionTexts (const API_Element& element);
 
 // "Measured" or "Custom", the content type of a level dimension note.
 GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType);
+
+// The text boxes of the two texts of a level dimension (#/DimensionNote: textAngle, opaque, frame,
+// backgroundPen, framePen) as textBox and secondTextBox, read by GetDetailsOfElements (#3133).
+void AddLevelDimensionTextBoxDetails (const API_LevelDimensionType& levelDimension, GS::ObjectState& details);
 
 class ModifyLevelDimensionsCommand : public CommandBase
 {

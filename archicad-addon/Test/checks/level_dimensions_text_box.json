@@ -1,0 +1,134 @@
+{
+  "title": "CreateLevelDimensions and ModifyLevelDimensions: the text box of both texts (textBox, secondTextBox: angle, background, frame and their pens), read back by GetDetailsOfElements, and the leader line fields refused (#3133)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "create a static level dimension with a framed, opaque main text",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          {
+            "position": { "x": 840.0, "y": 800.0 }, "level": 0.5, "floorIndex": 0,
+            "textBox": { "opaque": true, "backgroundPen": 19, "frame": true, "framePen": 4 },
+            "secondTextBox": { "opaque": false, "frame": false }
+          }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created with its text boxes kept" }
+      ]
+    },
+    {
+      "id": "read the text boxes back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "LevelDimension", "name": "a level dimension" },
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": true, "name": "main text opaque as created" },
+        { "path": "detailsOfElements[0].details.textBox.backgroundPen", "eq": 19, "name": "background pen as created" },
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": true, "name": "main text framed as created" },
+        { "path": "detailsOfElements[0].details.textBox.framePen", "eq": 4, "name": "frame pen as created" },
+        { "path": "detailsOfElements[0].details.textBox.textAngle", "exists": true, "name": "text angle read" },
+        { "path": "detailsOfElements[0].details.secondTextBox.opaque", "eq": false, "name": "second text not opaque" },
+        { "path": "detailsOfElements[0].details.secondTextBox.frame", "eq": false, "name": "second text not framed" },
+        { "path": "detailsOfElements[0].details.textBox.leaderPen", "exists": false, "name": "no leader line fields for a level dimension" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: frame the second text, unframe the main one",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "${l}" }, "textBox": { "frame": false }, "secondTextBox": { "frame": true, "framePen": 6 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "text box change accepted and kept" }
+      ]
+    },
+    {
+      "id": "text boxes after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": false, "name": "main frame off" },
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": true, "name": "main background kept" },
+        { "path": "detailsOfElements[0].details.textBox.backgroundPen", "eq": 19, "name": "background pen kept" },
+        { "path": "detailsOfElements[0].details.secondTextBox.frame", "eq": true, "name": "second frame on" },
+        { "path": "detailsOfElements[0].details.secondTextBox.framePen", "eq": 6, "name": "second frame pen" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 840.0, "name": "position kept" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: rotate the main text",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [ { "elementId": { "guid": "${l}" }, "textBox": { "textAngle": 0.5 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "text angle accepted and kept" }
+      ]
+    },
+    {
+      "id": "text angle after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textBox.textAngle", "approx": 0.5, "name": "main text rotated" }
+      ]
+    },
+    {
+      "id": "a leader line pen is refused on a level dimension",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [ { "elementId": { "guid": "${l}" }, "textBox": { "frame": true, "leaderPen": 3 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "leaderPen refused" },
+        { "path": "executionResults[0].error.message", "contains": "textBox.leaderPen", "name": "the refused field is named" }
+      ]
+    },
+    {
+      "id": "a frame pen out of range is refused",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "levelDimensionsWithDetails": [ { "elementId": { "guid": "${l}" }, "secondTextBox": { "framePen": 0 } } ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "framePen 0 refused by the schema" }
+      ]
+    },
+    {
+      "id": "the refused changes changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": false, "name": "main frame still off" },
+        { "path": "detailsOfElements[0].details.secondTextBox.framePen", "eq": 6, "name": "second frame pen unchanged" }
+      ]
+    },
+    {
+      "id": "CreateLevelDimensions refuses a leader line field",
+      "command": "CreateLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 860.0, "y": 800.0 }, "level": 0.5, "floorIndex": 0, "secondTextBox": { "anchorAtTextEnd": true } }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "anchorAtTextEnd refused on create" }
+      ]
+    }
+  ]
+}

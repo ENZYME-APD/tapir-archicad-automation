@@ -15404,6 +15404,14 @@
             "secondCustomText": {
                 "type": "string",
                 "description": "The custom content of the second text, as customText. Present when secondTextContent is 'Custom'."
+            },
+            "textBox": {
+                "$ref": "#/DimensionNote",
+                "description": "The text box of the dimension text, with the fields a level dimension text has: textAngle, opaque, frame, backgroundPen and framePen. CreateLevelDimensions and ModifyLevelDimensions take it back with the same key."
+            },
+            "secondTextBox": {
+                "$ref": "#/DimensionNote",
+                "description": "The text box of the second text, with the same fields as textBox."
             }
         },
         "additionalProperties": false,
@@ -15424,7 +15432,9 @@
             "italic",
             "underline",
             "textContent",
-            "secondTextContent"
+            "secondTextContent",
+            "textBox",
+            "secondTextBox"
         ]
     },
     "AngleDimensionLine": {
@@ -15844,7 +15854,7 @@
     },
     "DimensionNote": {
         "type": "object",
-        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
+        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The texts of a level dimension (textBox and secondTextBox of the level dimension commands) have only textAngle, opaque, frame, backgroundPen and framePen: the level dimension commands refuse the other fields, and GetDetailsOfElements returns only these five for them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
         "properties": {
             "textAngle": {
                 "type": "number",
