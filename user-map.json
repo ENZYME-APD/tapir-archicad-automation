@@ -1,10 +1,10 @@
 {
  "version": 1,
- "generatedAt": "2026-11-27T12:29:02Z",
+ "generatedAt": "2026-11-28T11:58:13Z",
  "totals": {
-  "people": 52,
-  "places": 48,
-  "countries": 31
+  "people": 53,
+  "places": 49,
+  "countries": 32
  },
  "places": [
   {
@@ -55,6 +55,15 @@
    "lat": 52.26,
    "lon": 10.52,
    "people": 1
+  },
+  {
+   "name": "Brazil",
+   "country": "Brazil",
+   "countryCode": "BR",
+   "lat": -10.33,
+   "lon": -53.2,
+   "people": 1,
+   "countryOnly": true
   },
   {
    "name": "Brisbane",
@@ -472,6 +481,11 @@
    "people": 1
   },
   {
+   "name": "Brazil",
+   "code": "BR",
+   "people": 1
+  },
+  {
    "name": "Chile",
    "code": "CL",
    "people": 1
@@ -606,6 +620,14 @@
    "lat": 52.52,
    "lon": 13.4,
    "kind": "settlement"
+  },
+  "brasil": {
+   "name": "Brazil",
+   "country": "Brazil",
+   "countryCode": "BR",
+   "lat": -10.33,
+   "lon": -53.2,
+   "kind": "country"
   },
   "brisbane, australia": {
    "name": "Brisbane",
