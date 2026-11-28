@@ -15,24 +15,15 @@ def ReplaceRegexInFile (filePath, oldRegex, newRegex):
         fileObject.write (fileContent)
     return True
 
-def Main ():
-    currentPath = os.path.dirname (os.path.abspath (__file__))
-    rootPath = os.path.dirname (currentPath)
-    os.chdir (rootPath)
-    
-    packageInfoJsonPath = os.path.join (currentPath, 'package_info.json')
-    packageInfoJson = None
-    with codecs.open (packageInfoJsonPath, 'r', 'utf-8') as packageInfoJsonFile:
-        packageInfoJson = json.load (packageInfoJsonFile)
-    
-    version = packageInfoJson['version']
-    versionPattern = r'[0-9]+\.[0-9]+\.[0-9]+'
-    
-    # When adding or removing a file here, also update the pathspec
-    # exclusion list in .github/workflows/weekly_release.yml (the plan
-    # step's commit count), so version-bump-only weeks are not mistaken
-    # for releasable changes.
-    replaceRules = [
+VERSION_PATTERN = r'[0-9]+\.[0-9]+\.[0-9]+'
+
+
+def ReplaceRules (rootPath, version, versionPattern = VERSION_PATTERN):
+    """The files the version lives in, each with the regex that finds it there and the one that writes it.
+
+    A caller that only wants to know what the rules are - tools/tests/test_update_version.py, which
+    checks they still match - gets them from here, so they are written once."""
+    return [
         {
             'filePath' : os.path.join (rootPath, 'archicad-addon', 'Sources', 'AddOnVersion.hpp'),
             'oldRegex' : r'#define ADDON_VERSION "{0}"'.format (versionPattern),
@@ -54,7 +45,21 @@ def Main ():
             'newRegex' : r'version: {0}'.format (version)
         }
     ]
+
+
+def Main ():
+    currentPath = os.path.dirname (os.path.abspath (__file__))
+    rootPath = os.path.dirname (currentPath)
+    os.chdir (rootPath)
     
+    packageInfoJsonPath = os.path.join (currentPath, 'package_info.json')
+    packageInfoJson = None
+    with codecs.open (packageInfoJsonPath, 'r', 'utf-8') as packageInfoJsonFile:
+        packageInfoJson = json.load (packageInfoJsonFile)
+    
+    version = packageInfoJson['version']
+    replaceRules = ReplaceRules (rootPath, version)
+
     for replaceRule in replaceRules:
         filePath = replaceRule['filePath']
         oldRegex = replaceRule['oldRegex']
@@ -67,5 +72,7 @@ def Main ():
             return 1
     
     return 0
-    
-sys.exit (Main ())
+
+
+if __name__ == '__main__':
+    sys.exit (Main ())

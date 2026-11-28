@@ -51,6 +51,12 @@ jobs:
       run: |
         python3 tools/check_marketplace.py
         python3 tools/generate_catalogue.py --self-test
+    # The tooling's own tests, standard library only: the version rewrite rules the release runs
+    # (tools/update_version.py) and the schema expander a schema refactor is compared with
+    # (tools/expand_schemas.py). Both fail silently - a rule that stops matching is found on
+    # release day, a wrong expansion as a refactor that looks clean.
+    - name: Run the tools tests
+      run: python3 -m unittest discover tools/tests
 
   # Whether this change needs the builds below (see the top of this file).
   # If it fails, they build (`changes` outputs nothing, which is not 'false').
