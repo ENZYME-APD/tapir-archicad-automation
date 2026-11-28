@@ -968,26 +968,7 @@ GS::Optional<GS::UniString> StoreModulDataCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The module data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the module data; the empty name is the default section."
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The content of the module data, for example a JSON string."
-                        },
-                        "dataVersion": {
-                            "type": "integer",
-                            "description": "A version number stored with the data, returned by GetModulData, for example to tell the formats of your content apart. The default is 1."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "content"
-                    ]
+                    "$ref": "#/ModuleDataEntry"
                 }
             }
         },

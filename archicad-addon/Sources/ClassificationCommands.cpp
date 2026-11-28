@@ -1920,41 +1920,13 @@ GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetInputPara
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/ElementIdArrayItem"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType",
-                                    "description": "The tool default of this element type is checked."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType"
-                            ]
+                            "$ref": "#/ClassificationVisibilityToolDefault"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "attributeId"
-                            ]
+                            "$ref": "#/AttributeIdArrayItem"
                         }
                     ]
                 },

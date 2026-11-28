@@ -1024,28 +1024,7 @@ GS::Optional<GS::UniString> GetTypedPropertyValuesOfElementsCommand::GetRawRespo
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyValues": {
-                                    "type": "array",
-                                    "description": "One item per given property, in their order: the typed value, or an error for a property that was not found, could not be evaluated for the element or has no typed form.",
-                                    "items": {
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/TypedPropertyValue"
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyValues"
-                            ]
+                            "$ref": "#/TypedPropertyValuesForElement"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1326,36 +1305,7 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::Ge
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyDefinitions": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "propertyType": {
-                                                "$ref": "#/PropertyDefinitionType"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "propertyType"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyDefinitions"
-                            ]
+                            "$ref": "#/ComponentPropertyDefinitions"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4574,20 +4524,7 @@ GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetInputParametersSchema
                 "type": "array",
                 "description": "The values to check, each with the property definition it is checked against.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "propertyId": {
-                            "$ref": "#/PropertyId"
-                        },
-                        "propertyValue": {
-                            "$ref": "#/PropertyValue"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "propertyId",
-                        "propertyValue"
-                    ]
+                    "$ref": "#/PropertyValueCheckInput"
                 }
             }
         },
@@ -4609,20 +4546,7 @@ GS::Optional<GS::UniString> CheckPropertyValuesCommand::GetRawResponseSchema () 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "isValid": {
-                                    "type": "boolean",
-                                    "description": "True if the value can be converted to the type of the property and Archicad accepts it for the property definition."
-                                },
-                                "error": {
-                                    "$ref": "#/Error"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "isValid"
-                            ]
+                            "$ref": "#/PropertyValueCheck"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4744,42 +4668,7 @@ GS::Optional<GS::UniString> GetPropertyEditabilityCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyEditabilities": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "editable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the value of the property can be modified for the element. False for example for read-only properties or expressions with cyclic references."
-                                                    },
-                                                    "visible": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the property is visible for the element."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "editable",
-                                                    "visible"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyEditabilities"
-                            ]
+                            "$ref": "#/ElementPropertyEditabilityResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4794,37 +4683,7 @@ GS::Optional<GS::UniString> GetPropertyEditabilityCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyEditabilities": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "editable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the value of the property can be modified in the tool default of the element type."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "editable"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyEditabilities"
-                            ]
+                            "$ref": "#/ToolDefaultPropertyEditabilityResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5271,9 +5130,8 @@ GS::Optional<GS::UniString> SearchPropertiesCommand::GetInputParametersSchema ()
                 "description": "Optional case-insensitive substring to filter by property group name."
             },
             "propertyType": {
-                "type": "string",
-                "description": "Optional filter by property definition type.",
-                "enum": ["StaticBuiltIn", "DynamicBuiltIn", "Custom"]
+                "$ref": "#/PropertyType",
+                "description": "Optional filter by property definition type."
             },
             "valueType": {
                 "type": "string",

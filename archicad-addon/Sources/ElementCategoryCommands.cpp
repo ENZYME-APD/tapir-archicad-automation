@@ -329,40 +329,7 @@ GS::Optional<GS::UniString> GetCategoryValuesOfDefaultsCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "categoryValues": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "$ref": "#/ElementCategoryType"
-                                            },
-                                            "categoryId": {
-                                                "$ref": "#/ElementCategoryId"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/ElementCategoryValueId",
-                                                "description": "Left out when the default has no value in this category."
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The localized name of the value, for display only. Left out when the default has no value in this category."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "categoryId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "categoryValues"
-                            ]
+                            "$ref": "#/DefaultCategoryValues"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -459,21 +426,7 @@ GS::Optional<GS::UniString> SetCategoryValuesOfDefaultsCommand::GetInputParamete
                 "type": "array",
                 "description": "The category values to set for every element type: one category per item.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/ElementCategoryType"
-                        },
-                        "categoryValueId": {
-                            "$ref": "#/ElementCategoryValueId",
-                            "description": "A value of the category given by type, as GetElementCategories lists them."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "categoryValueId"
-                    ]
+                    "$ref": "#/DefaultCategoryValueData"
                 },
                 "minItems": 1
             },

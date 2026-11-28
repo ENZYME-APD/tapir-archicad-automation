@@ -932,46 +932,7 @@ GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetRawResponseSchema() c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "userData": {
-                                    "type": "object",
-                                    "description": "The user data an add-on attached to the group.",
-                                    "properties": {
-                                        "dataVersion": {
-                                            "type": "integer",
-                                            "description": "The version of the user data, as set by the add-on that attached it."
-                                        },
-                                        "platformSign": {
-                                            "type": "integer",
-                                            "description": "The platform sign of the user data, which tells the byte order the data was written in."
-                                        },
-                                        "flags": {
-                                            "type": "integer",
-                                            "description": "The flags of the user data (APIUserDataFlag_FillWith and APIUserDataFlag_Pickup bits), as set by the add-on that attached it."
-                                        },
-                                        "data": {
-                                            "type": "string",
-                                            "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
-                                        },
-                                        "pairs": {
-                                            "$ref": "#/UserDataPairs",
-                                            "description": "The key-value pairs of the user data, decoded from data. Only present when dataVersion is 1, the layout SetUserDataOfGroups writes."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "dataVersion",
-                                        "platformSign",
-                                        "flags",
-                                        "data"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "userData"
-                            ]
+                            "$ref": "#/GroupUserDataResult"
                         },
                         {
                             "$ref": "#/ErrorItem"

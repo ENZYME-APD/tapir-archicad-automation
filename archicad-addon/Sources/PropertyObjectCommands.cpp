@@ -342,29 +342,10 @@ GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetInputP
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/ElementIdArrayItem"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType",
-                                    "description": "Read the links of the element defaults of this type instead of an element."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType"
-                            ]
+                            "$ref": "#/PropertyObjectToolDefault"
                         }
                     ]
                 }
@@ -466,47 +447,10 @@ GS::Optional<GS::UniString> SetLinkedPropertyObjectsOfElementsCommand::GetInputP
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "linkByCriteria": {
-                                    "type": "boolean",
-                                    "description": "Link the property objects matching their criteria to the element."
-                                },
-                                "individualLibraryPartIndex": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "description": "The index of the library part of the property object to assign to the element individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/LinkedPropertyObjectsByElement"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType",
-                                    "description": "Set the links of the element defaults of this type instead of an element."
-                                },
-                                "linkByCriteria": {
-                                    "type": "boolean",
-                                    "description": "Link the property objects matching their criteria to the element defaults."
-                                },
-                                "individualLibraryPartIndex": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "description": "The index of the library part of the property object to assign to the element defaults individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementType"
-                            ]
+                            "$ref": "#/LinkedPropertyObjectsByToolDefault"
                         }
                     ]
                 }

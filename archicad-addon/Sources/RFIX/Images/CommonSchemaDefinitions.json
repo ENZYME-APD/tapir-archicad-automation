@@ -7162,6 +7162,752 @@
             "$ref": "#/PropertyIdArrayItem"
         }
     },
+    "GroupUserDataResult": {
+        "type": "object",
+        "properties": {
+            "userData": {
+                "$ref": "#/GroupUserData"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userData"
+        ]
+    },
+    "GroupUserData": {
+        "type": "object",
+        "description": "The user data an add-on attached to the group.",
+        "properties": {
+            "dataVersion": {
+                "type": "integer",
+                "description": "The version of the user data, as set by the add-on that attached it."
+            },
+            "platformSign": {
+                "type": "integer",
+                "description": "The platform sign of the user data, which tells the byte order the data was written in."
+            },
+            "flags": {
+                "type": "integer",
+                "description": "The flags of the user data (APIUserDataFlag_FillWith and APIUserDataFlag_Pickup bits), as set by the add-on that attached it."
+            },
+            "data": {
+                "type": "string",
+                "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs of the user data, decoded from data. Only present when dataVersion is 1, the layout SetUserDataOfGroups writes."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dataVersion",
+            "platformSign",
+            "flags",
+            "data"
+        ]
+    },
+    "IFCClassificationSource": {
+        "type": "object",
+        "description": "The classification (IfcClassification) the reference belongs to.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the classification."
+            },
+            "source": {
+                "type": "string",
+                "description": "The source of the classification. Missing when it has no value."
+            },
+            "edition": {
+                "type": "string",
+                "description": "The edition of the classification. Missing when it has no value."
+            },
+            "editionDate": {
+                "type": "string",
+                "description": "The edition date of the classification. Missing when it has no value."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification. Missing when it has no value."
+            },
+            "location": {
+                "type": "string",
+                "description": "The location of the classification, for example a URL. Missing when it has no value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "IFCClassificationReferenceSource": {
+        "type": "string",
+        "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element). Missing in Archicad 25, 26 and 27, where the storedOnly input chooses between the stored references and all of them.",
+        "enum": [
+            "preview",
+            "local"
+        ]
+    },
+    "DefaultCategoryValues": {
+        "type": "object",
+        "properties": {
+            "categoryValues": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/DefaultCategoryValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "categoryValues"
+        ]
+    },
+    "DefaultCategoryValue": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/ElementCategoryType"
+            },
+            "categoryId": {
+                "$ref": "#/ElementCategoryId"
+            },
+            "categoryValueId": {
+                "$ref": "#/ElementCategoryValueId",
+                "description": "Left out when the default has no value in this category."
+            },
+            "name": {
+                "type": "string",
+                "description": "The localized name of the value, for display only. Left out when the default has no value in this category."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "categoryId"
+        ]
+    },
+    "ClassificationVisibilityToolDefault": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The tool default of this element type is checked."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+    "ElementUserData": {
+        "type": "object",
+        "properties": {
+            "userData": {
+                "type": "array",
+                "description": "The key-value pairs stored on the element.",
+                "items": {
+                    "$ref": "#/ElementUserDataPair"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userData"
+        ]
+    },
+    "ElementUserDataPair": {
+        "type": "object",
+        "properties": {
+            "key": {
+                "type": "string",
+                "description": "The key of the value."
+            },
+            "value": {
+                "type": "string",
+                "description": "The stored value."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "key",
+            "value"
+        ]
+    },
+    "PropertyObjectToolDefault": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Read the links of the element defaults of this type instead of an element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+    "IFCClassificationSourceReference": {
+        "type": "object",
+        "description": "The classification (IfcClassification) the reference belongs to.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the classification."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "ElementUserDataUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "userData": {
+                "type": "array",
+                "description": "The key-value pairs to store on the element. A key that already exists on the element gets the new value; other keys are left as they are.",
+                "items": {
+                    "$ref": "#/UserDataPair"
+                }
+            },
+            "keysToDelete": {
+                "type": "array",
+                "description": "The keys to remove from the element. A key the element does not hold is ignored.",
+                "items": {
+                    "$ref": "#/UserDataKey"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "IFCClassificationSourceData": {
+        "type": "object",
+        "description": "The classification (IfcClassification) the reference belongs to.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the classification."
+            },
+            "edition": {
+                "type": "string",
+                "description": "The edition of the classification. Default: empty."
+            },
+            "editionDate": {
+                "type": "string",
+                "description": "The edition date of the classification. Default: empty."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification. Default: empty."
+            },
+            "location": {
+                "type": "string",
+                "description": "The location of the classification, for example a URL. Default: empty."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "LinkedPropertyObjectsByElement": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "linkByCriteria": {
+                "type": "boolean",
+                "description": "Link the property objects matching their criteria to the element."
+            },
+            "individualLibraryPartIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the library part of the property object to assign to the element individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "LinkedPropertyObjectsByToolDefault": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Set the links of the element defaults of this type instead of an element."
+            },
+            "linkByCriteria": {
+                "type": "boolean",
+                "description": "Link the property objects matching their criteria to the element defaults."
+            },
+            "individualLibraryPartIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the library part of the property object to assign to the element defaults individually, the same as the index returned by GetAvailableLibraryParts. 0 removes the individually assigned property object."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType"
+        ]
+    },
+    "UserDataKey": {
+        "type": "string",
+        "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
+        "minLength": 1
+    },
+    "ComponentPropertyDefinitions": {
+        "type": "object",
+        "properties": {
+            "propertyDefinitions": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ComponentPropertyDefinition"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyDefinitions"
+        ]
+    },
+    "ComponentPropertyDefinition": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyName": {
+                "type": "string"
+            },
+            "propertyType": {
+                "$ref": "#/PropertyDefinitionType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyName",
+            "propertyType"
+        ]
+    },
+    "ElementPropertyEditabilityResult": {
+        "type": "object",
+        "properties": {
+            "propertyEditabilities": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/ElementPropertyEditabilityStatus"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyEditabilities"
+        ]
+    },
+    "ElementPropertyEditabilityStatus": {
+        "type": "object",
+        "properties": {
+            "editable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be modified for the element. False for example for read-only properties or expressions with cyclic references."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the property is visible for the element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "editable",
+            "visible"
+        ]
+    },
+    "ToolDefaultPropertyEditabilityResult": {
+        "type": "object",
+        "properties": {
+            "propertyEditabilities": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/ToolDefaultPropertyEditability"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyEditabilities"
+        ]
+    },
+    "ToolDefaultPropertyEditability": {
+        "type": "object",
+        "properties": {
+            "editable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be modified in the tool default of the element type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "editable"
+        ]
+    },
+    "PropertyType": {
+        "type": "string",
+        "enum": [
+            "StaticBuiltIn",
+            "DynamicBuiltIn",
+            "Custom"
+        ]
+    },
+    "PropertyCollectionType": {
+        "type": "string",
+        "enum": [
+            "Undefined",
+            "Single",
+            "List",
+            "SingleChoiceEnumeration",
+            "MultipleChoiceEnumeration"
+        ]
+    },
+    "PropertyValueType": {
+        "type": "string",
+        "enum": [
+            "Undefined",
+            "Integer",
+            "Real",
+            "String",
+            "Boolean",
+            "Guid"
+        ]
+    },
+    "PropertyMeasureType": {
+        "type": "string",
+        "enum": [
+            "Undefined",
+            "Default",
+            "Length",
+            "Area",
+            "Volume",
+            "Angle"
+        ]
+    },
+    "PropertyValueCheckInput": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyValue"
+        ],
+        "description": "A property value to check against its definition."
+    },
+    "ModuleDataEntry": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the module data; the empty name is the default section."
+            },
+            "content": {
+                "type": "string",
+                "description": "The content of the module data, for example a JSON string."
+            },
+            "dataVersion": {
+                "type": "integer",
+                "description": "A version number stored with the data, returned by GetModulData, for example to tell the formats of your content apart. The default is 1."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "content"
+        ]
+    },
+    "PropertyValueCheck": {
+        "type": "object",
+        "properties": {
+            "isValid": {
+                "type": "boolean",
+                "description": "True if the value can be converted to the type of the property and Archicad accepts it for the property definition."
+            },
+            "error": {
+                "$ref": "#/Error"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isValid"
+        ],
+        "description": "The result of checking one property value."
+    },
+    "ElementFieldDefinition": {
+        "type": "object",
+        "properties": {
+            "path": {
+                "type": "string",
+                "description": "The field's path in the struct, as in C++: e.g. note.noteFont, u.planeRoof.angle or defHandrailEnd[0].x."
+            },
+            "type": {
+                "$ref": "#/ElementFieldJsonType"
+            },
+            "kind": {
+                "$ref": "#/ElementFieldKind"
+            },
+            "size": {
+                "type": "integer",
+                "description": "The size of the field in bytes (for a string, the room in bytes including the closing zero; for a UniStringPointer, the size of the pointer)."
+            },
+            "readOnly": {
+                "type": "boolean",
+                "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit), and for the fields of placed elements Archicad refuses whatever their value: the library part (libInd) of Objects, Lamps, Windows, Doors, Skylights, Zones and symbol Labels, which ChangeLibraryPartOfElements changes, and the leader line fields of the notes of a Level Dimension (note1/note2 useLeaderLine, anchorAtTextEnd, begC, midC, endC). SetElementFields refuses them, giving readOnlyReason; SetFieldsOfElementDefaults refuses only the first group (owners, counts and shape selectors)."
+            },
+            "readOnlyReason": {
+                "type": "string",
+                "description": "Why the field is read-only; only given for a read-only field."
+            },
+            "variant": {
+                "type": "string",
+                "description": "For a field in a union, the member it is in, e.g. u.revolvedShell, u.planeRoof or structure[0][1].data.monolith. Only the member the element uses holds values (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, the structType of that default structure of a stair): GetElementFields leaves the others out and SetElementFields refuses them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "path",
+            "type",
+            "kind",
+            "size",
+            "readOnly"
+        ],
+        "description": "The definition and metadata of an element field."
+    },
+    "ToolDefaultFieldValues": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "structName": {
+                "type": "string",
+                "description": "The C++ struct of the element type in the Archicad API."
+            },
+            "fields": {
+                "type": "object",
+                "description": "The value of each field of the tool defaults, by its path.",
+                "additionalProperties": {
+                    "$ref": "#/ElementFieldValue"
+                }
+            },
+            "missingFields": {
+                "type": "array",
+                "description": "The asked paths this element type does not have.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "inactiveFields": {
+                "type": "array",
+                "description": "The asked paths in a member of a union the defaults do not use (see variant in GetElementFieldDefinitions). Without the fields input, these are simply left out.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "structName",
+            "fields"
+        ],
+        "description": "The field values returned for one element tool default."
+    },
+    "ElementFieldValues": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "structName": {
+                "type": "string",
+                "description": "The C++ struct of the element in the Archicad API."
+            },
+            "fields": {
+                "type": "object",
+                "description": "The value of each field, by its path.",
+                "additionalProperties": {
+                    "$ref": "#/ElementFieldValue"
+                }
+            },
+            "missingFields": {
+                "type": "array",
+                "description": "The asked paths this element type does not have.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "inactiveFields": {
+                "type": "array",
+                "description": "The asked paths in a member of a union this element does not use (see variant in GetElementFieldDefinitions), e.g. u.revolvedShell fields of an extruded shell: their bytes hold another member's values, so they are not read. Without the fields input, these are simply left out.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "structName",
+            "fields"
+        ],
+        "description": "The field values returned for one element."
+    },
+    "ToolDefaultFieldsUpdate": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "fields": {
+                "type": "object",
+                "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7, \"cutFillPen\": {\"hasValue\": true, \"value\": 5}}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
+                "additionalProperties": {
+                    "$ref": "#/ElementFieldValue"
+                },
+                "minProperties": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "fields"
+        ],
+        "description": "Field changes for one element tool default."
+    },
+    "ElementFieldsUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "fields": {
+                "type": "object",
+                "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"note.noteFont\": 3, \"note.frame\": true, \"note.contentUStr\": \"A\"}, or {\"refMat\": {\"hasValue\": true, \"value\": 12}} for a wall. Only these fields change: they are written with ACAPI_Element_Change and a mask of exactly their bytes, then read back.",
+                "additionalProperties": {
+                    "$ref": "#/ElementFieldValue"
+                },
+                "minProperties": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "fields"
+        ],
+        "description": "Field changes for one element."
+    },
+    "DefaultCategoryValueData": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/ElementCategoryType"
+            },
+            "categoryValueId": {
+                "$ref": "#/ElementCategoryValueId",
+                "description": "A value of the category given by type, as GetElementCategories lists them."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "categoryValueId"
+        ]
+    },
+    "TypedPropertyValuesForElement": {
+        "type": "object",
+        "properties": {
+            "propertyValues": {
+                "type": "array",
+                "description": "One item per given property, in their order: the typed value, or an error for a property that was not found, could not be evaluated for the element or has no typed form.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/TypedPropertyValue"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValues"
+        ],
+        "description": "Typed property values returned for one element."
+    },
+    "ElementFieldKind": {
+        "type": "string",
+        "enum": [
+            "Real",
+            "Bool",
+            "SignedInt",
+            "UnsignedInt",
+            "CString",
+            "UString",
+            "AttributeIndex",
+            "Guid",
+            "OverriddenPen",
+            "OverriddenAttribute",
+            "UniStringPointer"
+        ],
+        "description": "The C++ kind of the field: an enum is a SignedInt, an AttributeIndex is the index of an attribute (pen tables excepted, pens are plain integers). OverriddenPen and OverriddenAttribute are the optional pens and attributes of the API (API_OverriddenPen, API_OverriddenAttribute, e.g. cutFillPen and refMat of a wall), read and written as an object with hasValue and value. A UniStringPointer is a GS::UniString* through which Archicad passes a text (e.g. note.contentUStr, the text of a dimension note): it is read and written as a string, the commands pointing it to a string of their own."
+    },
+    "ElementFieldJsonType": {
+        "type": "string",
+        "enum": [
+            "number",
+            "boolean",
+            "integer",
+            "string",
+            "object"
+        ],
+        "description": "The JSON type of the field's value: object for an OverriddenPen or OverriddenAttribute (see ElementFieldOptionalValue)."
+    },
     "PropertyDetails": {
         "type": "object",
         "description": "The details of the property.",
@@ -7173,12 +7919,7 @@
                 "$ref": "#/PropertyId"
             },
             "propertyType": {
-                "type": "string",
-                "enum": [
-                    "StaticBuiltIn",
-                    "DynamicBuiltIn",
-                    "Custom"
-                ]
+                "$ref": "#/PropertyType"
             },
             "propertyGroupName": {
                 "type": "string"
@@ -7187,36 +7928,13 @@
                 "type": "string"
             },
             "propertyCollectionType": {
-                "type": "string",
-                "enum": [
-                    "Undefined",
-                    "Single",
-                    "List",
-                    "SingleChoiceEnumeration",
-                    "MultipleChoiceEnumeration"
-                ]
+                "$ref": "#/PropertyCollectionType"
             },
             "propertyValueType": {
-                "type": "string",
-                "enum": [
-                    "Undefined",
-                    "Integer",
-                    "Real",
-                    "String",
-                    "Boolean",
-                    "Guid"
-                ]
+                "$ref": "#/PropertyValueType"
             },
             "propertyMeasureType": {
-                "type": "string",
-                "enum": [
-                    "Undefined",
-                    "Default",
-                    "Length",
-                    "Area",
-                    "Volume",
-                    "Angle"
-                ]
+                "$ref": "#/PropertyMeasureType"
             },
             "propertyIsEditable": {
                 "type": "boolean"
@@ -9240,46 +9958,10 @@
                 "description": "The name of the IfcRelAssociatesClassification relationship that links the reference to the element. Given from Archicad 28, missing when it is empty."
             },
             "referencedSource": {
-                "type": "object",
-                "description": "The classification (IfcClassification) the reference belongs to.",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the classification."
-                    },
-                    "source": {
-                        "type": "string",
-                        "description": "The source of the classification. Missing when it has no value."
-                    },
-                    "edition": {
-                        "type": "string",
-                        "description": "The edition of the classification. Missing when it has no value."
-                    },
-                    "editionDate": {
-                        "type": "string",
-                        "description": "The edition date of the classification. Missing when it has no value."
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "The description of the classification. Missing when it has no value."
-                    },
-                    "location": {
-                        "type": "string",
-                        "description": "The location of the classification, for example a URL. Missing when it has no value."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
+                "$ref": "#/IFCClassificationSource"
             },
             "source": {
-                "type": "string",
-                "description": "Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element). Missing in Archicad 25, 26 and 27, where the storedOnly input chooses between the stored references and all of them.",
-                "enum": [
-                    "preview",
-                    "local"
-                ]
+                "$ref": "#/IFCClassificationReferenceSource"
             }
         },
         "additionalProperties": false,
@@ -20378,9 +21060,7 @@
         "description": "A string value stored under a key in user data.",
         "properties": {
             "key": {
-                "type": "string",
-                "description": "The key of the value. Scripts should prefix their keys (for example 'myscript.databaseId') so that different scripts do not overwrite each other's data.",
-                "minLength": 1
+                "$ref": "#/UserDataKey"
             },
             "value": {
                 "type": "string",
@@ -20404,8 +21084,7 @@
         "type": "array",
         "description": "The keys to remove from the user data. A key that is not stored is ignored. Applied after pairs.",
         "items": {
-            "type": "string",
-            "minLength": 1
+            "$ref": "#/UserDataKey"
         }
     },
     "ElementsWrapper": {
@@ -25000,34 +25679,7 @@
                 "description": "The location of the classification reference, for example a URL. Default: empty."
             },
             "referencedSource": {
-                "type": "object",
-                "description": "The classification (IfcClassification) the reference belongs to.",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the classification."
-                    },
-                    "edition": {
-                        "type": "string",
-                        "description": "The edition of the classification. Default: empty."
-                    },
-                    "editionDate": {
-                        "type": "string",
-                        "description": "The edition date of the classification. Default: empty."
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "The description of the classification. Default: empty."
-                    },
-                    "location": {
-                        "type": "string",
-                        "description": "The location of the classification, for example a URL. Default: empty."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
+                "$ref": "#/IFCClassificationSourceData"
             }
         },
         "additionalProperties": false,
@@ -25043,18 +25695,7 @@
                 "$ref": "#/ElementId"
             },
             "referencedSource": {
-                "type": "object",
-                "description": "The classification (IfcClassification) the reference belongs to.",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the classification."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "name"
-                ]
+                "$ref": "#/IFCClassificationSourceReference"
             },
             "identification": {
                 "type": "string",
@@ -33200,48 +33841,20 @@
                 "description": "The name of the group of the property. Only for a property."
             },
             "propertyType": {
-                "type": "string",
-                "description": "Whether the property is built in or custom. Only for a property.",
-                "enum": [
-                    "StaticBuiltIn",
-                    "DynamicBuiltIn",
-                    "Custom"
-                ]
+                "$ref": "#/PropertyType",
+                "description": "Whether the property is built in or custom. Only for a property."
             },
             "propertyCollectionType": {
-                "type": "string",
-                "description": "Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property.",
-                "enum": [
-                    "Undefined",
-                    "Single",
-                    "List",
-                    "SingleChoiceEnumeration",
-                    "MultipleChoiceEnumeration"
-                ]
+                "$ref": "#/PropertyCollectionType",
+                "description": "Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property."
             },
             "propertyValueType": {
-                "type": "string",
-                "description": "The type of the values of the property. Only for a property.",
-                "enum": [
-                    "Undefined",
-                    "Integer",
-                    "Real",
-                    "String",
-                    "Boolean",
-                    "Guid"
-                ]
+                "$ref": "#/PropertyValueType",
+                "description": "The type of the values of the property. Only for a property."
             },
             "propertyMeasureType": {
-                "type": "string",
-                "description": "What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties.",
-                "enum": [
-                    "Undefined",
-                    "Default",
-                    "Length",
-                    "Area",
-                    "Volume",
-                    "Angle"
-                ]
+                "$ref": "#/PropertyMeasureType",
+                "description": "What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties."
             },
             "propertyIsEditable": {
                 "type": "boolean",
