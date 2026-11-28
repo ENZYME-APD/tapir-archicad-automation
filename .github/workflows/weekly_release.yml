@@ -404,11 +404,16 @@ jobs:
           # guessed docs - fix the generator (or dispatch this workflow with
           # 'skip_docs_update') in that case.
           python3 tools/generate_addon_docs.py
+          # The Python client is generated from those docs, so it is regenerated in the same commit:
+          # the drift check of every pull request compares it with command_definitions.js, and a
+          # release that left it behind would fail that check on main - and on every pull request -
+          # until someone ran the generator by hand.
+          python3 python-client/generate.py
           # Then the copies of the site for AI assistants (llms.txt, llms-full.txt,
           # commands.json/.md, the pages as Markdown, sitemap.xml, robots.txt),
           # from those docs and the pages. They never hold up a release: when
           # the script fails, the files from the last release stay. Only docs/
-          # is staged.
+          # and the Python client are staged.
           if ! python3 tools/generate_llm_files.py; then
             echo "::warning::tools/generate_llm_files.py failed; the LLM files were not updated."
             # Undo everything it wrote, tracked or new, but keep the
@@ -416,22 +421,22 @@ jobs:
             git checkout -- docs ':!docs/archicad-addon'
             git clean -fdq -- docs ':!docs/archicad-addon'
           fi
-          git add -A -- docs
-          if git diff --cached --quiet -- docs; then
-            echo "docs/archicad-addon and the LLM files are up to date."
+          git add -A -- docs python-client/tapir_archicad/commands.py
+          if git diff --cached --quiet -- docs python-client/tapir_archicad/commands.py; then
+            echo "docs/archicad-addon, the LLM files and the Python client are up to date."
             exit 0
           fi
-          git diff --cached --stat -- docs
+          git diff --cached --stat -- docs python-client/tapir_archicad/commands.py
           if [ '${{ inputs.dry_run }}' = 'true' ]; then
             echo "DRY RUN: the docs would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
-            git reset -q -- docs
-            git checkout -- docs
+            git reset -q -- docs python-client/tapir_archicad/commands.py
+            git checkout -- docs python-client/tapir_archicad/commands.py
             git clean -fdq -- docs
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Regenerate the Add-On docs and the LLM files" -- docs
+          git commit -m "Regenerate the Add-On docs, the LLM files and the Python client" -- docs python-client/tapir_archicad/commands.py
           # No rebase here: the tag goes on HEAD next, and a rebase would
           # pull in commits the plan step above never looked at.
           if ! git push origin HEAD:main; then
