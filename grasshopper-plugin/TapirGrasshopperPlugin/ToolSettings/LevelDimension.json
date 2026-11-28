@@ -265,6 +265,26 @@
       "subgroup": null
     },
     {
+      "get": "textBox",
+      "set": "textBox",
+      "apiMember": "API_LevelDimensionType::note1",
+      "apiDescription": "The text box of the main text (API_NoteType of note1): noteAngle, opaque, frame, backgroundPen and framePen, as #/DimensionNote (textAngle, opaque, frame, backgroundPen, framePen).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "secondTextBox",
+      "set": "secondTextBox",
+      "apiMember": "API_LevelDimensionType::note2",
+      "apiDescription": "The text box of the second text (API_NoteType of note2), with the same fields as textBox.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
       "get": "hideWithBaseElem",
       "set": "hideWithBaseElem",
       "apiMember": "API_LevelDimensionType::hideWithBaseElem",
