@@ -1021,17 +1021,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "description": "Archicad 27 only: the name of the table."
             },
             "sizes": {
-                "type": "object",
-                "description": "Archicad 27 only: the number of rows of each shape.",
-                "properties": {
-                    "Circular": {
-                        "type": "integer"
-                    },
-                    "Rectangular": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/MEPPreferenceTableSizes",
+                "description": "Archicad 27 only: the number of rows of each shape."
             },
             "rows": {
                 "type": "array",
