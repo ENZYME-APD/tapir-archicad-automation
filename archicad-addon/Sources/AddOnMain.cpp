@@ -2819,7 +2819,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetActiveRenovationFilterCommand> (
             navigatorCommands, "1.8.0",
-            "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings."
+            "Sets the renovation filter of the current window (Document > Renovation > Renovation Filter), given by its renovationFilterId from GetRenovationFilters or by its name. Saved views keep their own filter: change that with SetViewSettings. A section, elevation, interior elevation or 3D document that is not set to Auto-rebuild Model is refused, because Archicad would ask about it in a dialog a JSON command cannot answer."
         );
         err |= RegisterCommand<GetGhostStorySettingsCommand> (
             navigatorCommands, "1.8.0",

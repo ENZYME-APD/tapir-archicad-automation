@@ -2461,6 +2461,89 @@ GS::ObjectState GetRenovationFiltersCommand::Execute (const GS::ObjectState& /*p
     return response;
 }
 
+static bool IsAutoRebuild (API_CutPlanePlanConn currPlanConn, API_CutPlanePlanConn intPlanConn)
+{
+    return currPlanConn == APICutPl_Online && intPlanConn == APICutPl_Online;
+}
+
+// Changing the renovation filter of a section, elevation, interior elevation or 3D document
+// whose status is not Auto-rebuild Model (Rebuild Model manually, or Drawing) makes Archicad
+// open a modal warning ("You are changing the Renovation Filter of a non Auto-rebuild
+// viewpoint"), which a JSON client cannot answer: the command never returns and every later
+// command waits until someone closes the dialog by hand (#3107). The API has no way to answer
+// or suppress it, so such a window is refused up front, as CreateZones (#822) and
+// DeleteElements (#901) refuse their dialogs. Returns the kind of the window when it is such a
+// viewpoint, nothing otherwise (also when its status cannot be read).
+static GS::Optional<GS::UniString> GetNonAutoRebuildViewpointOfCurrentWindow ()
+{
+    API_DatabaseInfo dbInfo = {};
+    if (ACAPI_Database_GetCurrentDatabase (&dbInfo) != NoError) {
+        return GS::NoValue;
+    }
+    // Fills in the type and the linked element of the database from its id.
+    if (ACAPI_Window_GetDatabaseInfo (&dbInfo) != NoError) {
+        return GS::NoValue;
+    }
+
+    if (dbInfo.typeID == APIWind_DocumentFrom3DID) {
+        API_DocumentFrom3DType settings = {};
+        if (ACAPI_View_GetDocumentFrom3DSettings (&dbInfo.databaseUnId, &settings) != NoError) {
+            return GS::NoValue;
+        }
+        const bool autoRebuild = IsAutoRebuild (settings.currPlanConn, settings.intPlanConn);
+        if (settings.cutSetting.shapes != nullptr) {
+            BMKillHandle ((GSHandle*) &(settings.cutSetting.shapes));
+        }
+        return autoRebuild ? GS::Optional<GS::UniString> () : GS::Optional<GS::UniString> (GS::UniString ("3D document"));
+    }
+
+    if (dbInfo.typeID != APIWind_SectionID && dbInfo.typeID != APIWind_ElevationID && dbInfo.typeID != APIWind_InteriorElevationID) {
+        return GS::NoValue;
+    }
+    if (dbInfo.linkedElement == APINULLGuid) {
+        return GS::NoValue;
+    }
+
+    API_Element element = {};
+    element.header.guid = dbInfo.linkedElement;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return GS::NoValue;
+    }
+
+    switch (GetElemTypeId (element.header)) {
+        case API_CutPlaneID:
+            if (IsAutoRebuild (element.cutPlane.segment.currPlanConn, element.cutPlane.segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("section");
+        case API_ElevationID:
+            if (IsAutoRebuild (element.elevation.segment.currPlanConn, element.elevation.segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("elevation");
+        case API_InteriorElevationID: {
+            // The segments of an interior elevation are in its memo; each has its own window.
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_All) != NoError || memo.intElevSegments == nullptr) {
+                return GS::NoValue;
+            }
+            const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment);
+            const Int32 segmentIndex = dbInfo.linkedSegmentMemoIndex;
+            if (segmentIndex < 0 || segmentIndex >= nSegments) {
+                return GS::NoValue;
+            }
+            const API_SectionSegment& segment = memo.intElevSegments[segmentIndex];
+            if (IsAutoRebuild (segment.currPlanConn, segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("interior elevation");
+        }
+        default:
+            return GS::NoValue;
+    }
+}
+
 SetActiveRenovationFilterCommand::SetActiveRenovationFilterCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2536,6 +2619,20 @@ GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState
         if (renovationFilterGuid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
         }
+    }
+
+    // Setting the filter the window already has changes nothing, so it needs no check.
+    API_Guid activeRenovationFilterGuid = APINULLGuid;
+    if (ACAPI_Renovation_GetActualRenovationFilter (&activeRenovationFilterGuid) == NoError && activeRenovationFilterGuid == renovationFilterGuid) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    const GS::Optional<GS::UniString> nonAutoRebuildViewpoint = GetNonAutoRebuildViewpointOfCurrentWindow ();
+    if (nonAutoRebuildViewpoint.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDCMD,
+            "The current window is a " + *nonAutoRebuildViewpoint + " that is not set to Auto-rebuild Model (it rebuilds manually or is a Drawing). "
+            "Archicad would open a modal warning that a JSON command cannot answer, and wait for it. "
+            "Bring a floor plan, a 3D window or an auto-rebuild viewpoint to the front first, or set the renovation filter of this viewpoint in Archicad.");
     }
 
     err = ACAPI_Renovation_SetActualRenovationFilter (&renovationFilterGuid);
