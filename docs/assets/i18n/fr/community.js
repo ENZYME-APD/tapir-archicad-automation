@@ -1,7 +1,7 @@
 /* Français: the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community – Archicad automation with Tapir': 'Communauté – l\'automatisation d\'Archicad avec Tapir',
+    'Archicad automation community | Tapir': 'Communauté de l\'automatisation d\'Archicad | Tapir',
     'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
         'Posez vos questions sur Discord, signalez un bug, testez un correctif dans votre Archicad : comment la communauté de Tapir et ses bots transforment un signalement en nouvelle version, et comment le projet a grandi.',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / Communauté',
@@ -28,16 +28,16 @@
     'How the bots <em>work.</em>': 'Comment travaillent <em>les bots.</em>',
     'Most fixes are written by bots and checked by people. The maintainers set the rules and can stop any change; you decide whether a fix works in your Archicad.':
         'La plupart des correctifs sont écrits par des bots et vérifiés par des personnes. Les mainteneurs fixent les règles et peuvent arrêter toute modification ; c\'est vous qui décidez si un correctif fonctionne dans votre Archicad.',
-    '<b>01</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
-        '<b>01</b><strong>Publiez-le</strong><span>Décrivez le bug ou l\'idée sur Discord ou GitHub. Sur Discord, aucun compte GitHub n\'est nécessaire.</span>',
-    '<b>02</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
-        '<b>02</b><strong>Une issue</strong><span>Toutes les demi-heures, les messages Discord qui ressemblent à un signalement de bug ou à une demande de fonctionnalité deviennent des issues GitHub, et le bot répond avec le lien.</span>',
-    '<b>03</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
-        '<b>03</b><strong>Un projet de correctif</strong><span>Le bot des issues répond, demande ce qui lui manque, ou écrit le correctif et ouvre une pull request. Celle-ci est compilée pour chaque version d\'Archicad et relue.</span>',
-    '<b>04</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
-        '<b>04</b><strong>Vous testez</strong><span>Un commentaire sur la pull request donne le lien vers l\'add-on compilé et demande à la personne qui a signalé le problème de l\'essayer.</span>',
-    '<b>05</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
-        '<b>05</b><strong>Publié</strong><span>Au vert et relue, elle est fusionnée trois jours plus tard, sauf si un mainteneur l\'arrête, et sort dans la <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">version</a> du lundi.</span>',
+    '<b aria-hidden="true">1</b><strong>Post it</strong><span>Describe the bug or idea on Discord or GitHub. A GitHub account is not needed on Discord.</span>':
+        '<b aria-hidden="true">1</b><strong>Publiez-le</strong><span>Décrivez le bug ou l\'idée sur Discord ou GitHub. Sur Discord, aucun compte GitHub n\'est nécessaire.</span>',
+    '<b aria-hidden="true">2</b><strong>An issue</strong><span>Every half hour, Discord posts that read like a bug report or a feature request become GitHub issues, and the bot replies with the link.</span>':
+        '<b aria-hidden="true">2</b><strong>Une issue</strong><span>Toutes les demi-heures, les messages Discord qui ressemblent à un signalement de bug ou à une demande de fonctionnalité deviennent des issues GitHub, et le bot répond avec le lien.</span>',
+    '<b aria-hidden="true">3</b><strong>A draft fix</strong><span>The issue bot answers, asks for what it is missing, or writes the fix and opens a pull request. It is built for every Archicad version and reviewed.</span>':
+        '<b aria-hidden="true">3</b><strong>Un projet de correctif</strong><span>Le bot des issues répond, demande ce qui lui manque, ou écrit le correctif et ouvre une pull request. Celle-ci est compilée pour chaque version d\'Archicad et relue.</span>',
+    '<b aria-hidden="true">4</b><strong>You test</strong><span>A comment on the pull request links the built add-on and asks the person who reported it to try it.</span>':
+        '<b aria-hidden="true">4</b><strong>Vous testez</strong><span>Un commentaire sur la pull request donne le lien vers l\'add-on compilé et demande à la personne qui a signalé le problème de l\'essayer.</span>',
+    '<b aria-hidden="true">5</b><strong>Released</strong><span>Green and reviewed, it is merged three days later unless a maintainer stops it, and ships in Monday\'s <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>.</span>':
+        '<b aria-hidden="true">5</b><strong>Publié</strong><span>Au vert et relue, elle est fusionnée trois jours plus tard, sauf si un mainteneur l\'arrête, et sort dans la <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">version</a> du lundi.</span>',
 
     // Report and test
     'Report and test': 'Signaler et tester',
@@ -97,6 +97,7 @@
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
         'Commits, issues et pull requests, et messages Discord par mois, empilés, avec le nombre de membres Discord en ligne, de {first} à {last}. Le tableau ci-dessous donne tous les chiffres.',
     'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec': 'janv. févr. mars avr. mai juin juil. août sept. oct. nov. déc.',
+    '{month} {year}': '{month} {year}',
     'Growth': 'Croissance',
     'Total': 'Total',
     'Growth chart. Left and Right arrow keys read the numbers month by month, Home and End jump to the first and last month, Esc hides them.':
@@ -104,6 +105,7 @@
     'Growth since <em>2022.</em>': 'La croissance depuis <em>2022.</em>',
     'Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.':
         'Tout ce qui se passe autour de Tapir chaque mois, du premier commit chez Enzyme à aujourd\'hui. Seuls des chiffres sont collectés, jamais le texte d\'un message.',
+    '<i class="swatch layer-commits"></i>Commits': '<i class="swatch layer-commits"></i>Commits',
     '<i class="swatch layer-github"></i>Issues and pull requests': '<i class="swatch layer-github"></i>Issues et pull requests',
     '<i class="swatch layer-discordMessages"></i>Discord messages': '<i class="swatch layer-discordMessages"></i>Messages Discord',
     '<i class="swatch swatch-line"></i>Discord members, right scale': '<i class="swatch swatch-line"></i>Membres Discord, échelle de droite',
@@ -142,8 +144,11 @@
     "People on the map": "Personnes sur la carte",
     "Countries": "Pays",
     "Towns": "Villes",
+    "Continents": "Continents",
     "A dot per town, larger where more people are. Land: Natural Earth.": "Un point par ville, plus grand là où il y a plus de monde. Terres : Natural Earth.",
     "Add your town on Discord": "Ajoutez votre ville sur Discord",
+    "Show the countries": "Afficher les pays",
+    "Hide the countries": "Masquer les pays",
     "{place}, {country}: {count} person": "{place}, {country} : {count} personne",
     "{place}, {country}: {count} people": "{place}, {country} : {count} personnes",
     "{count} person": "{count} personne",

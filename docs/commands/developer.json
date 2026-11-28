@@ -1,0 +1,117 @@
+{
+ "version": 1,
+ "groups": [
+  "Developer Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GenerateDocumentation",
+   "group": "Developer Commands",
+   "version": "1.0.7",
+   "description": "Generates files for the documentation. Used by Tapir developers only.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "destinationFolder": {
+      "type": "string",
+      "description": "Destination folder for the generated documentation files.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "destinationFolder"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [],
+   "example": null,
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GenerateDocumentation"
+  }
+ ],
+ "schemaDefinitions": {
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  }
+ }
+}

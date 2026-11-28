@@ -1,0 +1,4023 @@
+{
+ "version": 1,
+ "groups": [
+  "Property Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetAllProperties",
+   "group": "Property Commands",
+   "version": "1.1.3",
+   "description": "Returns all user defined and built-in properties. Optionally only the given properties or property types, and without the availability lists.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "properties": {
+      "$ref": "#/PropertyIds",
+      "description": "Returns only the definitions of these properties. Identifiers not found in the project are left out of the response. All properties are returned when omitted."
+     },
+     "propertyTypes": {
+      "type": "array",
+      "description": "Returns only the properties of these types. All types are returned when omitted.",
+      "items": {
+       "$ref": "#/PropertyDefinitionType"
+      }
+     },
+     "includeAvailability": {
+      "type": "boolean",
+      "description": "Adds the availability list (the classification items a custom property is available for) to each custom property. Default is true."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "properties": {
+      "type": "array",
+      "description": "A list of property identifiers.",
+      "items": {
+       "$ref": "#/PropertyDetails"
+      }
+     },
+     "propertyGroups": {
+      "type": "array",
+      "description": "Every property group, including empty ones.",
+      "items": {
+       "$ref": "#/PropertyGroupDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "properties"
+    ]
+   },
+   "grasshopperComponents": [
+    "ElementMetadata",
+    "FindPropertyByGuidComponent",
+    "FindPropertyByName",
+    "GetAllPropertiesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetAllProperties.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetAllProperties.py",
+    "description": "Lists the group and name of every custom property of the project with GetAllProperties.",
+    "code": "\"\"\"Lists the group and name of every custom property of the project with GetAllProperties.\"\"\"\nimport aclib\n\nproperties = aclib.RunTapirCommand ('GetAllProperties', {\n    'propertyTypes': ['Custom'],\n    'includeAvailability': False\n})['properties']\n\nfor prop in properties:\n    print (prop['propertyGroupName'], '/', prop['propertyName'], '-', prop['propertyValueType'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAllProperties"
+  },
+  {
+   "name": "SearchProperties",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Searches properties by name or group substring with optional filtering by property type, value type, and collection type.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "query": {
+      "type": "string",
+      "description": "Case-insensitive substring to search in property name or property group name."
+     },
+     "propertyGroup": {
+      "type": "string",
+      "description": "Optional case-insensitive substring to filter by property group name."
+     },
+     "propertyType": {
+      "type": "string",
+      "description": "Optional filter by property definition type.",
+      "enum": [
+       "StaticBuiltIn",
+       "DynamicBuiltIn",
+       "Custom"
+      ]
+     },
+     "valueType": {
+      "type": "string",
+      "description": "Optional filter by property value type.",
+      "enum": [
+       "Integer",
+       "Real",
+       "String",
+       "Boolean",
+       "Guid"
+      ]
+     },
+     "collectionType": {
+      "type": "string",
+      "description": "Optional filter by property collection type.",
+      "enum": [
+       "Single",
+       "List",
+       "SingleChoiceEnumeration",
+       "MultipleChoiceEnumeration"
+      ]
+     },
+     "includeEnumValues": {
+      "type": "boolean",
+      "description": "If true, includes possibleEnumValues for enumeration properties. Default is false to minimize token footprint."
+     },
+     "includeAvailability": {
+      "type": "boolean",
+      "description": "If true, includes classification availability. Default is false to minimize token footprint."
+     },
+     "limit": {
+      "type": "integer",
+      "description": "Maximum number of matching properties to return.",
+      "minimum": 1
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "properties": {
+      "type": "array",
+      "description": "A list of property details matching the search criteria.",
+      "items": {
+       "$ref": "#/PropertyDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "properties"
+    ]
+   },
+   "grasshopperComponents": [
+    "SearchPropertiesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SearchProperties.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SearchProperties.py",
+    "description": "Searches the properties whose name or group contains \"Fire\" with SearchProperties, then the custom string properties.",
+    "code": "\"\"\"Searches the properties whose name or group contains \"Fire\" with SearchProperties, then the custom string properties.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('SearchProperties', {'query': 'Fire', 'limit': 10}))\n\naclib.PrintJson (aclib.RunTapirCommand ('SearchProperties', {'propertyType': 'Custom', 'valueType': 'String', 'limit': 10}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SearchProperties"
+  },
+  {
+   "name": "GetPropertyValuesOfElements",
+   "group": "Property Commands",
+   "version": "1.0.6",
+   "description": "Returns the property values of the elements for the given property. It works for subelements of hierarchal elements also. With includeAvailability it also tells whether each property is available for the element.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     },
+     "includeAvailability": {
+      "type": "boolean",
+      "description": "Adds isAvailable to each property value or error, telling whether the property is available for the element (for example by its classification). Default is false."
+     },
+     "useSIUnits": {
+      "type": "boolean",
+      "default": false,
+      "description": "Returns precise, locale-independent numeric strings in SI units, except degrees for angles. Default is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValuesForElements": {
+      "$ref": "#/PropertyValuesOrErrorArray",
+      "description": "The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValuesForElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "ElementMetadata",
+    "GetPropertyValuesOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyValuesOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfElements.py",
+    "description": "Reads the Element ID of the first three Walls with GetPropertyValuesOfElements. Needs at least one Wall.",
+    "code": "\"\"\"Reads the Element ID of the first three Walls with GetPropertyValuesOfElements.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyValuesOfElements', {\n    'elements': walls,\n    'properties': [{'propertyId': elementIdPropertyId}],\n    'includeAvailability': True\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElements"
+  },
+  {
+   "name": "GetTypedPropertyValuesOfElements",
+   "group": "Property Commands",
+   "version": "2.0.1",
+   "description": "Returns the property values of the elements in JSON's own types instead of display text: numbers, integers, booleans, strings, lists of them, and the chosen options of an option set as their identifiers (a list for a multiple choice). Each value comes with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum, multiEnum), its status (normal, userUndefined or notAvailable) and isDefault, in the PropertyValueDetails shape of Graphisoft's API. Measured values are in SI units (meters, square meters, cubic meters, radians) whatever the project's working units and language, and an option is named by its nonLocalizedValue when it has one. A property that is not found, cannot be evaluated for the element or has a Guid value gets an error item.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValuesForElements": {
+      "type": "array",
+      "description": "One item per given element, in their order: the values of the element's properties, or an error for an element that was not found.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "propertyValues": {
+           "type": "array",
+           "description": "One item per given property, in their order: the typed value, or an error for a property that was not found, could not be evaluated for the element or has no typed form.",
+           "items": {
+            "type": "object",
+            "oneOf": [
+             {
+              "$ref": "#/TypedPropertyValue"
+             },
+             {
+              "$ref": "#/ErrorItem"
+             }
+            ]
+           }
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "propertyValues"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValuesForElements"
+    ]
+   },
+   "grasshopperComponents": [],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetTypedPropertyValuesOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetTypedPropertyValuesOfElements.py",
+    "description": "Reads the Element ID and the thickness of the first three Walls with GetTypedPropertyValuesOfElements. The values come in JSON's own types: the Element ID as a string, the thickness as a number in meters, whatever the project's working units. Needs at least one Wall.",
+    "code": "\"\"\"Reads the Element ID and the thickness of the first three Walls with GetTypedPropertyValuesOfElements.\n\nThe values come in JSON's own types: the Element ID as a string, the thickness as a number in meters,\nwhatever the project's working units. Needs at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\npropertyIds = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [\n        {'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'},\n        {'type': 'BuiltIn', 'nonLocalizedName': 'General_Thickness'}\n    ]\n})['properties']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetTypedPropertyValuesOfElements', {\n    'elements': walls,\n    'properties': [{'propertyId': p['propertyId']} for p in propertyIds]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetTypedPropertyValuesOfElements"
+  },
+  {
+   "name": "SetPropertyValuesOfElements",
+   "group": "Property Commands",
+   "version": "1.0.6",
+   "description": "Sets the property values of elements. It works for subelements of hierarchal elements also. With valueStatus an element's value can also be reset to the default value of the property (Default) or made undefined (UserUndefined, from 1.8.1). With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's value now (oldValue) and the value a real run would write (newValue), both as GetPropertyValuesOfElements gives them.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementPropertyValues": {
+      "$ref": "#/ElementPropertyValues",
+      "description": "A single real value accepts '.' or ',' as the decimal separator, so the value strings GetPropertyValuesOfElements returns can be written back: when both appear the last one is the decimal separator, a separator that appears more than once groups thousands, and a single separator is the decimal one. Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementPropertyValues"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/ChangeExecutionResults",
+      "description": "One result for each item of elementPropertyValues, in the order of the input. On a dry run an item that passes every check made before writing (the property values of the element can be read, the value is editable for the element and converts to the property's type) gets wouldChange: oldValue is the element's value now as GetPropertyValuesOfElements gives it (left out when the property is not available or not evaluated for the element), newValue the value that would be written in the same format (left out for valueStatus Default). Archicad can still refuse a value that passes them."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ArcsComponent",
+    "BeamsComponent",
+    "CirclesComponent",
+    "ColumnsComponent",
+    "CurtainWallsComponent",
+    "DoorsComponent",
+    "DrawingsComponent",
+    "ElementMetadata",
+    "FillsComponent",
+    "HotspotsComponent",
+    "LabelsComponent",
+    "LampsComponent",
+    "LevelDimensionsComponent",
+    "LinesComponent",
+    "MeshesComponent",
+    "MorphsComponent",
+    "ObjectsComponent",
+    "PolylinesComponent",
+    "RailingsComponent",
+    "RoofsComponent",
+    "SetPropertyValuesOfElementsComponent",
+    "SlabsComponent",
+    "SplinesComponent",
+    "TextsComponent",
+    "WallsApiComponent",
+    "WallsComponent",
+    "WindowsComponent",
+    "ZonesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SetPropertyValuesOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElements.py",
+    "description": "Sets the Element ID of the first Wall with SetPropertyValuesOfElements, reads it back, then restores it. Needs at least one Wall.",
+    "code": "\"\"\"Sets the Element ID of the first Wall with SetPropertyValuesOfElements, reads it back, then restores it.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\ndef ReadElementId ():\n    return aclib.RunTapirCommand ('GetPropertyValuesOfElements', {\n        'elements': walls,\n        'properties': [{'propertyId': elementIdPropertyId}]\n    })['propertyValuesForElements'][0]['propertyValues'][0]['propertyValue']['value']\n\noldValue = ReadElementId ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElements', {\n    'elementPropertyValues': [{\n        'elementId': walls[0]['elementId'],\n        'propertyId': elementIdPropertyId,\n        'propertyValue': {'value': 'TAPIR-EXAMPLE'}\n    }]\n}))\nprint ('Element ID after the change:', ReadElementId ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElements', {\n    'elementPropertyValues': [{\n        'elementId': walls[0]['elementId'],\n        'propertyId': elementIdPropertyId,\n        'propertyValue': {'value': oldValue}\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElements"
+  },
+  {
+   "name": "GetComponentsOfElements",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "componentsOfElements": {
+      "$ref": "#/ElementComponentsOrErrorArray",
+      "description": "The components of each element, in the order of the given elements. Each component id carries the element id too, so the items can be passed on to GetPropertyValuesOfElementComponents as they are."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "componentsOfElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetComponentsOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetComponentsOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetComponentsOfElements.py",
+    "description": "Prints the components (building material skins or profile parts) of the first walls with GetComponentsOfElements. Needs at least one Wall; a basic wall has a single component.",
+    "code": "\"\"\"Prints the components (building material skins or profile parts) of the first walls with GetComponentsOfElements.\n\nNeeds at least one Wall; a basic wall has a single component.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetComponentsOfElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetComponentsOfElements"
+  },
+  {
+   "name": "GetPropertyDefinitionsOfElementComponents",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementComponents": {
+      "$ref": "#/ElementComponents"
+     },
+     "filter": {
+      "type": "string",
+      "description": "Which property definitions to return: the user defined (Custom) ones, the built-in ones, or all. The default is All.",
+      "enum": [
+       "UserDefined",
+       "BuiltIn",
+       "All"
+      ]
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementComponents"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyDefinitionsOfElementComponents": {
+      "type": "array",
+      "description": "The property definitions available on each element component, in the order of the given element components. GetAllProperties returns the full details of a property.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "propertyDefinitions": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "properties": {
+             "propertyId": {
+              "$ref": "#/PropertyId"
+             },
+             "propertyName": {
+              "type": "string"
+             },
+             "propertyType": {
+              "$ref": "#/PropertyDefinitionType"
+             }
+            },
+            "additionalProperties": false,
+            "required": [
+             "propertyId",
+             "propertyName",
+             "propertyType"
+            ]
+           }
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "propertyDefinitions"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyDefinitionsOfElementComponents"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyDefinitionsOfElementComponentsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyDefinitionsOfElementComponents.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyDefinitionsOfElementComponents.py",
+    "description": "Prints the built-in properties of the first component of the first wall with GetPropertyDefinitionsOfElementComponents. Needs at least one Wall.",
+    "code": "\"\"\"Prints the built-in properties of the first component of the first wall with GetPropertyDefinitionsOfElementComponents.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\ncomponentsOfWall = aclib.RunTapirCommand ('GetComponentsOfElements', {'elements': walls})['componentsOfElements'][0]\nif not componentsOfWall.get ('elementComponents'):\n    raise SystemExit ('The wall has no components.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyDefinitionsOfElementComponents', {\n    'elementComponents': componentsOfWall['elementComponents'][:1],\n    'filter': 'BuiltIn'\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyDefinitionsOfElementComponents"
+  },
+  {
+   "name": "GetPropertyValuesOfElementComponents",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementComponents": {
+      "$ref": "#/ElementComponents"
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementComponents",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValuesForElementComponents": {
+      "$ref": "#/PropertyValuesOrErrorArray",
+      "description": "The order of the outer list is that of the given element components. The order of the inner lists are that of the given properties. The items have the shape of GetPropertyValuesOfElements."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValuesForElementComponents"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyValuesOfElementComponentsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyValuesOfElementComponents.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfElementComponents.py",
+    "description": "Prints the building material name of each component of the first wall with GetPropertyValuesOfElementComponents. Needs at least one Wall. The Building Material Name property has the same guid in every language.",
+    "code": "\"\"\"Prints the building material name of each component of the first wall with GetPropertyValuesOfElementComponents.\n\nNeeds at least one Wall. The Building Material Name property has the same guid in every language.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\ncomponentsOfWall = aclib.RunTapirCommand ('GetComponentsOfElements', {'elements': walls})['componentsOfElements'][0]\nif not componentsOfWall.get ('elementComponents'):\n    raise SystemExit ('The wall has no components.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyValuesOfElementComponents', {\n    'elementComponents': componentsOfWall['elementComponents'],\n    'properties': [{'propertyId': {'guid': '514C85CB-3FC8-4EDF-A8E9-44E13969CBE7'}}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElementComponents"
+  },
+  {
+   "name": "SetPropertyValuesOfElementDefaults",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Sets the property values of the tool defaults (the settings new elements get) of element types, so every element placed afterwards gets them, without saving and applying a favorite.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementDefaultPropertyValues": {
+      "type": "array",
+      "description": "The property values to set on the tool defaults (the settings new elements get) of element types.",
+      "items": {
+       "type": "object",
+       "description": "A property value with the identifier of the property and the element type whose defaults own it.",
+       "properties": {
+        "elementType": {
+         "$ref": "#/ElementType"
+        },
+        "propertyId": {
+         "$ref": "#/PropertyId"
+        },
+        "propertyValue": {
+         "$ref": "#/PropertyValue"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementType",
+        "propertyId",
+        "propertyValue"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementDefaultPropertyValues"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetPropertyValuesOfElementDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SetPropertyValuesOfElementDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElementDefaults.py",
+    "description": "Sets the Element ID of the Wall tool default with SetPropertyValuesOfElementDefaults, reads it back, then restores it. New walls get the tool default's values.",
+    "code": "\"\"\"Sets the Element ID of the Wall tool default with SetPropertyValuesOfElementDefaults, reads it back, then restores it.\n\nNew walls get the tool default's values.\n\"\"\"\nimport aclib\n\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\ndef ReadDefaultElementId ():\n    return aclib.RunTapirCommand ('GetPropertyValuesOfElementDefaults', {\n        'elementType': 'Wall',\n        'properties': [{'propertyId': elementIdPropertyId}]\n    })['propertyValues'][0]['propertyValue']['value']\n\noldValue = ReadDefaultElementId ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {\n    'elementDefaultPropertyValues': [{\n        'elementType': 'Wall',\n        'propertyId': elementIdPropertyId,\n        'propertyValue': {'value': 'TAPIR-WALL'}\n    }]\n}))\nprint ('Default Element ID after the change:', ReadDefaultElementId ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfElementDefaults', {\n    'elementDefaultPropertyValues': [{\n        'elementType': 'Wall',\n        'propertyId': elementIdPropertyId,\n        'propertyValue': {'value': oldValue}\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElementDefaults"
+  },
+  {
+   "name": "GetPropertyValuesOfAttributes",
+   "group": "Property Commands",
+   "version": "1.1.8",
+   "description": "Returns the property values of the attributes for the given property. With includeStatus it also returns whether each property is available, editable and visible for the attribute (from 1.7.3).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeIds": {
+      "$ref": "#/AttributeIds"
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     },
+     "includeStatus": {
+      "type": "boolean",
+      "description": "If true, each item also tells whether the property is available, editable and visible for the attribute, and a property without an available value is returned with its status and without a value instead of as an error. The default is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeIds",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValuesForAttributes": {
+      "type": "array",
+      "description": "The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/AttributePropertyValuesResult"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValuesForAttributes"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyValuesOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyValuesOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfAttributes.py",
+    "description": "Reads the built-in property values of the first Building Material, with their status, with GetPropertyValuesOfAttributes.",
+    "code": "\"\"\"Reads the built-in property values of the first Building Material, with their status, with GetPropertyValuesOfAttributes.\"\"\"\nimport aclib\n\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nattributeIds = [{'attributeId': buildingMaterial['attributeId']}]\npropertyIds = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {\n    'attributeIds': attributeIds,\n    'filter': 'FundamentalBuiltIn'\n})['propertyDefinitionsOfAttributes'][0]['propertyIds']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {\n    'attributeIds': attributeIds,\n    'properties': propertyIds,\n    'includeStatus': True\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyValuesOfAttributes"
+  },
+  {
+   "name": "SetPropertyValuesOfAttributes",
+   "group": "Property Commands",
+   "version": "1.1.8",
+   "description": "Sets the property values of attributes.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributePropertyValues": {
+      "$ref": "#/AttributePropertyValues"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributePropertyValues"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetPropertyValuesOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SetPropertyValuesOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfAttributes.py",
+    "description": "Sets an editable custom text property of a Building Material with SetPropertyValuesOfAttributes, reads it back, then restores it. Needs a Building Material that has an editable, not expression based, custom text property.",
+    "code": "\"\"\"Sets an editable custom text property of a Building Material with SetPropertyValuesOfAttributes, reads it back, then restores it.\n\nNeeds a Building Material that has an editable, not expression based, custom text property.\n\"\"\"\nimport aclib\n\nbuildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes']\nattributeIds = [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials]\ndefinitions = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds})['propertyDefinitionsOfAttributes']\ntextPropertyIds = [p['propertyId'] for p in aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\n                   if p['propertyValueType'] == 'String' and p['propertyCollectionType'] == 'Single' and p['propertyIsEditable'] and not p['isExpressionBased']]\ntarget = next (((attributeId, p['propertyId']) for attributeId, d in zip (attributeIds, definitions) for p in d.get ('propertyIds', []) if p['propertyId'] in textPropertyIds), None)\nif target is None:\n    raise SystemExit ('No Building Material has an editable custom text property.')\nattributeId, propertyId = target\n\ndef ReadValue ():\n    return aclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {\n        'attributeIds': [attributeId],\n        'properties': [{'propertyId': propertyId}]\n    })['propertyValuesForAttributes'][0]['propertyValues'][0]['propertyValue']['value']\n\noldValue = ReadValue ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {\n    'attributePropertyValues': [{'attributeId': attributeId['attributeId'], 'propertyId': propertyId, 'propertyValue': {'value': 'Set by Tapir'}}]\n}))\nprint ('Value after the change:', ReadValue ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {\n    'attributePropertyValues': [{'attributeId': attributeId['attributeId'], 'propertyId': propertyId, 'propertyValue': {'value': oldValue}}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetPropertyValuesOfAttributes"
+  },
+  {
+   "name": "SetBuiltInPropertyValuesOfAttributes",
+   "group": "Property Commands",
+   "version": "1.8.0",
+   "description": "Sets built-in property values of attributes, writing the values of each attribute together. Custom properties are refused; set them with SetPropertyValuesOfAttributes. Returns one execution result per value.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributes": {
+      "type": "array",
+      "description": "The attributes and the built-in property values to set on each.",
+      "items": {
+       "$ref": "#/AttributeBuiltInPropertyValues"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributes"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults",
+      "description": "One result per given property value, attribute by attribute, in the order of the input. The values of one attribute are written together, so an error of that write is the result of each of them."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetBuiltInPropertyValuesOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SetBuiltInPropertyValuesOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetBuiltInPropertyValuesOfAttributes.py",
+    "description": "Sets an editable built-in text property of the first Building Material with SetBuiltInPropertyValuesOfAttributes, then restores it.",
+    "code": "\"\"\"Sets an editable built-in text property of the first Building Material with SetBuiltInPropertyValuesOfAttributes, then restores it.\"\"\"\nimport aclib\n\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nattributeIds = [{'attributeId': buildingMaterial['attributeId']}]\npropertyIds = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {\n    'attributeIds': attributeIds,\n    'filter': 'FundamentalBuiltIn'\n})['propertyDefinitionsOfAttributes'][0]['propertyIds']\ntextProperty = next ((p for p in aclib.RunTapirCommand ('GetAllProperties', {'properties': propertyIds, 'includeAvailability': False})['properties']\n                      if p['propertyValueType'] == 'String' and p['propertyCollectionType'] == 'Single' and p['propertyIsEditable']), None)\nif textProperty is None:\n    raise SystemExit ('The Building Material has no editable built-in text property.')\npropertyId = textProperty['propertyId']\nprint ('Property:', textProperty['propertyGroupName'], '/', textProperty['propertyName'])\n\ndef ReadValue ():\n    return aclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {\n        'attributeIds': attributeIds,\n        'properties': [{'propertyId': propertyId}]\n    })['propertyValuesForAttributes'][0]['propertyValues'][0]['propertyValue']['value']\n\noldValue = ReadValue ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetBuiltInPropertyValuesOfAttributes', {\n    'attributes': [{\n        'attributeId': buildingMaterial['attributeId'],\n        'properties': [{'propertyId': propertyId, 'propertyValue': {'value': 'Set by Tapir'}}]\n    }]\n}))\nprint ('Value after the change:', ReadValue ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetBuiltInPropertyValuesOfAttributes', {\n    'attributes': [{\n        'attributeId': buildingMaterial['attributeId'],\n        'properties': [{'propertyId': propertyId, 'propertyValue': {'value': oldValue}}]\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetBuiltInPropertyValuesOfAttributes"
+  },
+  {
+   "name": "SetPropertyValueOfAttributes",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Sets one property value on several attributes (for example Building Materials) in one undo step. If the property is not available for any of the given attributes, no attribute is changed.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyId": {
+      "$ref": "#/PropertyId"
+     },
+     "propertyValue": {
+      "$ref": "#/PropertyValue"
+     },
+     "attributeIds": {
+      "$ref": "#/AttributeIds",
+      "description": "The attributes to set the value on. The property must be available for every one of them."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyId",
+     "propertyValue",
+     "attributeIds"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetPropertyValueOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/SetPropertyValueOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValueOfAttributes.py",
+    "description": "Sets one value of a custom text property on every Building Material that has it with SetPropertyValueOfAttributes, then restores the values. Needs Building Materials that have an editable, not expression based, custom text property.",
+    "code": "\"\"\"Sets one value of a custom text property on every Building Material that has it with SetPropertyValueOfAttributes, then restores the values.\n\nNeeds Building Materials that have an editable, not expression based, custom text property.\n\"\"\"\nimport aclib\n\nbuildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes']\nattributeIds = [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials]\ndefinitions = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds})['propertyDefinitionsOfAttributes']\ntextPropertyIds = [p['propertyId'] for p in aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\n                   if p['propertyValueType'] == 'String' and p['propertyCollectionType'] == 'Single' and p['propertyIsEditable'] and not p['isExpressionBased']]\npropertyId = next ((p['propertyId'] for d in definitions for p in d.get ('propertyIds', []) if p['propertyId'] in textPropertyIds), None)\nif propertyId is None:\n    raise SystemExit ('No Building Material has an editable custom text property.')\nattributeIds = [a for a, d in zip (attributeIds, definitions) if {'propertyId': propertyId} in d.get ('propertyIds', [])]\n\ndef ReadValues ():\n    return [values['propertyValues'][0]['propertyValue']['value'] for values in aclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {\n        'attributeIds': attributeIds,\n        'properties': [{'propertyId': propertyId}]\n    })['propertyValuesForAttributes']]\n\noldValues = ReadValues ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetPropertyValueOfAttributes', {\n    'propertyId': propertyId,\n    'propertyValue': {'value': 'Set by Tapir'},\n    'attributeIds': attributeIds\n}))\nprint ('Values after the change:', ReadValues ())\n\naclib.RunTapirCommand ('SetPropertyValuesOfAttributes', {\n    'attributePropertyValues': [{'attributeId': a['attributeId'], 'propertyId': propertyId, 'propertyValue': {'value': v}} for a, v in zip (attributeIds, oldValues)]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetPropertyValueOfAttributes"
+  },
+  {
+   "name": "GetPropertyDefinitionsOfAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "description": "Returns the property definitions of the given attributes (for example Building Materials): the user defined, the fundamental built-in, or all of them.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeIds": {
+      "$ref": "#/AttributeIds"
+     },
+     "filter": {
+      "$ref": "#/AttributePropertyDefinitionFilter",
+      "description": "The default is UserDefined."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyDefinitionsOfAttributes": {
+      "type": "array",
+      "description": "The property definitions of each attribute, in the order of the given attributes.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/AttributePropertyIds"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyDefinitionsOfAttributes"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyDefinitionsOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyDefinitionsOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyDefinitionsOfAttributes.py",
+    "description": "Lists the custom property definitions of the first three Building Materials with GetPropertyDefinitionsOfAttributes.",
+    "code": "\"\"\"Lists the custom property definitions of the first three Building Materials with GetPropertyDefinitionsOfAttributes.\"\"\"\nimport aclib\n\nbuildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][:3]\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {\n    'attributeIds': [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials],\n    'filter': 'UserDefined'\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyDefinitionsOfAttributes"
+  },
+  {
+   "name": "GetPropertiesOfToolDefaults",
+   "group": "Property Commands",
+   "version": "1.8.0",
+   "description": "Returns the property definitions of the tool defaults (the settings new elements get) of the given element types, filtered by kind (all by default), and optionally the value of each property in the tool default.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementTypes": {
+      "type": "array",
+      "description": "The element types whose tool defaults (the settings new elements get) are read.",
+      "items": {
+       "$ref": "#/ElementType"
+      }
+     },
+     "filter": {
+      "$ref": "#/ToolDefaultPropertyFilter"
+     },
+     "includeValues": {
+      "type": "boolean",
+      "description": "Adds the value of each property in the tool default (propertyValue), or an error in its place when it has none. Default is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementTypes"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertiesOfToolDefaults": {
+      "type": "array",
+      "description": "The properties of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/ToolDefaultProperties"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertiesOfToolDefaults"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertiesOfToolDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertiesOfToolDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertiesOfToolDefaults.py",
+    "description": "Lists the custom properties of the Wall and Slab tool defaults, with their values, with GetPropertiesOfToolDefaults.",
+    "code": "\"\"\"Lists the custom properties of the Wall and Slab tool defaults, with their values, with GetPropertiesOfToolDefaults.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertiesOfToolDefaults', {\n    'elementTypes': ['Wall', 'Slab'],\n    'filter': 'UserDefined',\n    'includeValues': True\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertiesOfToolDefaults"
+  },
+  {
+   "name": "AddPropertyToAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "description": "Makes an existing custom property available for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyId": {
+      "$ref": "#/PropertyId",
+      "description": "An existing custom property. Create it first with CreatePropertyDefinitions if needed."
+     },
+     "attributeIds": {
+      "$ref": "#/AttributeIds",
+      "description": "The attributes (for example Building Materials) to make the property available for."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyId",
+     "attributeIds"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "AddPropertyToAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/AddPropertyToAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/AddPropertyToAttributes.py",
+    "description": "Makes a custom property available for the first Building Material with AddPropertyToAttributes, then removes it again. Needs a custom property that the Building Material does not have yet. Requires Archicad 25, 26 or 27.",
+    "code": "\"\"\"Makes a custom property available for the first Building Material with AddPropertyToAttributes, then removes it again.\n\nNeeds a custom property that the Building Material does not have yet. Requires Archicad 25, 26 or 27.\n\"\"\"\nimport aclib\n\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nattributeIds = [{'attributeId': buildingMaterial['attributeId']}]\nownPropertyIds = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds})['propertyDefinitionsOfAttributes'][0].get ('propertyIds', [])\ncustomProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\npropertyId = next ((p['propertyId'] for p in customProperties if {'propertyId': p['propertyId']} not in ownPropertyIds), None)\nif propertyId is None:\n    raise SystemExit ('No custom property that the Building Material does not have.')\n\naclib.PrintJson (aclib.RunTapirCommand ('AddPropertyToAttributes', {'propertyId': propertyId, 'attributeIds': attributeIds}))\naclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {'attributeIds': attributeIds, 'properties': [{'propertyId': propertyId}]})\n\naclib.RunTapirCommand ('RemovePropertyFromAttributes', {'propertyId': propertyId, 'attributeIds': attributeIds})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#AddPropertyToAttributes"
+  },
+  {
+   "name": "RemovePropertyFromAttributes",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "description": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and wouldDelete when the property and every attribute exist.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyId": {
+      "$ref": "#/PropertyId"
+     },
+     "attributeIds": {
+      "$ref": "#/AttributeIds",
+      "description": "The attributes (for example Building Materials) to make the property unavailable for."
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyId",
+     "attributeIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "description": "The result of the execution: success, with error when it failed. A dry run also answers dryRun, and wouldDelete when the property and every attribute exist.",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "success": {
+      "type": "boolean"
+     },
+     "error": {
+      "$ref": "#/Error"
+     },
+     "wouldDelete": {
+      "type": "boolean",
+      "enum": [
+       true
+      ]
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "success"
+    ]
+   },
+   "grasshopperComponents": [
+    "RemovePropertyFromAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/RemovePropertyFromAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/RemovePropertyFromAttributes.py",
+    "description": "Makes a custom property unavailable for the first Building Material with RemovePropertyFromAttributes. The script first makes a property available that the Building Material does not have yet, so the project ends as it was. Requires Archicad 25, 26 or 27.",
+    "code": "\"\"\"Makes a custom property unavailable for the first Building Material with RemovePropertyFromAttributes.\n\nThe script first makes a property available that the Building Material does not have yet, so the project\nends as it was. Requires Archicad 25, 26 or 27.\n\"\"\"\nimport aclib\n\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nattributeIds = [{'attributeId': buildingMaterial['attributeId']}]\nownPropertyIds = aclib.RunTapirCommand ('GetPropertyDefinitionsOfAttributes', {'attributeIds': attributeIds})['propertyDefinitionsOfAttributes'][0].get ('propertyIds', [])\ncustomProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\npropertyId = next ((p['propertyId'] for p in customProperties if {'propertyId': p['propertyId']} not in ownPropertyIds), None)\nif propertyId is None:\n    raise SystemExit ('No custom property that the Building Material does not have.')\naclib.RunTapirCommand ('AddPropertyToAttributes', {'propertyId': propertyId, 'attributeIds': attributeIds})\n\naclib.PrintJson (aclib.RunTapirCommand ('RemovePropertyFromAttributes', {'propertyId': propertyId, 'attributeIds': attributeIds}))\naclib.RunTapirCommand ('GetPropertyValuesOfAttributes', {'attributeIds': attributeIds, 'properties': [{'propertyId': propertyId}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RemovePropertyFromAttributes"
+  },
+  {
+   "name": "CreatePropertyGroups",
+   "group": "Property Commands",
+   "version": "1.0.7",
+   "description": "Creates Property Groups based on the given parameters.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyGroups": {
+      "type": "array",
+      "description": "The parameters of the new property groups.",
+      "items": {
+       "$ref": "#/PropertyGroupArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyGroups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyGroupIds": {
+      "type": "array",
+      "description": "The identifiers of the created property groups.",
+      "items": {
+       "$ref": "#/PropertyGroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyGroupIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreatePropertyGroupsComponent",
+    "ElementMetadata"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/CreatePropertyGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/CreatePropertyGroups.py",
+    "description": "Creates a custom property group with CreatePropertyGroups, then deletes it.",
+    "code": "\"\"\"Creates a custom property group with CreatePropertyGroups, then deletes it.\"\"\"\nimport aclib\n\ngroupIds = aclib.RunTapirCommand ('CreatePropertyGroups', {\n    'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group', 'description': 'Created by a Tapir example'}}]\n})['propertyGroupIds']\naclib.PrintJson (groupIds)\n\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [g for g in groupIds if 'propertyGroupId' in g]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreatePropertyGroups"
+  },
+  {
+   "name": "DeletePropertyGroups",
+   "group": "Property Commands",
+   "version": "1.0.9",
+   "description": "Deletes the given Custom Property Groups. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property group that exists gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyGroupIds": {
+      "type": "array",
+      "description": "The identifiers of property groups to delete.",
+      "items": {
+       "$ref": "#/PropertyGroupIdArrayItem"
+      }
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyGroupIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input property group, in the order of the input. On a dry run a property group that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in group)."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeletePropertyGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/DeletePropertyGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/DeletePropertyGroups.py",
+    "description": "Creates a temporary custom property group and deletes it again with DeletePropertyGroups.",
+    "code": "\"\"\"Creates a temporary custom property group and deletes it again with DeletePropertyGroups.\"\"\"\nimport aclib\n\ngroupIds = aclib.RunTapirCommand ('CreatePropertyGroups', {\n    'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group To Delete'}}]\n})['propertyGroupIds']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeletePropertyGroups', {\n    'propertyGroupIds': [g for g in groupIds if 'propertyGroupId' in g]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeletePropertyGroups"
+  },
+  {
+   "name": "CreatePropertyDefinitions",
+   "group": "Property Commands",
+   "version": "1.0.9",
+   "description": "Creates Custom Property Definitions based on the given parameters.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyDefinitions": {
+      "type": "array",
+      "description": "The parameters of the new properties.",
+      "items": {
+       "$ref": "#/PropertyDefinitionArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyDefinitions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyIds": {
+      "$ref": "#/PropertyIdOrErrorArray"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreatePropertyDefinitionsComponent",
+    "ElementMetadata"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/CreatePropertyDefinitions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/CreatePropertyDefinitions.py",
+    "description": "Creates an editable custom text property with a default value with CreatePropertyDefinitions, then deletes it. The property is put in a new group, created by name, and is available for no classification item.",
+    "code": "\"\"\"Creates an editable custom text property with a default value with CreatePropertyDefinitions, then deletes it.\n\nThe property is put in a new group, created by name, and is available for no classification item.\n\"\"\"\nimport aclib\n\ngroup = 'Tapir Example Group'\npropertyIds = aclib.RunTapirCommand ('CreatePropertyDefinitions', {\n    'propertyDefinitions': [{\n        'propertyDefinition': {\n            'name': 'Tapir Example Text',\n            'description': 'Created by a Tapir example',\n            'type': 'string',\n            'isEditable': True,\n            'defaultValue': {'basicDefaultValue': {'type': 'string', 'status': 'normal', 'value': '-'}},\n            'availability': [],\n            'group': {'name': group}\n        }\n    }]\n})['propertyIds']\naclib.PrintJson (propertyIds)\n\naclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [p for p in propertyIds if 'propertyId' in p]})\ngroups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['propertyGroups']\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreatePropertyDefinitions"
+  },
+  {
+   "name": "DeletePropertyDefinitions",
+   "group": "Property Commands",
+   "version": "1.0.9",
+   "description": "Deletes the given Custom Property Definitions. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property that exists gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyIds": {
+      "type": "array",
+      "description": "The identifiers of properties to delete.",
+      "items": {
+       "$ref": "#/PropertyIdArrayItem"
+      }
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input property, in the order of the input. On a dry run a property that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in property)."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeletePropertyDefinitionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/DeletePropertyDefinitions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/DeletePropertyDefinitions.py",
+    "description": "Creates a temporary custom property and deletes it again with DeletePropertyDefinitions.",
+    "code": "\"\"\"Creates a temporary custom property and deletes it again with DeletePropertyDefinitions.\"\"\"\nimport aclib\n\ngroupId = aclib.RunTapirCommand ('CreatePropertyGroups', {\n    'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group'}}]\n})['propertyGroupIds'][0]\nif 'error' in groupId:\n    raise SystemExit ('Could not create the property group: ' + groupId['error']['message'])\npropertyIds = aclib.RunTapirCommand ('CreatePropertyDefinitions', {\n    'propertyDefinitions': [{'propertyDefinition': {\n        'name': 'Tapir Example Property To Delete', 'description': '', 'type': 'string', 'isEditable': True,\n        'availability': [], 'group': {'propertyGroupId': groupId['propertyGroupId']}\n    }}]\n})['propertyIds']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeletePropertyDefinitions', {\n    'propertyIds': [p for p in propertyIds if 'propertyId' in p]\n}))\n\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [groupId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeletePropertyDefinitions"
+  },
+  {
+   "name": "UpdatePropertyDefinitions",
+   "group": "Property Commands",
+   "version": "1.5.4",
+   "description": "Updates existing Custom Property Definitions in place, keeping their guid: name, description, group, default value or expressions, availability, and enum options (add, rename, remove, reorder).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyDefinitions": {
+      "type": "array",
+      "description": "The property definitions to update. Only the fields given change; the definition keeps its guid, so element values survive.",
+      "items": {
+       "$ref": "#/PropertyDefinitionUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyDefinitions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UpdatePropertyDefinitionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/UpdatePropertyDefinitions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/UpdatePropertyDefinitions.py",
+    "description": "Creates a temporary custom property and changes its name, description, default value and editability with UpdatePropertyDefinitions. The property keeps its guid. The script deletes the property and its group again at the end.",
+    "code": "\"\"\"Creates a temporary custom property and changes its name, description, default value and editability with UpdatePropertyDefinitions.\n\nThe property keeps its guid. The script deletes the property and its group again at the end.\n\"\"\"\nimport aclib\n\ngroupId = aclib.RunTapirCommand ('CreatePropertyGroups', {\n    'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group'}}]\n})['propertyGroupIds'][0]\nif 'error' in groupId:\n    raise SystemExit ('Could not create the property group: ' + groupId['error']['message'])\npropertyId = aclib.RunTapirCommand ('CreatePropertyDefinitions', {\n    'propertyDefinitions': [{'propertyDefinition': {\n        'name': 'Tapir Example Property', 'description': '', 'type': 'string', 'isEditable': True,\n        'availability': [], 'group': {'propertyGroupId': groupId['propertyGroupId']}\n    }}]\n})['propertyIds'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdatePropertyDefinitions', {\n    'propertyDefinitions': [{\n        'propertyId': propertyId['propertyId'],\n        'name': 'Tapir Example Property Renamed',\n        'description': 'Updated by a Tapir example',\n        'isEditable': False,\n        'defaultValue': {'basicDefaultValue': {'type': 'string', 'status': 'normal', 'value': 'n/a'}}\n    }]\n}))\naclib.RunTapirCommand ('GetAllProperties', {'properties': [propertyId]})\n\naclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [propertyId]})\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [groupId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdatePropertyDefinitions"
+  },
+  {
+   "name": "UpdatePropertyGroups",
+   "group": "Property Commands",
+   "version": "1.6.0",
+   "description": "Updates the name and/or description of existing Custom Property Groups, keeping their guid.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyGroups": {
+      "type": "array",
+      "description": "The custom property groups to update. Only the fields given change.",
+      "items": {
+       "$ref": "#/PropertyGroupUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyGroups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UpdatePropertyGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/UpdatePropertyGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/UpdatePropertyGroups.py",
+    "description": "Creates a temporary custom property group and changes its name and description with UpdatePropertyGroups, then deletes it.",
+    "code": "\"\"\"Creates a temporary custom property group and changes its name and description with UpdatePropertyGroups, then deletes it.\"\"\"\nimport aclib\n\ngroupId = aclib.RunTapirCommand ('CreatePropertyGroups', {\n    'propertyGroups': [{'propertyGroup': {'name': 'Tapir Example Group'}}]\n})['propertyGroupIds'][0]\nif 'error' in groupId:\n    raise SystemExit ('Could not create the property group: ' + groupId['error']['message'])\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdatePropertyGroups', {\n    'propertyGroups': [{\n        'propertyGroupId': groupId['propertyGroupId'],\n        'name': 'Tapir Example Group Renamed',\n        'description': 'Updated by a Tapir example'\n    }]\n}))\n\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [groupId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdatePropertyGroups"
+  },
+  {
+   "name": "ImportPropertiesXml",
+   "group": "Property Commands",
+   "version": "1.6.0",
+   "description": "Imports a Property Manager XML export, with the given policy for names that already exist. Returns the property definitions it created and removed.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "xml": {
+      "type": "string",
+      "description": "A Property Manager export (XML) to import."
+     },
+     "conflictPolicy": {
+      "$ref": "#/PropertyImportConflictPolicy"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "xml",
+     "conflictPolicy"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "created": {
+      "type": "array",
+      "items": {
+       "$ref": "#/GuidId"
+      }
+     },
+     "removed": {
+      "type": "array",
+      "items": {
+       "$ref": "#/GuidId"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult",
+     "created",
+     "removed"
+    ]
+   },
+   "grasshopperComponents": [
+    "ImportPropertiesXmlComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/ImportPropertiesXml.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/ImportPropertiesXml.py",
+    "description": "Imports a group with one text property from Property Manager XML with ImportPropertiesXml, then deletes them. conflictPolicy 'skip' keeps a property whose name already exists in its group.",
+    "code": "\"\"\"Imports a group with one text property from Property Manager XML with ImportPropertiesXml, then deletes them.\n\nconflictPolicy 'skip' keeps a property whose name already exists in its group.\n\"\"\"\nimport aclib\n\ngroup = 'Tapir Example Import'\nxml = '''<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<BuildingInformation>\n    <PropertyDefinitionGroups>\n        <PropertyDefinitionGroup>\n            <Name>{group}</Name>\n            <Description/>\n            <PropertyDefinitions>\n                <PropertyDefinition>\n                    <Name>Imported Text</Name>\n                    <Description/>\n                    <ValueDescriptor Type=\"SingleValueDescriptor\">\n                        <ValueType>String</ValueType>\n                    </ValueDescriptor>\n                    <MeasureType>Default</MeasureType>\n                    <DefaultValue>\n                        <DefaultValueType>Basic</DefaultValueType>\n                        <Variant Type=\"StringVariant\">\n                            <Status>Normal</Status>\n                            <Value>-</Value>\n                        </Variant>\n                    </DefaultValue>\n                    <ClassificationIDs/>\n                </PropertyDefinition>\n            </PropertyDefinitions>\n        </PropertyDefinitionGroup>\n    </PropertyDefinitionGroups>\n</BuildingInformation>\n'''.format (group = group)\n\nresult = aclib.RunTapirCommand ('ImportPropertiesXml', {'xml': xml, 'conflictPolicy': 'skip'})\naclib.PrintJson (result)\n\naclib.RunTapirCommand ('DeletePropertyDefinitions', {'propertyIds': [{'propertyId': p} for p in result.get ('created', [])]})\ngroups = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['propertyGroups']\naclib.RunTapirCommand ('DeletePropertyGroups', {'propertyGroupIds': [{'propertyGroupId': g['propertyGroupId']} for g in groups if g['name'] == group]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ImportPropertiesXml"
+  },
+  {
+   "name": "GetPropertyValuesOfElementDefaults",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Returns the values of the given properties in the current tool default of an element type, which new elements of that type get. It reads the native tool default of the generic variation of the type, not a Favorite that is not applied. A property that is not available for the tool default is reported as an error.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "The element type whose current tool default is read. This is the native tool default of the generic variation of the type, a Favorite counts only after it was applied."
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementType",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValues": {
+      "$ref": "#/PropertyValues",
+      "description": "The order is that of the given properties. A property that is not available for the tool default is an error item."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValues"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyValuesOfElementDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyValuesOfElementDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfElementDefaults.py",
+    "description": "Reads the Element ID of the Wall tool default, which new walls get, with GetPropertyValuesOfElementDefaults.",
+    "code": "\"\"\"Reads the Element ID of the Wall tool default, which new walls get, with GetPropertyValuesOfElementDefaults.\"\"\"\nimport aclib\n\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyValuesOfElementDefaults', {\n    'elementType': 'Wall',\n    'properties': [{'propertyId': elementIdPropertyId}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElementDefaults"
+  },
+  {
+   "name": "ModifyPropertyValueOfElements",
+   "group": "Property Commands",
+   "version": "1.8.0",
+   "description": "Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The elements to set the value on. The property must be available for every one of them."
+     },
+     "propertyId": {
+      "$ref": "#/PropertyId"
+     },
+     "propertyValue": {
+      "$ref": "#/PropertyValue"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "propertyId",
+     "propertyValue"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "ModifyPropertyValueOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/ModifyPropertyValueOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/ModifyPropertyValueOfElements.py",
+    "description": "Sets the same Element ID on the first three Walls in one step with ModifyPropertyValueOfElements, then restores their values. Needs at least one Wall.",
+    "code": "\"\"\"Sets the same Element ID on the first three Walls in one step with ModifyPropertyValueOfElements, then restores their values.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\ndef ReadElementIds ():\n    return [values['propertyValues'][0]['propertyValue']['value'] for values in aclib.RunTapirCommand ('GetPropertyValuesOfElements', {\n        'elements': walls,\n        'properties': [{'propertyId': elementIdPropertyId}]\n    })['propertyValuesForElements']]\n\noldValues = ReadElementIds ()\n\naclib.PrintJson (aclib.RunTapirCommand ('ModifyPropertyValueOfElements', {\n    'elements': walls,\n    'propertyId': elementIdPropertyId,\n    'propertyValue': {'value': 'TAPIR-EXAMPLE'}\n}))\nprint ('Element IDs after the change:', ReadElementIds ())\n\naclib.RunTapirCommand ('SetPropertyValuesOfElements', {\n    'elementPropertyValues': [{'elementId': wall['elementId'], 'propertyId': elementIdPropertyId, 'propertyValue': {'value': value}} for wall, value in zip (walls, oldValues)]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ModifyPropertyValueOfElements"
+  },
+  {
+   "name": "GetPropertyExpressionReferences",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Returns the strings that refer to the given properties in property expressions.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyIds": {
+      "$ref": "#/PropertyIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "references": {
+      "type": "array",
+      "description": "One item for each property, in the order of the input: its expression reference, or an error.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "reference": {
+           "type": "string",
+           "description": "The string that refers to the property in a property expression."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "reference"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "references"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyExpressionReferencesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyExpressionReferences.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyExpressionReferences.py",
+    "description": "Gets the strings that property expressions use to refer to the Element ID and Width properties with GetPropertyExpressionReferences.",
+    "code": "\"\"\"Gets the strings that property expressions use to refer to the Element ID and Width properties with GetPropertyExpressionReferences.\"\"\"\nimport aclib\n\nproperties = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [\n        {'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'},\n        {'type': 'BuiltIn', 'nonLocalizedName': 'General_Width'}\n    ]\n})['properties']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyExpressionReferences', {\n    'propertyIds': [p for p in properties if 'propertyId' in p]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyExpressionReferences"
+  },
+  {
+   "name": "CheckPropertyValues",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Checks whether the given values are acceptable for the given property definitions, without changing anything.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyValues": {
+      "type": "array",
+      "description": "The values to check, each with the property definition it is checked against.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "propertyId": {
+         "$ref": "#/PropertyId"
+        },
+        "propertyValue": {
+         "$ref": "#/PropertyValue"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "propertyId",
+        "propertyValue"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyValues"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "results": {
+      "type": "array",
+      "description": "One item for each value, in the order of the input: whether it is acceptable, or an error if the property was not found.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "isValid": {
+           "type": "boolean",
+           "description": "True if the value can be converted to the type of the property and Archicad accepts it for the property definition."
+          },
+          "error": {
+           "$ref": "#/Error"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "isValid"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "results"
+    ]
+   },
+   "grasshopperComponents": [
+    "CheckPropertyValuesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/CheckPropertyValues.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/CheckPropertyValues.py",
+    "description": "Checks values against custom property definitions with CheckPropertyValues, without changing anything. Checks a number and a text for a custom number property, and an existing and a made-up option for a custom enumeration property. Needs at least one such property in the project.",
+    "code": "\"\"\"Checks values against custom property definitions with CheckPropertyValues, without changing anything.\n\nChecks a number and a text for a custom number property, and an existing and a made-up option\nfor a custom enumeration property. Needs at least one such property in the project.\n\"\"\"\nimport aclib\n\nproperties = aclib.RunTapirCommand ('GetAllProperties', {})['properties']\ncustomProperties = [p for p in properties if p['propertyType'] == 'Custom']\n\npropertyValues = []\nnumberProperty = next ((p for p in customProperties\n    if p['propertyCollectionType'] == 'Single' and p['propertyValueType'] == 'Real'), None)\nif numberProperty is not None:\n    propertyValues += [(numberProperty, '1.5'), (numberProperty, 'not a number')]\nenumProperty = next ((p for p in customProperties\n    if p['propertyCollectionType'] == 'SingleChoiceEnumeration' and p.get ('possibleEnumValues')), None)\nif enumProperty is not None:\n    firstOption = enumProperty['possibleEnumValues'][0]['enumValue']['displayValue']\n    propertyValues += [(enumProperty, firstOption), (enumProperty, 'Not an option')]\nif not propertyValues:\n    raise SystemExit ('No custom number or enumeration property in the project.')\n\nresults = aclib.RunTapirCommand ('CheckPropertyValues', {\n    'propertyValues': [{'propertyId': p['propertyId'], 'propertyValue': {'value': value}} for p, value in propertyValues]\n})['results']\nfor (p, value), result in zip (propertyValues, results):\n    print (f\"{p['propertyGroupName']} / {p['propertyName']} = \\\"{value}\\\":\")\n    aclib.PrintJson (result)\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CheckPropertyValues"
+  },
+  {
+   "name": "GetPropertyEditability",
+   "group": "Property Commands",
+   "version": "2.0.0",
+   "description": "Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "properties": {
+      "$ref": "#/PropertyIds"
+     },
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "Checks whether the value of each property can be modified for these elements, and whether each property is visible for them."
+     },
+     "elementTypes": {
+      "type": "array",
+      "description": "Checks whether the value of each property can be modified in the tool default of these element types.",
+      "items": {
+       "$ref": "#/ElementType"
+      }
+     },
+     "propertyDefinitionDefaults": {
+      "type": "boolean",
+      "description": "When true, checks whether the default value of each property definition can be modified. This is the default value of the property definition itself, not the tool default of an element type."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "description": "Only the lists that were asked for are present.",
+    "properties": {
+     "editabilityOfElements": {
+      "type": "array",
+      "description": "Present when elements were given. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "propertyEditabilities": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "oneOf": [
+             {
+              "type": "object",
+              "properties": {
+               "editable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be modified for the element. False for example for read-only properties or expressions with cyclic references."
+               },
+               "visible": {
+                "type": "boolean",
+                "description": "Whether the property is visible for the element."
+               }
+              },
+              "additionalProperties": false,
+              "required": [
+               "editable",
+               "visible"
+              ]
+             },
+             {
+              "$ref": "#/ErrorItem"
+             }
+            ]
+           }
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "propertyEditabilities"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     },
+     "editabilityOfElementTypeDefaults": {
+      "type": "array",
+      "description": "Present when elementTypes were given. The order of the outer list is that of the given element types. The order of the inner lists are that of the given properties.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "propertyEditabilities": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "oneOf": [
+             {
+              "type": "object",
+              "properties": {
+               "editable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be modified in the tool default of the element type."
+               }
+              },
+              "additionalProperties": false,
+              "required": [
+               "editable"
+              ]
+             },
+             {
+              "$ref": "#/ErrorItem"
+             }
+            ]
+           }
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "propertyEditabilities"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     },
+     "editabilityOfPropertyDefinitionDefaults": {
+      "type": "array",
+      "description": "Present when propertyDefinitionDefaults is true. The order is that of the given properties.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "editable": {
+           "type": "boolean",
+           "description": "Whether the default value of the property definition can be modified."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "editable"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false
+   },
+   "grasshopperComponents": [
+    "GetPropertyEditabilityComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyEditability.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyEditability.py",
+    "description": "Tells whether the Element ID can be modified for the first Wall and in the Wall tool default with GetPropertyEditability. Needs at least one Wall.",
+    "code": "\"\"\"Tells whether the Element ID can be modified for the first Wall and in the Wall tool default with GetPropertyEditability.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nelementIdPropertyId = aclib.RunCommand ('API.GetPropertyIds', {\n    'properties': [{'type': 'BuiltIn', 'nonLocalizedName': 'General_ElementID'}]\n})['properties'][0]['propertyId']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyEditability', {\n    'properties': [{'propertyId': elementIdPropertyId}],\n    'elements': walls,\n    'elementTypes': ['Wall']\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyEditability"
+  },
+  {
+   "name": "GetPropertyAvailabilityOfDefaults",
+   "group": "Property Commands",
+   "version": "1.8.0",
+   "description": "Tells whether the given properties are available and whether they are visible in the current tool default of an element type, before creating new elements. It checks the native tool default only, not a Favorite that is not applied. Unknown properties are reported as errors, not as unavailable. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "The element type whose current tool default is checked. This is the native tool default, a Favorite counts only after it was applied."
+     },
+     "properties": {
+      "$ref": "#/PropertyIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementType",
+     "properties"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "propertyAvailabilities": {
+      "type": "array",
+      "description": "The order is that of the given properties.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/DefaultPropertyAvailability"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "propertyAvailabilities"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetPropertyAvailabilityOfDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/GetPropertyAvailabilityOfDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyAvailabilityOfDefaults.py",
+    "description": "Tells whether the custom properties of the project are available and visible in the Wall tool default with GetPropertyAvailabilityOfDefaults. Requires Archicad 26 or later.",
+    "code": "\"\"\"Tells whether the custom properties of the project are available and visible in the Wall tool default with GetPropertyAvailabilityOfDefaults.\n\nRequires Archicad 26 or later.\n\"\"\"\nimport aclib\n\ncustomProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\nif not customProperties:\n    raise SystemExit ('No custom property in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetPropertyAvailabilityOfDefaults', {\n    'elementType': 'Wall',\n    'properties': [{'propertyId': p['propertyId']} for p in customProperties]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetPropertyAvailabilityOfDefaults"
+  },
+  {
+   "name": "MakePropertyAvailableForElements",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "description": "Makes a property definition available for all the given elements. Available in Archicad 25, 26 and 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The elements to make the property available for."
+     },
+     "propertyId": {
+      "$ref": "#/PropertyId"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "propertyId"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "MakePropertyAvailableForElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/MakePropertyAvailableForElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/MakePropertyAvailableForElements.py",
+    "description": "Makes a custom property available for the first Wall with MakePropertyAvailableForElements, then unavailable again. Needs a Wall and a custom property that is not available for it. Requires Archicad 25, 26 or 27.",
+    "code": "\"\"\"Makes a custom property available for the first Wall with MakePropertyAvailableForElements, then unavailable again.\n\nNeeds a Wall and a custom property that is not available for it. Requires Archicad 25, 26 or 27.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\ncustomProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\nvalues = aclib.RunTapirCommand ('GetPropertyValuesOfElements', {\n    'elements': walls,\n    'properties': [{'propertyId': p['propertyId']} for p in customProperties],\n    'includeAvailability': True\n})['propertyValuesForElements'][0]['propertyValues']\npropertyId = next ((p['propertyId'] for p, value in zip (customProperties, values) if value.get ('isAvailable') is False), None)\nif propertyId is None:\n    raise SystemExit ('No custom property that is unavailable for the wall.')\n\naclib.PrintJson (aclib.RunTapirCommand ('MakePropertyAvailableForElements', {'elements': walls, 'propertyId': propertyId}))\naclib.RunTapirCommand ('GetPropertyValuesOfElements', {'elements': walls, 'properties': [{'propertyId': propertyId}], 'includeAvailability': True})\n\naclib.RunTapirCommand ('MakePropertyUnavailableForElements', {'elements': walls, 'propertyId': propertyId})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MakePropertyAvailableForElements"
+  },
+  {
+   "name": "MakePropertyUnavailableForElements",
+   "group": "Property Commands",
+   "version": "1.7.3",
+   "description": "Makes a property definition unavailable for all the given elements. Available in Archicad 25, 26 and 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements",
+      "description": "The elements to make the property unavailable for."
+     },
+     "propertyId": {
+      "$ref": "#/PropertyId"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "propertyId"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "MakePropertyUnavailableForElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Property/MakePropertyUnavailableForElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/MakePropertyUnavailableForElements.py",
+    "description": "Makes a custom property unavailable for the first Wall with MakePropertyUnavailableForElements. The script first makes a property available that is not available for the wall, so the project ends as it was. Requires Archicad 25, 26 or 27.",
+    "code": "\"\"\"Makes a custom property unavailable for the first Wall with MakePropertyUnavailableForElements.\n\nThe script first makes a property available that is not available for the wall, so the project ends as it was.\nRequires Archicad 25, 26 or 27.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\ncustomProperties = aclib.RunTapirCommand ('GetAllProperties', {'propertyTypes': ['Custom'], 'includeAvailability': False})['properties']\nvalues = aclib.RunTapirCommand ('GetPropertyValuesOfElements', {\n    'elements': walls,\n    'properties': [{'propertyId': p['propertyId']} for p in customProperties],\n    'includeAvailability': True\n})['propertyValuesForElements'][0]['propertyValues']\npropertyId = next ((p['propertyId'] for p, value in zip (customProperties, values) if value.get ('isAvailable') is False), None)\nif propertyId is None:\n    raise SystemExit ('No custom property that is unavailable for the wall.')\naclib.RunTapirCommand ('MakePropertyAvailableForElements', {'elements': walls, 'propertyId': propertyId})\n\naclib.PrintJson (aclib.RunTapirCommand ('MakePropertyUnavailableForElements', {'elements': walls, 'propertyId': propertyId}))\naclib.RunTapirCommand ('GetPropertyValuesOfElements', {'elements': walls, 'properties': [{'propertyId': propertyId}], 'includeAvailability': True})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MakePropertyUnavailableForElements"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ComponentId": {
+   "type": "object",
+   "description": "The identifier of a component (one building material skin or profile part) of an element. It identifies the component only together with its element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ElementComponentId": {
+   "type": "object",
+   "description": "The identifier of a component of an element: the element and the component within it.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "componentId": {
+     "$ref": "#/ComponentId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "componentId"
+   ]
+  },
+  "ElementComponentIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementComponentId": {
+     "$ref": "#/ElementComponentId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementComponentId"
+   ]
+  },
+  "ElementComponents": {
+   "type": "array",
+   "description": "A list of element components.",
+   "items": {
+    "$ref": "#/ElementComponentIdArrayItem"
+   }
+  },
+  "ElementComponentsArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementComponents": {
+     "$ref": "#/ElementComponents"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementComponents"
+   ]
+  },
+  "ElementComponentsOrError": {
+   "type": "object",
+   "description": "The components of an element or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementComponentsArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementComponentsOrErrorArray": {
+   "type": "array",
+   "description": "A list of element component lists or errors.",
+   "items": {
+    "$ref": "#/ElementComponentsOrError"
+   }
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "AttributeIds": {
+   "type": "array",
+   "description": "A list of attributes.",
+   "items": {
+    "$ref": "#/AttributeIdArrayItem"
+   }
+  },
+  "AttributeIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeId"
+   ]
+  },
+  "AttributeId": {
+   "type": "object",
+   "description": "The identifier of an attribute.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "DryRun": {
+   "type": "boolean",
+   "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
+  },
+  "DryRunFlag": {
+   "type": "boolean",
+   "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
+   "enum": [
+    true
+   ]
+  },
+  "WouldDeleteExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldDelete": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldDelete"
+   ]
+  },
+  "DeletionExecutionResult": {
+   "type": "object",
+   "description": "The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldDeleteExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "DeletionExecutionResults": {
+   "type": "array",
+   "description": "A list of deletion results.",
+   "items": {
+    "$ref": "#/DeletionExecutionResult"
+   }
+  },
+  "WouldChange": {
+   "type": "object",
+   "description": "What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.",
+   "properties": {
+    "oldValue": {
+     "description": "The target's value now, before the change."
+    },
+    "newValue": {
+     "description": "The value a real run would write."
+    }
+   },
+   "additionalProperties": false
+  },
+  "WouldChangeExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldChange": {
+     "$ref": "#/WouldChange"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldChange"
+   ]
+  },
+  "ChangeExecutionResult": {
+   "type": "object",
+   "description": "The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldChangeExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ChangeExecutionResults": {
+   "type": "array",
+   "description": "A list of change results.",
+   "items": {
+    "$ref": "#/ChangeExecutionResult"
+   }
+  },
+  "ElementType": {
+   "type": "string",
+   "description": "The type of an element.",
+   "enum": [
+    "Wall",
+    "Column",
+    "Beam",
+    "Window",
+    "Door",
+    "Object",
+    "Lamp",
+    "Slab",
+    "Roof",
+    "Mesh",
+    "Dimension",
+    "RadialDimension",
+    "LevelDimension",
+    "AngleDimension",
+    "Text",
+    "Label",
+    "Zone",
+    "Hatch",
+    "Line",
+    "PolyLine",
+    "Arc",
+    "Circle",
+    "Spline",
+    "Hotspot",
+    "CutPlane",
+    "Camera",
+    "CamSet",
+    "Group",
+    "SectElem",
+    "Drawing",
+    "Picture",
+    "Detail",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Hotlink",
+    "CurtainWall",
+    "CurtainWallSegment",
+    "CurtainWallFrame",
+    "CurtainWallPanel",
+    "CurtainWallJunction",
+    "CurtainWallAccessory",
+    "Shell",
+    "Skylight",
+    "Morph",
+    "ChangeMarker",
+    "Stair",
+    "Riser",
+    "Tread",
+    "StairStructure",
+    "Railing",
+    "RailingToprail",
+    "RailingHandrail",
+    "RailingRail",
+    "RailingPost",
+    "RailingInnerPost",
+    "RailingBaluster",
+    "RailingPanel",
+    "RailingSegment",
+    "RailingNode",
+    "RailingBalusterSet",
+    "RailingPattern",
+    "RailingToprailEnd",
+    "RailingHandrailEnd",
+    "RailingRailEnd",
+    "RailingToprailConnection",
+    "RailingHandrailConnection",
+    "RailingRailConnection",
+    "RailingEndFinish",
+    "BeamSegment",
+    "ColumnSegment",
+    "Opening",
+    "Unknown"
+   ]
+  },
+  "PropertyImportConflictPolicy": {
+   "type": "string",
+   "enum": [
+    "append",
+    "replace",
+    "skip"
+   ],
+   "description": "What to do with a property whose name already exists in its group: append imports it under a new unused name, replace replaces the existing definition, skip keeps the existing one."
+  },
+  "PropertyEnumValueRename": {
+   "type": "object",
+   "properties": {
+    "enumValueId": {
+     "$ref": "#/GuidId"
+    },
+    "displayValue": {
+     "type": "string"
+    },
+    "nonLocalizedValue": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "enumValueId",
+    "displayValue"
+   ]
+  },
+  "PropertyEnumValueRemoval": {
+   "type": "object",
+   "properties": {
+    "enumValueId": {
+     "$ref": "#/GuidId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "enumValueId"
+   ]
+  },
+  "PropertyAvailabilityUpdate": {
+   "type": "object",
+   "description": "Classification items the property is available for: set replaces the list, add and remove edit it.",
+   "properties": {
+    "set": {
+     "type": "array",
+     "items": {
+      "$ref": "#/ClassificationItemIdArrayItem"
+     }
+    },
+    "add": {
+     "type": "array",
+     "items": {
+      "$ref": "#/ClassificationItemIdArrayItem"
+     }
+    },
+    "remove": {
+     "type": "array",
+     "items": {
+      "$ref": "#/ClassificationItemIdArrayItem"
+     }
+    }
+   },
+   "additionalProperties": false
+  },
+  "PropertyGroupUpdate": {
+   "type": "object",
+   "properties": {
+    "propertyGroupId": {
+     "$ref": "#/PropertyGroupId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyGroupId"
+   ]
+  },
+  "PropertyGroupDetails": {
+   "type": "object",
+   "properties": {
+    "propertyGroupId": {
+     "$ref": "#/PropertyGroupId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "isCustom": {
+     "type": "boolean"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyGroupId",
+    "name",
+    "isCustom"
+   ]
+  },
+  "PropertyDefinitionUpdate": {
+   "type": "object",
+   "properties": {
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "name": {
+     "type": "string",
+     "description": "New name of the property."
+    },
+    "description": {
+     "type": "string",
+     "description": "New description of the property."
+    },
+    "isEditable": {
+     "type": "boolean",
+     "description": "Whether users may edit the value of the property on elements (Property Manager: Editable)."
+    },
+    "groupId": {
+     "$ref": "#/PropertyGroupId",
+     "description": "Move the property into this custom property group."
+    },
+    "defaultValue": {
+     "$ref": "#/PropertyDefaultValue",
+     "description": "New default value: a basic value or expressions. Switching between the two is allowed."
+    },
+    "expressions": {
+     "type": "array",
+     "description": "The new expression strings for the property. Only for expression-based properties.",
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1
+    },
+    "availability": {
+     "$ref": "#/PropertyAvailabilityUpdate"
+    },
+    "possibleEnumValues": {
+     "$ref": "#/EnumValuesToAdd",
+     "description": "Values already on the property keep their identifier, so element values assigned to them survive; values not listed here are kept as well."
+    },
+    "renameEnumValues": {
+     "type": "array",
+     "description": "Change the text of existing enum options. The option keeps its identifier, so element values follow the new text.",
+     "items": {
+      "$ref": "#/PropertyEnumValueRename"
+     }
+    },
+    "removeEnumValues": {
+     "type": "array",
+     "description": "Enum options to remove. Elements holding a removed option lose that value.",
+     "items": {
+      "$ref": "#/PropertyEnumValueRemoval"
+     }
+    },
+    "enumOrder": {
+     "type": "array",
+     "description": "Every option's display text, once, in the new order (applied after rename, remove and add).",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyId"
+   ]
+  },
+  "EnumValue": {
+   "type": "object",
+   "description": "An enumeration value.",
+   "properties": {
+    "enumValueId": {
+     "$ref": "#/EnumValueId"
+    },
+    "guid": {
+     "$ref": "#/Guid",
+     "description": "The identifier of the enumeration value, as reported by GetAllProperties. An element's stored value refers to the value by this."
+    },
+    "displayValue": {
+     "type": "string",
+     "description": "Displayed value of the enumeration."
+    },
+    "nonLocalizedValue": {
+     "type": "string",
+     "description": "Nonlocalized value of the enumeration if there is one."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "displayValue"
+   ]
+  },
+  "EnumValueToAdd": {
+   "type": "object",
+   "description": "Text values for an enumeration option to add.",
+   "properties": {
+    "displayValue": {
+     "type": "string",
+     "description": "Displayed value of the enumeration."
+    },
+    "nonLocalizedValue": {
+     "type": "string",
+     "description": "Nonlocalized value of the enumeration if there is one."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "displayValue"
+   ]
+  },
+  "PropertyGroupId": {
+   "type": "object",
+   "description": "The identifier of a property group.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "PropertyGroupIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the property group identifier.",
+   "properties": {
+    "propertyGroupId": {
+     "$ref": "#/PropertyGroupId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyGroupId"
+   ]
+  },
+  "PropertyId": {
+   "type": "object",
+   "description": "The identifier of a property.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "PropertyIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the property identifier.",
+   "properties": {
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyId"
+   ]
+  },
+  "PropertyIds": {
+   "type": "array",
+   "description": "A list of property identifiers.",
+   "items": {
+    "$ref": "#/PropertyIdArrayItem"
+   }
+  },
+  "PropertyDetails": {
+   "type": "object",
+   "description": "The details of the property.",
+   "properties": {
+    "possibleEnumValues": {
+     "$ref": "#/PossibleEnumValues"
+    },
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "propertyType": {
+     "type": "string",
+     "enum": [
+      "StaticBuiltIn",
+      "DynamicBuiltIn",
+      "Custom"
+     ]
+    },
+    "propertyGroupName": {
+     "type": "string"
+    },
+    "propertyName": {
+     "type": "string"
+    },
+    "propertyCollectionType": {
+     "type": "string",
+     "enum": [
+      "Undefined",
+      "Single",
+      "List",
+      "SingleChoiceEnumeration",
+      "MultipleChoiceEnumeration"
+     ]
+    },
+    "propertyValueType": {
+     "type": "string",
+     "enum": [
+      "Undefined",
+      "Integer",
+      "Real",
+      "String",
+      "Boolean",
+      "Guid"
+     ]
+    },
+    "propertyMeasureType": {
+     "type": "string",
+     "enum": [
+      "Undefined",
+      "Default",
+      "Length",
+      "Area",
+      "Volume",
+      "Angle"
+     ]
+    },
+    "propertyIsEditable": {
+     "type": "boolean"
+    },
+    "isExpressionBased": {
+     "type": "boolean",
+     "description": "True if the property value is computed from an expression."
+    },
+    "expressions": {
+     "type": "array",
+     "description": "The expression strings of an expression-based property. Only present when isExpressionBased is true.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "propertyGroupId": {
+     "$ref": "#/PropertyGroupId"
+    },
+    "propertyDescription": {
+     "type": "string"
+    },
+    "defaultValueDisplay": {
+     "type": "string",
+     "description": "The basic default value as text. Only for custom, non expression-based properties whose default is set."
+    },
+    "availability": {
+     "type": "array",
+     "description": "Classification items a custom property is available for.",
+     "items": {
+      "$ref": "#/ClassificationItemIdArrayItem"
+     }
+    },
+    "defaultEnumValueIds": {
+     "type": "array",
+     "description": "The option guids an enumeration property's default holds. Only for custom enumeration properties whose default is set.",
+     "items": {
+      "$ref": "#/GuidId"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyId",
+    "propertyType",
+    "propertyGroupName",
+    "propertyName",
+    "propertyCollectionType",
+    "propertyValueType",
+    "propertyMeasureType",
+    "propertyIsEditable",
+    "isExpressionBased"
+   ]
+  },
+  "PropertyValue": {
+   "type": "object",
+   "description": "The string value of a property, formatted according to the command's options.",
+   "properties": {
+    "value": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "value"
+   ]
+  },
+  "PropertyValueArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the property value.",
+   "properties": {
+    "propertyValue": {
+     "$ref": "#/PropertyValue"
+    },
+    "isAvailable": {
+     "type": "boolean",
+     "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyValue"
+   ]
+  },
+  "PropertyValueErrorItem": {
+   "type": "object",
+   "description": "An error in place of a property value.",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    },
+    "isAvailable": {
+     "type": "boolean",
+     "description": "Whether the property is available for the element. Only returned when includeAvailability is true."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "PropertyValueOrErrorItem": {
+   "type": "object",
+   "description": "A property value or an error",
+   "oneOf": [
+    {
+     "$ref": "#/PropertyValueArrayItem"
+    },
+    {
+     "$ref": "#/PropertyValueErrorItem"
+    }
+   ]
+  },
+  "PropertyValues": {
+   "type": "array",
+   "description": "A list of property values.",
+   "items": {
+    "$ref": "#/PropertyValueOrErrorItem"
+   }
+  },
+  "PropertyValuesArrayItem": {
+   "description": "A wrapper containing the property values.",
+   "properties": {
+    "propertyValues": {
+     "$ref": "#/PropertyValues"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyValues"
+   ]
+  },
+  "PropertyValuesOrError": {
+   "type": "object",
+   "description": "A list of property values or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/PropertyValuesArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "PropertyValuesOrErrorArray": {
+   "type": "array",
+   "description": "A list of property value lists.",
+   "items": {
+    "$ref": "#/PropertyValuesOrError"
+   }
+  },
+  "PropertyIdOrError": {
+   "type": "object",
+   "description": "A propertyId or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/PropertyIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "PropertyIdOrErrorArray": {
+   "type": "array",
+   "description": "A list of property identifiers.",
+   "items": {
+    "$ref": "#/PropertyIdOrError"
+   }
+  },
+  "ElementPropertyValue": {
+   "type": "object",
+   "description": "A property value with the identifiers of the property and its owner element.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "propertyValue": {
+     "$ref": "#/PropertyValue"
+    },
+    "valueStatus": {
+     "type": "string",
+     "enum": [
+      "Value",
+      "Default",
+      "UserUndefined"
+     ],
+     "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "propertyId"
+   ],
+   "anyOf": [
+    {
+     "required": [
+      "propertyValue"
+     ]
+    },
+    {
+     "required": [
+      "valueStatus"
+     ]
+    }
+   ]
+  },
+  "ElementPropertyValues": {
+   "type": "array",
+   "description": "A list of element property values.",
+   "items": {
+    "$ref": "#/ElementPropertyValue"
+   }
+  },
+  "AttributePropertyValue": {
+   "type": "object",
+   "description": "A property value with the identifiers of the property and its owner attribute.",
+   "properties": {
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    },
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "propertyValue": {
+     "$ref": "#/PropertyValue"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeId",
+    "propertyId",
+    "propertyValue"
+   ]
+  },
+  "AttributePropertyValues": {
+   "type": "array",
+   "description": "A list of attribute property values.",
+   "items": {
+    "$ref": "#/AttributePropertyValue"
+   }
+  },
+  "PropertyDataType": {
+   "type": "string",
+   "enum": [
+    "number",
+    "integer",
+    "string",
+    "boolean",
+    "length",
+    "area",
+    "volume",
+    "angle",
+    "numberList",
+    "integerList",
+    "stringList",
+    "booleanList",
+    "lengthList",
+    "areaList",
+    "volumeList",
+    "angleList",
+    "singleEnum",
+    "multiEnum"
+   ]
+  },
+  "DisplayValueEnumId": {
+   "type": "object",
+   "description": "An enumeration value identifier using the displayed value.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "displayValue"
+     ]
+    },
+    "displayValue": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "displayValue"
+   ]
+  },
+  "NonLocalizedValueEnumId": {
+   "type": "object",
+   "description": "An enumeration value identifier using the nonlocalized value.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "nonLocalizedValue"
+     ]
+    },
+    "nonLocalizedValue": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "nonLocalizedValue"
+   ]
+  },
+  "EnumValueId": {
+   "type": "object",
+   "description": "The identifier of a property enumeration value.",
+   "oneOf": [
+    {
+     "$ref": "#/DisplayValueEnumId"
+    },
+    {
+     "$ref": "#/NonLocalizedValueEnumId"
+    }
+   ]
+  },
+  "EnumValueIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the identifier of a property enumeration value.",
+   "properties": {
+    "enumValueId": {
+     "$ref": "#/EnumValueId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "enumValueId"
+   ]
+  },
+  "EnumValueIds": {
+   "type": "array",
+   "description": "A list of enumeration identifiers.",
+   "items": {
+    "$ref": "#/EnumValueIdArrayItem"
+   }
+  },
+  "NormalOrUserUndefinedPropertyValue": {
+   "type": "object",
+   "description": "A normal or a userUndefined property value.",
+   "oneOf": [
+    {
+     "$ref": "#/NormalNumberPropertyValue"
+    },
+    {
+     "$ref": "#/NormalIntegerPropertyValue"
+    },
+    {
+     "$ref": "#/NormalStringPropertyValue"
+    },
+    {
+     "$ref": "#/NormalBooleanPropertyValue"
+    },
+    {
+     "$ref": "#/NormalLengthPropertyValue"
+    },
+    {
+     "$ref": "#/NormalAreaPropertyValue"
+    },
+    {
+     "$ref": "#/NormalVolumePropertyValue"
+    },
+    {
+     "$ref": "#/NormalAnglePropertyValue"
+    },
+    {
+     "$ref": "#/NormalNumberListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalIntegerListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalStringListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalBooleanListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalLengthListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalAreaListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalVolumeListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalAngleListPropertyValue"
+    },
+    {
+     "$ref": "#/NormalSingleEnumPropertyValue"
+    },
+    {
+     "$ref": "#/NormalMultiEnumPropertyValue"
+    },
+    {
+     "$ref": "#/UserUndefinedPropertyValue"
+    }
+   ]
+  },
+  "TypedPropertyValue": {
+   "type": "object",
+   "description": "The value of a property for one element in JSON's own types, as GetTypedPropertyValuesOfElements returns it: a number, an integer, a string, a boolean, an array of them, or the identifiers of the chosen options of an option set, with the property's type and status next to it.",
+   "properties": {
+    "propertyValue": {
+     "$ref": "#/PropertyValueDetails",
+     "description": "The value with its type (number, length, area, volume, angle, integer, string, boolean, their lists, singleEnum or multiEnum) and its status: normal with a value, userUndefined (the user set it to Undefined, no value) or notAvailable (the property is not available for the element, no value). Measured values are in SI units: meters, square meters, cubic meters and radians, whatever the project's working units. An option is named by its nonLocalizedValue when it has one, else by its displayValue."
+    },
+    "isDefault": {
+     "type": "boolean",
+     "description": "Whether the value comes from the property's default value rather than one set for the element. Left out for a notAvailable value."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyValue"
+   ]
+  },
+  "PropertyValueDetails": {
+   "type": "object",
+   "description": "A normal, userUndefined, notAvailable or notEvaluated property value.",
+   "oneOf": [
+    {
+     "$ref": "#/NormalOrUserUndefinedPropertyValue"
+    },
+    {
+     "$ref": "#/NotAvailablePropertyValue"
+    }
+   ]
+  },
+  "UserUndefinedPropertyValue": {
+   "type": "object",
+   "description": "A userUndefined value means that there is no actual number/string/etc. value, but the user deliberately set an Undefined value: this is a valid value, too.",
+   "properties": {
+    "type": {
+     "$ref": "#/PropertyDataType"
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "userUndefined"
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status"
+   ]
+  },
+  "NotAvailablePropertyValue": {
+   "type": "object",
+   "description": "A notAvailable value means that the property is not available for the property owner (and therefore it has no property value for it).",
+   "properties": {
+    "type": {
+     "$ref": "#/PropertyDataType"
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "notAvailable"
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status"
+   ]
+  },
+  "NormalNumberPropertyValue": {
+   "type": "object",
+   "description": "A number property value containing a valid numeric value.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "number"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "number"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalIntegerPropertyValue": {
+   "type": "object",
+   "description": "An integer property value containing a valid integer number.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "integer"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "integer"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalStringPropertyValue": {
+   "type": "object",
+   "description": "A string property value containing a valid string.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "string"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalBooleanPropertyValue": {
+   "type": "object",
+   "description": "A boolean property value containing a valid boolean value.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "boolean"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "boolean"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalLengthPropertyValue": {
+   "type": "object",
+   "description": "A length property value containing a real length value. The value is measured in SI (meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "length"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "number"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalAreaPropertyValue": {
+   "type": "object",
+   "description": "An area property value containing a real area. The value is measured in SI (square meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "area"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "number"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalVolumePropertyValue": {
+   "type": "object",
+   "description": "A volume property value containing a real volume. The value is measured in SI (cubic meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "volume"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "number"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalAnglePropertyValue": {
+   "type": "object",
+   "description": "An angle property value containing a real angle. The value is measured in SI (radians).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "angle"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "number"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalNumberListPropertyValue": {
+   "type": "object",
+   "description": "A number list property value containing numbers in an array.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "numberList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalIntegerListPropertyValue": {
+   "type": "object",
+   "description": "An integer list property value containing integers in an array.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "integerList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "integer"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalStringListPropertyValue": {
+   "type": "object",
+   "description": "A string list property value containing strings in an array.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "stringList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalBooleanListPropertyValue": {
+   "type": "object",
+   "description": "A boolean list property value containing boolean values in an array.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "booleanList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "boolean"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalLengthListPropertyValue": {
+   "type": "object",
+   "description": "A length list property value containing length values in an array. The values are measured in SI (meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "lengthList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalAreaListPropertyValue": {
+   "type": "object",
+   "description": "An area list property value containing areas in an array. The values are measured in SI (square meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "areaList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalVolumeListPropertyValue": {
+   "type": "object",
+   "description": "A volume list property value containing volumes in an array. The values are measured in SI (cubic meters).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "volumeList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalAngleListPropertyValue": {
+   "type": "object",
+   "description": "An angle list property value containing angles in an array. The values are measured in SI (radians).",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "angleList"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "type": "array",
+     "items": {
+      "type": "number"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalSingleEnumPropertyValue": {
+   "type": "object",
+   "description": "A single enumeration property value containing the ID of the selected enum value.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "singleEnum"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "$ref": "#/EnumValueId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "NormalMultiEnumPropertyValue": {
+   "type": "object",
+   "description": "A multiple choice enumeration property value containing the IDs of the selected enum values in an array.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "enum": [
+      "multiEnum"
+     ]
+    },
+    "status": {
+     "type": "string",
+     "enum": [
+      "normal"
+     ]
+    },
+    "value": {
+     "$ref": "#/EnumValueIds"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "type",
+    "status",
+    "value"
+   ]
+  },
+  "BasicDefaultValue": {
+   "type": "object",
+   "description": "Default value of the property in case of a basic property value (ie. not an expression).",
+   "properties": {
+    "basicDefaultValue": {
+     "$ref": "#/PropertyValueDetails"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "basicDefaultValue"
+   ]
+  },
+  "ExpressionDefaultValue": {
+   "type": "object",
+   "description": "Default value of the property in case of an expression based property value.",
+   "properties": {
+    "expressions": {
+     "type": "array",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "expressions"
+   ]
+  },
+  "PropertyDefaultValue": {
+   "type": "object",
+   "oneOf": [
+    {
+     "$ref": "#/BasicDefaultValue"
+    },
+    {
+     "$ref": "#/ExpressionDefaultValue"
+    }
+   ]
+  },
+  "ClassificationItemId": {
+   "type": "object",
+   "description": "The identifier of a classification item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ClassificationItemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationItemId"
+   ]
+  },
+  "PropertyDefinitionType": {
+   "type": "string",
+   "enum": [
+    "StaticBuiltIn",
+    "DynamicBuiltIn",
+    "Custom"
+   ]
+  },
+  "AttributePropertyValuesResult": {
+   "type": "object",
+   "properties": {
+    "propertyValues": {
+     "type": "array",
+     "items": {
+      "oneOf": [
+       {
+        "$ref": "#/PropertyValueArrayItem"
+       },
+       {
+        "$ref": "#/AttributePropertyValueStatus"
+       },
+       {
+        "$ref": "#/ErrorItem"
+       }
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyValues"
+   ]
+  },
+  "AttributePropertyValueStatus": {
+   "type": "object",
+   "description": "A property value with its status, returned when includeStatus is true.",
+   "properties": {
+    "propertyValue": {
+     "$ref": "#/PropertyValue",
+     "description": "Missing when the value is not available or not evaluated."
+    },
+    "isAvailable": {
+     "type": "boolean",
+     "description": "Whether the property definition is available for the attribute."
+    },
+    "isEditable": {
+     "type": "boolean",
+     "description": "Whether the value of the property is editable for the attribute."
+    },
+    "isVisible": {
+     "type": "boolean",
+     "description": "Whether the property definition is visible for the attribute."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "isAvailable",
+    "isEditable",
+    "isVisible"
+   ]
+  },
+  "AttributeBuiltInPropertyValues": {
+   "type": "object",
+   "properties": {
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    },
+    "properties": {
+     "type": "array",
+     "items": {
+      "$ref": "#/BuiltInPropertyValue"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeId",
+    "properties"
+   ]
+  },
+  "BuiltInPropertyValue": {
+   "type": "object",
+   "properties": {
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "propertyValue": {
+     "$ref": "#/PropertyValue"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyId",
+    "propertyValue"
+   ]
+  },
+  "ToolDefaultPropertyFilter": {
+   "type": "string",
+   "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.",
+   "enum": [
+    "UserDefined",
+    "FundamentalBuiltIn",
+    "UserLevelBuiltIn",
+    "All"
+   ]
+  },
+  "ToolDefaultProperties": {
+   "type": "object",
+   "properties": {
+    "properties": {
+     "type": "array",
+     "items": {
+      "$ref": "#/ToolDefaultProperty"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "properties"
+   ]
+  },
+  "ToolDefaultProperty": {
+   "type": "object",
+   "properties": {
+    "propertyId": {
+     "$ref": "#/PropertyId"
+    },
+    "propertyName": {
+     "type": "string"
+    },
+    "propertyGroupId": {
+     "$ref": "#/PropertyGroupId"
+    },
+    "propertyValue": {
+     "$ref": "#/PropertyValue",
+     "description": "The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true."
+    },
+    "error": {
+     "$ref": "#/Error",
+     "description": "Why the value could not be read. Only returned when includeValues is true."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyId",
+    "propertyName",
+    "propertyGroupId"
+   ]
+  },
+  "DefaultPropertyAvailability": {
+   "type": "object",
+   "properties": {
+    "available": {
+     "type": "boolean",
+     "description": "Whether the property is available for the tool default of the element type."
+    },
+    "visible": {
+     "type": "boolean",
+     "description": "Whether the property is visible for the tool default of the element type."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "available",
+    "visible"
+   ]
+  },
+  "PropertyGroup": {
+   "description": "Represents a property group.",
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name"
+   ]
+  },
+  "PropertyGroupArrayItem": {
+   "description": "A wrapper containing a property group",
+   "type": "object",
+   "properties": {
+    "propertyGroup": {
+     "$ref": "#/PropertyGroup"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyGroup"
+   ]
+  },
+  "PossibleEnumValues": {
+   "type": "array",
+   "description": "The possible enum values of the property when the property type is enumeration.",
+   "items": {
+    "type": "object",
+    "properties": {
+     "enumValue": {
+      "$ref": "#/EnumValue"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "enumValue"
+    ]
+   }
+  },
+  "PropertyDefinition": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "type": {
+     "$ref": "#/PropertyDataType"
+    },
+    "isEditable": {
+     "type": "boolean"
+    },
+    "defaultValue": {
+     "$ref": "#/PropertyDefaultValue",
+     "description": "The default value of the new property. Optional; when omitted, the default value is Undefined."
+    },
+    "possibleEnumValues": {
+     "$ref": "#/PossibleEnumValues"
+    },
+    "availability": {
+     "type": "array",
+     "description": "The identifiers of classification items the new property is available for.",
+     "items": {
+      "$ref": "#/ClassificationItemIdArrayItem"
+     }
+    },
+    "group": {
+     "type": "object",
+     "description": "The property group defined by name or id. If both fields exists the id will be used.",
+     "properties": {
+      "propertyGroupId": {
+       "$ref": "#/PropertyGroupId"
+      },
+      "name": {
+       "type": "string"
+      }
+     },
+     "additionalProperties": false,
+     "required": []
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "description",
+    "type",
+    "isEditable",
+    "availability",
+    "group"
+   ]
+  },
+  "EnumValuesToAdd": {
+   "type": "array",
+   "description": "Enumeration values to add to a property.",
+   "items": {
+    "type": "object",
+    "properties": {
+     "enumValue": {
+      "$ref": "#/EnumValueToAdd"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "enumValue"
+    ]
+   }
+  },
+  "PropertyDefinitionArrayItem": {
+   "description": "A wrapper containing a property definition",
+   "type": "object",
+   "properties": {
+    "propertyDefinition": {
+     "$ref": "#/PropertyDefinition"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyDefinition"
+   ]
+  },
+  "AttributePropertyDefinitionFilter": {
+   "type": "string",
+   "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them.",
+   "enum": [
+    "UserDefined",
+    "FundamentalBuiltIn",
+    "All"
+   ]
+  },
+  "AttributePropertyIds": {
+   "type": "object",
+   "properties": {
+    "propertyIds": {
+     "$ref": "#/PropertyIds"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "propertyIds"
+   ]
+  }
+ }
+}

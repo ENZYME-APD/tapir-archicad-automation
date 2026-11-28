@@ -1,6 +1,7 @@
 """Exports the Wall Favorites of the project to a .prefs file with ExportFavorites.
 
-Needs a Wall Favorite. The file is written into a new temporary folder.
+Needs a Wall Favorite. The file is written into a new temporary folder. Archicad 29 writes a folder of that
+name instead of a single file; ImportFavorites reads either back.
 """
 import os
 import tempfile

@@ -6,9 +6,10 @@ the drawings you choose.
 
 ## How to use it
 
-1. Open the project and run the script. It opens each layout in turn to read its drawings
-   (Archicad gives a drawing's data only from its own layout), then goes back to the window you
-   were in.
+1. Open the project and run the script. With Tapir 2.0.2 or later it reads every drawing in one
+   pass, without opening any layout. With an older Tapir it opens each layout in turn to read its
+   drawings (those give a drawing's data only from its own layout), then goes back to the window
+   you were in.
 2. The window lists each drawing with its layout, custom name, status (OK, Modified or
    Unknown), update type (Auto or Manual), whether it is stored in the project, its source and
    its path. *Only drawings that are not up to date* hides the drawings that are OK.
@@ -26,15 +27,15 @@ the drawings you choose.
 
 *Update drawings...* updates the chosen drawings, after you confirm, one drawing at a time.
 Drawings it could not update are named in the palette's output, and the first one in the
-window's status line. Reading opens each layout and then the window you started in; it changes
-nothing in the project.
+window's status line. Reading changes nothing in the project; with a Tapir older than 2.0.2 it
+opens each layout and then the window you started in.
 
 *Export...* writes one file, where you choose in the save dialog; its default name is
 `Drawings <date> <time>.xlsx`, with the columns of the list and each drawing's GUID.
 
 ## Limits
 
-- Reading takes a moment per layout in a project with many layouts.
+- With a Tapir older than 2.0.2, reading takes a moment per layout in a project with many layouts.
 - Works in Archicad 25 to 30 with Tapir 1.8.0 or later. Updating drawings needs Archicad 27 or
   later; in Archicad 25 and 26 the list and the export work, and an update is reported as not
   supported.

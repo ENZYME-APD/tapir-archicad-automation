@@ -15,9 +15,10 @@ Lists every Drawing placed on the layouts of the Layout Book with the columns
 of Archicad's Drawing Manager: status, update type, stored in project, source
 and path. Export the list to Excel or CSV, or update the drawings whose source
 has changed: the script shows which drawings it will update and asks before
-updating them, then reports the drawings it could not update. Reading opens
-each layout in turn (Archicad gives a drawing's data only from its own layout)
-and then goes back to the window that was active. Based on the
+updating them, then reports the drawings it could not update. Reading takes
+one pass without opening any layout; with a Tapir Add-On older than 2.0.2 it
+opens each layout in turn (those give a drawing's data only from its own
+layout) and then goes back to the window that was active. Based on the
 get_drawing_manager_data.py workflow example.
 """
 
@@ -26,7 +27,7 @@ import os
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-from utilities.archicad import ArchicadError, get_details_of_elements, run_tapir
+from utilities.archicad import ArchicadError, batched, get_details_of_elements, run_tapir
 from utilities.export import FILE_TYPES, write_table
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
@@ -88,38 +89,16 @@ class DrawingStatusReport:
     # ---- reading ----
 
     def refresh(self) -> None:
-        drawings = []
-        details = []
-        failed_layouts = 0
         with self.window.busy("Reading the layouts..."):
             layouts = run_tapir("GetDatabases", {"types": ["Layout"]}).get("databases", [])
-            # GetDetailsOfElements returns the details of the current database's elements only
-            # (a drawing of another layout comes back with fromOtherDatabase and no details),
-            # so each layout is opened before its drawings are read, and the user's window is
-            # brought back afterwards.
-            start_database = run_tapir("GetCurrentWindowType").get("databaseId")
-            try:
-                for index, layout in enumerate(layouts):
-                    self.window.set_status(f"Reading the drawings of the layouts... {index + 1} / {len(layouts)}")
-                    name = " ".join(part for part in (layout.get("referenceId", ""), layout.get("name", "")) if part)
-                    try:
-                        run_tapir("ChangeWindow", {"databaseId": layout["databaseId"]})
-                        elements = run_tapir("GetElementsByType", {
-                            "elementType": "Drawing", "databases": [{"databaseId": layout["databaseId"]}]}).get("elements", [])
-                        layout_details = get_details_of_elements(
-                            [{"elementId": e["elementId"]} for e in elements], ["details"])
-                    except ArchicadError as e:
-                        failed_layouts += 1
-                        print(f"Cannot read the drawings of layout {name}: {e}")
-                        continue
-                    drawings += [{"elementId": e["elementId"], "layout": name} for e in elements]
-                    details += layout_details
-            finally:
-                if start_database is not None:
-                    try:
-                        run_tapir("ChangeWindow", {"databaseId": start_database})
-                    except ArchicadError as e:
-                        print(f"Cannot go back to the window the script started in: {e}")
+            drawings, details, failed_layouts, unread = self._read_without_opening(layouts)
+            if unread:
+                # an Add-On before 2.0.2, or a layout whose drawings it could not read from
+                # here: those layouts are opened one by one, as before
+                more_drawings, more_details, more_failed = self._read_by_opening(unread)
+                drawings += more_drawings
+                details += more_details
+                failed_layouts += more_failed
 
         self.drawings = []
         unreadable = 0
@@ -155,6 +134,77 @@ class DrawingStatusReport:
         else:
             self.window.set_status("All drawings are up to date." if not outdated else "Done.",
                                    "ok" if not outdated else "info")
+
+    @staticmethod
+    def _layout_name(layout: dict) -> str:
+        return " ".join(part for part in (layout.get("referenceId", ""), layout.get("name", "")) if part)
+
+    def _read_without_opening(self, layouts: list[dict]) -> tuple[list[dict], list[dict], int, list[dict]]:
+        """ Lists the drawings of every layout and reads them all with readFromOtherDatabases,
+        which reads a drawing in its own layout without opening it (#2791). Returns the drawings,
+        their details, the number of layouts that could not be listed, and the layouts still to
+        be read by opening them: every layout when the Add-On does not know readFromOtherDatabases,
+        else the layouts with a drawing it could not read from here. """
+        listed = []  # (layout index, drawing)
+        failed_layouts = 0
+        for index, layout in enumerate(layouts):
+            self.window.set_status(f"Listing the drawings of the layouts... {index + 1} / {len(layouts)}")
+            try:
+                elements = run_tapir("GetElementsByType", {
+                    "elementType": "Drawing", "databases": [{"databaseId": layout["databaseId"]}]}).get("elements", [])
+            except ArchicadError as e:
+                failed_layouts += 1
+                print(f"Cannot list the drawings of layout {self._layout_name(layout)}: {e}")
+                continue
+            listed += [(index, {"elementId": e["elementId"], "layout": self._layout_name(layout)}) for e in elements]
+
+        details = []
+        self.window.set_status(f"Reading {len(listed)} drawings...")
+        try:
+            for chunk in batched([{"elementId": drawing["elementId"]} for _, drawing in listed]):
+                details += run_tapir("GetDetailsOfElements", {
+                    "elements": chunk, "fields": ["details"], "readFromOtherDatabases": True}).get("detailsOfElements", [])
+        except ArchicadError:
+            # an Add-On before 2.0.2 refuses readFromOtherDatabases: every layout is opened
+            return [], [], 0, layouts
+
+        unread = {index for (index, _), detail in zip(listed, details) if detail.get("fromOtherDatabase")}
+        kept = [(drawing, detail) for (index, drawing), detail in zip(listed, details) if index not in unread]
+        return ([drawing for drawing, _ in kept], [detail for _, detail in kept], failed_layouts,
+                [layouts[index] for index in sorted(unread)])
+
+    def _read_by_opening(self, layouts: list[dict]) -> tuple[list[dict], list[dict], int]:
+        """ GetDetailsOfElements of an Add-On before 2.0.2 returns the details of the current
+        database's elements only (a drawing of another layout comes back with fromOtherDatabase
+        and no details), so each layout is opened before its drawings are read, and the user's
+        window is brought back afterwards. """
+        drawings = []
+        details = []
+        failed_layouts = 0
+        start_database = run_tapir("GetCurrentWindowType").get("databaseId")
+        try:
+            for index, layout in enumerate(layouts):
+                self.window.set_status(f"Reading the drawings of the layouts... {index + 1} / {len(layouts)}")
+                name = self._layout_name(layout)
+                try:
+                    run_tapir("ChangeWindow", {"databaseId": layout["databaseId"]})
+                    elements = run_tapir("GetElementsByType", {
+                        "elementType": "Drawing", "databases": [{"databaseId": layout["databaseId"]}]}).get("elements", [])
+                    layout_details = get_details_of_elements(
+                        [{"elementId": e["elementId"]} for e in elements], ["details"])
+                except ArchicadError as e:
+                    failed_layouts += 1
+                    print(f"Cannot read the drawings of layout {name}: {e}")
+                    continue
+                drawings += [{"elementId": e["elementId"], "layout": name} for e in elements]
+                details += layout_details
+        finally:
+            if start_database is not None:
+                try:
+                    run_tapir("ChangeWindow", {"databaseId": start_database})
+                except ArchicadError as e:
+                    print(f"Cannot go back to the window the script started in: {e}")
+        return drawings, details, failed_layouts
 
     def _fill_tree(self) -> None:
         self.tree.delete(*self.tree.get_children())

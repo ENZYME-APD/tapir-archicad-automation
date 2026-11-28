@@ -1,0 +1,1912 @@
+{
+ "version": 1,
+ "groups": [
+  "Classification Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetClassificationsOfElements",
+   "group": "Classification Commands",
+   "version": "1.0.7",
+   "description": "Returns the classification of the given elements in the given classification systems. It works for subelements of hierarchal elements also.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "classificationSystemIds": {
+      "$ref": "#/ClassificationSystemIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements",
+     "classificationSystemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementClassifications": {
+      "$ref": "#/ElementClassificationsOrErrors",
+      "description": "Order of the ids are the same as in the input. Non-existing elements or non-existing classification systems are represented by error objects."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementClassifications"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationsOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationsOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationsOfElements.py",
+    "description": "Reads the classification of the first three Walls in every classification system with GetClassificationsOfElements. Needs at least one Wall.",
+    "code": "\"\"\"Reads the classification of the first three Walls in every classification system with GetClassificationsOfElements.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:3]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nsystems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfElements', {\n    'elements': walls,\n    'classificationSystemIds': [{'classificationSystemId': system['classificationSystemId']} for system in systems]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationsOfElements"
+  },
+  {
+   "name": "GetElementsByClassification",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns the elements classified with the given classification items, one list per item, so elements can be filtered by classification in a single call.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItemIds": {
+      "$ref": "#/ClassificationItemIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementsOfClassificationItems": {
+      "type": "array",
+      "description": "The elements classified with each classification item, aligned with the input, or an error for a non-existing classification item.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/ClassificationItemElements"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementsOfClassificationItems"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementsByClassificationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetElementsByClassification.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetElementsByClassification.py",
+    "description": "Lists the elements that are classified like the first Wall with GetElementsByClassification. Needs a classified Wall.",
+    "code": "\"\"\"Lists the elements that are classified like the first Wall with GetElementsByClassification.\n\nNeeds a classified Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nsystems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']\nclassificationIds = aclib.RunTapirCommand ('GetClassificationsOfElements', {\n    'elements': walls,\n    'classificationSystemIds': [{'classificationSystemId': system['classificationSystemId']} for system in systems]\n})['elementClassifications'][0]['classificationIds']\nitemIds = [{'classificationItemId': c['classificationId']['classificationItemId']} for c in classificationIds if 'classificationItemId' in c.get ('classificationId', {})]\nif not itemIds:\n    raise SystemExit ('The wall is not classified.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementsByClassification', {'classificationItemIds': itemIds}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementsByClassification"
+  },
+  {
+   "name": "SetClassificationsOfElements",
+   "group": "Classification Commands",
+   "version": "1.0.7",
+   "description": "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's classification in the system now (oldValue) and the one a real run would set (newValue).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementClassifications": {
+      "$ref": "#/ElementClassifications"
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementClassifications"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/ChangeExecutionResults",
+      "description": "One result for each item of elementClassifications, in the order of the input. On a dry run an item that passes every check made before writing (the classification item and its system exist, the element's classification in that system can be read) gets wouldChange: oldValue is the element's classificationId in the system now and newValue the one a real run would set, both as GetClassificationsOfElements gives them (without classificationItemId when the element is or would be unclassified in the system). Archicad can still refuse an item that passes them."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetClassificationsOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/SetClassificationsOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/SetClassificationsOfElements.py",
+    "description": "Classifies the first Wall with the first item of the first classification system with SetClassificationsOfElements, then restores its classification. Needs at least one Wall and a classification system with an item.",
+    "code": "\"\"\"Classifies the first Wall with the first item of the first classification system with SetClassificationsOfElements, then restores its classification.\n\nNeeds at least one Wall and a classification system with an item.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\nitemId = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']['classificationItemId']\n\ndef ReadClassification ():\n    return aclib.RunTapirCommand ('GetClassificationsOfElements', {\n        'elements': walls,\n        'classificationSystemIds': [{'classificationSystemId': systemId}]\n    })['elementClassifications'][0]['classificationIds'][0]['classificationId']\n\noldClassification = ReadClassification ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElements', {\n    'elementClassifications': [{\n        'elementId': walls[0]['elementId'],\n        'classificationId': {'classificationSystemId': systemId, 'classificationItemId': itemId}\n    }]\n}))\nprint ('Classification after the change:', ReadClassification ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElements', {\n    'elementClassifications': [{'elementId': walls[0]['elementId'], 'classificationId': oldClassification}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetClassificationsOfElements"
+  },
+  {
+   "name": "GetClassificationsOfAttributes",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns the classifications of the given attributes (building materials, composites, surfaces, etc.) in every classification system they are classified in.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeIds": {
+      "$ref": "#/AttributeIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeClassifications": {
+      "type": "array",
+      "description": "The classifications of the attributes, in the order of the input. A non-existing attribute is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AttributeClassifications"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeClassifications"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationsOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationsOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationsOfAttributes.py",
+    "description": "Reads the classifications of the first three Building Materials in every classification system with GetClassificationsOfAttributes.",
+    "code": "\"\"\"Reads the classifications of the first three Building Materials in every classification system with GetClassificationsOfAttributes.\"\"\"\nimport aclib\n\nbuildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][:3]\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfAttributes', {\n    'attributeIds': [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationsOfAttributes"
+  },
+  {
+   "name": "SetClassificationsOfAttributes",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Sets the classifications of attributes (building materials, composites, surfaces, etc.). The given item replaces the attribute's current item in the same classification system. In order to set the classification of an attribute to unclassified in a system, omit the classificationItemId field.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeClassifications": {
+      "type": "array",
+      "description": "The classifications to set, one per attribute and classification system.",
+      "items": {
+       "$ref": "#/AttributeClassification"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeClassifications"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetClassificationsOfAttributesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/SetClassificationsOfAttributes.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/SetClassificationsOfAttributes.py",
+    "description": "Classifies the first Building Material with the first item of the first classification system with SetClassificationsOfAttributes, then restores it. Needs a classification system with an item.",
+    "code": "\"\"\"Classifies the first Building Material with the first item of the first classification system with SetClassificationsOfAttributes, then restores it.\n\nNeeds a classification system with an item.\n\"\"\"\nimport aclib\n\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nattributeIds = [{'attributeId': buildingMaterial['attributeId']}]\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\nitemId = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']['classificationItemId']\n\ndef ReadClassification ():\n    return aclib.RunTapirCommand ('GetClassificationOfAttributesInSystem', {\n        'attributeIds': attributeIds,\n        'classificationSystemId': systemId\n    })['attributeClassifications'][0]['classificationId']\n\noldClassification = ReadClassification ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfAttributes', {\n    'attributeClassifications': [{\n        'attributeId': buildingMaterial['attributeId'],\n        'classificationId': {'classificationSystemId': systemId, 'classificationItemId': itemId}\n    }]\n}))\nprint ('Classification after the change:', ReadClassification ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfAttributes', {\n    'attributeClassifications': [{'attributeId': buildingMaterial['attributeId'], 'classificationId': oldClassification}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetClassificationsOfAttributes"
+  },
+  {
+   "name": "GetClassificationOfAttributesInSystem",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns the classification of the given attributes (for example Building Materials) in the given classification system. classificationItemId is omitted for an unclassified attribute.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeIds": {
+      "$ref": "#/AttributeIds"
+     },
+     "classificationSystemId": {
+      "$ref": "#/ClassificationSystemId"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeIds",
+     "classificationSystemId"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeClassifications": {
+      "$ref": "#/ClassificationIdsOrErrors",
+      "description": "Order of the items is the same as in the input. classificationItemId is omitted when the attribute is unclassified in the system. Non-existing attributes or a non-existing classification system are represented by error objects."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeClassifications"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationOfAttributesInSystemComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationOfAttributesInSystem.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationOfAttributesInSystem.py",
+    "description": "Reads the classification of the first three Building Materials in the first classification system with GetClassificationOfAttributesInSystem.",
+    "code": "\"\"\"Reads the classification of the first three Building Materials in the first classification system with GetClassificationOfAttributesInSystem.\"\"\"\nimport aclib\n\nbuildingMaterials = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][:3]\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationOfAttributesInSystem', {\n    'attributeIds': [{'attributeId': buildingMaterial['attributeId']} for buildingMaterial in buildingMaterials],\n    'classificationSystemId': systemId\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationOfAttributesInSystem"
+  },
+  {
+   "name": "GetClassificationsOfElementDefaults",
+   "group": "Classification Commands",
+   "version": "1.7.3",
+   "description": "Returns the classification of the tool defaults (the settings new elements get) of the given element types in the given classification systems.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementTypes": {
+      "type": "array",
+      "description": "The element types whose tool defaults (the settings new elements get) are read.",
+      "items": {
+       "$ref": "#/ElementType"
+      }
+     },
+     "classificationSystemIds": {
+      "$ref": "#/ClassificationSystemIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementTypes",
+     "classificationSystemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementDefaultClassifications": {
+      "$ref": "#/ElementClassificationsOrErrors",
+      "description": "Order of the outer list is that of the given element types, the inner list that of the given classification systems. Invalid element types or non-existing classification systems are represented by error objects."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementDefaultClassifications"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationsOfElementDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationsOfElementDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationsOfElementDefaults.py",
+    "description": "Reads the classification of the Wall and Slab tool defaults in every classification system with GetClassificationsOfElementDefaults.",
+    "code": "\"\"\"Reads the classification of the Wall and Slab tool defaults in every classification system with GetClassificationsOfElementDefaults.\"\"\"\nimport aclib\n\nsystems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfElementDefaults', {\n    'elementTypes': ['Wall', 'Slab'],\n    'classificationSystemIds': [{'classificationSystemId': system['classificationSystemId']} for system in systems]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationsOfElementDefaults"
+  },
+  {
+   "name": "SetClassificationsOfElementDefaults",
+   "group": "Classification Commands",
+   "version": "1.7.3",
+   "description": "Sets the classifications of the tool defaults (the settings new elements get) of the given element types. In order to set a default to unclassified, omit the classificationItemId field.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementDefaultClassifications": {
+      "type": "array",
+      "description": "The classifications to set on the tool defaults (the settings new elements get).",
+      "items": {
+       "$ref": "#/ElementDefaultClassification"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementDefaultClassifications"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetClassificationsOfElementDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/SetClassificationsOfElementDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/SetClassificationsOfElementDefaults.py",
+    "description": "Classifies the Wall tool default with the first item of the first classification system with SetClassificationsOfElementDefaults, then restores it. New walls get the tool default's classification. Needs a classification system with an item.",
+    "code": "\"\"\"Classifies the Wall tool default with the first item of the first classification system with SetClassificationsOfElementDefaults, then restores it.\n\nNew walls get the tool default's classification. Needs a classification system with an item.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\nitemId = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']['classificationItemId']\n\ndef ReadClassification ():\n    return aclib.RunTapirCommand ('GetClassificationsOfElementDefaults', {\n        'elementTypes': ['Wall'],\n        'classificationSystemIds': [{'classificationSystemId': systemId}]\n    })['elementDefaultClassifications'][0]['classificationIds'][0]['classificationId']\n\noldClassification = ReadClassification ()\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {\n    'elementDefaultClassifications': [{\n        'elementType': 'Wall',\n        'classificationId': {'classificationSystemId': systemId, 'classificationItemId': itemId}\n    }]\n}))\nprint ('Classification after the change:', ReadClassification ())\n\naclib.PrintJson (aclib.RunTapirCommand ('SetClassificationsOfElementDefaults', {\n    'elementDefaultClassifications': [{'elementType': 'Wall', 'classificationId': oldClassification}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetClassificationsOfElementDefaults"
+  },
+  {
+   "name": "GetClassificationsOfToolDefaults",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns every classification of the tool defaults (the settings new elements get) of the given element types, in all classification systems at once. Unlike GetClassificationsOfElementDefaults it needs no list of classification systems; systems in which a default is unclassified are left out.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementTypes": {
+      "type": "array",
+      "description": "The element types whose tool defaults (the settings new elements get) are read.",
+      "items": {
+       "$ref": "#/ElementType"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementTypes"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationsOfToolDefaults": {
+      "type": "array",
+      "description": "The classifications of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.",
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/ToolDefaultClassifications"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationsOfToolDefaults"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationsOfToolDefaultsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationsOfToolDefaults.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationsOfToolDefaults.py",
+    "description": "Reads every classification of the Wall, Slab and Column tool defaults in one call with GetClassificationsOfToolDefaults.",
+    "code": "\"\"\"Reads every classification of the Wall, Slab and Column tool defaults in one call with GetClassificationsOfToolDefaults.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationsOfToolDefaults', {'elementTypes': ['Wall', 'Slab', 'Column']}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationsOfToolDefaults"
+  },
+  {
+   "name": "GetAllClassificationSystems",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns the classification systems of the project with their guid, name, description, source, version and date. Same output as the official GetAllClassificationSystems command, so scripts can rely on Tapir commands only.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationSystems": {
+      "type": "array",
+      "description": "The classification systems of the project.",
+      "items": {
+       "$ref": "#/ClassificationSystemSummary"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystems"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationSystemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetAllClassificationSystems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetAllClassificationSystems.py",
+    "description": "Lists the name, version and date of every classification system of the project with GetAllClassificationSystems.",
+    "code": "\"\"\"Lists the name, version and date of every classification system of the project with GetAllClassificationSystems.\"\"\"\nimport aclib\n\nsystems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']\n\nfor system in systems:\n    print (system['name'], system['version'], system['date'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAllClassificationSystems"
+  },
+  {
+   "name": "CreateClassificationSystems",
+   "group": "Classification Commands",
+   "version": "1.5.0",
+   "description": "Creates Classification Systems including Classification Items based on the given parameters.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationSystemsWithItems": {
+      "$ref": "#/ClassificationSystemsWithItems"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystemsWithItems"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     },
+     "classificationSystemIds": {
+      "$ref": "#/ClassificationSystemIdsOrErrors",
+      "description": "The identifiers of the new classification systems, in the order of the input. A system that could not be created is an error item. A system whose items failed is still listed, because it was created; its execution result has the error."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults",
+     "classificationSystemIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateClassificationSystemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/CreateClassificationSystems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/CreateClassificationSystems.py",
+    "description": "Creates a classification system with a two-level item tree with CreateClassificationSystems, then deletes it.",
+    "code": "\"\"\"Creates a classification system with a two-level item tree with CreateClassificationSystems, then deletes it.\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {\n            'name': 'Tapir Example System',\n            'description': 'Created by a Tapir example',\n            'source': 'https://github.com/ENZYME-APD/tapir-archicad-automation',\n            'version': '1.0',\n            'date': '2026-01-01'\n        },\n        'classificationItems': [{\n            'id': '10',\n            'name': 'Walls',\n            'description': '',\n            'children': [\n                {'id': '10.1', 'name': 'External walls', 'description': ''},\n                {'id': '10.2', 'name': 'Internal walls', 'description': ''}\n            ]\n        }]\n    }]\n})\naclib.PrintJson (result)\n\naclib.RunTapirCommand ('DeleteClassificationSystems', {\n    'classificationSystemIds': [s for s in result['classificationSystemIds'] if 'classificationSystemId' in s]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateClassificationSystems"
+  },
+  {
+   "name": "CreateClassificationItems",
+   "group": "Classification Commands",
+   "version": "1.5.0",
+   "description": "Creates Classification Items in the given Classification Systems based on the given parameters.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "newClassificationItems": {
+      "$ref": "#/NewClassificationItems"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "newClassificationItems"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     },
+     "classificationItemIds": {
+      "$ref": "#/ClassificationItemIdsOrErrors",
+      "description": "The identifiers of the new classification items, in the order of the input. An item that could not be created is an error item. An item whose children failed is still listed, because it was created; its execution result has the error."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults",
+     "classificationItemIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateClassificationItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/CreateClassificationItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/CreateClassificationItems.py",
+    "description": "Adds a classification item to a temporary classification system with CreateClassificationItems. The script deletes the system with its items again at the end.",
+    "code": "\"\"\"Adds a classification item to a temporary classification system with CreateClassificationItems.\n\nThe script deletes the system with its items again at the end.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {'name': 'Tapir Example System', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},\n        'classificationItems': []\n    }]\n})['classificationSystemIds'][0]\nif 'error' in systemId:\n    raise SystemExit ('Could not create the classification system: ' + systemId['error']['message'])\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateClassificationItems', {\n    'newClassificationItems': [{\n        'classificationSystemId': systemId['classificationSystemId'],\n        'classificationItemDetails': {'id': '20', 'name': 'Slabs', 'description': 'Added by a Tapir example'}\n    }]\n}))\n\naclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateClassificationItems"
+  },
+  {
+   "name": "DeleteClassificationSystems",
+   "group": "Classification Commands",
+   "version": "1.5.2",
+   "description": "Deletes the given Classification Systems. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification system that exists gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationSystemIds": {
+      "$ref": "#/ClassificationSystemIds"
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input classification system, in the order of the input. On a dry run a classification system that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteClassificationSystemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/DeleteClassificationSystems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/DeleteClassificationSystems.py",
+    "description": "Creates a temporary classification system and deletes it again with DeleteClassificationSystems.",
+    "code": "\"\"\"Creates a temporary classification system and deletes it again with DeleteClassificationSystems.\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {'name': 'Tapir Example System To Delete', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},\n        'classificationItems': [{'id': '10', 'name': 'Walls', 'description': ''}]\n    }]\n})\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteClassificationSystems', {\n    'classificationSystemIds': [s for s in result['classificationSystemIds'] if 'classificationSystemId' in s]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteClassificationSystems"
+  },
+  {
+   "name": "DeleteClassificationItems",
+   "group": "Classification Commands",
+   "version": "1.5.2",
+   "description": "Deletes the given Classification Items. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification item that exists gets wouldDelete.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItemIds": {
+      "$ref": "#/ClassificationItemIds"
+     },
+     "dryRun": {
+      "$ref": "#/DryRun"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "dryRun": {
+      "$ref": "#/DryRunFlag"
+     },
+     "executionResults": {
+      "$ref": "#/DeletionExecutionResults",
+      "description": "One result for each input classification item, in the order of the input. On a dry run a classification item that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteClassificationItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/DeleteClassificationItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/DeleteClassificationItems.py",
+    "description": "Creates a classification item in a temporary classification system and deletes it with DeleteClassificationItems. The script deletes the temporary system at the end.",
+    "code": "\"\"\"Creates a classification item in a temporary classification system and deletes it with DeleteClassificationItems.\n\nThe script deletes the temporary system at the end.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {'name': 'Tapir Example System', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},\n        'classificationItems': []\n    }]\n})['classificationSystemIds'][0]\nif 'error' in systemId:\n    raise SystemExit ('Could not create the classification system: ' + systemId['error']['message'])\nitemIds = aclib.RunTapirCommand ('CreateClassificationItems', {\n    'newClassificationItems': [{\n        'classificationSystemId': systemId['classificationSystemId'],\n        'classificationItemDetails': {'id': '10', 'name': 'Walls', 'description': ''}\n    }]\n})['classificationItemIds']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteClassificationItems', {\n    'classificationItemIds': [i for i in itemIds if 'classificationItemId' in i]\n}))\n\naclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteClassificationItems"
+  },
+  {
+   "name": "UpdateClassificationSystems",
+   "group": "Classification Commands",
+   "version": "1.6.0",
+   "description": "Updates the name, description, source, version and/or date of existing Classification Systems, keeping their guid.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationSystems": {
+      "type": "array",
+      "description": "The classification systems to update. Only the fields given change.",
+      "items": {
+       "$ref": "#/ClassificationSystemUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystems"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UpdateClassificationSystemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/UpdateClassificationSystems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/UpdateClassificationSystems.py",
+    "description": "Creates a temporary classification system and changes its version, date and description with UpdateClassificationSystems. The system keeps its guid. The script deletes it again at the end.",
+    "code": "\"\"\"Creates a temporary classification system and changes its version, date and description with UpdateClassificationSystems.\n\nThe system keeps its guid. The script deletes it again at the end.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {'name': 'Tapir Example System', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},\n        'classificationItems': []\n    }]\n})['classificationSystemIds'][0]\nif 'error' in systemId:\n    raise SystemExit ('Could not create the classification system: ' + systemId['error']['message'])\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdateClassificationSystems', {\n    'classificationSystems': [{\n        'classificationSystemId': systemId['classificationSystemId'],\n        'version': '2.0',\n        'date': '2026-06-30',\n        'description': 'Updated by a Tapir example'\n    }]\n}))\n\naclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdateClassificationSystems"
+  },
+  {
+   "name": "UpdateClassificationItems",
+   "group": "Classification Commands",
+   "version": "1.6.0",
+   "description": "Updates the id (code), name and/or description of existing Classification Items, keeping their guid and so the elements classified with them. Items cannot be moved to another parent.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItems": {
+      "type": "array",
+      "description": "The classification items to update. Only the fields given change; items keep their guid and their parent.",
+      "items": {
+       "$ref": "#/ClassificationItemUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItems"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "UpdateClassificationItemsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/UpdateClassificationItems.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/UpdateClassificationItems.py",
+    "description": "Creates a classification item in a temporary system and changes its code and name with UpdateClassificationItems. The item keeps its guid, so the elements classified with it stay classified. The script deletes the temporary system at the end.",
+    "code": "\"\"\"Creates a classification item in a temporary system and changes its code and name with UpdateClassificationItems.\n\nThe item keeps its guid, so the elements classified with it stay classified. The script deletes the temporary\nsystem at the end.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('CreateClassificationSystems', {\n    'classificationSystemsWithItems': [{\n        'classificationSystem': {'name': 'Tapir Example System', 'description': '', 'source': '', 'version': '1.0', 'date': '2026-01-01'},\n        'classificationItems': []\n    }]\n})['classificationSystemIds'][0]\nif 'error' in systemId:\n    raise SystemExit ('Could not create the classification system: ' + systemId['error']['message'])\nitemId = aclib.RunTapirCommand ('CreateClassificationItems', {\n    'newClassificationItems': [{\n        'classificationSystemId': systemId['classificationSystemId'],\n        'classificationItemDetails': {'id': '10', 'name': 'Walls', 'description': ''}\n    }]\n})['classificationItemIds'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdateClassificationItems', {\n    'classificationItems': [{\n        'classificationItemId': itemId['classificationItemId'],\n        'id': '21.10',\n        'name': 'Load-bearing walls'\n    }]\n}))\n\naclib.RunTapirCommand ('DeleteClassificationSystems', {'classificationSystemIds': [systemId]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdateClassificationItems"
+  },
+  {
+   "name": "GetClassificationItemParents",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Returns the parent item and the classification system of the given Classification Items; a top level item has no parent. The output is aligned with the input array of items.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItemIds": {
+      "$ref": "#/ClassificationItemIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItemParents": {
+      "type": "array",
+      "description": "The parent and the system of each given item, in the order of the input. A non-existing item is an error item.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ClassificationItemParent"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItemParents"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationItemParentsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationItemParents.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationItemParents.py",
+    "description": "Gets the parent item and the classification system of a classification item with GetClassificationItemParents. Uses the first child of the first item of the first classification system, or that item when it has no child.",
+    "code": "\"\"\"Gets the parent item and the classification system of a classification item with GetClassificationItemParents.\n\nUses the first child of the first item of the first classification system, or that item when it has no child.\n\"\"\"\nimport aclib\n\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\nitem = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']\nif item.get ('children'):\n    item = item['children'][0]['classificationItem']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationItemParents', {\n    'classificationItemIds': [{'classificationItemId': item['classificationItemId']}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationItemParents"
+  },
+  {
+   "name": "ImportClassificationsXml",
+   "group": "Classification Commands",
+   "version": "1.6.0",
+   "description": "Imports a Classification Manager XML export, with the given policies for systems and items that already exist. Returns the systems and items it created and removed.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "xml": {
+      "type": "string",
+      "description": "A Classification Manager export (XML) to import."
+     },
+     "systemConflictPolicy": {
+      "$ref": "#/ClassificationSystemConflictPolicy"
+     },
+     "itemConflictPolicy": {
+      "$ref": "#/ClassificationItemConflictPolicy"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "xml",
+     "systemConflictPolicy",
+     "itemConflictPolicy"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResult": {
+      "$ref": "#/ExecutionResult"
+     },
+     "created": {
+      "type": "array",
+      "items": {
+       "$ref": "#/GuidId"
+      }
+     },
+     "removed": {
+      "type": "array",
+      "items": {
+       "$ref": "#/GuidId"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResult",
+     "created",
+     "removed"
+    ]
+   },
+   "grasshopperComponents": [
+    "ImportClassificationsXmlComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/ImportClassificationsXml.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/ImportClassificationsXml.py",
+    "description": "Imports a small classification system from Classification Manager XML with ImportClassificationsXml, then deletes it. systemConflictPolicy 'skip' keeps a system whose name already exists.",
+    "code": "\"\"\"Imports a small classification system from Classification Manager XML with ImportClassificationsXml, then deletes it.\n\nsystemConflictPolicy 'skip' keeps a system whose name already exists.\n\"\"\"\nimport aclib\n\nsystem = 'Tapir Example Import System'\nxml = '''<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<BuildingInformation>\n    <Classification>\n        <System>\n            <Name>{system}</Name>\n            <EditionVersion>1</EditionVersion>\n            <EditionDate>\n                <Year>2026</Year>\n                <Month>1</Month>\n                <Day>1</Day>\n            </EditionDate>\n            <Description/>\n            <Source/>\n            <Items>\n                <Item>\n                    <ID>10</ID>\n                    <Name>Walls</Name>\n                    <Description/>\n                    <Children>\n                        <Item>\n                            <ID>10.1</ID>\n                            <Name>External walls</Name>\n                            <Description/>\n                            <Children/>\n                        </Item>\n                    </Children>\n                </Item>\n            </Items>\n        </System>\n    </Classification>\n</BuildingInformation>\n'''.format (system = system)\n\naclib.PrintJson (aclib.RunTapirCommand ('ImportClassificationsXml', {\n    'xml': xml,\n    'systemConflictPolicy': 'skip',\n    'itemConflictPolicy': 'skip'\n}))\n\nsystems = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems']\naclib.RunTapirCommand ('DeleteClassificationSystems', {\n    'classificationSystemIds': [{'classificationSystemId': s['classificationSystemId']} for s in systems if s['name'] == system]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ImportClassificationsXml"
+  },
+  {
+   "name": "GetClassificationItemVisibility",
+   "group": "Classification Commands",
+   "version": "1.8.0",
+   "description": "Tells whether the given classification items are visible (offered) for the given elements, element tool defaults and attributes, such as building materials. Non-existing targets and classification items are reported as errors. Visibility does not tell whether the target is classified with the item, and an item can be visible even if its parent item is not.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "targets": {
+      "type": "array",
+      "description": "The elements, element tool defaults and attributes to check the classification items for.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "elementId": {
+           "$ref": "#/ElementId"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elementId"
+         ]
+        },
+        {
+         "type": "object",
+         "properties": {
+          "elementType": {
+           "$ref": "#/ElementType",
+           "description": "The tool default of this element type is checked."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elementType"
+         ]
+        },
+        {
+         "type": "object",
+         "properties": {
+          "attributeId": {
+           "$ref": "#/AttributeId"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "attributeId"
+         ]
+        }
+       ]
+      },
+      "minItems": 1
+     },
+     "classificationItemIds": {
+      "$ref": "#/ClassificationItemIds"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "targets",
+     "classificationItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "classificationItemVisibilities": {
+      "type": "array",
+      "description": "One entry per target, in the order of the input. A non-existing element or attribute, or an invalid element type, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ClassificationItemVisibilities"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationItemVisibilities"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetClassificationItemVisibilityComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Classification/GetClassificationItemVisibility.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Classification/GetClassificationItemVisibility.py",
+    "description": "Tells whether the first item of the first classification system is offered for the first Wall, the Wall tool default and the first Building Material with GetClassificationItemVisibility. Needs at least one Wall.",
+    "code": "\"\"\"Tells whether the first item of the first classification system is offered for the first Wall, the Wall tool default and the first Building Material with GetClassificationItemVisibility.\n\nNeeds at least one Wall.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nbuildingMaterial = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'BuildingMaterial'})['attributes'][0]\nsystemId = aclib.RunTapirCommand ('GetAllClassificationSystems')['classificationSystems'][0]['classificationSystemId']\nitem = aclib.RunCommand ('API.GetAllClassificationsInSystem', {'classificationSystemId': systemId})['classificationItems'][0]['classificationItem']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetClassificationItemVisibility', {\n    'targets': [\n        {'elementId': walls[0]['elementId']},\n        {'elementType': 'Wall'},\n        {'attributeId': buildingMaterial['attributeId']}\n    ],\n    'classificationItemIds': [{'classificationItemId': item['classificationItemId']}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetClassificationItemVisibility"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "AttributeIds": {
+   "type": "array",
+   "description": "A list of attributes.",
+   "items": {
+    "$ref": "#/AttributeIdArrayItem"
+   }
+  },
+  "AttributeIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeId"
+   ]
+  },
+  "AttributeId": {
+   "type": "object",
+   "description": "The identifier of an attribute.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "DryRun": {
+   "type": "boolean",
+   "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
+  },
+  "DryRunFlag": {
+   "type": "boolean",
+   "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
+   "enum": [
+    true
+   ]
+  },
+  "WouldDeleteExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldDelete": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldDelete"
+   ]
+  },
+  "DeletionExecutionResult": {
+   "type": "object",
+   "description": "The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldDeleteExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "DeletionExecutionResults": {
+   "type": "array",
+   "description": "A list of deletion results.",
+   "items": {
+    "$ref": "#/DeletionExecutionResult"
+   }
+  },
+  "WouldChange": {
+   "type": "object",
+   "description": "What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.",
+   "properties": {
+    "oldValue": {
+     "description": "The target's value now, before the change."
+    },
+    "newValue": {
+     "description": "The value a real run would write."
+    }
+   },
+   "additionalProperties": false
+  },
+  "WouldChangeExecutionResult": {
+   "type": "object",
+   "description": "The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    },
+    "wouldChange": {
+     "$ref": "#/WouldChange"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "wouldChange"
+   ]
+  },
+  "ChangeExecutionResult": {
+   "type": "object",
+   "description": "The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/WouldChangeExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ChangeExecutionResults": {
+   "type": "array",
+   "description": "A list of change results.",
+   "items": {
+    "$ref": "#/ChangeExecutionResult"
+   }
+  },
+  "ElementType": {
+   "type": "string",
+   "description": "The type of an element.",
+   "enum": [
+    "Wall",
+    "Column",
+    "Beam",
+    "Window",
+    "Door",
+    "Object",
+    "Lamp",
+    "Slab",
+    "Roof",
+    "Mesh",
+    "Dimension",
+    "RadialDimension",
+    "LevelDimension",
+    "AngleDimension",
+    "Text",
+    "Label",
+    "Zone",
+    "Hatch",
+    "Line",
+    "PolyLine",
+    "Arc",
+    "Circle",
+    "Spline",
+    "Hotspot",
+    "CutPlane",
+    "Camera",
+    "CamSet",
+    "Group",
+    "SectElem",
+    "Drawing",
+    "Picture",
+    "Detail",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Hotlink",
+    "CurtainWall",
+    "CurtainWallSegment",
+    "CurtainWallFrame",
+    "CurtainWallPanel",
+    "CurtainWallJunction",
+    "CurtainWallAccessory",
+    "Shell",
+    "Skylight",
+    "Morph",
+    "ChangeMarker",
+    "Stair",
+    "Riser",
+    "Tread",
+    "StairStructure",
+    "Railing",
+    "RailingToprail",
+    "RailingHandrail",
+    "RailingRail",
+    "RailingPost",
+    "RailingInnerPost",
+    "RailingBaluster",
+    "RailingPanel",
+    "RailingSegment",
+    "RailingNode",
+    "RailingBalusterSet",
+    "RailingPattern",
+    "RailingToprailEnd",
+    "RailingHandrailEnd",
+    "RailingRailEnd",
+    "RailingToprailConnection",
+    "RailingHandrailConnection",
+    "RailingRailConnection",
+    "RailingEndFinish",
+    "BeamSegment",
+    "ColumnSegment",
+    "Opening",
+    "Unknown"
+   ]
+  },
+  "ClassificationSystemConflictPolicy": {
+   "type": "string",
+   "enum": [
+    "merge",
+    "replace",
+    "skip"
+   ],
+   "description": "What to do with a system whose name already exists: merge, replace it, or keep the existing one."
+  },
+  "ClassificationItemConflictPolicy": {
+   "type": "string",
+   "enum": [
+    "replace",
+    "skip"
+   ],
+   "description": "What to do with an item whose id already exists in a merged system: replace it or keep the existing one."
+  },
+  "ClassificationItemUpdate": {
+   "type": "object",
+   "properties": {
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId"
+    },
+    "id": {
+     "type": "string",
+     "description": "The new code of the item, e.g. 21.10."
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationItemId"
+   ]
+  },
+  "ClassificationSystemUpdate": {
+   "type": "object",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "source": {
+     "type": "string"
+    },
+    "version": {
+     "type": "string"
+    },
+    "date": {
+     "$ref": "#/Date"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId"
+   ]
+  },
+  "ClassificationSystemId": {
+   "type": "object",
+   "description": "The identifier of a classification system.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ClassificationSystemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId"
+   ]
+  },
+  "ClassificationSystemIds": {
+   "type": "array",
+   "description": "A list of classification system identifiers.",
+   "items": {
+    "$ref": "#/ClassificationSystemIdArrayItem"
+   }
+  },
+  "Date": {
+   "type": "string",
+   "description": "A date in its string representation as defined in ISO 8601: YYYY-MM-DD.",
+   "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+  },
+  "ClassificationSystemDetails": {
+   "type": "object",
+   "description": "The details of a classification system.",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The display name of the classification system."
+    },
+    "description": {
+     "type": "string",
+     "description": "The description of the classification system."
+    },
+    "source": {
+     "type": "string",
+     "description": "The source of the classification system (e.g. URL to a classification system standard)."
+    },
+    "version": {
+     "type": "string",
+     "description": "The version of the classification system."
+    },
+    "date": {
+     "$ref": "#/Date",
+     "description": "The release date of the classification system's current version."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "description",
+    "source",
+    "version",
+    "date"
+   ]
+  },
+  "ClassificationItemDetails": {
+   "type": "object",
+   "description": "The details of a classification item.",
+   "properties": {
+    "id": {
+     "type": "string",
+     "description": "The unique identifier of the classification item as specified by the user."
+    },
+    "name": {
+     "type": "string",
+     "description": "The display name of the classification item."
+    },
+    "description": {
+     "type": "string",
+     "description": "The description of the classification item."
+    },
+    "children": {
+     "type": "array",
+     "description": "A list of classification items.",
+     "items": {
+      "$ref": "#/ClassificationItemDetails"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "id",
+    "name",
+    "description"
+   ]
+  },
+  "ClassificationSystemsWithItems": {
+   "type": "array",
+   "description": "Classification systems with items.",
+   "items": {
+    "type": "object",
+    "properties": {
+     "classificationSystem": {
+      "$ref": "#/ClassificationSystemDetails"
+     },
+     "classificationItems": {
+      "type": "array",
+      "description": "A list of classification items in the classification system.",
+      "items": {
+       "$ref": "#/ClassificationItemDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystem",
+     "classificationItems"
+    ]
+   }
+  },
+  "NewClassificationItems": {
+   "type": "array",
+   "description": "Classification systems with items.",
+   "items": {
+    "type": "object",
+    "properties": {
+     "classificationSystemId": {
+      "$ref": "#/ClassificationSystemId"
+     },
+     "classificationItemDetails": {
+      "$ref": "#/ClassificationItemDetails"
+     },
+     "parentClassificationItemId": {
+      "description": "The identifier of the parent classification item. If not specified, the new classification item will be created as a child of the root.",
+      "$ref": "#/ClassificationItemId"
+     },
+     "nextClassificationItemId": {
+      "description": "The identifier of the next sibling classification item. If not specified, the new classification item will be created as the last child of its parent.",
+      "$ref": "#/ClassificationItemId"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "classificationSystemId",
+     "classificationItemDetails"
+    ]
+   }
+  },
+  "ClassificationItemId": {
+   "type": "object",
+   "description": "The identifier of a classification item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "ClassificationItemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationItemId"
+   ]
+  },
+  "ClassificationItemIds": {
+   "type": "array",
+   "description": "A list of classification item identifiers.",
+   "items": {
+    "$ref": "#/ClassificationItemIdArrayItem"
+   }
+  },
+  "ClassificationId": {
+   "type": "object",
+   "description": "The element classification identifier.",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId"
+    },
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId",
+     "description": "The element's classification in the given system. If no value is specified here, the element is Unclassified in this system."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId"
+   ]
+  },
+  "ClassificationIdArrayItem": {
+   "type": "object",
+   "description": "A wrapper containing the classification identifier.",
+   "properties": {
+    "classificationId": {
+     "$ref": "#/ClassificationId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationId"
+   ]
+  },
+  "ClassificationIdOrError": {
+   "type": "object",
+   "description": "A classification identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ClassificationIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ClassificationSystemIdOrError": {
+   "type": "object",
+   "description": "A classification system identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ClassificationSystemIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ClassificationSystemIdsOrErrors": {
+   "type": "array",
+   "description": "A list of classification system identifiers or errors.",
+   "items": {
+    "$ref": "#/ClassificationSystemIdOrError"
+   }
+  },
+  "ClassificationItemIdOrError": {
+   "type": "object",
+   "description": "A classification item identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ClassificationItemIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ClassificationItemIdsOrErrors": {
+   "type": "array",
+   "description": "A list of classification item identifiers or errors.",
+   "items": {
+    "$ref": "#/ClassificationItemIdOrError"
+   }
+  },
+  "ClassificationIdsOrErrors": {
+   "type": "array",
+   "description": "A list of element classification identifiers or errors.",
+   "items": {
+    "$ref": "#/ClassificationIdOrError"
+   }
+  },
+  "ClassificationItemElements": {
+   "type": "object",
+   "properties": {
+    "elements": {
+     "$ref": "#/Elements"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elements"
+   ]
+  },
+  "AttributeClassifications": {
+   "type": "object",
+   "properties": {
+    "classificationIds": {
+     "type": "array",
+     "description": "The classification of the attribute in every classification system it is classified in.",
+     "items": {
+      "$ref": "#/ClassificationId"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationIds"
+   ]
+  },
+  "AttributeClassification": {
+   "type": "object",
+   "properties": {
+    "attributeId": {
+     "$ref": "#/AttributeId"
+    },
+    "classificationId": {
+     "$ref": "#/ClassificationId",
+     "description": "The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeId",
+    "classificationId"
+   ]
+  },
+  "ToolDefaultClassifications": {
+   "type": "object",
+   "properties": {
+    "classificationIds": {
+     "type": "array",
+     "description": "One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.",
+     "items": {
+      "$ref": "#/ClassificationId"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationIds"
+   ]
+  },
+  "ClassificationSystemSummary": {
+   "type": "object",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId"
+    },
+    "name": {
+     "type": "string",
+     "description": "The display name of the classification system."
+    },
+    "description": {
+     "type": "string",
+     "description": "The description of the classification system."
+    },
+    "source": {
+     "type": "string",
+     "description": "The source of the classification system (e.g. URL to a classification system standard)."
+    },
+    "version": {
+     "type": "string",
+     "description": "The version of the classification system."
+    },
+    "date": {
+     "$ref": "#/Date",
+     "description": "The release date of the classification system's current version."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId",
+    "name",
+    "description",
+    "source",
+    "version",
+    "date"
+   ]
+  },
+  "ClassificationItemParent": {
+   "type": "object",
+   "properties": {
+    "classificationSystemId": {
+     "$ref": "#/ClassificationSystemId",
+     "description": "The classification system the item belongs to."
+    },
+    "parentClassificationItemId": {
+     "$ref": "#/ClassificationItemId",
+     "description": "The parent item. Missing for a top level item of its system."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationSystemId"
+   ]
+  },
+  "ClassificationItemVisibilities": {
+   "type": "object",
+   "properties": {
+    "visibilities": {
+     "type": "array",
+     "description": "One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.",
+     "items": {
+      "type": "object",
+      "oneOf": [
+       {
+        "$ref": "#/ClassificationItemVisibility"
+       },
+       {
+        "$ref": "#/ErrorItem"
+       }
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "visibilities"
+   ]
+  },
+  "ClassificationItemVisibility": {
+   "type": "object",
+   "properties": {
+    "classificationItemId": {
+     "$ref": "#/ClassificationItemId"
+    },
+    "isVisible": {
+     "type": "boolean",
+     "description": "Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationItemId",
+    "isVisible"
+   ]
+  },
+  "ElementClassificationItemArray": {
+   "description": "A wrapper containing a list of element classification identifiers or errors.",
+   "properties": {
+    "classificationIds": {
+     "type": "array",
+     "description": "A list of element classification identifiers or errors, one per classification system.",
+     "items": {
+      "oneOf": [
+       {
+        "$ref": "#/ClassificationId"
+       },
+       {
+        "$ref": "#/ErrorItem"
+       }
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "classificationIds"
+   ]
+  },
+  "ElementClassificationOrError": {
+   "type": "object",
+   "description": "Element classification identifiers or errors.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementClassificationItemArray"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementClassificationsOrErrors": {
+   "type": "array",
+   "description": "A list of element classification identifiers or errors.",
+   "items": {
+    "$ref": "#/ElementClassificationOrError"
+   }
+  },
+  "ElementClassification": {
+   "type": "object",
+   "description": "The classification of an element.",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "classificationId": {
+     "$ref": "#/ClassificationId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "classificationId"
+   ]
+  },
+  "ElementClassifications": {
+   "type": "array",
+   "description": "A list of element classification identifiers.",
+   "items": {
+    "$ref": "#/ElementClassification"
+   }
+  },
+  "ElementDefaultClassification": {
+   "type": "object",
+   "properties": {
+    "elementType": {
+     "$ref": "#/ElementType"
+    },
+    "classificationId": {
+     "$ref": "#/ClassificationId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementType",
+    "classificationId"
+   ]
+  }
+ }
+}

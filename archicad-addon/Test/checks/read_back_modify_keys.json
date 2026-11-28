@@ -1,0 +1,797 @@
+{
+  "title": "Read back what the Modify commands write: GetDetailsOfElements (GetMEPElementDetails and GetMEPRoutingElements for MEP elements) reads each key with the same name and shape, and the value read is taken back unchanged by the Modify command (round trip)",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Column", "Picture" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "a column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          { "coordinates": { "x": 1000.0, "y": 1000.0, "z": 0.0 }, "floorIndex": 0, "height": 3.0, "circleBased": false, "isWidthAndHeightLinked": false, "width": 0.4, "depth": 0.3 }
+        ]
+      },
+      "save": { "col": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "column veneer A",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": { "type": "Finish", "thickness": 0.03 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "veneer written" }
+      ]
+    },
+    {
+      "id": "read veneer A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "save": { "colVeneer": "detailsOfElements[0].details.veneer" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Finish", "name": "veneer type read with the key ModifyColumns writes" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "veneer thickness read with the key ModifyColumns writes" },
+        { "path": "detailsOfElements[0].details.segments[0].veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "the segment has the same veneer" }
+      ]
+    },
+    {
+      "id": "column veneer B",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": { "type": "Other", "thickness": 0.05 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "other veneer written" }
+      ]
+    },
+    {
+      "id": "read veneer B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Other", "name": "veneer type changed" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.05, "tol": 0.0001, "name": "veneer thickness changed" }
+      ]
+    },
+    {
+      "id": "send veneer A back as it was read",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${col}" }, "veneer": "${colVeneer}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the veneer read is accepted" }
+      ]
+    },
+    {
+      "id": "veneer A again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${col}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.veneer.type", "eq": "Finish", "name": "round trip: veneer type" },
+        { "path": "detailsOfElements[0].details.veneer.thickness", "approx": 0.03, "tol": 0.0001, "name": "round trip: veneer thickness" }
+      ]
+    },
+    {
+      "id": "a wrapped text",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          { "coordinate": { "x": 1010.0, "y": 1000.0, "z": 0.0 }, "text": "A long line of text that does not fit into a narrow text box", "height": 2.5, "justification": "Left", "width": 30.0 }
+        ]
+      },
+      "save": { "txt": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text created" }
+      ]
+    },
+    {
+      "id": "read the text's position and width",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "save": { "txtPosition": "detailsOfElements[0].details.position", "txtWidth": "detailsOfElements[0].details.width" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 30.0, "tol": 0.01, "name": "wrap width read with the key CreateTexts and ModifyTexts write" },
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1010.0, "name": "position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "position y" }
+      ]
+    },
+    {
+      "id": "move the text by its position, word wrap off",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": { "textsWithDetails": [ { "elementId": { "guid": "${txt}" }, "position": { "x": 1012.0, "y": 1003.0 }, "width": 0.0 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "position (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "read the moved auto-width text",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1012.0, "name": "moved in x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1003.0, "name": "moved in y" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "position keeps the floor" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.0, "tol": 0.000001, "name": "width 0 for an auto-width text" },
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": true, "name": "word wrap off" }
+      ]
+    },
+    {
+      "id": "send the position and width back as they were read",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": { "textsWithDetails": [ { "elementId": { "guid": "${txt}" }, "position": "${txtPosition}", "width": "${txtWidth}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the position and width read are accepted" }
+      ]
+    },
+    {
+      "id": "the text as it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${txt}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1010.0, "name": "round trip: position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "round trip: position y" },
+        { "path": "detailsOfElements[0].details.width", "approx": 30.0, "tol": 0.01, "name": "round trip: wrap width" },
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "round trip: word wrap on" }
+      ]
+    },
+    {
+      "id": "a linear dimension with three witness points",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1020.0, "y": 999.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 1020.0, "y": 1000.0 } },
+              { "coordinate": { "x": 1023.0, "y": 1000.0 } },
+              { "coordinate": { "x": 1027.0, "y": 1000.0 } }
+            ],
+            "textHeight": 2.5
+          }
+        ]
+      },
+      "save": { "dim": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "witness point texts A",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${dim}" },
+            "witnessPointTexts": [
+              { "index": 1, "customText": "Tapir A" },
+              { "index": 2, "superscript": true, "textPosition": { "x": 1024.5, "y": 997.75 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "witness point texts written" }
+      ]
+    },
+    {
+      "id": "read witness point texts A",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "save": { "dimTexts": "detailsOfElements[0].details.witnessPointTexts" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts", "len": 3, "name": "one text per witness point, read with the key ModifyAssociativeDimensions writes" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].index", "eq": 0, "name": "first index" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].content", "eq": "MeasuredValue", "name": "first shows the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].textPosition", "exists": false, "name": "no position for a text at its automatic position" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "CustomText", "name": "second shows its custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "eq": "Tapir A", "name": "second custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": true, "name": "third superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.x", "approx": 1024.5, "tol": 0.001, "name": "third moved text, x" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.y", "approx": 997.75, "tol": 0.001, "name": "third moved text, y" }
+      ]
+    },
+    {
+      "id": "witness point texts B",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${dim}" },
+            "witnessPointTexts": [
+              { "index": 1, "content": "MeasuredValue" },
+              { "index": 2, "superscript": false, "resetTextPosition": true }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "other witness point texts written" }
+      ]
+    },
+    {
+      "id": "read witness point texts B",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "MeasuredValue", "name": "second back to the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "exists": false, "name": "a custom text not shown is not read" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": false, "name": "third not superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition", "exists": false, "name": "third back at its automatic position" }
+      ]
+    },
+    {
+      "id": "send the witness point texts back as they were read",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": { "dimensionsWithDetails": [ { "elementId": { "guid": "${dim}" }, "witnessPointTexts": "${dimTexts}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the texts read are accepted and applied" }
+      ]
+    },
+    {
+      "id": "witness point texts A again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dim}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].content", "eq": "MeasuredValue", "name": "round trip: first still the measured value" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[0].textPosition", "exists": false, "name": "round trip: first still at its automatic position" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].content", "eq": "CustomText", "name": "round trip: second custom text shown" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[1].customText", "eq": "Tapir A", "name": "round trip: second custom text" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].superscript", "eq": true, "name": "round trip: third superscript" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.x", "approx": 1024.5, "tol": 0.001, "name": "round trip: third text position x" },
+        { "path": "detailsOfElements[0].details.witnessPointTexts[2].textPosition.y", "approx": 997.75, "tol": 0.001, "name": "round trip: third text position y" }
+      ]
+    },
+    {
+      "id": "lower slab at 1.2",
+      "command": "CreateSlabs",
+      "params": { "slabsData": [ { "level": 1.2, "floorIndex": 0, "polygonCoordinates": [ { "x": 1030.0, "y": 1000.0 }, { "x": 1034.0, "y": 1000.0 }, { "x": 1034.0, "y": 1004.0 }, { "x": 1030.0, "y": 1004.0 } ] } ] },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "lower slab created" }
+      ]
+    },
+    {
+      "id": "upper slab at 2.4",
+      "command": "CreateSlabs",
+      "params": { "slabsData": [ { "level": 2.4, "floorIndex": 0, "polygonCoordinates": [ { "x": 1030.0, "y": 1000.0 }, { "x": 1034.0, "y": 1000.0 }, { "x": 1034.0, "y": 1004.0 }, { "x": 1030.0, "y": 1004.0 } ] } ] },
+      "save": { "s2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "upper slab created" }
+      ]
+    },
+    {
+      "id": "level dimension owned by the lower slab",
+      "command": "CreateLevelDimensions",
+      "params": { "levelDimensionsData": [ { "position": { "x": 1032.0, "y": 1002.0 }, "parentElementId": { "guid": "${s1}" } } ] },
+      "save": { "ld": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the owner",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "save": { "ldOwner": "detailsOfElements[0].details.ownerElementId", "ldStatic": "detailsOfElements[0].details.staticLevel" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s1}", "name": "owner is the lower slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": false, "name": "associative" }
+      ]
+    },
+    {
+      "id": "owner to the upper slab by ownerElementId",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": { "levelDimensionsWithDetails": [ { "elementId": { "guid": "${ld}" }, "ownerElementId": { "guid": "${s2}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "ownerElementId (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "owned by the upper slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s2}", "name": "owner is the upper slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": false, "name": "still associative" },
+        { "path": "detailsOfElements[0].details.level", "approx": 2.4, "tol": 0.5, "name": "shows about the upper slab's height" }
+      ]
+    },
+    {
+      "id": "send the owner and the Static checkbox back as they were read",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": { "levelDimensionsWithDetails": [ { "elementId": { "guid": "${ld}" }, "ownerElementId": "${ldOwner}", "staticLevel": "${ldStatic}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the owner and staticLevel read are accepted together" }
+      ]
+    },
+    {
+      "id": "owned by the lower slab again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ld}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${s1}", "name": "round trip: owner is the lower slab" },
+        { "path": "detailsOfElements[0].details.staticLevel", "eq": false, "name": "round trip: still associative" },
+        { "path": "detailsOfElements[0].details.level", "approx": 1.2, "tol": 0.5, "name": "round trip: shows about the lower slab's height" }
+      ]
+    },
+    {
+      "id": "a picture anchored at its center",
+      "command": "CreatePictures",
+      "params": {
+        "picturesData": [
+          { "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "name": "CHK-READ-BACK-PICTURE", "position": { "x": 1040.0, "y": 1000.0 }, "anchorPoint": "Center", "width": 4.0, "floorInd": 0 }
+        ]
+      },
+      "save": { "pic": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "picture created" }
+      ]
+    },
+    {
+      "id": "read the picture's position",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic}" } } ] },
+      "save": { "picPosition": "detailsOfElements[0].details.position" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1040.0, "name": "position read with the key CreatePictures and ModifyPictures write, x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "position y" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 1038.0, "name": "the position is the center of the box" }
+      ]
+    },
+    {
+      "id": "move the picture",
+      "command": "ModifyPictures",
+      "params": { "picturesWithDetails": [ { "elementId": { "guid": "${pic}" }, "position": { "x": 1045.0, "y": 1003.0 } } ] },
+      "save": { "pic2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "picture moved (replaced)" }
+      ]
+    },
+    {
+      "id": "read the moved picture",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1045.0, "name": "moved position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1003.0, "name": "moved position y" }
+      ]
+    },
+    {
+      "id": "send the position back as it was read",
+      "command": "ModifyPictures",
+      "params": { "picturesWithDetails": [ { "elementId": { "guid": "${pic2}" }, "position": "${picPosition}" } ] },
+      "save": { "pic3": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "the position read is accepted" }
+      ]
+    },
+    {
+      "id": "the picture where it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pic3}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 1040.0, "name": "round trip: position x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 1000.0, "name": "round trip: position y" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 1038.0, "name": "round trip: box where it was, xMin" },
+        { "path": "detailsOfElements[0].details.box.yMin", "approx": 999.0, "name": "round trip: box where it was, yMin" }
+      ]
+    },
+    {
+      "id": "a multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          { "level": 0.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic", "eavesOverhang": 0.3, "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5 } ], "polygonCoordinates": [ { "x": 1050.0, "y": 1000.0 }, { "x": 1058.0, "y": 1000.0 }, { "x": 1058.0, "y": 1006.0 }, { "x": 1050.0, "y": 1006.0 } ] }
+        ]
+      },
+      "save": { "roof": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "roof created" }
+      ]
+    },
+    {
+      "id": "two roof levels",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": [ { "levelHeight": 1.0, "levelAngle": 0.7 }, { "levelHeight": 10.0, "levelAngle": 0.3 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "levels written" }
+      ]
+    },
+    {
+      "id": "read the two levels",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "save": { "roofLevels": "detailsOfElements[0].details.levels" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 2, "name": "two levels" },
+        { "path": "detailsOfElements[0].details.levels[0].height", "approx": 1.0, "name": "first level height" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.7, "name": "first level angle" },
+        { "path": "detailsOfElements[0].details.levels[1].angle", "approx": 0.3, "name": "second level angle" }
+      ]
+    },
+    {
+      "id": "one roof level",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": [ { "levelHeight": 10.0, "levelAngle": 0.4 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "one level written" }
+      ]
+    },
+    {
+      "id": "read the one level",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 1, "name": "one level" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.4, "name": "its angle" }
+      ]
+    },
+    {
+      "id": "send the two levels back as they were read",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": { "roofsWithDetails": [ { "elementId": { "guid": "${roof}" }, "levels": "${roofLevels}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "levels with height and angle (the keys GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "the two levels again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${roof}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.levels", "len": 2, "name": "round trip: two levels" },
+        { "path": "detailsOfElements[0].details.levels[0].height", "approx": 1.0, "name": "round trip: first level height" },
+        { "path": "detailsOfElements[0].details.levels[0].angle", "approx": 0.7, "name": "round trip: first level angle" },
+        { "path": "detailsOfElements[0].details.levels[1].height", "approx": 10.0, "name": "round trip: second level height" },
+        { "path": "detailsOfElements[0].details.levels[1].angle", "approx": 0.3, "name": "round trip: second level angle" }
+      ]
+    },
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "an own object library part",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "Tapir Check Read Back Object", "parentId": "${objectParent}", "type": "Object", "path": "TapirCheckReadBack/Tapir Check Read Back Object.gsm", "a": 1.0, "b": 0.5, "script2D": "RECT2 0, 0, A, B", "script3D": "BLOCK A, B, 0.5" }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" }
+      ]
+    },
+    {
+      "id": "an object",
+      "command": "CreateObjects",
+      "params": { "objectsData": [ { "libraryPartName": "Tapir Check Read Back Object", "coordinates": { "x": 1060.0, "y": 1000.0, "z": 0.0 } } ] },
+      "save": { "obj": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object created" }
+      ]
+    },
+    {
+      "id": "read the object's origin",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "save": { "objOrigin": "detailsOfElements[0].details.origin" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1060.0, "name": "origin x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1000.0, "name": "origin y" }
+      ]
+    },
+    {
+      "id": "move the object by its origin",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": { "objectsWithDetails": [ { "elementId": { "guid": "${obj}" }, "origin": { "x": 1065.0, "y": 1003.0, "z": 0.0 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "origin (the key GetDetailsOfElements reads) accepted" }
+      ]
+    },
+    {
+      "id": "read the moved object",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1065.0, "name": "moved in x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1003.0, "name": "moved in y" },
+        { "path": "detailsOfElements[0].details.origin.z", "approx": 0.0, "name": "z kept" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" }
+      ]
+    },
+    {
+      "id": "send the origin back as it was read",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": { "objectsWithDetails": [ { "elementId": { "guid": "${obj}" }, "origin": "${objOrigin}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the origin read is accepted" }
+      ]
+    },
+    {
+      "id": "the object where it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${obj}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 1060.0, "name": "round trip: origin x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 1000.0, "name": "round trip: origin y" }
+      ]
+    },
+    {
+      "id": "an air terminal",
+      "command": "CreateMEPElements",
+      "params": { "elementsData": [ { "type": "Terminal", "domain": "Ventilation", "position": { "x": 1070.0, "y": 1000.0, "z": 2.5 } } ] },
+      "save": { "term": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "terminal created" }
+      ]
+    },
+    {
+      "id": "read the placement of the terminal",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "save": {
+        "termAnchor": "elementDetails[0].anchorPoint",
+        "termOrientation": "elementDetails[0].orientation",
+        "termLibrary": "elementDetails[0].libraryPartId",
+        "termLibraryGuid": "elementDetails[0].libraryPartId.guid",
+        "termX": "elementDetails[0].anchorPoint.x",
+        "termY": "elementDetails[0].anchorPoint.y",
+        "termZ": "elementDetails[0].anchorPoint.z"
+      },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": 1070.0, "tol": 0.5, "name": "anchor point read with the key ModifyMEPElements writes" },
+        { "path": "elementDetails[0].orientation.direction", "exists": true, "name": "orientation read" },
+        { "path": "elementDetails[0].orientation.rotation", "exists": true, "name": "orientation rotation read" },
+        { "path": "elementDetails[0].libraryPartId.guid", "exists": true, "name": "library part read" }
+      ]
+    },
+    {
+      "id": "move the terminal",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" }, "anchorPoint": { "x": 1072.0, "y": 1003.0, "z": 2.0 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "terminal moved" }
+      ]
+    },
+    {
+      "id": "read the moved terminal",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": 1072.0, "name": "moved anchor point x" },
+        { "path": "elementDetails[0].anchorPoint.y", "approx": 1003.0, "name": "moved anchor point y" },
+        { "path": "elementDetails[0].anchorPoint.z", "approx": 2.0, "name": "moved anchor point z" }
+      ]
+    },
+    {
+      "id": "send the placement back as it was read",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" }, "anchorPoint": "${termAnchor}", "orientation": "${termOrientation}", "libraryPartId": "${termLibrary}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the anchor point, orientation and library part read are accepted" }
+      ]
+    },
+    {
+      "id": "the terminal where it was",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${term}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].anchorPoint.x", "approx": "${termX}", "name": "round trip: anchor point x" },
+        { "path": "elementDetails[0].anchorPoint.y", "approx": "${termY}", "name": "round trip: anchor point y" },
+        { "path": "elementDetails[0].anchorPoint.z", "approx": "${termZ}", "name": "round trip: anchor point z" },
+        { "path": "elementDetails[0].libraryPartId.guid", "eq": "${termLibraryGuid}", "name": "round trip: same library part" }
+      ]
+    },
+    {
+      "id": "a flexible duct",
+      "command": "CreateMEPFlexibleSegments",
+      "params": {
+        "flexibleSegmentsData": [
+          {
+            "domain": "Ventilation",
+            "controlPoints": [ { "x": 1080.0, "y": 1000.0, "z": 3.0 }, { "x": 1081.0, "y": 1000.5, "z": 3.0 }, { "x": 1082.0, "y": 1000.0, "z": 3.0 } ],
+            "startOrientation": { "direction": { "x": 1.0, "y": 0.0, "z": 0.0 }, "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 } },
+            "endOrientation": { "direction": { "x": 1.0, "y": 0.0, "z": 0.0 }, "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 } }
+          }
+        ]
+      },
+      "save": { "flex": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "flexible segment created" }
+      ]
+    },
+    {
+      "id": "the connection shape of the flexible duct",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].shape", "exists": true, "name": "connection shape (a Circular duct has one diameter for width and height)" }
+      ]
+    },
+    {
+      "id": "read the size of the flexible duct as placed",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "save": { "flexWidth": "elementDetails[0].width", "flexHeight": "elementDetails[0].height" },
+      "expect": [
+        { "path": "elementDetails[0].width", "gt": 0, "name": "width read with the key ModifyMEPElements writes" },
+        { "path": "elementDetails[0].height", "gt": 0, "name": "height read with the key ModifyMEPElements writes" }
+      ]
+    },
+    {
+      "id": "flexible duct width alone",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": 0.3 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "width written" }
+      ]
+    },
+    {
+      "id": "read the width written alone",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].width", "approx": 0.3, "name": "the width read is the one written" }
+      ]
+    },
+    {
+      "id": "flexible duct height alone",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "height": 0.25 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height written" }
+      ]
+    },
+    {
+      "id": "read the height written alone",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].height", "approx": 0.25, "name": "the height read is the one written" }
+      ]
+    },
+    {
+      "id": "send the size back as it was read",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" }, "width": "${flexWidth}", "height": "${flexHeight}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the size read is accepted" }
+      ]
+    },
+    {
+      "id": "the flexible duct size as placed",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${flex}" } } ] },
+      "expect": [
+        { "path": "elementDetails[0].width", "approx": "${flexWidth}", "name": "round trip: width" },
+        { "path": "elementDetails[0].height", "approx": "${flexHeight}", "name": "round trip: height" }
+      ]
+    },
+    {
+      "id": "a pipe route with three nodes",
+      "command": "CreateMEPRoutingElements",
+      "params": { "routingElementsData": [ { "domain": "Piping", "nodeCoordinates": [ { "x": 1090.0, "y": 1000.0, "z": 3.0 }, { "x": 1094.0, "y": 1000.0, "z": 3.0 }, { "x": 1094.0, "y": 1003.0, "z": 3.0 } ] } ] },
+      "save": { "route": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "route created" }
+      ]
+    },
+    {
+      "id": "read the node positions",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "save": { "routeNodes": "routingElements[0].nodePositions" },
+      "expect": [
+        { "path": "routingElements[0].nodePositions", "len": 3, "name": "node positions read with the key ModifyMEPRoutingElements writes" },
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1094.0, "name": "middle node x" },
+        { "path": "routingElements[0].nodePositions[2].y", "approx": 1003.0, "name": "end node y" }
+      ]
+    },
+    {
+      "id": "move the middle and end nodes",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": { "routingElementsData": [ { "elementId": { "guid": "${route}" }, "nodePositions": [ { "x": 1090.0, "y": 1000.0, "z": 3.0 }, { "x": 1095.0, "y": 1000.0, "z": 3.0 }, { "x": 1095.0, "y": 1003.0, "z": 3.0 } ] } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "nodes moved" }
+      ]
+    },
+    {
+      "id": "read the moved nodes",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1095.0, "name": "middle node moved" },
+        { "path": "routingElements[0].nodePositions[2].x", "approx": 1095.0, "name": "end node moved" }
+      ]
+    },
+    {
+      "id": "send the node positions back as they were read",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": { "routingElementsData": [ { "elementId": { "guid": "${route}" }, "nodePositions": "${routeNodes}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the node positions read are accepted" }
+      ]
+    },
+    {
+      "id": "the nodes where they were",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${route}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].nodePositions", "len": 3, "name": "round trip: three nodes" },
+        { "path": "routingElements[0].nodePositions[1].x", "approx": 1094.0, "name": "round trip: middle node x" },
+        { "path": "routingElements[0].nodePositions[2].x", "approx": 1094.0, "name": "round trip: end node x" },
+        { "path": "routingElements[0].nodePositions[2].y", "approx": 1003.0, "name": "round trip: end node y" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteEmbeddedLibraryItems", "params": { "embeddedLibraryItems": [ { "path": "TapirCheckReadBack" } ] } }
+  ]
+}

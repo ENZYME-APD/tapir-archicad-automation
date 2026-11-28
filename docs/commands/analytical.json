@@ -1,0 +1,3832 @@
+{
+ "version": 1,
+ "groups": [
+  "Analytical Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetCurrentAnalyticalModel",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "description": "Retrieves the Structural Analytical Model created for the current view. Available from Archicad 27.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model of the current view."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "analyticalModelId"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetCurrentAnalyticalModelComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetCurrentAnalyticalModel.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetCurrentAnalyticalModel.py",
+    "description": "Prints the id of the Structural Analytical Model of the current view with GetCurrentAnalyticalModel. Requires Archicad 27 or later.",
+    "code": "\"\"\"Prints the id of the Structural Analytical Model of the current view with GetCurrentAnalyticalModel.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetCurrentAnalyticalModel', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCurrentAnalyticalModel"
+  },
+  {
+   "name": "UpdateAnalyticalModel",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "description": "Triggers an update of the given Structural Analytical Model, or of the model of the current view when no model is given. Available from Archicad 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model to update. The model of the current view is updated when it is omitted."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "UpdateAnalyticalModelComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/UpdateAnalyticalModel.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/UpdateAnalyticalModel.py",
+    "description": "Updates the Structural Analytical Model of the current view with UpdateAnalyticalModel. Leave out 'analyticalModelId' to update the model of the current view. Requires Archicad 27 or later.",
+    "code": "\"\"\"Updates the Structural Analytical Model of the current view with UpdateAnalyticalModel.\n\nLeave out 'analyticalModelId' to update the model of the current view. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nanalyticalModelId = aclib.RunTapirCommand ('GetCurrentAnalyticalModel', {})['analyticalModelId']\n\naclib.PrintJson (aclib.RunTapirCommand ('UpdateAnalyticalModel', {\n    'analyticalModelId': analyticalModelId\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#UpdateAnalyticalModel"
+  },
+  {
+   "name": "SetAnalyticalGenerationSettingsToNoRule",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "description": "Sets the generation settings of the current Structural Analytical Model to no rules. Available from Archicad 27.",
+   "inputSchema": null,
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetAnalyticalGenerationSettingsToNoRuleComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/SetAnalyticalGenerationSettingsToNoRule.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/SetAnalyticalGenerationSettingsToNoRule.py",
+    "description": "Sets the generation settings of the current Structural Analytical Model to no rules with SetAnalyticalGenerationSettingsToNoRule. Changes the project's analytical model generation settings and does not restore them. Requires Archicad 27 or later.",
+    "code": "\"\"\"Sets the generation settings of the current Structural Analytical Model to no rules with SetAnalyticalGenerationSettingsToNoRule.\n\nChanges the project's analytical model generation settings and does not restore them. Requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalGenerationSettingsToNoRule', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetAnalyticalGenerationSettingsToNoRule"
+  },
+  {
+   "name": "GetAnalyticalModelCheckTypeId",
+   "group": "Analytical Commands",
+   "version": "1.7.3",
+   "description": "Retrieves the type identifier of the Structural Analytical Model check. Available from Archicad 29.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "modelCheckTypeId": {
+      "$ref": "#/GuidId",
+      "description": "The type identifier of the Structural Analytical Model check."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "modelCheckTypeId"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalModelCheckTypeIdComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalModelCheckTypeId.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalModelCheckTypeId.py",
+    "description": "Prints the type id of the Structural Analytical Model check with GetAnalyticalModelCheckTypeId. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints the type id of the Structural Analytical Model check with GetAnalyticalModelCheckTypeId.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalModelCheckTypeId', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalModelCheckTypeId"
+  },
+  {
+   "name": "GetAnalyticalModelVariation",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the variation of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27). The fields of the variation depend on the Archicad version.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; before Archicad 27 it is required."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "variation": {
+      "$ref": "#/AnalyticalModelVariation"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "variation"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalModelVariationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalModelVariation.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalModelVariation.py",
+    "description": "Prints the variation of the Structural Analytical Model of the current view with GetAnalyticalModelVariation. Without 'analyticalModelId' the model of the current view is used, from Archicad 27; before that pass the model.",
+    "code": "\"\"\"Prints the variation of the Structural Analytical Model of the current view with GetAnalyticalModelVariation.\n\nWithout 'analyticalModelId' the model of the current view is used, from Archicad 27; before that pass the model.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalModelVariation', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalModelVariation"
+  },
+  {
+   "name": "GetAnalyticalModel",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the Structural Analytical Model of the given variation, as returned by GetAnalyticalModelVariation.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "variation": {
+      "$ref": "#/AnalyticalModelVariation"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "variation"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model of the variation."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "analyticalModelId"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalModelComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalModel.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalModel.py",
+    "description": "Gets the Structural Analytical Model of the variation of the current view with GetAnalyticalModel. Reading the variation of the current view requires Archicad 27 or later.",
+    "code": "\"\"\"Gets the Structural Analytical Model of the variation of the current view with GetAnalyticalModel.\n\nReading the variation of the current view requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nvariation = aclib.RunTapirCommand ('GetAnalyticalModelVariation', {})['variation']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalModel', {\n    'variation': variation\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalModel"
+  },
+  {
+   "name": "GetAnalyticalVisibilitySettings",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the visibility settings of the Structural Analytical Model. Available from Archicad 26.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "visibilitySettings": {
+      "$ref": "#/AnalyticalVisibilitySettings",
+      "description": "The Structural Analytical Model visibility settings, with every field."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "visibilitySettings"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalVisibilitySettingsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalVisibilitySettings.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalVisibilitySettings.py",
+    "description": "Prints the visibility settings of the Structural Analytical Model with GetAnalyticalVisibilitySettings. Requires Archicad 26 or later.",
+    "code": "\"\"\"Prints the visibility settings of the Structural Analytical Model with GetAnalyticalVisibilitySettings.\n\nRequires Archicad 26 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalVisibilitySettings"
+  },
+  {
+   "name": "SetAnalyticalVisibilitySettings",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Changes the given fields of the Structural Analytical Model visibility settings; the others keep their value. The settings are read back, and a given field Archicad did not keep is reported as an error with the value it kept. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "visibilitySettings": {
+      "$ref": "#/AnalyticalVisibilitySettings",
+      "description": "The fields to change. The fields left out keep their current value."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "visibilitySettings"
+    ]
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetAnalyticalVisibilitySettingsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/SetAnalyticalVisibilitySettings.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/SetAnalyticalVisibilitySettings.py",
+    "description": "Toggles whether the nodes of the Structural Analytical Model are shown with SetAnalyticalVisibilitySettings. Only the given fields change. Reads the setting back and restores it. Requires Archicad 26 or later.",
+    "code": "\"\"\"Toggles whether the nodes of the Structural Analytical Model are shown with SetAnalyticalVisibilitySettings.\n\nOnly the given fields change. Reads the setting back and restores it. Requires Archicad 26 or later.\n\"\"\"\nimport aclib\n\nsettings = aclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {})['visibilitySettings']\n\naclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {\n    'visibilitySettings': {'areNodesVisible': not settings['areNodesVisible']}\n}))\naclib.RunTapirCommand ('GetAnalyticalVisibilitySettings', {})\n\naclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalVisibilitySettings', {\n    'visibilitySettings': {'areNodesVisible': settings['areNodesVisible']}\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetAnalyticalVisibilitySettings"
+  },
+  {
+   "name": "GetAnalyticalMemberTypesOfElements",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the analytical member type (Beam, Column, Roof, Slab, Wall or Unknown) of the given elements from the Complementary Project, the structural analysis project exchanged with Archicad. Without a Complementary Project every element reads Unknown. An element that does not exist gets an error item.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "memberTypesOfElements": {
+      "type": "array",
+      "description": "The analytical member type of each element, in the order of the input, as the Complementary Project (the structural analysis project exchanged with Archicad) gives it: Unknown for every element when the project has none. An element that does not exist, or whose type cannot be got, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "memberType": {
+           "$ref": "#/AnalyticalMemberType"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "memberType"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "memberTypesOfElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalMemberTypesOfElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalMemberTypesOfElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalMemberTypesOfElements.py",
+    "description": "Prints the analytical member type of the first walls, beams and columns of the project with GetAnalyticalMemberTypesOfElements. Needs at least one wall, beam or column.",
+    "code": "\"\"\"Prints the analytical member type of the first walls, beams and columns of the project with GetAnalyticalMemberTypesOfElements.\n\nNeeds at least one wall, beam or column.\n\"\"\"\nimport aclib\n\nelements = []\nfor elementType in ['Wall', 'Beam', 'Column']:\n    elements += aclib.RunCommand ('API.GetElementsByType', {'elementType': elementType})['elements'][:2]\nif not elements:\n    raise SystemExit ('No wall, beam or column in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberTypesOfElements', {\n    'elements': elements\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalMemberTypesOfElements"
+  },
+  {
+   "name": "GetAnalyticalLoadGroups",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the structural analysis load groups of the project, or the ones given by their ids, with all their fields.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroupIds": {
+      "type": "array",
+      "description": "The load groups to read, answered in this order, an error object for one that does not exist. Every load group of the project is listed when it is omitted.",
+      "items": {
+       "$ref": "#/AnalyticalLoadGroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroups": {
+      "type": "array",
+      "description": "The load groups of the project, or the ones given in loadGroupIds. A load group that cannot be read is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadGroup"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadGroups"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalLoadGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalLoadGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalLoadGroups.py",
+    "description": "Prints the structural analysis load groups of the project with GetAnalyticalLoadGroups.",
+    "code": "\"\"\"Prints the structural analysis load groups of the project with GetAnalyticalLoadGroups.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoadGroups', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalLoadGroups"
+  },
+  {
+   "name": "GetAnalyticalLoadCases",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the structural analysis load cases of the given load group, or of the project when no load group is given, with all their fields.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroupId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the load group to list the load cases of. Every load case of the project is listed when it is omitted."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCases": {
+      "type": "array",
+      "description": "The load cases. A load case that cannot be read is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadCase"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCases"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalLoadCasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalLoadCases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalLoadCases.py",
+    "description": "Prints the structural analysis load cases of the first load group of the project with GetAnalyticalLoadCases. Leave out 'loadGroupId' to get every load case of the project. Needs at least one load group.",
+    "code": "\"\"\"Prints the structural analysis load cases of the first load group of the project with GetAnalyticalLoadCases.\n\nLeave out 'loadGroupId' to get every load case of the project. Needs at least one load group.\n\"\"\"\nimport aclib\n\nloadGroups = [g for g in aclib.RunTapirCommand ('GetAnalyticalLoadGroups', {})['loadGroups'] if 'error' not in g]\nif not loadGroups:\n    raise SystemExit ('No load group in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoadCases', {\n    'loadGroupId': loadGroups[0]['loadGroupId']\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalLoadCases"
+  },
+  {
+   "name": "GetAnalyticalLoadCombinations",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the structural analysis load combinations of the project, or the ones given by their ids, with all their fields and load factors.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinationIds": {
+      "type": "array",
+      "description": "The load combinations to read, answered in this order, an error object for one that does not exist. Every load combination of the project is listed when it is omitted.",
+      "items": {
+       "$ref": "#/AnalyticalLoadCombinationIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinations": {
+      "type": "array",
+      "description": "The load combinations of the project, or the ones given in loadCombinationIds. A load combination that cannot be read is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadCombination"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCombinations"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalLoadCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalLoadCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalLoadCombinations.py",
+    "description": "Prints the structural analysis load combinations of the project and their load factors with GetAnalyticalLoadCombinations.",
+    "code": "\"\"\"Prints the structural analysis load combinations of the project and their load factors with GetAnalyticalLoadCombinations.\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoadCombinations', {}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalLoadCombinations"
+  },
+  {
+   "name": "CreateAnalyticalLoadGroups",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates structural analysis load groups in one undo step and returns their identifiers.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroups": {
+      "type": "array",
+      "description": "The load groups to create.",
+      "items": {
+       "$ref": "#/AnalyticalLoadGroupData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadGroups"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroupIds": {
+      "type": "array",
+      "description": "The identifiers of the new load groups, in the order of the input. A load group that could not be created is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadGroupIdArrayItem"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadGroupIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalLoadGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalLoadGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLoadGroups.py",
+    "description": "Creates a permanent and a variable structural analysis load group with CreateAnalyticalLoadGroups. Every run adds two new load groups.",
+    "code": "\"\"\"Creates a permanent and a variable structural analysis load group with CreateAnalyticalLoadGroups.\n\nEvery run adds two new load groups.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {\n    'loadGroups': [\n        {'name': 'Tapir Permanent', 'groupType': 'PermanentLoad', 'relation': 'StandardRelation'},\n        {'name': 'Tapir Variable', 'groupType': 'VariableLoad', 'relation': 'StandardRelation'}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalLoadGroups"
+  },
+  {
+   "name": "CreateAnalyticalLoadCases",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates structural analysis load cases in the given load groups in one undo step and returns their identifiers.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCases": {
+      "type": "array",
+      "description": "The load cases to create.",
+      "items": {
+       "$ref": "#/AnalyticalLoadCaseData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCases"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCaseIds": {
+      "type": "array",
+      "description": "The identifiers of the new load cases, in the order of the input. A load case that could not be created is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadCaseIdArrayItem"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCaseIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalLoadCasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalLoadCases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLoadCases.py",
+    "description": "Creates a new load group with a dead load case using CreateAnalyticalLoadCases. Every run adds a new load group and load case.",
+    "code": "\"\"\"Creates a new load group with a dead load case using CreateAnalyticalLoadCases.\n\nEvery run adds a new load group and load case.\n\"\"\"\nimport aclib\n\nloadGroupId = aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {\n    'loadGroups': [{'name': 'Tapir Permanent', 'groupType': 'PermanentLoad', 'relation': 'StandardRelation'}]\n})['loadGroupIds'][0]['loadGroupId']\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadCases', {\n    'loadCases': [{\n        'name': 'Tapir Dead Load',\n        'description': 'Created by Tapir',\n        'actionType': 'PermanentAction',\n        'loadGroupId': loadGroupId,\n        'loadType': 'StaticLoad',\n        'duration': 'LongDuration'\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalLoadCases"
+  },
+  {
+   "name": "CreateAnalyticalLoadCombinations",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates structural analysis load combinations, optionally with their load factors, in one undo step and returns their identifiers. The combination type is available from Archicad 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinations": {
+      "type": "array",
+      "description": "The load combinations to create.",
+      "items": {
+       "$ref": "#/AnalyticalLoadCombinationData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinationIds": {
+      "type": "array",
+      "description": "The identifiers of the new load combinations, in the order of the input. A load combination that could not be created is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLoadCombinationIdArrayItem"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCombinationIds"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalLoadCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalLoadCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLoadCombinations.py",
+    "description": "Creates an ultimate limit state load combination of the first load case of the project with CreateAnalyticalLoadCombinations. Needs at least one load case. Every run adds a new load combination. The combination type requires Archicad 27 or later.",
+    "code": "\"\"\"Creates an ultimate limit state load combination of the first load case of the project with CreateAnalyticalLoadCombinations.\n\nNeeds at least one load case. Every run adds a new load combination. The combination type requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nloadCases = [c for c in aclib.RunTapirCommand ('GetAnalyticalLoadCases', {})['loadCases'] if 'error' not in c]\nif not loadCases:\n    raise SystemExit ('No load case in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {\n    'loadCombinations': [{\n        'name': 'Tapir ULS',\n        'category': 'ULS',\n        'type': 'Linear',\n        'loadFactors': [{'loadCaseId': loadCases[0]['loadCaseId'], 'factor': 1.35, 'multiplier': 1.0}]\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalLoadCombinations"
+  },
+  {
+   "name": "DeleteAnalyticalLoadGroups",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Deletes the given structural analysis load groups in one undo step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadGroupIds": {
+      "type": "array",
+      "description": "The load groups to delete.",
+      "items": {
+       "$ref": "#/AnalyticalLoadGroupIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadGroupIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteAnalyticalLoadGroupsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/DeleteAnalyticalLoadGroups.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/DeleteAnalyticalLoadGroups.py",
+    "description": "Creates a structural analysis load group and deletes it again with DeleteAnalyticalLoadGroups.",
+    "code": "\"\"\"Creates a structural analysis load group and deletes it again with DeleteAnalyticalLoadGroups.\"\"\"\nimport aclib\n\nloadGroupId = aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {\n    'loadGroups': [{'name': 'Tapir Temporary', 'groupType': 'VariableLoad', 'relation': 'StandardRelation'}]\n})['loadGroupIds'][0]['loadGroupId']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteAnalyticalLoadGroups', {\n    'loadGroupIds': [{'loadGroupId': loadGroupId}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteAnalyticalLoadGroups"
+  },
+  {
+   "name": "DeleteAnalyticalLoadCases",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Deletes the given structural analysis load cases in one undo step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCaseIds": {
+      "type": "array",
+      "description": "The load cases to delete.",
+      "items": {
+       "$ref": "#/AnalyticalLoadCaseIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCaseIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteAnalyticalLoadCasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/DeleteAnalyticalLoadCases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/DeleteAnalyticalLoadCases.py",
+    "description": "Creates a load group with a load case and deletes both again, the load case with DeleteAnalyticalLoadCases.",
+    "code": "\"\"\"Creates a load group with a load case and deletes both again, the load case with DeleteAnalyticalLoadCases.\"\"\"\nimport aclib\n\nloadGroupId = aclib.RunTapirCommand ('CreateAnalyticalLoadGroups', {\n    'loadGroups': [{'name': 'Tapir Temporary', 'groupType': 'VariableLoad', 'relation': 'StandardRelation'}]\n})['loadGroupIds'][0]['loadGroupId']\nloadCaseId = aclib.RunTapirCommand ('CreateAnalyticalLoadCases', {\n    'loadCases': [{'name': 'Tapir Snow', 'actionType': 'VariableAction', 'loadGroupId': loadGroupId, 'loadType': 'SnowLoad'}]\n})['loadCaseIds'][0]['loadCaseId']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteAnalyticalLoadCases', {\n    'loadCaseIds': [{'loadCaseId': loadCaseId}]\n}))\n\naclib.RunTapirCommand ('DeleteAnalyticalLoadGroups', {'loadGroupIds': [{'loadGroupId': loadGroupId}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteAnalyticalLoadCases"
+  },
+  {
+   "name": "DeleteAnalyticalLoadCombinations",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Deletes the given structural analysis load combinations in one undo step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinationIds": {
+      "type": "array",
+      "description": "The load combinations to delete.",
+      "items": {
+       "$ref": "#/AnalyticalLoadCombinationIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCombinationIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteAnalyticalLoadCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/DeleteAnalyticalLoadCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/DeleteAnalyticalLoadCombinations.py",
+    "description": "Creates a structural analysis load combination and deletes it again with DeleteAnalyticalLoadCombinations.",
+    "code": "\"\"\"Creates a structural analysis load combination and deletes it again with DeleteAnalyticalLoadCombinations.\"\"\"\nimport aclib\n\nloadCombinationId = aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {\n    'loadCombinations': [{'name': 'Tapir Temporary', 'category': 'SLS'}]\n})['loadCombinationIds'][0]['loadCombinationId']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteAnalyticalLoadCombinations', {\n    'loadCombinationIds': [{'loadCombinationId': loadCombinationId}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteAnalyticalLoadCombinations"
+  },
+  {
+   "name": "AddLoadCasesToLoadCombination",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Adds load cases with their factors to the given structural analysis load combination in one undo step.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loadCombinationId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the load combination to add the load cases to."
+     },
+     "loadFactors": {
+      "type": "array",
+      "description": "The load cases to add, with their factors.",
+      "items": {
+       "$ref": "#/AnalyticalLoadFactor"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loadCombinationId",
+     "loadFactors"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "AddLoadCasesToLoadCombinationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/AddLoadCasesToLoadCombination.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/AddLoadCasesToLoadCombination.py",
+    "description": "Adds the first load case of the project with a factor of 1.5 to a new load combination using AddLoadCasesToLoadCombination. Needs at least one load case. Reads the combination back and deletes it at the end.",
+    "code": "\"\"\"Adds the first load case of the project with a factor of 1.5 to a new load combination using AddLoadCasesToLoadCombination.\n\nNeeds at least one load case. Reads the combination back and deletes it at the end.\n\"\"\"\nimport aclib\n\nloadCases = [c for c in aclib.RunTapirCommand ('GetAnalyticalLoadCases', {})['loadCases'] if 'error' not in c]\nif not loadCases:\n    raise SystemExit ('No load case in the project.')\nloadCombinationId = aclib.RunTapirCommand ('CreateAnalyticalLoadCombinations', {\n    'loadCombinations': [{'name': 'Tapir ULS', 'category': 'ULS'}]\n})['loadCombinationIds'][0]['loadCombinationId']\n\naclib.PrintJson (aclib.RunTapirCommand ('AddLoadCasesToLoadCombination', {\n    'loadCombinationId': loadCombinationId,\n    'loadFactors': [{'loadCaseId': loadCases[0]['loadCaseId'], 'factor': 1.5, 'multiplier': 1.0}]\n}))\n\naclib.RunTapirCommand ('GetAnalyticalLoadCombinations', {})\naclib.RunTapirCommand ('DeleteAnalyticalLoadCombinations', {'loadCombinationIds': [{'loadCombinationId': loadCombinationId}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#AddLoadCasesToLoadCombination"
+  },
+  {
+   "name": "GetAnalyticalMembers",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Lists the elements of the curve and surface members of the given Structural Analytical Model, or of the model of the current view when no model is given (the model is required before Archicad 27).",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; before Archicad 27 it is required."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "curveMembers": {
+      "$ref": "#/Elements",
+      "description": "The elements of the curve members (beams, columns) of the model."
+     },
+     "surfaceMembers": {
+      "$ref": "#/Elements",
+      "description": "The elements of the surface members (walls, slabs, roofs) of the model."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "curveMembers",
+     "surfaceMembers"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalMembersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalMembers.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalMembers.py",
+    "description": "Lists the elements of the curve and surface members of the Structural Analytical Model of the current view with GetAnalyticalMembers. Without 'analyticalModelId' the model of the current view is used, from Archicad 27; before that pass the model.",
+    "code": "\"\"\"Lists the elements of the curve and surface members of the Structural Analytical Model of the current view with GetAnalyticalMembers.\n\nWithout 'analyticalModelId' the model of the current view is used, from Archicad 27; before that pass the model.\n\"\"\"\nimport aclib\n\nmembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})\nprint (f\"{len (members['curveMembers'])} curve member(s), {len (members['surfaceMembers'])} surface member(s)\")\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalMembers"
+  },
+  {
+   "name": "GetAnalyticalMemberDetails",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the curve, surface or segmented surface member of the given elements in a Structural Analytical Model, with their connections. Cross sections, curves, nodes and surfaces are returned with every field the Archicad version has.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; before Archicad 27 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     },
+     "segmentationCentralAngle": {
+      "type": "number",
+      "description": "When given, surface members are read as segmented surface members (for curved walls), each segment spanning at most this central angle, in radians."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalMembers": {
+      "type": "array",
+      "description": "The analytical member of each element, in the order of the input. An element that is no member of the model, or whose member cannot be read, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalCurveMemberDetails"
+        },
+        {
+         "$ref": "#/AnalyticalSurfaceMemberDetails"
+        },
+        {
+         "$ref": "#/AnalyticalSegmentedSurfaceMemberDetails"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "analyticalMembers"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalMemberDetailsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalMemberDetails.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalMemberDetails.py",
+    "description": "Prints the first curve and surface member of the Structural Analytical Model of the current view with GetAnalyticalMemberDetails. Needs at least one analytical member. Reading the members of the current view requires Archicad 27 or later.",
+    "code": "\"\"\"Prints the first curve and surface member of the Structural Analytical Model of the current view with GetAnalyticalMemberDetails.\n\nNeeds at least one analytical member. Reading the members of the current view requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\nmembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})\nelements = members['curveMembers'][:1] + members['surfaceMembers'][:1]\nif not elements:\n    raise SystemExit ('No analytical member in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {\n    'elements': elements\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalMemberDetails"
+  },
+  {
+   "name": "GetAnalyticalReleases",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the releases of the given analytical members. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "releases": {
+      "type": "array",
+      "description": "The release of each element, in the order of the input. An element the release cannot be got for is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "release": {
+           "$ref": "#/AnalyticalRelease"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "release"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "releases"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalReleasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalReleases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalReleases.py",
+    "description": "Prints the releases of the first curve members of the Structural Analytical Model with GetAnalyticalReleases. Needs at least one curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Prints the releases of the first curve members of the Structural Analytical Model with GetAnalyticalReleases.\n\nNeeds at least one curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalReleases', {\n    'elements': curveMembers[:3]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalReleases"
+  },
+  {
+   "name": "SetAnalyticalReleases",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Replaces the releases of the given analytical members, in one undo step. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "releases": {
+      "type": "array",
+      "description": "The element and its new release, as GetAnalyticalReleases returns it. The release replaces the element's release as a whole.",
+      "items": {
+       "$ref": "#/ElementAnalyticalRelease"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "releases"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetAnalyticalReleasesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/SetAnalyticalReleases.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/SetAnalyticalReleases.py",
+    "description": "Adds a hinge (free rotation around the local y axis) at the end of the first curve member with SetAnalyticalReleases. Needs at least one curve member. Reads the release back and restores the old one. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Adds a hinge (free rotation around the local y axis) at the end of the first curve member with SetAnalyticalReleases.\n\nNeeds at least one curve member. Reads the release back and restores the old one.\nRequires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\nmemberId = curveMembers[0]['elementId']\noldRelease = aclib.RunTapirCommand ('GetAnalyticalReleases', {'elements': [{'elementId': memberId}]})['releases'][0]['release']\n\nhinge = {\n    'ux': 'Rigid', 'uy': 'Rigid', 'uz': 'Rigid', 'fix': 'Rigid', 'fiy': 'Free', 'fiz': 'Rigid',\n    'amPartRef': {'elemGuid': memberId, 'partRefType': 'EndVertex'}\n}\naclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalReleases', {\n    'releases': [{\n        'elementId': memberId,\n        'release': {'guid': oldRelease['guid'], 'releaseDescriptions': oldRelease['releaseDescriptions'] + [hinge]}\n    }]\n}))\naclib.RunTapirCommand ('GetAnalyticalReleases', {'elements': [{'elementId': memberId}]})\n\naclib.PrintJson (aclib.RunTapirCommand ('SetAnalyticalReleases', {\n    'releases': [{'elementId': memberId, 'release': oldRelease}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetAnalyticalReleases"
+  },
+  {
+   "name": "GetCustomCurveMemberStretch",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the lengths added to the start and end of the given curve members. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "stretches": {
+      "type": "array",
+      "description": "The custom stretch of the curve member of each element, in the order of the input. An element the stretch cannot be got for is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalCurveMemberStretch"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "stretches"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetCustomCurveMemberStretchComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetCustomCurveMemberStretch.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetCustomCurveMemberStretch.py",
+    "description": "Prints the lengths added to the start and end of the first curve members with GetCustomCurveMemberStretch. Needs at least one analytical curve member. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints the lengths added to the start and end of the first curve members with GetCustomCurveMemberStretch.\n\nNeeds at least one analytical curve member. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {\n    'elements': curveMembers[:3]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetCustomCurveMemberStretch"
+  },
+  {
+   "name": "SetCustomCurveMemberStretch",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Sets the lengths added to the start and end of the given curve members, in one undo step. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "stretches": {
+      "type": "array",
+      "description": "The element of the curve member and the lengths to add to it.",
+      "items": {
+       "$ref": "#/AnalyticalCurveMemberStretchUpdate"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "stretches"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetCustomCurveMemberStretchComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/SetCustomCurveMemberStretch.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/SetCustomCurveMemberStretch.py",
+    "description": "Stretches the first curve member by 0.1 m at both ends with SetCustomCurveMemberStretch. Needs at least one analytical curve member. Reads the stretch back and restores the old one. Requires Archicad 29 or later.",
+    "code": "\"\"\"Stretches the first curve member by 0.1 m at both ends with SetCustomCurveMemberStretch.\n\nNeeds at least one analytical curve member. Reads the stretch back and restores the old one.\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\nmemberId = curveMembers[0]['elementId']\nold = aclib.RunTapirCommand ('GetCustomCurveMemberStretch', {'elements': [{'elementId': memberId}]})['stretches'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {\n    'stretches': [{'elementId': memberId, 'begAdditionalLength': 0.1, 'endAdditionalLength': 0.1}]\n}))\naclib.RunTapirCommand ('GetCustomCurveMemberStretch', {'elements': [{'elementId': memberId}]})\n\naclib.PrintJson (aclib.RunTapirCommand ('SetCustomCurveMemberStretch', {\n    'stretches': [{\n        'elementId': memberId,\n        'begAdditionalLength': old['begAdditionalLength'],\n        'endAdditionalLength': old['endAdditionalLength']\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetCustomCurveMemberStretch"
+  },
+  {
+   "name": "GetLCSOfAnalyticalMembers",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the local coordinate system of the given analytical member parts, optionally in their intersection with another member part. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "memberParts": {
+      "type": "array",
+      "description": "The member parts to get the local coordinate system of.",
+      "items": {
+       "$ref": "#/AnalyticalMemberCoordinateSystemRequest"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "memberParts"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "localCoordinateSystems": {
+      "type": "array",
+      "description": "The local coordinate system of each member part, in the order of the input. A member part the coordinate system cannot be got for is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "localCoordinateSystem": {
+           "$ref": "#/AnalyticalCoordinateSystem"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "localCoordinateSystem"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "localCoordinateSystems"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetLCSOfAnalyticalMembersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetLCSOfAnalyticalMembers.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetLCSOfAnalyticalMembers.py",
+    "description": "Prints the local coordinate system of the axis of the first curve member with GetLCSOfAnalyticalMembers. Needs at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Prints the local coordinate system of the axis of the first curve member with GetLCSOfAnalyticalMembers.\n\nNeeds at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetLCSOfAnalyticalMembers', {\n    'memberParts': [{\n        'memberPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'Edge'}\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetLCSOfAnalyticalMembers"
+  },
+  {
+   "name": "GetAnalyticalMemberPartGeometries",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the node of the given analytical member vertices and the curve of the given member edges. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "memberPartRefs": {
+      "type": "array",
+      "description": "The member parts to get the geometry of: vertices (BegVertex, EndVertex, CustomVertex) give a node, edges (Edge, RatioEdge, CustomEdge) a curve.",
+      "items": {
+       "$ref": "#/AnalyticalMemberPartRef"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "memberPartRefs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "geometries": {
+      "type": "array",
+      "description": "The node or curve of each member part, in the order of the input. A member part the geometry cannot be got for, a surface among them, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "node": {
+           "$ref": "#/AnalyticalNode"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "node"
+         ]
+        },
+        {
+         "type": "object",
+         "properties": {
+          "curve": {
+           "$ref": "#/AnalyticalCurve"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "curve"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "geometries"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalMemberPartGeometriesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalMemberPartGeometries.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalMemberPartGeometries.py",
+    "description": "Prints the start node and the axis curve of the first curve member with GetAnalyticalMemberPartGeometries. Needs at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Prints the start node and the axis curve of the first curve member with GetAnalyticalMemberPartGeometries.\n\nNeeds at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\nmemberId = curveMembers[0]['elementId']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalMemberPartGeometries', {\n    'memberPartRefs': [\n        {'elemGuid': memberId, 'partRefType': 'BegVertex'},\n        {'elemGuid': memberId, 'partRefType': 'Edge'}\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalMemberPartGeometries"
+  },
+  {
+   "name": "GetAnalyticalSupports",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the settings, the supported member part and the geometry of the given analytical supports. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "supports": {
+      "type": "array",
+      "description": "The support and its geometry for each element, in the order of the input. An element that is not an analytical support, or whose support cannot be got, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalSupportDetails"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "supports"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalSupportsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalSupports.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalSupports.py",
+    "description": "Places a pinned support at the start of the first curve member and prints it with GetAnalyticalSupports. Needs at least one analytical curve member. Deletes the support at the end. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Places a pinned support at the start of the first curve member and prints it with GetAnalyticalSupports.\n\nNeeds at least one analytical curve member. Deletes the support at the end.\nRequires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\nsupports = aclib.RunTapirCommand ('CreateAnalyticalSupports', {\n    'supports': [{\n        'supportSettings': {\n            'supportType': 'SimplePoint',\n            'supportValues': {\n                'xType': 'Rigid', 'yType': 'Rigid', 'zType': 'Rigid',\n                'rxType': 'Free', 'ryType': 'Free', 'rzType': 'Free'\n            },\n            'coordinateSystem': 'Global'\n        },\n        'supportedMemberPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'BegVertex'}\n    }]\n})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalSupports', {\n    'elements': supports\n}))\n\naclib.RunTapirCommand ('DeleteElements', {'elements': supports})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalSupports"
+  },
+  {
+   "name": "GetAnalyticalLinks",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the settings, the connected member parts and the geometry of the given analytical links. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "links": {
+      "type": "array",
+      "description": "The link and its geometry for each element, in the order of the input. An element that is not an analytical link, or whose link cannot be got, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalLinkDetails"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "links"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalLinksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalLinks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalLinks.py",
+    "description": "Links the first two curve members with a rigid link and prints it with GetAnalyticalLinks. Needs at least two analytical curve members. Deletes the link at the end. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Links the first two curve members with a rigid link and prints it with GetAnalyticalLinks.\n\nNeeds at least two analytical curve members. Deletes the link at the end.\nRequires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif len (curveMembers) < 2:\n    raise SystemExit ('Fewer than two analytical curve members in the current view.')\nlinks = aclib.RunTapirCommand ('CreateAnalyticalLinks', {\n    'links': [{\n        'linkSettings': {\n            'geometry': 'Link1D',\n            'type': 'Rigid',\n            'rigidSettings': {'startConnectionType': 'RigidConnection', 'endConnectionType': 'HingeConnection'},\n            'springSettings': {\n                'direction': 'Global',\n                'translation': {'kxType': 'Rigid', 'kyType': 'Rigid', 'kzType': 'Rigid'},\n                'rotation': {'kxxType': 'Rigid', 'kyyType': 'Rigid', 'kzzType': 'Rigid'}\n            }\n        },\n        'startElementPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'EndVertex'},\n        'endElementPartRef': {'elemGuid': curveMembers[1]['elementId'], 'partRefType': 'BegVertex'}\n    }]\n})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLinks', {\n    'elements': links\n}))\n\naclib.RunTapirCommand ('DeleteElements', {'elements': links})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalLinks"
+  },
+  {
+   "name": "CreateAnalyticalSupports",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates analytical supports from their settings and supported member part, as GetAnalyticalSupports returns them, in one undo step. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "supports": {
+      "type": "array",
+      "description": "The supports to create, as GetAnalyticalSupports returns them. Each is created from the defaults of the Analytical Support tool.",
+      "items": {
+       "$ref": "#/AnalyticalSupport"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "supports"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/ElementIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalSupportsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalSupports.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalSupports.py",
+    "description": "Places a fixed point support at the start of the first curve member with CreateAnalyticalSupports. Needs at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Places a fixed point support at the start of the first curve member with CreateAnalyticalSupports.\n\nNeeds at least one analytical curve member. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalSupports', {\n    'supports': [{\n        'supportSettings': {\n            'supportType': 'SimplePoint',\n            'supportValues': {\n                'xType': 'Rigid', 'yType': 'Rigid', 'zType': 'Rigid',\n                'rxType': 'Rigid', 'ryType': 'Rigid', 'rzType': 'Rigid'\n            },\n            'coordinateSystem': 'Global'\n        },\n        'supportedMemberPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'BegVertex'}\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalSupports"
+  },
+  {
+   "name": "CreateAnalyticalLinks",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates analytical links from their settings and connected member parts, as GetAnalyticalLinks returns them, in one undo step. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "links": {
+      "type": "array",
+      "description": "The links to create, as GetAnalyticalLinks returns them. Each is created from the defaults of the Analytical Link tool.",
+      "items": {
+       "$ref": "#/AnalyticalLink"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "links"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/ElementIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalLinksComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalLinks.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLinks.py",
+    "description": "Connects the end of the first curve member to the start of the second one with a rigid link using CreateAnalyticalLinks. Needs at least two analytical curve members. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Connects the end of the first curve member to the start of the second one with a rigid link using CreateAnalyticalLinks.\n\nNeeds at least two analytical curve members. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif len (curveMembers) < 2:\n    raise SystemExit ('Fewer than two analytical curve members in the current view.')\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLinks', {\n    'links': [{\n        'linkSettings': {\n            'geometry': 'Link1D',\n            'type': 'Rigid',\n            'rigidSettings': {'startConnectionType': 'RigidConnection', 'endConnectionType': 'RigidConnection'},\n            'springSettings': {\n                'direction': 'Global',\n                'translation': {'kxType': 'Rigid', 'kyType': 'Rigid', 'kzType': 'Rigid'},\n                'rotation': {'kxxType': 'Rigid', 'kyyType': 'Rigid', 'kzzType': 'Rigid'}\n            }\n        },\n        'startElementPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'EndVertex'},\n        'endElementPartRef': {'elemGuid': curveMembers[1]['elementId'], 'partRefType': 'BegVertex'}\n    }]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalLinks"
+  },
+  {
+   "name": "ConvertAnalyticalLinksToNonShortest",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Converts the given shortest analytical links (associative to a curve member or a surface member edge) to links connected to a fixed coordinate, in one undo step, and returns the converted links. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "links": {
+      "type": "array",
+      "description": "The link the API returns for each element after the conversion, in the order of the input. An element that cannot be converted is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "link": {
+           "$ref": "#/AnalyticalLink"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "link"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "links"
+    ]
+   },
+   "grasshopperComponents": [
+    "ConvertAnalyticalLinksToNonShortestComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/ConvertAnalyticalLinksToNonShortest.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/ConvertAnalyticalLinksToNonShortest.py",
+    "description": "Converts a shortest link to the axis of a curve member into a link to a fixed point with ConvertAnalyticalLinksToNonShortest. Needs at least two analytical curve members. Creates the shortest link from the end of the first member to the axis (edge) of the second one, then converts it; the converted link stays in the project. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Converts a shortest link to the axis of a curve member into a link to a fixed point with ConvertAnalyticalLinksToNonShortest.\n\nNeeds at least two analytical curve members. Creates the shortest link from the end of the first member to the axis\n(edge) of the second one, then converts it; the converted link stays in the project.\nRequires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif len (curveMembers) < 2:\n    raise SystemExit ('Fewer than two analytical curve members in the current view.')\nlinks = aclib.RunTapirCommand ('CreateAnalyticalLinks', {\n    'links': [{\n        'linkSettings': {\n            'geometry': 'Link1D',\n            'type': 'Rigid',\n            'rigidSettings': {'startConnectionType': 'RigidConnection', 'endConnectionType': 'RigidConnection'},\n            'springSettings': {\n                'direction': 'Global',\n                'translation': {'kxType': 'Rigid', 'kyType': 'Rigid', 'kzType': 'Rigid'},\n                'rotation': {'kxxType': 'Rigid', 'kyyType': 'Rigid', 'kzzType': 'Rigid'}\n            }\n        },\n        'startElementPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'EndVertex'},\n        'endElementPartRef': {'elemGuid': curveMembers[1]['elementId'], 'partRefType': 'Edge'}\n    }]\n})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('ConvertAnalyticalLinksToNonShortest', {\n    'elements': links\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ConvertAnalyticalLinksToNonShortest"
+  },
+  {
+   "name": "GetAnalyticalLoads",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Retrieves the settings, the loaded member part, the custom data (the curve of an edge load, the contour of a surface load) and the geometry of the given analytical point, edge and surface loads. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "analyticalModelId": {
+      "$ref": "#/GuidId",
+      "description": "The identifier of the Structural Analytical Model the geometry is read from. The model of the current view is used when it is omitted; in Archicad 26 it is required."
+     },
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "loads": {
+      "type": "array",
+      "description": "The load of each element, in the order of the input, with its geometry in the Structural Analytical Model and, for an edge or a surface load, its custom data (the curve or contour stored with the element). An element that is not an analytical point, edge or surface load, or whose load cannot be got, is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/AnalyticalPointLoadDetails"
+        },
+        {
+         "$ref": "#/AnalyticalEdgeLoadDetails"
+        },
+        {
+         "$ref": "#/AnalyticalSurfaceLoadDetails"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loads"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetAnalyticalLoadsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/GetAnalyticalLoads.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/GetAnalyticalLoads.py",
+    "description": "Puts a 10 kN point load on the start of the first curve member and prints it with GetAnalyticalLoads. Needs at least one analytical curve member and one load case. Deletes the load at the end. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Puts a 10 kN point load on the start of the first curve member and prints it with GetAnalyticalLoads.\n\nNeeds at least one analytical curve member and one load case. Deletes the load at the end.\nRequires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nloadCases = [c for c in aclib.RunTapirCommand ('GetAnalyticalLoadCases', {})['loadCases'] if 'error' not in c]\nif not curveMembers or not loadCases:\n    raise SystemExit ('No analytical curve member in the current view or no load case in the project.')\nloads = aclib.RunTapirCommand ('CreateAnalyticalLoads', {\n    'loads': [{\n        'pointLoad': {\n            'loadSettings': {\n                'loadCaseId': loadCases[0]['loadCaseId'],\n                'loadForceType': 'Force',\n                'coordinateSystemType': 'Global',\n                'xValue': 0.0, 'yValue': 0.0, 'zValue': -10000.0\n            },\n            'loadedMemberPartRef': {'elemGuid': curveMembers[0]['elementId'], 'partRefType': 'BegVertex'}\n        }\n    }]\n})['elements']\n\naclib.PrintJson (aclib.RunTapirCommand ('GetAnalyticalLoads', {\n    'elements': loads\n}))\n\naclib.RunTapirCommand ('DeleteElements', {'elements': loads})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetAnalyticalLoads"
+  },
+  {
+   "name": "CreateAnalyticalLoads",
+   "group": "Analytical Commands",
+   "version": "1.8.0",
+   "description": "Creates analytical point, edge and surface loads from their settings, loaded member part and custom data, as GetAnalyticalLoads returns them, in one undo step. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "loads": {
+      "type": "array",
+      "description": "The loads to create, as GetAnalyticalLoads returns them without their geometry. Each is created from the defaults of its tool. An edge load needs the curve and a surface load the contour it is applied on, in customData.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "pointLoad": {
+           "$ref": "#/AnalyticalPointLoad"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "pointLoad"
+         ]
+        },
+        {
+         "type": "object",
+         "properties": {
+          "edgeLoad": {
+           "$ref": "#/AnalyticalEdgeLoad"
+          },
+          "customData": {
+           "$ref": "#/AnalyticalEdgeLoadCustomData"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "edgeLoad",
+          "customData"
+         ]
+        },
+        {
+         "type": "object",
+         "properties": {
+          "surfaceLoad": {
+           "$ref": "#/AnalyticalSurfaceLoad"
+          },
+          "customData": {
+           "$ref": "#/AnalyticalSurfaceLoadCustomData"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "surfaceLoad",
+          "customData"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "loads"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/ElementIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateAnalyticalLoadsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateAnalyticalLoads.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLoads.py",
+    "description": "Puts a 10 kN point load and a 5 kN/m line load on the first curve member with CreateAnalyticalLoads. Needs at least one analytical curve member and one load case; the loads go into the first load case. Forces are in newtons, downward along the global z axis. Requires Archicad 27 or later (the command itself works from Archicad 26).",
+    "code": "\"\"\"Puts a 10 kN point load and a 5 kN/m line load on the first curve member with CreateAnalyticalLoads.\n\nNeeds at least one analytical curve member and one load case; the loads go into the first load case. Forces are in\nnewtons, downward along the global z axis. Requires Archicad 27 or later (the command itself works from Archicad 26).\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nloadCases = [c for c in aclib.RunTapirCommand ('GetAnalyticalLoadCases', {})['loadCases'] if 'error' not in c]\nif not curveMembers or not loadCases:\n    raise SystemExit ('No analytical curve member in the current view or no load case in the project.')\nmemberId = curveMembers[0]['elementId']\nloadCaseId = loadCases[0]['loadCaseId']\ncurve = aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {\n    'elements': [{'elementId': memberId}]\n})['analyticalMembers'][0]['curveMember']['curve']\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateAnalyticalLoads', {\n    'loads': [\n        {\n            'pointLoad': {\n                'loadSettings': {\n                    'loadCaseId': loadCaseId,\n                    'loadForceType': 'Force',\n                    'coordinateSystemType': 'Global',\n                    'xValue': 0.0, 'yValue': 0.0, 'zValue': -10000.0\n                },\n                'loadedMemberPartRef': {'elemGuid': memberId, 'partRefType': 'BegVertex'}\n            }\n        },\n        {\n            'edgeLoad': {\n                'loadSettings': {\n                    'loadCaseId': loadCaseId,\n                    'loadForceType': 'Force',\n                    'loadDistributionType': 'Uniform',\n                    'coordinateSystemType': 'Global',\n                    'startValue': {'x': 0.0, 'y': 0.0, 'z': -5000.0},\n                    'endValue': {'x': 0.0, 'y': 0.0, 'z': -5000.0}\n                },\n                'loadedMemberPartRef': {'elemGuid': memberId, 'partRefType': 'Edge'}\n            },\n            'customData': {'curve': [curve]}\n        }\n    ]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateAnalyticalLoads"
+  },
+  {
+   "name": "CreateElementsFromAnalyticalMembers",
+   "group": "Analytical Commands",
+   "version": "2.0.0",
+   "description": "Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "members": {
+      "type": "array",
+      "description": "The analytical members to create elements from, in the form GetAnalyticalMemberDetails returns them, so a member read there can be passed on as it is. The elemGuid of a member is ignored. A curve member needs analyticalMemberType and curve, a surface member (or segment) analyticalMemberType and contour; the other fields are zero when left out.",
+      "items": {
+       "$ref": "#/ElementFromAnalyticalMemberData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "members"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "type": "array",
+      "description": "The new element of each member, in the order of the input. A member no element could be created from is represented by an error object.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "$ref": "#/ElementFromAnalyticalMember"
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateElementsFromAnalyticalMembersComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/Analytical/CreateElementsFromAnalyticalMembers.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateElementsFromAnalyticalMembers.py",
+    "description": "Creates a copy of the first curve member's element from its analytical member with CreateElementsFromAnalyticalMembers. Needs at least one analytical curve member; the member is passed on as GetAnalyticalMemberDetails returns it, so the new beam or column lies on top of the original. Reading the members of the current view requires Archicad 27 or later.",
+    "code": "\"\"\"Creates a copy of the first curve member's element from its analytical member with CreateElementsFromAnalyticalMembers.\n\nNeeds at least one analytical curve member; the member is passed on as GetAnalyticalMemberDetails returns it, so the\nnew beam or column lies on top of the original. Reading the members of the current view requires Archicad 27 or later.\n\"\"\"\nimport aclib\n\ncurveMembers = aclib.RunTapirCommand ('GetAnalyticalMembers', {})['curveMembers']\nif not curveMembers:\n    raise SystemExit ('No analytical curve member in the current view.')\ndetails = aclib.RunTapirCommand ('GetAnalyticalMemberDetails', {'elements': curveMembers[:1]})['analyticalMembers'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateElementsFromAnalyticalMembers', {\n    'members': [{'curveMember': details['curveMember']}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateElementsFromAnalyticalMembers"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementIdOrError": {
+   "type": "object",
+   "description": "An element identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "ElementIdsOrErrors": {
+   "type": "array",
+   "description": "A list of element identifiers or errors.",
+   "items": {
+    "$ref": "#/ElementIdOrError"
+   }
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Coordinate3D": {
+   "type": "object",
+   "description": "3D coordinate.",
+   "properties": {
+    "x": {
+     "type": "number",
+     "description": "X value of the coordinate."
+    },
+    "y": {
+     "type": "number",
+     "description": "Y value of the coordinate."
+    },
+    "z": {
+     "type": "number",
+     "description": "Z value of the coordinate."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "x",
+    "y",
+    "z"
+   ]
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "AnalyticalLoadGroupData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "groupType": {
+     "$ref": "#/AnalyticalLoadGroupType"
+    },
+    "relation": {
+     "$ref": "#/AnalyticalLoadGroupRelation"
+    },
+    "loadType": {
+     "type": "string",
+     "description": "The load type of the group as free text. Empty when it is omitted."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "groupType",
+    "relation"
+   ]
+  },
+  "AnalyticalLoadGroupIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "loadGroupId": {
+     "$ref": "#/GuidId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadGroupId"
+   ]
+  },
+  "AnalyticalLoadCaseData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string",
+     "description": "Empty when it is omitted."
+    },
+    "actionType": {
+     "$ref": "#/AnalyticalLoadCaseActionType"
+    },
+    "loadGroupId": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the load group the load case belongs to."
+    },
+    "loadType": {
+     "$ref": "#/AnalyticalLoadCaseLoadType"
+    },
+    "duration": {
+     "$ref": "#/AnalyticalLoadCaseDuration"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "actionType",
+    "loadGroupId",
+    "loadType"
+   ]
+  },
+  "AnalyticalLoadCaseIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "loadCaseId": {
+     "$ref": "#/GuidId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadCaseId"
+   ]
+  },
+  "AnalyticalLoadCombinationData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string",
+     "description": "Empty when it is omitted."
+    },
+    "category": {
+     "$ref": "#/AnalyticalLoadCombinationCategory"
+    },
+    "nationalStandard": {
+     "$ref": "#/AnalyticalLoadCombinationNationalStandard"
+    },
+    "type": {
+     "$ref": "#/AnalyticalLoadCombinationType"
+    },
+    "loadFactors": {
+     "type": "array",
+     "description": "The load cases of the combination with their factors.",
+     "items": {
+      "$ref": "#/AnalyticalLoadFactor"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "category"
+   ]
+  },
+  "AnalyticalLoadCombinationIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "loadCombinationId": {
+     "$ref": "#/GuidId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadCombinationId"
+   ]
+  },
+  "AnalyticalSegmentedSurfaceMemberDetails": {
+   "type": "object",
+   "properties": {
+    "segmentedSurfaceMembers": {
+     "type": "array",
+     "description": "The segments of the surface member.",
+     "items": {
+      "$ref": "#/AnalyticalSurfaceMember"
+     }
+    },
+    "idMapping": {
+     "$ref": "#/AnalyticalExportIdMapping"
+    },
+    "connections": {
+     "$ref": "#/AnalyticalMemberConnections"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "segmentedSurfaceMembers",
+    "connections"
+   ]
+  },
+  "AnalyticalSurfaceMemberDetails": {
+   "type": "object",
+   "properties": {
+    "surfaceMember": {
+     "$ref": "#/AnalyticalSurfaceMember"
+    },
+    "idMapping": {
+     "$ref": "#/AnalyticalExportIdMapping"
+    },
+    "connections": {
+     "$ref": "#/AnalyticalMemberConnections"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "surfaceMember",
+    "connections"
+   ]
+  },
+  "AnalyticalCurveMemberDetails": {
+   "type": "object",
+   "properties": {
+    "curveMember": {
+     "$ref": "#/AnalyticalCurveMember"
+    },
+    "connections": {
+     "$ref": "#/AnalyticalMemberConnections"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "curveMember",
+    "connections"
+   ]
+  },
+  "ElementAnalyticalRelease": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "release": {
+     "$ref": "#/AnalyticalRelease"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "release"
+   ]
+  },
+  "AnalyticalCurveMemberStretch": {
+   "type": "object",
+   "properties": {
+    "begAdditionalLength": {
+     "type": "number",
+     "description": "The length added to the curve member at its start."
+    },
+    "endAdditionalLength": {
+     "type": "number",
+     "description": "The length added to the curve member at its end."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "begAdditionalLength",
+    "endAdditionalLength"
+   ]
+  },
+  "AnalyticalCurveMemberStretchUpdate": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "begAdditionalLength": {
+     "type": "number",
+     "description": "The length added to the curve member at its start."
+    },
+    "endAdditionalLength": {
+     "type": "number",
+     "description": "The length added to the curve member at its end."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId",
+    "begAdditionalLength",
+    "endAdditionalLength"
+   ]
+  },
+  "AnalyticalMemberCoordinateSystemRequest": {
+   "type": "object",
+   "properties": {
+    "memberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    },
+    "intersectingMemberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef",
+     "description": "When given, the local coordinate system of memberPartRef in its intersection with this member part is returned."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "memberPartRef"
+   ]
+  },
+  "AnalyticalSupportDetails": {
+   "type": "object",
+   "properties": {
+    "support": {
+     "$ref": "#/AnalyticalSupport"
+    },
+    "geometry": {
+     "$ref": "#/AnalyticalSupportGeometry"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "support",
+    "geometry"
+   ]
+  },
+  "AnalyticalLinkDetails": {
+   "type": "object",
+   "properties": {
+    "link": {
+     "$ref": "#/AnalyticalLink"
+    },
+    "geometry": {
+     "$ref": "#/AnalyticalLinkGeometry"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "link",
+    "geometry"
+   ]
+  },
+  "AnalyticalSurfaceLoadDetails": {
+   "type": "object",
+   "properties": {
+    "surfaceLoad": {
+     "$ref": "#/AnalyticalSurfaceLoad"
+    },
+    "customData": {
+     "$ref": "#/AnalyticalSurfaceLoadCustomData"
+    },
+    "geometry": {
+     "$ref": "#/AnalyticalSurfaceLoadCustomData"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "surfaceLoad",
+    "customData",
+    "geometry"
+   ]
+  },
+  "AnalyticalEdgeLoadDetails": {
+   "type": "object",
+   "properties": {
+    "edgeLoad": {
+     "$ref": "#/AnalyticalEdgeLoad"
+    },
+    "customData": {
+     "$ref": "#/AnalyticalEdgeLoadCustomData"
+    },
+    "geometry": {
+     "$ref": "#/AnalyticalEdgeLoadCustomData"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "edgeLoad",
+    "customData",
+    "geometry"
+   ]
+  },
+  "AnalyticalPointLoadDetails": {
+   "type": "object",
+   "properties": {
+    "pointLoad": {
+     "$ref": "#/AnalyticalPointLoad"
+    },
+    "geometry": {
+     "type": "object",
+     "properties": {
+      "coordinate": {
+       "$ref": "#/Coordinate3D"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "coordinate"
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "pointLoad",
+    "geometry"
+   ]
+  },
+  "ElementFromAnalyticalMemberData": {
+   "type": "object",
+   "properties": {
+    "curveMember": {
+     "$ref": "#/AnalyticalCurveMember",
+     "description": "A curve member, creating a beam or a column."
+    },
+    "surfaceMember": {
+     "$ref": "#/AnalyticalSurfaceMember",
+     "description": "A surface member, creating a wall, a slab or a roof."
+    },
+    "segmentedSurfaceMembers": {
+     "type": "array",
+     "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+     "items": {
+      "$ref": "#/AnalyticalSurfaceMember"
+     },
+     "minItems": 1
+    },
+    "favoriteName": {
+     "type": "string",
+     "description": "The name of the favorite whose settings the new element gets."
+    }
+   },
+   "additionalProperties": false,
+   "oneOf": [
+    {
+     "required": [
+      "curveMember"
+     ]
+    },
+    {
+     "required": [
+      "surfaceMember"
+     ]
+    },
+    {
+     "required": [
+      "segmentedSurfaceMembers"
+     ]
+    }
+   ]
+  },
+  "ElementFromAnalyticalMember": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    },
+    "idMapping": {
+     "$ref": "#/AnalyticalImportIdMapping"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "AnalyticalModelVariation": {
+   "type": "object",
+   "description": "The variation a Structural Analytical Model is generated for. Its fields depend on the Archicad version: amVariationGuid from Archicad 27, renovationFilterGuid and layerConnectionClassIds before.",
+   "properties": {
+    "amVariationGuid": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the analytical model variation. Archicad 27 and newer."
+    },
+    "renovationFilterGuid": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the renovation filter of the variation. Archicad 25 and 26."
+    },
+    "layerConnectionClassIds": {
+     "type": "array",
+     "description": "The connection classes of the layers. Archicad 25: a list of integers. Archicad 26: one object per layer, with the layer's attribute index and its connection class.",
+     "items": {
+      "oneOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "object",
+        "properties": {
+         "layerIndex": {
+          "type": "integer",
+          "description": "The attribute index of the layer."
+         },
+         "connectionClassId": {
+          "type": "integer",
+          "description": "The connection class of the layer."
+         }
+        },
+        "additionalProperties": false,
+        "required": [
+         "layerIndex",
+         "connectionClassId"
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalMemberType": {
+   "type": "string",
+   "description": "The analytical member type of an element.",
+   "enum": [
+    "Unknown",
+    "Beam",
+    "Column",
+    "Roof",
+    "Slab",
+    "Wall"
+   ]
+  },
+  "AnalyticalVisibilitySettings": {
+   "type": "object",
+   "description": "The visibility settings of the Structural Analytical Model. Archicad 26 and newer.",
+   "properties": {
+    "visibilityMode": {
+     "type": "string",
+     "description": "Whether only the analytical model is shown or the analytical model within the entire model.",
+     "enum": [
+      "AnalyticalModelOnly",
+      "AnalyticalModelWithinEntireModel"
+     ]
+    },
+    "isAnalyticalModelVisible": {
+     "type": "boolean"
+    },
+    "areMembersTransparent": {
+     "type": "boolean"
+    },
+    "areSymbolsTransparent": {
+     "type": "boolean"
+    },
+    "areNodesVisible": {
+     "type": "boolean"
+    },
+    "areReleasesVisible": {
+     "type": "boolean"
+    },
+    "areCrossSectionsVisible": {
+     "type": "boolean"
+    },
+    "areCoordinationProfilesVisible": {
+     "type": "boolean"
+    },
+    "areLocalCoordSystemsVisible": {
+     "type": "boolean"
+    },
+    "loadVisibilityMode": {
+     "type": "string",
+     "description": "Which loads are shown: filtered by the active settings, none or all.",
+     "enum": [
+      "FilterByActive",
+      "HideAll",
+      "ShowAll"
+     ]
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalLoadGroupType": {
+   "type": "string",
+   "description": "The type of a structural analysis load group.",
+   "enum": [
+    "PermanentLoad",
+    "VariableLoad",
+    "AccidentalLoad",
+    "SeismicLoad",
+    "MovingLoad",
+    "TensioningLoad",
+    "FireLoad"
+   ]
+  },
+  "AnalyticalLoadGroupRelation": {
+   "type": "string",
+   "description": "How the load cases of a structural analysis load group are combined.",
+   "enum": [
+    "ExclusiveRelation",
+    "StandardRelation",
+    "TogetherRelation"
+   ]
+  },
+  "AnalyticalLoadCaseActionType": {
+   "type": "string",
+   "description": "The action type of a structural analysis load case.",
+   "enum": [
+    "PermanentAction",
+    "VariableAction",
+    "AccidentalAction"
+   ]
+  },
+  "AnalyticalLoadCaseLoadType": {
+   "type": "string",
+   "description": "The load type of a structural analysis load case.",
+   "enum": [
+    "SelfWeightLoad",
+    "PrestressLoad",
+    "DynamicLoad",
+    "StaticLoad",
+    "TemperatureLoad",
+    "WindLoad",
+    "SnowLoad",
+    "MaintenanceLoad",
+    "FireLoad",
+    "MovingLoad",
+    "SeismicLoad",
+    "StandardLoad",
+    "OthersLoad"
+   ]
+  },
+  "AnalyticalLoadCaseDuration": {
+   "type": "string",
+   "description": "The duration of a structural analysis load case.",
+   "enum": [
+    "LongDuration",
+    "MediumDuration",
+    "ShortDuration",
+    "InstantaneousDuration"
+   ]
+  },
+  "AnalyticalLoadCombinationCategory": {
+   "type": "string",
+   "description": "The category of a structural analysis load combination.",
+   "enum": [
+    "ULS",
+    "SLS",
+    "ALS",
+    "ANS",
+    "NotDefined"
+   ]
+  },
+  "AnalyticalLoadCombinationNationalStandard": {
+   "type": "string",
+   "description": "The national standard of a structural analysis load combination.",
+   "enum": [
+    "ENULSSTRGEOSetB",
+    "ENULSSTRGEOSetC",
+    "ENAccidental1",
+    "ENAccidental2",
+    "ENSeismic",
+    "ENSLSCharacteristic",
+    "ENSLSFrequent",
+    "ENSLSQuasipermanent",
+    "IBCLRFDultimate",
+    "IBCASDultimate",
+    "IBCASDserviceability",
+    "IBCASDseismic",
+    "IBCLRFDseismic"
+   ]
+  },
+  "AnalyticalLoadCombinationType": {
+   "type": "string",
+   "description": "The type of a structural analysis load combination. Archicad 27 and newer.",
+   "enum": [
+    "Envelope",
+    "Linear",
+    "Nonlinear"
+   ]
+  },
+  "AnalyticalLoadFactor": {
+   "type": "object",
+   "description": "A load case of a structural analysis load combination with its factors.",
+   "properties": {
+    "loadCaseId": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the load case."
+    },
+    "factor": {
+     "type": "number",
+     "description": "The factor of the load case. Left out when it is not set."
+    },
+    "multiplier": {
+     "type": "number",
+     "description": "The multiplier of the load case."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadCaseId",
+    "multiplier"
+   ]
+  },
+  "AnalyticalLoadGroup": {
+   "type": "object",
+   "description": "A structural analysis load group.",
+   "properties": {
+    "loadGroupId": {
+     "$ref": "#/GuidId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "groupType": {
+     "$ref": "#/AnalyticalLoadGroupType"
+    },
+    "relation": {
+     "$ref": "#/AnalyticalLoadGroupRelation"
+    },
+    "loadType": {
+     "type": "string",
+     "description": "The load type of the group as free text."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadGroupId",
+    "name"
+   ]
+  },
+  "AnalyticalLoadCase": {
+   "type": "object",
+   "description": "A structural analysis load case.",
+   "properties": {
+    "loadCaseId": {
+     "$ref": "#/GuidId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "actionType": {
+     "$ref": "#/AnalyticalLoadCaseActionType"
+    },
+    "loadGroupId": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the load group the load case belongs to."
+    },
+    "loadType": {
+     "$ref": "#/AnalyticalLoadCaseLoadType"
+    },
+    "duration": {
+     "$ref": "#/AnalyticalLoadCaseDuration",
+     "description": "Left out when it is not set."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadCaseId",
+    "name",
+    "loadGroupId"
+   ]
+  },
+  "AnalyticalLoadCombination": {
+   "type": "object",
+   "description": "A structural analysis load combination.",
+   "properties": {
+    "loadCombinationId": {
+     "$ref": "#/GuidId"
+    },
+    "name": {
+     "type": "string"
+    },
+    "description": {
+     "type": "string"
+    },
+    "category": {
+     "$ref": "#/AnalyticalLoadCombinationCategory"
+    },
+    "nationalStandard": {
+     "$ref": "#/AnalyticalLoadCombinationNationalStandard",
+     "description": "Left out when it is not set."
+    },
+    "type": {
+     "$ref": "#/AnalyticalLoadCombinationType",
+     "description": "Left out when it is not set. Archicad 27 and newer."
+    },
+    "loadFactors": {
+     "type": "array",
+     "description": "The load cases of the combination with their factors.",
+     "items": {
+      "$ref": "#/AnalyticalLoadFactor"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadCombinationId",
+    "name",
+    "loadFactors"
+   ]
+  },
+  "AnalyticalNode": {
+   "type": "object",
+   "description": "A node of the Structural Analytical Model.",
+   "properties": {
+    "nodeId": {
+     "type": "integer",
+     "description": "The identifier of the node."
+    },
+    "coord": {
+     "$ref": "#/Coordinate3D"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "nodeId",
+    "coord"
+   ]
+  },
+  "AnalyticalCurve": {
+   "type": "object",
+   "description": "A curve of the Structural Analytical Model.",
+   "properties": {
+    "type": {
+     "type": "string",
+     "description": "The type of the curve. Bezier exists from Archicad 26.",
+     "enum": [
+      "Line",
+      "Arc",
+      "Spline",
+      "Bezier",
+      "Ellipse"
+     ]
+    },
+    "begNode": {
+     "$ref": "#/AnalyticalNode"
+    },
+    "endNode": {
+     "$ref": "#/AnalyticalNode"
+    },
+    "midCoords": {
+     "type": "array",
+     "description": "The points between the start and the end of the curve.",
+     "items": {
+      "$ref": "#/Coordinate3D"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "begNode",
+    "endNode",
+    "midCoords"
+   ]
+  },
+  "AnalyticalCrossSection": {
+   "type": "object",
+   "description": "The cross section of a curve member. The profile image of Archicad 26 and newer is not returned.",
+   "properties": {
+    "crossSectionType": {
+     "type": "string",
+     "enum": [
+      "Rectangle",
+      "Circle",
+      "Attribute",
+      "Custom"
+     ]
+    },
+    "width": {
+     "type": "number"
+    },
+    "height": {
+     "type": "number"
+    },
+    "veneerThickness": {
+     "type": "number"
+    },
+    "profileAttrIndex": {
+     "type": "integer",
+     "description": "The attribute index of the profile."
+    },
+    "materialAttrIndices": {
+     "type": "array",
+     "description": "The attribute indices of the materials of the cross section.",
+     "items": {
+      "type": "integer"
+     }
+    },
+    "profileParameters": {
+     "type": "array",
+     "description": "The parameters of the profile.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "parameterId": {
+        "$ref": "#/GuidId"
+       },
+       "value": {
+        "type": "number"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "parameterId",
+       "value"
+      ]
+     }
+    },
+    "alignment": {
+     "type": "string",
+     "description": "The alignment of the cross section. Archicad 26 and newer.",
+     "enum": [
+      "TopLeft",
+      "Top",
+      "TopRight",
+      "Left",
+      "Center",
+      "Right",
+      "BottomLeft",
+      "Bottom",
+      "BottomRight",
+      "None"
+     ]
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalCurveMember": {
+   "type": "object",
+   "description": "A curve member (beam, column) of the Structural Analytical Model.",
+   "properties": {
+    "analyticalMemberType": {
+     "$ref": "#/AnalyticalMemberType"
+    },
+    "elemGuid": {
+     "$ref": "#/GuidId"
+    },
+    "crossSection": {
+     "$ref": "#/AnalyticalCrossSection"
+    },
+    "curve": {
+     "$ref": "#/AnalyticalCurve"
+    },
+    "internalNodes": {
+     "type": "array",
+     "items": {
+      "$ref": "#/AnalyticalNode"
+     }
+    },
+    "rotationAngle": {
+     "type": "number"
+    },
+    "ey": {
+     "type": "number"
+    },
+    "eyVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "ez": {
+     "type": "number"
+    },
+    "ezVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "layerAttrIndex": {
+     "type": "integer",
+     "description": "The attribute index of the layer."
+    },
+    "FEMType": {
+     "type": "string",
+     "enum": [
+      "Standard",
+      "AxialForceOnly",
+      "CompressionOnly",
+      "TensionOnly"
+     ]
+    },
+    "varyingSegmentList": {
+     "type": "array",
+     "description": "The segments of a member with varying cross section. Archicad 26 and newer.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "begProfile": {
+        "$ref": "#/AnalyticalCrossSection"
+       },
+       "endProfile": {
+        "$ref": "#/AnalyticalCrossSection",
+        "description": "Only for a tapered segment."
+       },
+       "span": {
+        "type": "number"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "begProfile",
+       "span"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalSurfaceMember": {
+   "type": "object",
+   "description": "A surface member (wall, slab, roof) or a segment of one of the Structural Analytical Model.",
+   "properties": {
+    "analyticalMemberType": {
+     "$ref": "#/AnalyticalMemberType"
+    },
+    "elemGuid": {
+     "$ref": "#/GuidId"
+    },
+    "surface": {
+     "type": "object",
+     "properties": {
+      "surfaceType": {
+       "type": "string",
+       "enum": [
+        "Plane",
+        "Cylinder"
+       ]
+      },
+      "planeSurface": {
+       "type": "object",
+       "properties": {
+        "basePoint": {
+         "$ref": "#/Coordinate3D"
+        },
+        "normalVector": {
+         "$ref": "#/Coordinate3D"
+        }
+       },
+       "additionalProperties": false
+      },
+      "cylinderSurface": {
+       "type": "object",
+       "properties": {
+        "basePoint": {
+         "$ref": "#/Coordinate3D"
+        },
+        "axisDirection": {
+         "$ref": "#/Coordinate3D"
+        },
+        "referenceRay": {
+         "$ref": "#/Coordinate3D"
+        }
+       },
+       "additionalProperties": false
+      }
+     },
+     "additionalProperties": false
+    },
+    "contour": {
+     "type": "array",
+     "description": "The curves of the outer contour.",
+     "items": {
+      "$ref": "#/AnalyticalCurve"
+     }
+    },
+    "holeContours": {
+     "type": "array",
+     "description": "The contours of the holes.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "contour": {
+        "type": "array",
+        "items": {
+         "$ref": "#/AnalyticalCurve"
+        }
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "contour"
+      ]
+     }
+    },
+    "internalNodes": {
+     "type": "array",
+     "items": {
+      "$ref": "#/AnalyticalNode"
+     }
+    },
+    "thickness": {
+     "type": "number"
+    },
+    "lcsXVector": {
+     "$ref": "#/Coordinate3D",
+     "description": "The X axis of the local coordinate system. Archicad 26 and newer."
+    },
+    "ez": {
+     "type": "number"
+    },
+    "ezVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "materialAttrIndex": {
+     "type": "integer",
+     "description": "The attribute index of the material."
+    },
+    "layerAttrIndex": {
+     "type": "integer",
+     "description": "The attribute index of the layer."
+    },
+    "FEMType": {
+     "type": "string",
+     "enum": [
+      "Plate",
+      "Wall",
+      "Shell"
+     ]
+    },
+    "groupId": {
+     "$ref": "#/GuidId"
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalMemberConnections": {
+   "type": "array",
+   "description": "The identifiers of the connections of the analytical member.",
+   "items": {
+    "$ref": "#/GuidId"
+   }
+  },
+  "AnalyticalInternalMemberPartId": {
+   "type": "object",
+   "description": "Identifies a part of an analytical member by its contour, edge or vertex and edge fragment.",
+   "properties": {
+    "contourIdx": {
+     "type": "integer"
+    },
+    "edgeOrVertexIdx": {
+     "type": "integer"
+    },
+    "edgeFragmentIndex": {
+     "type": "integer"
+    }
+   },
+   "additionalProperties": false
+  },
+  "AnalyticalExportMappingTable": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "partId": {
+        "$ref": "#/AnalyticalInternalMemberPartId"
+       },
+       "elemPartIds": {
+        "type": "array",
+        "items": {
+         "type": "object",
+         "properties": {
+          "memberGuid": {
+           "$ref": "#/GuidId"
+          },
+          "contourIndex": {
+           "type": "integer"
+          },
+          "edgeOrVertexIndex": {
+           "type": "integer"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "memberGuid",
+          "contourIndex",
+          "edgeOrVertexIndex"
+         ]
+        }
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "partId",
+       "elemPartIds"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "items"
+   ]
+  },
+  "AnalyticalExportIdMapping": {
+   "type": "object",
+   "description": "Maps the edges and vertices of a surface member to the parts of the exported members. Archicad 26 and newer.",
+   "properties": {
+    "edges": {
+     "$ref": "#/AnalyticalExportMappingTable"
+    },
+    "vertices": {
+     "$ref": "#/AnalyticalExportMappingTable"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "edges",
+    "vertices"
+   ]
+  },
+  "AnalyticalMemberPartRef": {
+   "type": "object",
+   "description": "A reference to a part (vertex, edge or surface) of an analytical member. partId, customVertexData and ratioEdgeData are zero when left out.",
+   "properties": {
+    "elemGuid": {
+     "$ref": "#/GuidId",
+     "description": "The element of the analytical member."
+    },
+    "partRefType": {
+     "type": "string",
+     "enum": [
+      "BegVertex",
+      "EndVertex",
+      "CustomVertex",
+      "Edge",
+      "RatioEdge",
+      "Surface",
+      "CustomSurface",
+      "CustomEdge"
+     ]
+    },
+    "partId": {
+     "$ref": "#/AnalyticalInternalMemberPartId"
+    },
+    "customVertexData": {
+     "type": "object",
+     "description": "The point of a CustomVertex.",
+     "properties": {
+      "customVertexCoord": {
+       "$ref": "#/Coordinate3D"
+      }
+     },
+     "additionalProperties": false
+    },
+    "ratioEdgeData": {
+     "type": "object",
+     "description": "The part of the edge of a RatioEdge.",
+     "properties": {
+      "ratioStart": {
+       "type": "number"
+      },
+      "ratioEnd": {
+       "type": "number"
+      }
+     },
+     "additionalProperties": false
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elemGuid",
+    "partRefType"
+   ]
+  },
+  "AnalyticalRigidityType": {
+   "type": "string",
+   "description": "The rigidity of a degree of freedom of a release.",
+   "enum": [
+    "Free",
+    "Rigid",
+    "Custom",
+    "RigidCompressionOnly",
+    "RigidTensionOnly",
+    "CustomCompressionOnly",
+    "CustomTensionOnly"
+   ]
+  },
+  "AnalyticalRelease": {
+   "type": "object",
+   "description": "The release of an analytical member.",
+   "properties": {
+    "guid": {
+     "$ref": "#/GuidId",
+     "description": "The identifier of the release."
+    },
+    "releaseDescriptions": {
+     "type": "array",
+     "description": "The releases of the member parts. Each needs all six rigidities; a stiffness left out is 0.",
+     "items": {
+      "type": "object",
+      "properties": {
+       "ux": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessX": {
+        "type": "number"
+       },
+       "uy": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessY": {
+        "type": "number"
+       },
+       "uz": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessZ": {
+        "type": "number"
+       },
+       "fix": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessFix": {
+        "type": "number"
+       },
+       "fiy": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessFiy": {
+        "type": "number"
+       },
+       "fiz": {
+        "$ref": "#/AnalyticalRigidityType"
+       },
+       "stiffnessFiz": {
+        "type": "number"
+       },
+       "amPartRef": {
+        "$ref": "#/AnalyticalMemberPartRef"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "ux",
+       "uy",
+       "uz",
+       "fix",
+       "fiy",
+       "fiz",
+       "amPartRef"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid",
+    "releaseDescriptions"
+   ]
+  },
+  "AnalyticalCoordinateSystem": {
+   "type": "object",
+   "description": "A local coordinate system, given by its X and Y axes.",
+   "properties": {
+    "xVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "yVector": {
+     "$ref": "#/Coordinate3D"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "xVector",
+    "yVector"
+   ]
+  },
+  "AnalyticalCoordSysDirection": {
+   "type": "string",
+   "description": "Whether the values are in the global or in the local coordinate system.",
+   "enum": [
+    "Global",
+    "Local"
+   ]
+  },
+  "AnalyticalSupport": {
+   "type": "object",
+   "description": "An analytical support: its settings and the member part it supports. Every rigidity type is required; a value left out is 0.",
+   "properties": {
+    "supportSettings": {
+     "type": "object",
+     "properties": {
+      "supportType": {
+       "type": "string",
+       "enum": [
+        "SimplePoint",
+        "SingleLine",
+        "Surface"
+       ]
+      },
+      "supportValues": {
+       "type": "object",
+       "description": "The rigidity and the value of the three translations and the three rotations.",
+       "properties": {
+        "xType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "xValue": {
+         "type": "number"
+        },
+        "yType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "yValue": {
+         "type": "number"
+        },
+        "zType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "zValue": {
+         "type": "number"
+        },
+        "rxType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "rxValue": {
+         "type": "number"
+        },
+        "ryType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "ryValue": {
+         "type": "number"
+        },
+        "rzType": {
+         "$ref": "#/AnalyticalRigidityType"
+        },
+        "rzValue": {
+         "type": "number"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "xType",
+        "yType",
+        "zType",
+        "rxType",
+        "ryType",
+        "rzType"
+       ]
+      },
+      "coordinateSystem": {
+       "$ref": "#/AnalyticalCoordSysDirection"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "supportType",
+      "supportValues",
+      "coordinateSystem"
+     ]
+    },
+    "supportedMemberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "supportSettings",
+    "supportedMemberPartRef"
+   ]
+  },
+  "AnalyticalSupportGeometry": {
+   "type": "object",
+   "description": "The geometry of an analytical support in a Structural Analytical Model.",
+   "properties": {
+    "coordinates": {
+     "type": "array",
+     "items": {
+      "$ref": "#/Coordinate3D"
+     }
+    },
+    "translationStiffnessVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "rotationStiffnessVector": {
+     "$ref": "#/Coordinate3D"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "coordinates",
+    "translationStiffnessVector",
+    "rotationStiffnessVector"
+   ]
+  },
+  "AnalyticalLink": {
+   "type": "object",
+   "description": "An analytical link: its settings and the member parts it connects. The rigid and the spring settings are both required, whichever type the link has. Every rigidity type is required; a value left out is 0 and a resistance left out is false.",
+   "properties": {
+    "linkSettings": {
+     "type": "object",
+     "properties": {
+      "geometry": {
+       "type": "string",
+       "enum": [
+        "Link1D",
+        "Link2D"
+       ]
+      },
+      "type": {
+       "type": "string",
+       "enum": [
+        "Rigid",
+        "Spring"
+       ]
+      },
+      "rigidSettings": {
+       "type": "object",
+       "properties": {
+        "startConnectionType": {
+         "type": "string",
+         "enum": [
+          "RigidConnection",
+          "HingeConnection"
+         ]
+        },
+        "endConnectionType": {
+         "type": "string",
+         "enum": [
+          "RigidConnection",
+          "HingeConnection"
+         ]
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "startConnectionType",
+        "endConnectionType"
+       ]
+      },
+      "springSettings": {
+       "type": "object",
+       "properties": {
+        "direction": {
+         "$ref": "#/AnalyticalCoordSysDirection"
+        },
+        "translation": {
+         "type": "object",
+         "properties": {
+          "kxType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kxValue": {
+           "type": "number"
+          },
+          "kyType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kyValue": {
+           "type": "number"
+          },
+          "kzType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kzValue": {
+           "type": "number"
+          },
+          "resistanceFx": {
+           "type": "boolean"
+          },
+          "fxValue": {
+           "type": "number"
+          },
+          "resistanceFy": {
+           "type": "boolean"
+          },
+          "fyValue": {
+           "type": "number"
+          },
+          "resistanceFz": {
+           "type": "boolean"
+          },
+          "fzValue": {
+           "type": "number"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "kxType",
+          "kyType",
+          "kzType"
+         ]
+        },
+        "rotation": {
+         "type": "object",
+         "properties": {
+          "kxxType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kxxValue": {
+           "type": "number"
+          },
+          "kyyType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kyyValue": {
+           "type": "number"
+          },
+          "kzzType": {
+           "$ref": "#/AnalyticalRigidityType"
+          },
+          "kzzValue": {
+           "type": "number"
+          },
+          "resistanceMx": {
+           "type": "boolean"
+          },
+          "mxValue": {
+           "type": "number"
+          },
+          "resistanceMy": {
+           "type": "boolean"
+          },
+          "myValue": {
+           "type": "number"
+          },
+          "resistanceMz": {
+           "type": "boolean"
+          },
+          "mzValue": {
+           "type": "number"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "kxxType",
+          "kyyType",
+          "kzzType"
+         ]
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "direction",
+        "translation",
+        "rotation"
+       ]
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "geometry",
+      "type",
+      "rigidSettings",
+      "springSettings"
+     ]
+    },
+    "startElementPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    },
+    "endElementPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "linkSettings",
+    "startElementPartRef",
+    "endElementPartRef"
+   ]
+  },
+  "AnalyticalLinkGeometry": {
+   "type": "object",
+   "description": "The geometry of an analytical link in a Structural Analytical Model.",
+   "properties": {
+    "coordinates": {
+     "type": "array",
+     "items": {
+      "$ref": "#/Coordinate3D"
+     }
+    },
+    "translationStiffnessVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "rotationStiffnessVector": {
+     "$ref": "#/Coordinate3D"
+    },
+    "curves": {
+     "type": "array",
+     "items": {
+      "$ref": "#/AnalyticalCurve"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "coordinates",
+    "translationStiffnessVector",
+    "rotationStiffnessVector",
+    "curves"
+   ]
+  },
+  "AnalyticalLoadForceType": {
+   "type": "string",
+   "description": "Whether the load is a force or a moment.",
+   "enum": [
+    "Force",
+    "Moment"
+   ]
+  },
+  "AnalyticalPointLoad": {
+   "type": "object",
+   "description": "An analytical point load: its settings and the member part it loads.",
+   "properties": {
+    "loadSettings": {
+     "type": "object",
+     "properties": {
+      "loadCaseId": {
+       "$ref": "#/GuidId",
+       "description": "The load case the load belongs to."
+      },
+      "loadForceType": {
+       "$ref": "#/AnalyticalLoadForceType"
+      },
+      "coordinateSystemType": {
+       "$ref": "#/AnalyticalCoordSysDirection"
+      },
+      "xValue": {
+       "type": "number"
+      },
+      "yValue": {
+       "type": "number"
+      },
+      "zValue": {
+       "type": "number"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "loadCaseId",
+      "loadForceType",
+      "coordinateSystemType",
+      "xValue",
+      "yValue",
+      "zValue"
+     ]
+    },
+    "loadedMemberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadSettings",
+    "loadedMemberPartRef"
+   ]
+  },
+  "AnalyticalEdgeLoad": {
+   "type": "object",
+   "description": "An analytical edge load: its settings and the member part it loads.",
+   "properties": {
+    "loadSettings": {
+     "type": "object",
+     "properties": {
+      "loadCaseId": {
+       "$ref": "#/GuidId",
+       "description": "The load case the load belongs to."
+      },
+      "loadForceType": {
+       "$ref": "#/AnalyticalLoadForceType"
+      },
+      "loadDistributionType": {
+       "type": "string",
+       "description": "Whether the load is the same along the edge or changes from the start value to the end value.",
+       "enum": [
+        "Uniform",
+        "Trapezoid"
+       ]
+      },
+      "coordinateSystemType": {
+       "$ref": "#/AnalyticalCoordSysDirection"
+      },
+      "startValue": {
+       "$ref": "#/Coordinate3D"
+      },
+      "endValue": {
+       "$ref": "#/Coordinate3D"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "loadCaseId",
+      "loadForceType",
+      "loadDistributionType",
+      "coordinateSystemType",
+      "startValue",
+      "endValue"
+     ]
+    },
+    "loadedMemberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadSettings",
+    "loadedMemberPartRef"
+   ]
+  },
+  "AnalyticalSurfaceLoad": {
+   "type": "object",
+   "description": "An analytical surface load: its settings and the member part it loads.",
+   "properties": {
+    "loadSettings": {
+     "type": "object",
+     "properties": {
+      "loadCaseId": {
+       "$ref": "#/GuidId",
+       "description": "The load case the load belongs to."
+      },
+      "coordinateSystemType": {
+       "$ref": "#/AnalyticalCoordSysDirection"
+      },
+      "xValue": {
+       "type": "number"
+      },
+      "yValue": {
+       "type": "number"
+      },
+      "zValue": {
+       "type": "number"
+      }
+     },
+     "additionalProperties": false,
+     "required": [
+      "loadCaseId",
+      "coordinateSystemType",
+      "xValue",
+      "yValue",
+      "zValue"
+     ]
+    },
+    "loadedMemberPartRef": {
+     "$ref": "#/AnalyticalMemberPartRef"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "loadSettings",
+    "loadedMemberPartRef"
+   ]
+  },
+  "AnalyticalEdgeLoadCustomData": {
+   "type": "object",
+   "description": "The curve of an analytical edge load. CreateAnalyticalLoads needs at least one curve.",
+   "properties": {
+    "curve": {
+     "type": "array",
+     "items": {
+      "$ref": "#/AnalyticalCurve"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "curve"
+   ]
+  },
+  "AnalyticalSurfaceLoadCustomData": {
+   "type": "object",
+   "description": "The contour of an analytical surface load. CreateAnalyticalLoads needs at least one curve.",
+   "properties": {
+    "contour": {
+     "type": "array",
+     "items": {
+      "$ref": "#/AnalyticalCurve"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "contour"
+   ]
+  },
+  "AnalyticalImportMappingTable": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "type": "object",
+      "properties": {
+       "elemPartId": {
+        "type": "object",
+        "properties": {
+         "memberGuid": {
+          "$ref": "#/GuidId"
+         },
+         "contourIndex": {
+          "type": "integer"
+         },
+         "edgeOrVertexIndex": {
+          "type": "integer"
+         }
+        },
+        "additionalProperties": false,
+        "required": [
+         "memberGuid",
+         "contourIndex",
+         "edgeOrVertexIndex"
+        ]
+       },
+       "memberPartRef": {
+        "$ref": "#/AnalyticalMemberPartRef"
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "elemPartId",
+       "memberPartRef"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "items"
+   ]
+  },
+  "AnalyticalImportIdMapping": {
+   "type": "object",
+   "description": "Maps the edges and vertices of the given surface member to the parts of the new element. Archicad 26 and newer.",
+   "properties": {
+    "edges": {
+     "$ref": "#/AnalyticalImportMappingTable"
+    },
+    "vertices": {
+     "$ref": "#/AnalyticalImportMappingTable"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "edges",
+    "vertices"
+   ]
+  }
+ }
+}

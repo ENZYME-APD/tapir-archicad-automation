@@ -15,9 +15,10 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             : base(
                 "GetProjectPreferences",
                 "Gets pages of the project preferences (Options > Project Preferences): the working units, " +
-                "the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan " +
-                "Cut Plane Settings. Each page is a JSON text that " +
-                "SetProjectPreferences takes back.",
+                "the dimensions, the calculation units, the zones, the reference levels, the legacy settings, " +
+                "the layouts, the data safety and the calculation rules, and the Floor Plan Cut Plane Settings, " +
+                "as well as the Imaging and Calculation page of the Work Environment. Each page is a JSON text " +
+                "that SetProjectPreferences takes back (DataSafety is read only, so it takes no DataSafety page).",
                 GroupNames.Project)
         {
         }

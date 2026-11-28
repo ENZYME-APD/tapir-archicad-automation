@@ -19,7 +19,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SolveStairBaseline",
                 "Runs the Archicad stair solver on the given Stair baselines and parameters without creating any " +
                 "element. Returns for each one whether the baseline was already correct, could be solved or could " +
-                "not be solved, with the baseline and the main stair settings after solving. The inputs are the " +
+                "not be solved, with the baseline (as a curve, with its arcs) and the main stair settings after " +
+                "solving. The baseline is given as points (BaseLines) or as a curve with arcs for curved stairs " +
+                "(BaseLineCurves). The inputs are the " +
                 "same as those of CreateStairs; the settings not given come from the Stair tool defaults. " +
                 "Available from Archicad 27.",
                 GroupNames.ElementDetails)
@@ -31,7 +33,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             inManager.AddPointParameter(
                 "BaseLines",
                 "BaseLines",
-                "Base line points of each stair (one branch per stair, at least 2 points; only X and Y are used)."
+                ("Base line points of each stair (one branch per stair, at least 2 points; only X and Y are used). " +
+                 "Leave it empty when the baselines are given as curves in BaseLineCurves.")
                     .WithTypeName("pointTree"),
                 GH_ParamAccess.tree);
 
@@ -69,7 +72,29 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "If false, the tread/riser finishes are hidden and only the stair structure is modeled " +
                 "(input only 1 to use the same value for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4, 5, 6, 7, 8 });
+            // Appended last: saved definitions find the inputs by position.
+            inManager.AddCurveParameter(
+                "BaseLineCurves",
+                "BaseLineCurves",
+                CreateStairsComponent.BaseLineCurvesDescription,
+                GH_ParamAccess.list);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9 });
+        }
+
+        public override bool Read(
+            GH_IO.Serialization.GH_IReader reader)
+        {
+            var result = base.Read(reader);
+
+            // A parameter reads its Optional flag from the document, and
+            // BaseLines was required before BaseLineCurves was added.
+            if (Params.Input.Count > 0)
+            {
+                Params.Input[0].Optional = true;
+            }
+
+            return result;
         }
 
         protected override void AddOutputs()
@@ -80,7 +105,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             OutCurves(
                 "BaseLines",
-                "Base line of each stair after solving, at its Z coordinate.");
+                "Base line of each stair after solving, at its Z coordinate, with its arcs; it can be fed " +
+                "back into BaseLineCurves of CreateStairs.");
 
             OutNumberList(
                 "TotalHeights",
@@ -116,6 +142,60 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            var baseLineCurves = da.OptionalList<Curve>(9);
+            if (baseLineCurves.Count > 0 && baseLines.DataCount > 0)
+            {
+                this.AddError("Give either the BaseLines or the BaseLineCurves input, not both.");
+                return;
+            }
+
+            // The baseline of each stair: its points and, from a curve, its arcs.
+            var baseLinePoints = new List<JArray>();
+            var baseLineArcs = new List<JArray>();
+            if (baseLineCurves.Count > 0)
+            {
+                foreach (var curve in baseLineCurves)
+                {
+                    if (!PolygonHelp.TryToBaseLine(
+                            curve,
+                            out JArray points,
+                            out JArray arcs,
+                            out string error))
+                    {
+                        this.AddError($"The input BaseLineCurves is invalid: {error}.");
+                        return;
+                    }
+
+                    baseLinePoints.Add(points);
+                    baseLineArcs.Add(arcs);
+                }
+            }
+            else
+            {
+                for (var i = 0; i < baseLines.Branches.Count; i++)
+                {
+                    var points = new JArray();
+                    foreach (var point in baseLines.Branches[i])
+                    {
+                        if (point == null)
+                        {
+                            continue;
+                        }
+
+                        points.Add(new JObject { ["x"] = point.Value.X, ["y"] = point.Value.Y });
+                    }
+
+                    if (points.Count < 2)
+                    {
+                        this.AddError($"Branch {i} of BaseLines has fewer than 2 points.");
+                        return;
+                    }
+
+                    baseLinePoints.Add(points);
+                    baseLineArcs.Add(new JArray());
+                }
+            }
+
             var zCoordinates = da.OptionalList<double>(1);
             var floorIndices = da.OptionalList<int>(2);
             var totalHeights = da.OptionalList<double>(3);
@@ -125,9 +205,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var treadDepths = da.OptionalList<double>(7);
             var finishVisible = da.OptionalList<bool>(8);
 
-            var count = baseLines.Branches.Count;
+            var count = baseLinePoints.Count;
             if (count == 0)
             {
+                this.AddError("Give the BaseLines or the BaseLineCurves input.");
                 return;
             }
 
@@ -139,7 +220,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
             if (!this.CheckSizes(
                     count,
-                    "BaseLines (branch count)",
+                    baseLineCurves.Count > 0 ? "BaseLineCurves" : "BaseLines (branch count)",
                     ("ZCoordinates", zCoordinates.Count),
                     ("FloorIndices", floorIndices.Count),
                     ("TotalHeights", totalHeights.Count),
@@ -155,28 +236,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var stairsData = new JArray();
             for (var i = 0; i < count; i++)
             {
-                var points = new JArray();
-                foreach (var point in baseLines.Branches[i])
-                {
-                    if (point == null)
-                    {
-                        continue;
-                    }
-
-                    points.Add(new JObject { ["x"] = point.Value.X, ["y"] = point.Value.Y });
-                }
-
-                if (points.Count < 2)
-                {
-                    this.AddError($"Branch {i} of BaseLines has fewer than 2 points.");
-                    return;
-                }
-
                 var stair = new JObject
                 {
-                    ["baseLinePoints"] = points,
+                    ["baseLinePoints"] = baseLinePoints[i],
                     ["zCoordinate"] = zCoordinates.At(i)
                 };
+
+                if (baseLineArcs[i].Count > 0)
+                {
+                    stair["baseLineArcs"] = baseLineArcs[i];
+                }
 
                 if (floorIndices.Count > 0)
                 {

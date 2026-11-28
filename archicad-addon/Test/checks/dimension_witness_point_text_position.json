@@ -1,0 +1,126 @@
+{
+  "title": "Linear dimensions: a witness point's text moved and fixed by ModifyAssociativeDimensions' textPosition, its position read back by GetDimensionData (#2792)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "linear dimension with three witness points",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 860.0, "y": 859.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 860.0, "y": 860.0 } },
+              { "coordinate": { "x": 864.0, "y": 860.0 } },
+              { "coordinate": { "x": 867.0, "y": 860.0 } }
+            ],
+            "textHeight": 2.5
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "a new dimension reports where its texts are",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "three witness points" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "exists": true, "name": "textPosition.x returned" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.y", "exists": true, "name": "textPosition.y returned" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": false, "name": "text at its automatic position" }
+      ]
+    },
+    {
+      "id": "move the second text below the dimension line",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [
+              { "index": 1, "textPosition": { "x": 861.5, "y": 857.75 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "position accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "the moved text read back",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "witness points kept" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "approx": 861.5, "tol": 0.001, "name": "text moved to x 861.5" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.y", "approx": 857.75, "tol": 0.001, "name": "text moved to y 857.75" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": true, "name": "moved text is fixed" },
+        { "path": "dimensionsData[0].witnessPoints[2].textPositionFixed", "eq": false, "name": "third text untouched" },
+        { "path": "dimensionsData[0].witnessPoints[1].coordinate.x", "approx": 864.0, "tol": 0.001, "name": "witness point itself not moved" }
+      ]
+    },
+    {
+      "id": "position and reset together are refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [
+              { "index": 1, "textPosition": { "x": 870.0, "y": 870.0 }, "resetTextPosition": true }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "contradicting item refused" }
+      ]
+    },
+    {
+      "id": "the refused change moved nothing",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPosition.x", "approx": 861.5, "tol": 0.001, "name": "still at x 861.5" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": true, "name": "still fixed" }
+      ]
+    },
+    {
+      "id": "reset the moved text",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "witnessPointTexts": [ { "index": 1, "resetTextPosition": true } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "reset accepted" }
+      ]
+    },
+    {
+      "id": "the text back at its automatic position",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints[1].textPositionFixed", "eq": false, "name": "no longer fixed" }
+      ]
+    }
+  ]
+}

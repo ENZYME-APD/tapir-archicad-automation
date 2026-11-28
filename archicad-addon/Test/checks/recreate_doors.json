@@ -1,0 +1,132 @@
+{
+  "title": "RecreateDoors moves a door into another wall at its old position, keeping its settings and Element ID, and lists its label as not carried over",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Window", "Door", "Label" ],
+  "steps": [
+    {
+      "id": "wall A along y 980 and wall B along y 990",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 980.0 }, "endCoordinate": { "x": 1000.0, "y": 980.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
+          { "begCoordinate": { "x": 990.0, "y": 990.0 }, "endCoordinate": { "x": 1000.0, "y": 990.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "a mirrored door opening to the other side in wall A, 6 m along it, with an Element ID",
+      "command": "CreateDoors",
+      "params": { "doorsData": [ { "ownerWallId": { "guid": "${a}" }, "centerOffset": 6.0, "width": 0.9, "height": 2.1, "reflected": true, "oSide": true, "id": "CHK-RECREATE-DOOR" } ] },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "door created in wall A" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "the door as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "part": "detailsOfElements[0].details.libPart.name", "reflected": "detailsOfElements[0].details.reflected", "oSide": "detailsOfElements[0].details.oSide" }
+    },
+    {
+      "id": "where the door is in wall A (its 3D box takes in the leaf, which opens to one side of the wall)",
+      "command": "API.Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": {
+        "oyMin": "boundingBoxes3D[0].boundingBox3D.yMin", "oyMax": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "oxMin": "boundingBoxes3D[0].boundingBox3D.xMin", "oxMax": "boundingBoxes3D[0].boundingBox3D.xMax"
+      }
+    },
+    {
+      "id": "a text label of the door",
+      "command": "CreateLabels",
+      "params": { "labelsData": [ { "labelClass": "Text", "text": "Tapir recreate door", "parentElementId": { "guid": "${d}" }, "begCoordinate": { "x": 996.0, "y": 978.0 } } ] },
+      "save": { "label": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "label of the door created" } ]
+    },
+    {
+      "id": "recreate the door in wall B, without centerOffset",
+      "command": "RecreateDoors",
+      "params": { "doors": [ { "elementId": { "guid": "${d}" }, "ownerWallId": { "guid": "${b}" } } ] },
+      "save": { "nd": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new door created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${d}", "name": "the old door is named" },
+        { "path": "results[0].notCarriedOver[0].relation", "eq": "Label", "name": "its label is listed as not carried over" },
+        { "path": "results[0].notCarriedOver[0].elementId.guid", "eq": "${label}", "name": "the label listed is the door's" }
+      ]
+    },
+    {
+      "id": "the new door",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nd}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Door", "name": "it is a door" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-DOOR", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${b}", "name": "it is in wall B" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 6.0, "name": "keeps its 6 m along the wall" },
+        { "path": "detailsOfElements[0].details.width", "approx": 0.9, "name": "keeps its width" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.1, "name": "keeps its height" },
+        { "path": "detailsOfElements[0].details.reflected", "eq": "${reflected}", "name": "keeps its mirroring" },
+        { "path": "detailsOfElements[0].details.oSide", "eq": "${oSide}", "name": "keeps its opening side" },
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "${part}", "name": "keeps its library part" }
+      ]
+    },
+    {
+      "id": "where the new door is",
+      "command": "API.Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nd}" } } ] },
+      "save": {
+        "yMin": "boundingBoxes3D[0].boundingBox3D.yMin", "yMax": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "xMin": "boundingBoxes3D[0].boundingBox3D.xMin", "xMax": "boundingBoxes3D[0].boundingBox3D.xMax"
+      },
+      "expect": [
+        { "expr": "${yMin} - 990", "lt": 0.0, "name": "the door reaches across wall B (below y 990)" },
+        { "expr": "${yMax} - 990", "gt": 0.0, "name": "the door reaches across wall B (above y 990)" },
+        { "expr": "(${yMin} + ${yMax}) / 2 - 990 - ((${oyMin} + ${oyMax}) / 2 - 980)", "approx": 0.0, "tol": 0.05, "name": "the door sits in wall B as it sat in wall A, 10 m further, its leaf on the same side" },
+        { "expr": "(${xMin} + ${xMax}) / 2 - (${oxMin} + ${oxMax}) / 2", "approx": 0.0, "tol": 0.05, "name": "the door kept its 6 m along the wall" }
+      ]
+    },
+    {
+      "id": "the old door and its label are gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } }, { "elementId": { "guid": "${label}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old door was deleted" },
+        { "path": "detailsOfElements[1].error.code", "exists": true, "name": "its label was deleted with it" }
+      ]
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateDoors",
+      "creates": false,
+      "params": {
+        "doors": [
+          { "elementId": { "guid": "${nd}" }, "ownerWallId": { "guid": "${nd}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "ownerWallId": { "guid": "${a}" } },
+          { "elementId": { "guid": "${a}" }, "ownerWallId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "a door as owner wall refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a nonexistent door refused" },
+        { "path": "results[2].error.code", "exists": true, "name": "a wall as the door to recreate refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nd}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${b}", "name": "the door is still in wall B" } ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nd}" } } ] } }
+  ]
+}

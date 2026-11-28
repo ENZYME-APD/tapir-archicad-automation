@@ -1,0 +1,85 @@
+{
+  "title": "The Create… attribute commands refuse an empty name instead of creating an attribute with a placeholder name (#3054)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "CreateLayers: empty name refused",
+      "command": "CreateLayers",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"layerDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateBuildingMaterials: empty name refused",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"buildingMaterialDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateZoneCategories: empty name refused",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"zoneCategoryDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateSurfaces: empty name refused",
+      "command": "CreateSurfaces",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"surfaceDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateLayerCombinations: empty name refused",
+      "command": "CreateLayerCombinations",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"layerCombinationDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateComposites: empty name refused",
+      "command": "CreateComposites",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {"compositeDataArray": [{"name": ""}]},
+      "expect": [
+        {"path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)"}
+      ]
+    },
+    {
+      "id": "CreateLayers: a non-empty name is still created",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {"layerDataArray": [{"name": "TapirCheck Layer 3054"}]},
+      "save": {"layer": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true, "name": "created"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Layer", "attributeId": {"attributeId": {"guid": "${layer}"}}}]}
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "title": "CreateRadialDimensions: radial dimensions of a circle and of an arc, linked to them and measuring their radius (Archicad may lengthen the dimension line along its direction), read back with GetDetailsOfElements (which also shows how Archicad stored the link), a line refused",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Arc", "Circle", "Line", "RadialDimension" ],
+  "steps": [
+    {
+      "id": "a circle with a 2 m radius",
+      "command": "CreateCircles",
+      "params": { "circlesData": [ { "origin": { "x": 950.0, "y": 900.0 }, "radius": 2.0, "floorInd": 0 } ] },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "circle created" } ]
+    },
+    {
+      "id": "dimension the circle, the dimension line ending outside it",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [
+          {
+            "elementId": { "guid": "${c}" },
+            "dimensionLineEnd": { "x": 953.0, "y": 900.0 },
+            "linePen": 2,
+            "textPen": 3,
+            "textHeight": 2.5,
+            "textDirection": "Radial",
+            "showOrigin": true
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "radial dimension of the circle created (else the error names the link, radius and settings Archicad stored)" }
+      ]
+    },
+    {
+      "id": "read the circle's dimension back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RadialDimension", "name": "a radial dimension" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 2.0, "name": "measures the 2 m radius" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${c}", "name": "linked to the circle" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Arc", "name": "the link to the circle is stored with the type Arc" },
+        { "path": "detailsOfElements[0].details.ownerArcCenter.x", "approx": 950.0, "name": "centre of the measured circle (x)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.x", "gt": 952.999, "name": "dimension line end kept or the line lengthened along its direction (x)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.y", "approx": 900.0, "name": "dimension line end on its direction (y)" },
+        { "path": "detailsOfElements[0].details.linePen", "eq": 2, "name": "line pen kept" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 3, "name": "text pen kept" },
+        { "path": "detailsOfElements[0].details.textDirection", "eq": "Radial", "name": "radial text kept" },
+        { "path": "detailsOfElements[0].details.showOrigin", "eq": true, "name": "centre mark kept" },
+        { "path": "detailsOfElements[0].details.ownerElementInIndex", "exists": true, "name": "stored inIndex (shown for the record)" },
+        { "path": "detailsOfElements[0].details.basePoint.x", "exists": true, "name": "stored base point (shown for the record)" }
+      ]
+    },
+    {
+      "id": "a quarter arc with a 1.5 m radius",
+      "command": "CreateArcs",
+      "params": { "arcsData": [ { "origin": { "x": 960.0, "y": 900.0 }, "radius": 1.5, "begAngle": 0.0, "endAngle": 1.5707963267948966, "floorInd": 0 } ] },
+      "save": { "a": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "arc created" } ]
+    },
+    {
+      "id": "dimension the arc at 45 degrees",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [
+          { "elementId": { "guid": "${a}" }, "dimensionLineEnd": { "x": 961.4142136, "y": 901.4142136 }, "textPosition": "Above" }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "radial dimension of the arc created" }
+      ]
+    },
+    {
+      "id": "read the arc's dimension back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.radius", "approx": 1.5, "name": "measures the 1.5 m radius" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${a}", "name": "linked to the arc" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Arc", "name": "the owner is an arc" },
+        { "path": "detailsOfElements[0].details.textPosition", "eq": "Above", "name": "text above the line kept" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.x", "gt": 961.414, "name": "dimension line end at 45 degrees, kept or lengthened (x)" },
+        { "path": "detailsOfElements[0].details.dimensionLineEnd.y", "gt": 901.414, "name": "dimension line end at 45 degrees, kept or lengthened (y)" }
+      ]
+    },
+    {
+      "id": "a straight line",
+      "command": "CreateLineElements",
+      "params": { "linesData": [ { "begCoordinate": { "x": 970.0, "y": 900.0 }, "endCoordinate": { "x": 972.0, "y": 900.0 }, "floorInd": 0 } ] },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "line created" } ]
+    },
+    {
+      "id": "a line has no radius: refused",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [ { "elementId": { "guid": "${l}" }, "dimensionLineEnd": { "x": 971.0, "y": 901.0 } } ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "nothing created" }
+      ]
+    }
+  ]
+}

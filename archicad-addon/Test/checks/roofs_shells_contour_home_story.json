@@ -1,0 +1,152 @@
+{
+  "title": "ModifyRoofs and ModifyShells name the contour's showOnHome that Archicad keeps on, and apply the rest (#3091)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [ "Roof", "Shell" ],
+  "steps": [
+    {
+      "id": "single-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              { "x": 1100.0, "y": 1100.0 },
+              { "x": 1106.0, "y": 1100.0 },
+              { "x": 1106.0, "y": 1104.0 },
+              { "x": 1100.0, "y": 1104.0 }
+            ],
+            "pivotLine": {
+              "begCoordinate": { "x": 1100.0, "y": 1100.0 },
+              "endCoordinate": { "x": 1106.0, "y": 1100.0 }
+            },
+            "angle": 0.5
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "roof created" }
+      ]
+    },
+    {
+      "id": "basic extruded shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "basePlane": { "origin": { "x": 1150.0, "y": 1100.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "shell created" }
+      ]
+    },
+    {
+      "id": "the request of the issue on the roof",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "visibility": { "showOnHome": false, "showRelBelow": 0, "showRelAbove": 1 },
+            "fillVisibility": { "showOnHome": false, "showRelBelow": 0, "showRelAbove": 1 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1 },
+        { "path": "executionResults[0].success", "eq": false, "name": "not reported as a success" },
+        { "path": "executionResults[0].error.message", "contains": "visibility.showOnHome", "name": "names the contour's showOnHome" },
+        { "path": "executionResults[0].error.message", "contains": "home story", "name": "says why" }
+      ]
+    },
+    {
+      "id": "the request of the issue on the shell",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "visibility": { "showOnHome": false, "showRelBelow": 0, "showRelAbove": 1 },
+            "fillVisibility": { "showOnHome": false, "showRelBelow": 0, "showRelAbove": 1 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1 },
+        { "path": "executionResults[0].success", "eq": false, "name": "not reported as a success" },
+        { "path": "executionResults[0].error.message", "contains": "visibility.showOnHome", "name": "names the contour's showOnHome" },
+        { "path": "executionResults[0].error.message", "contains": "home story", "name": "says why" }
+      ]
+    },
+    {
+      "id": "the rest was applied",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "roof: automatic visibility off" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "roof: contour still on the home story" },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "roof: contour one story above" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showOnHome", "eq": false, "name": "roof: fill off the home story" },
+        { "path": "detailsOfElements[0].details.fillVisibility.showRelAbove", "eq": 1, "name": "roof: fill one story above" },
+        { "path": "detailsOfElements[1].details.isAutoOnStoryVisibility", "eq": false, "name": "shell: automatic visibility off" },
+        { "path": "detailsOfElements[1].details.visibility.showOnHome", "eq": true, "name": "shell: contour still on the home story" },
+        { "path": "detailsOfElements[1].details.visibility.showRelAbove", "eq": 1, "name": "shell: contour one story above" },
+        { "path": "detailsOfElements[1].details.fillVisibility.showOnHome", "eq": false, "name": "shell: fill off the home story" },
+        { "path": "detailsOfElements[1].details.fillVisibility.showRelAbove", "eq": 1, "name": "shell: fill one story above" }
+      ]
+    },
+    {
+      "id": "a visibility Archicad applies is a success",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "visibility": { "showOnHome": true, "showRelAbove": 0 },
+            "fillVisibility": { "showOnHome": true, "showRelAbove": 0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "roof modified" }
+      ]
+    },
+    {
+      "id": "a visibility Archicad applies is a success on the shell",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "visibility": { "showOnHome": true, "showRelAbove": 0 },
+            "fillVisibility": { "showOnHome": true, "showRelAbove": 0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "shell modified" }
+      ]
+    }
+  ]
+}

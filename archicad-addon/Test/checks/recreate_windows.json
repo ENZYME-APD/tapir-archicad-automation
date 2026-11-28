@@ -1,0 +1,112 @@
+{
+  "title": "RecreateWindows moves a window into another wall, keeping its size, sill, library part and Element ID",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Wall", "Window", "Door" ],
+  "steps": [
+    {
+      "id": "wall A along y 940 and wall B along y 950",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 990.0, "y": 940.0 }, "endCoordinate": { "x": 1000.0, "y": 940.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 },
+          { "begCoordinate": { "x": 990.0, "y": 950.0 }, "endCoordinate": { "x": 1000.0, "y": 950.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "a window in wall A, 2 m along it, with an Element ID",
+      "command": "CreateWindows",
+      "params": { "windowsData": [ { "ownerWallId": { "guid": "${a}" }, "centerOffset": 2.0, "width": 1.0, "height": 1.2, "sillHeight": 0.9, "id": "CHK-RECREATE-WIN" } ] },
+      "save": { "w": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "window created in wall A" } ],
+      "stopOnFail": true
+    },
+    {
+      "id": "the window's library part",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "save": { "part": "detailsOfElements[0].details.libPart.name" },
+      "expect": [ { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${a}", "name": "the window is in wall A" } ]
+    },
+    {
+      "id": "recreate the window in wall B, 3 m along it",
+      "command": "RecreateWindows",
+      "params": { "windows": [ { "elementId": { "guid": "${w}" }, "ownerWallId": { "guid": "${b}" }, "centerOffset": 3.0 } ] },
+      "save": { "nw": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new window created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${w}", "name": "the old window is named" },
+        { "path": "results[0].notCarriedOver", "len": 0, "name": "nothing was linked to the window" }
+      ]
+    },
+    {
+      "id": "the new window",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Window", "name": "it is a window" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-WIN", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${b}", "name": "it is in wall B" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 3.0, "name": "3 m along wall B" },
+        { "path": "detailsOfElements[0].details.width", "approx": 1.0, "name": "keeps its width" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.2, "name": "keeps its height" },
+        { "path": "detailsOfElements[0].details.sillHeight", "approx": 0.9, "name": "keeps its sill height" },
+        { "path": "detailsOfElements[0].details.libPart.name", "eq": "${part}", "name": "keeps its library part" }
+      ]
+    },
+    {
+      "id": "where the new window is",
+      "command": "API.Get3DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] },
+      "save": {
+        "yMin": "boundingBoxes3D[0].boundingBox3D.yMin", "yMax": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "xMin": "boundingBoxes3D[0].boundingBox3D.xMin", "xMax": "boundingBoxes3D[0].boundingBox3D.xMax"
+      },
+      "expect": [
+        { "expr": "(${yMin} + ${yMax}) / 2 - 950", "approx": 0.0, "tol": 0.3, "name": "the window is in wall B (y 950)" },
+        { "expr": "(${xMin} + ${xMax}) / 2 - 993", "approx": 0.0, "tol": 0.05, "name": "the window is 3 m along wall B" }
+      ]
+    },
+    {
+      "id": "the old window is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old window was deleted" } ]
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateWindows",
+      "creates": false,
+      "params": {
+        "windows": [
+          { "elementId": { "guid": "${nw}" }, "ownerWallId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+          { "elementId": { "guid": "${nw}" }, "ownerWallId": { "guid": "${nw}" } },
+          { "elementId": { "guid": "${a}" }, "ownerWallId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "a nonexistent wall refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "a window as owner wall refused" },
+        { "path": "results[2].error.code", "exists": true, "name": "a wall as the window to recreate refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${nw}" } }, { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${b}", "name": "the window is still in wall B" },
+        { "path": "detailsOfElements[1].type", "eq": "Wall", "name": "wall A is still there" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${nw}" } } ] } }
+  ]
+}

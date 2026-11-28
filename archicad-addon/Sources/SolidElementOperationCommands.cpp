@@ -40,6 +40,8 @@ static GS::UniString SolidLinkCreateErrorMessage (GSErrCode err)
             return prefix + " Archicad does not accept this operation for a solid element link.";
         case APIERR_REFUSEDPAR:
             return prefix + " Hotlinked elements cannot be linked.";
+        case APIERR_NO3D:
+            return prefix + " targetId or operatorId is an element without a 3D body of its own. Of an MEP route, the routing element (the whole route) or one of its rigid segments can be linked, a routing segment cannot.";
         case APIERR_BADDATABASE:
         case APIERR_NOTMINE:
             return prefix + " Archicad cannot change these elements in the current database, or a Teamwork element is not reserved.";
@@ -151,6 +153,20 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
     // The targets of the new links are reported to the notification clients as changed (#1825),
     // the operators when their modification stamp changed.
     ElementChangeReporter changeReporter;
+
+    // ACAPI_Element_SolidLink_Create answers APIERR_BADDATABASE (-2130313110) when the current
+    // database is not the floor plan (a section, for example), while the same links are created
+    // from the floor plan (#3090). So create them in the floor plan database whatever window is
+    // active, as RemoveSolidElementLinks does (#1566); the previous database is restored after the
+    // undoable command has finished, on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
 
     ACAPI_CallUndoableCommand ("CreateSolidElementLinks", [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
@@ -541,6 +557,19 @@ GS::ObjectState GetSolidElementLinksCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& solidLinksAdder = response.AddList<GS::ObjectState> ("solidLinks");
 
+    // The solid links of the model are only listed in the floor plan database: from a section
+    // the targets and operators came back empty for elements whose links the floor plan lists
+    // (#3090). So read them there whatever window is active, as RemoveSolidElementLinks removes
+    // them (#1566), and put the previous database back on every exit path.
+    API_DatabaseInfo previousDatabase = {};
+    bool databaseSwitched = false;
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseSwitched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+    SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
+
     for (const GS::ObjectState& elemOs : elements) {
         const API_Guid elemGuid = GetGuidFromElementsArrayItem (elemOs);
 
@@ -729,20 +758,7 @@ GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "trimmingElementId": {
-                            "$ref": "#/ElementId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "trimmingElementId"
-                    ]
+                    "$ref": "#/ElementTrimPair"
                 }
             },
             "dryRun": {
@@ -833,6 +849,189 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
         for (USize i = 0; i < pairs.GetSize (); ++i) {
             executionResults (CreateFailedExecutionResult (undoErr, "Failed to open an undoable command; no trim was removed."));
         }
+    }
+    return response;
+}
+
+// Whether trimmed is trimmed by trimming (GetElementTrims' trimmedBy); err is set when the
+// trimming elements of trimmed cannot be read, and the answer is then false.
+static bool IsTrimmedBy (const API_Guid& trimmed, const API_Guid& trimming, GSErrCode& err)
+{
+    GS::Array<API_Guid> trimmingElements;
+    err = ACAPI_Element_Trim_GetTrimmingElements (trimmed, &trimmingElements);
+    return err == NoError && trimmingElements.Contains (trimming);
+}
+
+RemoveElementTrimDirectionCommand::RemoveElementTrimDirectionCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveElementTrimDirectionCommand::GetName () const
+{
+    return "RemoveElementTrimDirection";
+}
+
+GS::Optional<GS::UniString> RemoveElementTrimDirectionCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementPairs": {
+                "type": "array",
+                "description": "Per pair, the trim of elementId by trimmingElementId is removed. When trimmingElementId is trimmed by elementId too (two roofs or shells trimming each other), that other direction is kept, with its trim type. The pairs are done in order, each on the trims the pairs before it left, so the two pairs of two roofs remove both directions.",
+                "items": {
+                    "$ref": "#/ElementTrimPair"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementPairs"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveElementTrimDirectionCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result for each input pair, in the order of the input. A pair whose element is not trimmed by its trimming element fails and changes nothing. When Archicad fails to remove a trim or to trim the kept direction again, the whole call is undone and every pair fails, the pair that failed with the reason."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveElementTrimDirectionCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> pairs;
+    parameters.Get ("elementPairs", pairs);
+
+    // One result per pair, filled in the undoable command below; a pair that is not reached keeps this one.
+    GS::Array<GS::ObjectState> results;
+    for (USize i = 0; i < pairs.GetSize (); ++i) {
+        results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Not tried: an earlier pair failed and the call was undone."));
+    }
+    GS::Array<UIndex> changedPairs;
+    GS::Optional<UIndex> failedPair;
+    // The elements whose trims change are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
+    // The Archicad API only removes the trimming connection between two elements, both directions
+    // at once (ACAPI_Element_Trim_Remove), so the other direction is read first and trimmed again
+    // after the removal, with its trim type, in the same undo step. A step that fails returns its
+    // error from the command, which undoes every pair before it, so no pair is left with both
+    // directions removed.
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Remove Trim Direction", [&] () -> GSErrCode {
+        for (UIndex i = 0; i < pairs.GetSize (); ++i) {
+            GS::ObjectState elementOs, trimmingOs;
+            if (!pairs[i].Get ("elementId", elementOs) || !pairs[i].Get ("trimmingElementId", trimmingOs)) {
+                results[i] = CreateFailedExecutionResult (APIERR_BADPARS, "elementId or trimmingElementId is missing. Nothing was changed for this pair.");
+                continue;
+            }
+            const API_Guid elementGuid = GetGuidFromObjectState (elementOs);
+            const API_Guid trimmingGuid = GetGuidFromObjectState (trimmingOs);
+            if (elementGuid == trimmingGuid) {
+                results[i] = CreateFailedExecutionResult (APIERR_BADPARS, "elementId and trimmingElementId are the same element. Nothing was changed for this pair.");
+                continue;
+            }
+
+            // The pair is read on the trims the pairs before it left.
+            GSErrCode err = NoError;
+            if (!IsTrimmedBy (elementGuid, trimmingGuid, err)) {
+                results[i] = err != NoError
+                    ? CreateFailedExecutionResult (err, "Failed to read the trims of the element. Nothing was changed for this pair.")
+                    : CreateFailedExecutionResult (APIERR_BADPARS, "The element is not trimmed by the trimming element. Nothing was changed for this pair.");
+                continue;
+            }
+            // The other direction: the trimming element trimmed by the element. Reading it can only
+            // fail for an element that is not a construction element, which then trims nothing.
+            GSErrCode reverseErr = NoError;
+            const bool keepReverse = IsTrimmedBy (trimmingGuid, elementGuid, reverseErr);
+            API_TrimTypeID reverseTrimType = APITrim_KeepInside;
+            if (keepReverse) {
+                err = ACAPI_Element_Trim_GetTrimType (trimmingGuid, elementGuid, &reverseTrimType);
+                if (err != NoError) {
+                    results[i] = CreateFailedExecutionResult (err, "Failed to read the trim type of the direction to keep (the trimming element trimmed by the element). Nothing was changed for this pair.");
+                    continue;
+                }
+            }
+
+            changeReporter.Add (elementGuid);
+            changeReporter.Add (trimmingGuid);
+            const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
+                results[i] = CreateFailedExecutionResult (failErr, message + " The call was undone, so no trim was changed.");
+                failedPair = i;
+                return failErr;
+            };
+
+            err = ACAPI_Element_Trim_Remove (elementGuid, trimmingGuid);
+            if (err != NoError) {
+                return fail (err, "Failed to remove the trim.");
+            }
+            if (keepReverse) {
+                err = ACAPI_Element_Trim_ElementsWith ({ trimmingGuid }, elementGuid, reverseTrimType);
+                if (err != NoError) {
+                    return fail (err, "Failed to trim the trimming element with the element again (the direction to keep).");
+                }
+            }
+
+            // Read back: the removed direction is gone and the kept one is there, with its trim type.
+            const bool stillTrimmed = IsTrimmedBy (elementGuid, trimmingGuid, err);
+            if (err != NoError || stillTrimmed) {
+                return fail (err != NoError ? err : APIERR_GENERAL, err != NoError
+                    ? GS::UniString ("Failed to read the trims of the element back.")
+                    : GS::UniString ("Archicad trimmed the element with the trimming element again when the other direction was trimmed."));
+            }
+            if (keepReverse) {
+                if (!IsTrimmedBy (trimmingGuid, elementGuid, err)) {
+                    return fail (err != NoError ? err : APIERR_GENERAL, "The trimming element is not trimmed by the element after it was trimmed again.");
+                }
+                API_TrimTypeID keptTrimType = APITrim_No;
+                err = ACAPI_Element_Trim_GetTrimType (trimmingGuid, elementGuid, &keptTrimType);
+                if (err != NoError || keptTrimType != reverseTrimType) {
+                    return fail (err != NoError ? err : APIERR_GENERAL, "The kept direction did not keep its trim type " + TrimTypeToString (reverseTrimType) + ".");
+                }
+            }
+            results[i] = CreateSuccessfulExecutionResult ();
+            changedPairs.Push (i);
+        }
+        return NoError;
+    });
+
+    if (failedPair.HasValue ()) {
+        // Every pair changed before the failing one was undone with it.
+        for (UIndex i : changedPairs) {
+            results[i] = CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("Undone: the pair at index %u failed, so the whole call was undone.", static_cast<unsigned int> (*failedPair)));
+        }
+    } else if (undoErr != NoError) {
+        // The undo scope did not open (nested undoable command, teamwork state): no pair was tried.
+        for (UIndex i = 0; i < results.GetSize (); ++i) {
+            results[i] = CreateFailedExecutionResult (undoErr, "Failed to open an undoable command; no trim was changed.");
+        }
+    } else {
+        for (UIndex i : changedPairs) {
+            GS::ObjectState elementOs, trimmingOs;
+            pairs[i].Get ("elementId", elementOs);
+            pairs[i].Get ("trimmingElementId", trimmingOs);
+            changeReporter.MarkChanged (GetGuidFromObjectState (elementOs));
+            changeReporter.MarkChanged (GetGuidFromObjectState (trimmingOs));
+        }
+    }
+    changeReporter.Report ();
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
     }
     return response;
 }

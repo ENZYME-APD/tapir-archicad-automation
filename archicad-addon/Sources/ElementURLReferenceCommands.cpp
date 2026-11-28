@@ -180,7 +180,7 @@ GS::Optional<GS::UniString> SetURLReferencesOfElementsCommand::GetInputParameter
                         },
                         "description": {
                             "type": "string",
-                            "description": "The description of the link, e.g. GRAPHISOFT Home Page. At most 255 bytes in UTF-8. Empty when omitted."
+                            "description": "The description of the link, e.g. GRAPHISOFT Home Page. At most 255 bytes in UTF-8. When omitted or empty, the URL is used as the description (then the URL must fit in 255 bytes), because Archicad does not take a link with an empty description."
                         }
                     },
                     "additionalProperties": false,
@@ -247,11 +247,23 @@ GS::ObjectState SetURLReferencesOfElementsCommand::Execute (const GS::ObjectStat
             }
             GS::UniString description;
             elementWithURLReference.Get ("description", description);
+            // Archicad refuses a link with an empty description (#3054), so an omitted or
+            // empty description is replaced by the URL itself.
+            const bool descriptionFromURL = description.IsEmpty ();
+            if (descriptionFromURL) {
+                description = url;
+            }
 
             API_ElemURLRef urlRef = {};
             GS::UniString errorMessage;
-            if (!SetCharArrayFromUniString (url, urlRef.urlLink, errorMessage, "url") ||
-                !SetCharArrayFromUniString (description, urlRef.description, errorMessage, "description")) {
+            if (!SetCharArrayFromUniString (url, urlRef.urlLink, errorMessage, "url")) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, errorMessage));
+                continue;
+            }
+            if (!SetCharArrayFromUniString (description, urlRef.description, errorMessage, "description")) {
+                if (descriptionFromURL) {
+                    errorMessage = "description is omitted or empty, and the url, which is used instead, is longer than 255 bytes in UTF-8: give a description.";
+                }
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, errorMessage));
                 continue;
             }

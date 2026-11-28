@@ -1,0 +1,129 @@
+{
+  "title": "SetElementFields refuses, before Archicad sees it, the fields Archicad refuses whatever their value (#3054): the library part of a zone (use ChangeLibraryPartOfElements) and the leader line of a level dimension's note, even when the value is the one GetElementFields just read; GetElementFieldDefinitions lists them as read-only with the reason, and the other fields stay writable",
+  "minTapir": "2.0.2",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "create a zone",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck field refusal zone",
+            "numberStr": "F1",
+            "floorIndex": 0,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 2900.0, "y": 2900.0 },
+                { "x": 2904.0, "y": 2900.0 },
+                { "x": 2904.0, "y": 2903.0 },
+                { "x": 2900.0, "y": 2903.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "read the zone's library part index",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z}" } } ], "fields": [ "libInd" ] },
+      "save": { "zoneLibInd": "elementFields[0].fields.libInd" },
+      "expect": [
+        { "path": "elementFields[0].fields.libInd", "exists": true, "name": "libInd is still read" }
+      ]
+    },
+    {
+      "id": "SetElementFields: writing back the zone's own libInd is refused with the reason",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${z}" }, "fields": { "libInd": "${zoneLibInd}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the library part index is refused" },
+        { "path": "executionResults[0].error.message", "contains": "read-only", "name": "as read-only" },
+        { "path": "executionResults[0].error.message", "contains": "ChangeLibraryPartOfElements", "name": "naming the command that changes the library part" }
+      ]
+    },
+    {
+      "id": "SetElementFields dry run: libInd is refused on a dry run too",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${z}" }, "fields": { "libInd": "${zoneLibInd}" } } ], "dryRun": true },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "the dry run refuses it as well" }
+      ]
+    },
+    {
+      "id": "create a level dimension",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 2920.0, "y": 2900.0 }, "level": 0.5, "floorIndex": 0 }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read the leader line fields of the level dimension's note",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ], "fields": [ "note1.useLeaderLine", "note1.begC.x", "pen" ] },
+      "expect": [
+        { "path": "elementFields[0].missingFields", "exists": false, "name": "the note fields are still read" },
+        { "path": "elementFields[0].inactiveFields", "exists": false, "name": "and none is left out" }
+      ]
+    },
+    {
+      "id": "SetElementFields: the leader line of a level dimension's note is refused with the reason",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": {
+        "elementsWithFields": [
+          { "elementId": { "guid": "${l}" }, "fields": { "note1.useLeaderLine": false } },
+          { "elementId": { "guid": "${l}" }, "fields": { "note2.endC.y": 2901.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "note1.useLeaderLine is refused before Archicad sees it" },
+        { "path": "executionResults[0].error.message", "contains": "leader line", "name": "the message says why" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a coordinate of note2's leader line is refused too" }
+      ]
+    },
+    {
+      "id": "SetElementFields: the other fields of the level dimension stay writable",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${l}" }, "fields": { "pen": 5 } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "the pen is written and kept" }
+      ]
+    },
+    {
+      "id": "the level dimension's pen after the change",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ], "fields": [ "pen" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.pen", "eq": 5, "name": "pen 5" }
+      ]
+    },
+    {
+      "id": "the tool defaults are not affected",
+      "command": "GetFieldsOfElementDefaults",
+      "creates": false,
+      "params": { "elementTypes": [ "LevelDimension" ], "fields": [ "note1.useLeaderLine" ] },
+      "expect": [
+        { "path": "fieldsOfElementDefaults[0].structName", "eq": "API_LevelDimensionType", "name": "the Level Dimension defaults are read" },
+        { "path": "fieldsOfElementDefaults[0].missingFields", "exists": false, "name": "with their note fields, as before" }
+      ]
+    }
+  ]
+}

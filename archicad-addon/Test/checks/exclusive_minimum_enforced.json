@@ -1,0 +1,180 @@
+{
+  "title": "ModifyWalls, ModifySlabs and ModifyColumns refuse a thickness, width or height of 0 or less (#3054, item 4)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 760.0, "y": 760.0 },
+            "endCoordinate": { "x": 765.0, "y": 760.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.7,
+            "structureType": "Basic",
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "wall thickness -1",
+      "command": "ModifyWalls",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "wallsWithDetails": [ { "elementId": { "guid": "${w1}" }, "thickness": -1.0 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (thickness greater than 0)" }
+      ]
+    },
+    {
+      "id": "wall thickness 0",
+      "command": "ModifyWalls",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "wallsWithDetails": [ { "elementId": { "guid": "${w1}" }, "thickness": 0.0 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (0 is not greater than 0)" }
+      ]
+    },
+    {
+      "id": "wall thickness 0.3",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": { "wallsWithDetails": [ { "elementId": { "guid": "${w1}" }, "thickness": 0.3 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "a positive thickness passes the schema" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall modified" }
+      ]
+    },
+    {
+      "id": "read the wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begThickness", "approx": 0.3, "name": "only the positive thickness was written" }
+      ]
+    },
+    {
+      "id": "slab",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.25,
+            "polygonCoordinates": [
+              { "x": 780.0, "y": 760.0 },
+              { "x": 784.0, "y": 760.0 },
+              { "x": 784.0, "y": 764.0 },
+              { "x": 780.0, "y": 764.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "slab thickness -1",
+      "command": "ModifySlabs",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "slabsWithDetails": [ { "elementId": { "guid": "${s1}" }, "thickness": -1.0 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (thickness greater than 0)" }
+      ]
+    },
+    {
+      "id": "slab thickness 0.35",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": { "slabsWithDetails": [ { "elementId": { "guid": "${s1}" }, "thickness": 0.35 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "a positive thickness passes the schema" },
+        { "path": "executionResults[0].success", "eq": true, "name": "slab modified" }
+      ]
+    },
+    {
+      "id": "read the slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.35, "name": "only the positive thickness was written" }
+      ]
+    },
+    {
+      "id": "column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 800.0, "y": 760.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.4,
+            "depth": 0.3
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "column width -1",
+      "command": "ModifyColumns",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "width": -1.0 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (width greater than 0)" }
+      ]
+    },
+    {
+      "id": "column width 0",
+      "command": "ModifyColumns",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "width": 0.0 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (0 is not greater than 0)" }
+      ]
+    },
+    {
+      "id": "column width 0.5",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "width": 0.5 } ] },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "a positive width passes the schema" },
+        { "path": "executionResults[0].success", "eq": true, "name": "column modified" }
+      ]
+    },
+    {
+      "id": "read the column",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 0.5, "name": "only the positive width was written" },
+        { "path": "detailsOfElements[0].details.depth", "approx": 0.3, "name": "depth kept" }
+      ]
+    }
+  ]
+}

@@ -13,6 +13,7 @@
 #include "ElementGDLParameterCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
+#include "LibraryPartEditing.hpp"
 #include "Folder.hpp"
 #include "File.hpp"
 #include "FileSystem.hpp"
@@ -361,19 +362,25 @@ static auto GetLibPartByFileName (LibraryManagerResult& libraryManager, GS::UniS
 }
 
 // The DevKit (GSMObject::IsEditable) only says a part is editable when it is loaded from a writable
-// file on the file system, so the reasons below are the ones that rule that out.
-static const char* NotEditableLibraryPartHint = " Archicad only lets a library part loaded from a writable file be modified, e.g. one created or copied into the embedded library or a local library folder by Tapir. A part of a library package (.lcf), a BIMcloud or read-only library or a file that is not writable is not editable: copy it with CopyLibraryParts under a new name and modify the copy.";
+// file on the file system, so the reasons below are the ones that rule that out. A part of a local
+// library folder is modified in its own file and a part of the embedded library in a temporary copy
+// (LibraryPartFileChanges), so they are only refused when that file cannot be loaded or written.
+static const char* NotEditableLibraryPartHint = " Archicad only lets a library part loaded from a writable file be modified: a part of the embedded library, or of a local library folder whose file is writable. A part of a library package (.lcf), a BIMcloud, built-in or read-only library or a file that is not writable is not editable: copy it with CopyLibraryParts under a new name into the embedded library or a local library folder (targetFolder) and modify the copy. When a part of the same name is in more than one library, the one Archicad finds by that name is the one modified.";
 
-// Runs modify on the GSM object of the loaded library part called name, and returns the execution result.
-// A part that is not editable is refused. When modify fails, it sets failedWhat (e.g. "setting the '3d' script")
-// and failedText (the error text of the failed call), which go into the error message.
+// Runs modify on the GSM object of the loaded library part called name, and returns the execution result,
+// which the caller puts at resultIndex of its results. A part that is not editable is refused. When modify
+// fails, it sets failedWhat (e.g. "setting the '3d' script") and failedText (the error text of the failed
+// call), which go into the error message. A part changed in a file is recorded in fileChanges, which the
+// caller finishes after its undoable command.
 template <typename LibraryManagerResult>
 static GS::ObjectState ModifyLibraryPart (
     LibraryManagerResult& libraryManager,
     const GS::UniString& givenName,
     const std::function<GSErrCode (GSMObject::Modifier&)>& modify,
     const GS::UniString& failedWhat,
-    const GS::UniString& failedText)
+    const GS::UniString& failedText,
+    LibraryPartFileChanges& fileChanges,
+    UIndex resultIndex)
 {
     GS::UniString name = givenName;
     auto libPart = GetLibPartByFileName (libraryManager, name);
@@ -381,9 +388,10 @@ static GS::ObjectState ModifyLibraryPart (
         return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName returned by GetAvailableLibraryParts.");
     }
 
-    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    LibraryPartFileChanges::FileIndex fileIndex;
+    auto gsmObject = fileChanges.GetGSMObjectToModify (libraryManager.Unwrap (), libPart.Unwrap (), fileIndex);
     if (gsmObject.IsErr ()) {
-        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
+        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'" + GetResultErrorText (gsmObject.UnwrapErr ()) + ".");
     }
 
     if (!gsmObject->IsEditable ()) {
@@ -392,6 +400,7 @@ static GS::ObjectState ModifyLibraryPart (
 
     ACAPI::Result<void> modifyResult = gsmObject->Modify (modify);
     if (!modifyResult.IsErr ()) {
+        fileChanges.Changed (fileIndex, resultIndex);
         return CreateSuccessfulExecutionResult ();
     }
 
@@ -4564,9 +4573,11 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
         return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
     }
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    // The results go into the response after fileChanges.Finish, which may still turn one into a failure.
+    GS::Array<GS::ObjectState> results;
+    const auto executionResults = [&results] (const GS::ObjectState& result) { results.Push (result); };
 
+    LibraryPartFileChanges fileChanges;
     ACAPI_CallUndoableCommand ("Set Library Part Scripts", [&]() -> GSErrCode {
         for (const GS::ObjectState& libraryPart : libraryParts) {
             GS::UniString name;
@@ -4633,11 +4644,14 @@ GS::ObjectState SetLibraryPartScriptsCommand::Execute (const GS::ObjectState& pa
                     }
                 }
                 return NoError;
-            }, failedWhat, failedText));
+            }, failedWhat, failedText, fileChanges, results.GetSize ()));
         }
         return NoError;
     });
 
+    fileChanges.Finish (results);
+    GS::ObjectState response;
+    response.Add ("executionResults", results);
     return response;
 #else
     UNUSED_PARAMETER (parameters);
@@ -4704,9 +4718,11 @@ GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
         return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
     }
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    // The results go into the response after fileChanges.Finish, which may still turn one into a failure.
+    GS::Array<GS::ObjectState> results;
+    const auto executionResults = [&results] (const GS::ObjectState& result) { results.Push (result); };
 
+    LibraryPartFileChanges fileChanges;
     ACAPI_CallUndoableCommand ("Set Library Part Metadata", [&]() -> GSErrCode {
         for (const GS::ObjectState& libraryPart : libraryParts) {
             GS::UniString name;
@@ -4758,11 +4774,14 @@ GS::ObjectState SetLibraryPartMetadataCommand::Execute (const GS::ObjectState& p
                     }
                 }
                 return NoError;
-            }, failedWhat, failedText));
+            }, failedWhat, failedText, fileChanges, results.GetSize ()));
         }
         return NoError;
     });
 
+    fileChanges.Finish (results);
+    GS::ObjectState response;
+    response.Add ("executionResults", results);
     return response;
 #else
     UNUSED_PARAMETER (parameters);
@@ -4839,7 +4858,7 @@ GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetInputParametersS
                     "properties": {
                         "name": {
                             "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file (e.g. created or copied into the embedded library or a local library folder), not from a library package, a BIMcloud or read-only library."
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. When Archicad does not let the loaded part be modified, as in a saved project, a part of a local library folder is changed in its file, and a part of the embedded library in a temporary copy that then replaces it, keeping its main GUID; the libraries are reloaded after the call. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
                         },
                         "parameters": )") + SetGDLParameterValuesSchema + R"(,
                         "descriptions": {
@@ -4898,9 +4917,11 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
         return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
     }
 
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    // The results go into the response after fileChanges.Finish, which may still turn one into a failure.
+    GS::Array<GS::ObjectState> results;
+    const auto executionResults = [&results] (const GS::ObjectState& result) { results.Push (result); };
 
+    LibraryPartFileChanges fileChanges;
     ACAPI_CallUndoableCommand ("Set Library Part Parameters", [&]() -> GSErrCode {
         for (const GS::ObjectState& libraryPart : libraryParts) {
             GS::UniString name;
@@ -4929,9 +4950,10 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
-            auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+            LibraryPartFileChanges::FileIndex fileIndex;
+            auto gsmObject = fileChanges.GetGSMObjectToModify (libraryManager.Unwrap (), libPart.Unwrap (), fileIndex);
             if (gsmObject.IsErr ()) {
-                executionResults (CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+                executionResults (CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'" + GetResultErrorText (gsmObject.UnwrapErr ()) + "."));
                 continue;
             }
 
@@ -4999,11 +5021,15 @@ GS::ObjectState SetLibraryPartParametersCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
+            fileChanges.Changed (fileIndex, results.GetSize ());
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
 
+    fileChanges.Finish (results);
+    GS::ObjectState response;
+    response.Add ("executionResults", results);
     return response;
 #else
     UNUSED_PARAMETER (parameters);
@@ -5211,6 +5237,10 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetInputParametersSch
             "password": {
                 "type": "string",
                 "description": "The password of password protected library parts. Reading a script of a protected part without the right password is an error for that file."
+            },
+            "includeParameters": {
+                "type": "boolean",
+                "description": "Also returns the parameters of each file with their default values and descriptions, in the format of GetLibraryPartParameterValues. Default is false, so a caller that only wants the scripts gets them even when the parameters of a file cannot be read."
             }
         },
         "additionalProperties": false,
@@ -5265,6 +5295,9 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
     GS::UniString password;
     parameters.Get ("password", password);
 
+    bool includeParameters = false;
+    parameters.Get ("includeParameters", includeParameters);
+
     auto libraryManager = ACAPI::Library::GetLibraryManager ();
     if (libraryManager.IsErr ()) {
         return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
@@ -5299,6 +5332,25 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
             continue;
         }
 
+        // The parameters as stored in the file, read the way GetLibraryPartParameterValues reads those of a
+        // loaded part (#1265), when asked for. A file whose parameters cannot be read is then an error, not a file
+        // without parameters.
+        GS::Array<GS::ObjectState> parametersOut;
+        if (includeParameters) {
+            auto gdlParameters = object.GetParameters ();
+            if (gdlParameters.IsErr ()) {
+                filesOut (CreateErrorResponse (gdlParameters.UnwrapErr ().kind, "Failed to read the parameters of the file '" + path + "'" + GetResultErrorText (gdlParameters.UnwrapErr ()) + "."));
+                continue;
+            }
+            // The parameters are still returned when their descriptions cannot be read, only without them.
+            std::vector<GS::UniString> descriptions;
+            auto parameterDescriptions = object.GetParameterDescriptions ();
+            if (parameterDescriptions.IsOk ()) {
+                descriptions = parameterDescriptions.Unwrap ();
+            }
+            parametersOut = LibPartParametersToObjectStates (gdlParameters.Unwrap (), descriptions);
+        }
+
         GS::ObjectState fileOut;
         fileOut.Add ("path", path);
         auto unID = object.GetUnID ();
@@ -5310,6 +5362,12 @@ GS::ObjectState GetLibraryPartFileInfoCommand::Execute (const GS::ObjectState& p
             fileOut.Add ("subTypeUnID", subTypeUnID.Unwrap ().ToUniString ());
         }
         fileOut.Add ("scripts", scriptsOut);
+        if (includeParameters) {
+            const auto& parametersAdder = fileOut.AddList<GS::ObjectState> ("parameters");
+            for (const GS::ObjectState& parameter : parametersOut) {
+                parametersAdder (parameter);
+            }
+        }
         filesOut (fileOut);
     }
 
@@ -6092,9 +6150,11 @@ GS::ObjectState SetLibraryPartPictureImagesCommand::Execute (const GS::ObjectSta
         return CreateFailedExecutionResult (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts.");
     }
 
-    auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+    LibraryPartFileChanges fileChanges;
+    LibraryPartFileChanges::FileIndex fileIndex;
+    auto gsmObject = fileChanges.GetGSMObjectToModify (libraryManager.Unwrap (), libPart.Unwrap (), fileIndex);
     if (gsmObject.IsErr ()) {
-        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'.");
+        return CreateFailedExecutionResult (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'" + GetResultErrorText (gsmObject.UnwrapErr ()) + ".");
     }
 
     if (!gsmObject->IsEditable ()) {
@@ -6145,9 +6205,14 @@ GS::ObjectState SetLibraryPartPictureImagesCommand::Execute (const GS::ObjectSta
             }
             modifyErrorMessage += ".";
             result = CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, modifyErrorMessage);
+        } else {
+            fileChanges.Changed (fileIndex, 0);
         }
         return NoError;
     });
+
+    // The object loaded from a file does not belong to the library, so it may stay alive meanwhile.
+    fileChanges.Finish (result);
 
     return result;
 #else

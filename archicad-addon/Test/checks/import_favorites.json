@@ -1,0 +1,154 @@
+{
+  "title": "ImportFavorites answers success and the names of the Favorites it added, for the xml and the prefs format, and success false with firstConflictName on a prefs conflict (#3087)",
+  "minTapir": "2.0.2",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "temporary folder",
+      "command": "GetSpecialFolders",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "folderTypes": [ "Temporary" ] },
+      "save": { "tmp": "folderPaths[0].path" },
+      "expect": [ { "path": "folderPaths[0].path", "exists": true, "name": "a temporary folder" } ]
+    },
+    {
+      "id": "wall for the favorite",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1400.0, "y": 1400.0 }, "endCoordinate": { "x": 1405.0, "y": 1400.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "favorite from the wall",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wall}" }, "favorite": "Tapir check import favorite" }
+        ]
+      },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "favorite created" } ]
+    },
+    {
+      "id": "export with the prefs format to a .prefs path",
+      "command": "ExportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites.prefs",
+        "names": [ "Tapir check import favorite" ],
+        "format": "prefs",
+        "overwrite": true
+      },
+      "expect": [ { "path": "success", "eq": true, "name": "prefs export" } ]
+    },
+    {
+      "id": "export with the xml format",
+      "command": "ExportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavoritesXml",
+        "names": [ "Tapir check import favorite" ],
+        "format": "xml"
+      },
+      "expect": [ { "path": "success", "eq": true, "name": "xml export" } ]
+    },
+    {
+      "id": "delete the favorite before the xml import",
+      "command": "DeleteFavorites",
+      "creates": false,
+      "params": { "favorites": [ "Tapir check import favorite" ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true } ]
+    },
+    {
+      "id": "import the xml folder",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavoritesXml",
+        "format": "xml",
+        "conflictPolicy": "Error"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "success reported" },
+        { "path": "addedFavoriteNames", "eq": [ "Tapir check import favorite" ], "name": "the imported favorite is named" }
+      ]
+    },
+    {
+      "id": "the xml import brought the favorite back",
+      "command": "GetFavoriteDetails",
+      "creates": false,
+      "params": { "favorites": [ "Tapir check import favorite" ] },
+      "expect": [ { "path": "favoriteDetails[0].elementType", "eq": "Wall" } ]
+    },
+    {
+      "id": "delete the favorite before the prefs import",
+      "command": "DeleteFavorites",
+      "creates": false,
+      "params": { "favorites": [ "Tapir check import favorite" ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true } ]
+    },
+    {
+      "id": "import what the prefs export wrote",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites.prefs",
+        "format": "prefs",
+        "conflictPolicy": "Error"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "success reported" },
+        { "path": "addedFavoriteNames", "eq": [ "Tapir check import favorite" ], "name": "the imported favorite is named" },
+        { "path": "firstConflictName", "exists": false, "name": "no conflict" }
+      ]
+    },
+    {
+      "id": "import it again with conflictPolicy Error",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites.prefs",
+        "format": "prefs",
+        "conflictPolicy": "Error"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "the conflict is not a success" },
+        { "path": "firstConflictName", "eq": "Tapir check import favorite", "name": "the conflicting name" },
+        { "path": "addedFavoriteNames", "exists": false, "name": "nothing added" }
+      ]
+    },
+    {
+      "id": "import it again with conflictPolicy Overwrite",
+      "command": "ImportFavorites",
+      "creates": false,
+      "params": {
+        "path": "${tmp}/TapirCheckImportFavorites.prefs",
+        "format": "prefs",
+        "conflictPolicy": "Overwrite"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "success reported" },
+        { "path": "addedFavoriteNames", "len": 0, "name": "a replaced favorite is not added" }
+      ]
+    },
+    {
+      "id": "delete the favorite",
+      "command": "DeleteFavorites",
+      "creates": false,
+      "params": { "favorites": [ "Tapir check import favorite" ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true } ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteFavorites",
+      "params": { "favorites": [ "Tapir check import favorite" ] }
+    }
+  ]
+}

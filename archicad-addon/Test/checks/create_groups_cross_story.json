@@ -1,0 +1,83 @@
+{
+  "title": "CreateGroups names the stories of the elements when they are on different stories (#3089)",
+  "minTapir": "2.0.2",
+  "minArchicad": "26",
+  "steps": [
+    {
+      "id": "two walls on story 0 and one on story 1",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 820, "y": 800 }, "endCoordinate": { "x": 823, "y": 800 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 820, "y": 802 }, "endCoordinate": { "x": 823, "y": 802 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 820, "y": 804 }, "endCoordinate": { "x": 823, "y": 804 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 1 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid",
+        "w3": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 3 }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "group across stories is refused and names the stories",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${w3}" } } ] }
+        ]
+      },
+      "expect": [
+        { "path": "groupGuids", "len": 1 },
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "refused" },
+        { "path": "groupGuids[0].error.message", "contains": "different stories", "name": "says the stories differ" },
+        { "path": "groupGuids[0].error.message", "contains": "story (floorIndex) 0: ${w1}, ${w2}", "name": "names the story 0 walls" },
+        { "path": "groupGuids[0].error.message", "contains": "story (floorIndex) 1: ${w3}", "name": "names the story 1 wall" }
+      ]
+    },
+    {
+      "id": "the two walls of story 0 are grouped",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] }
+        ]
+      },
+      "save": { "g1": "groupGuids[0].groupId" },
+      "expect": [
+        { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "same story group created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "a group of story 0 with a wall of story 1 is refused and names the group",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "groupId": "${g1}" }, { "elementId": { "guid": "${w3}" } } ] }
+        ]
+      },
+      "expect": [
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "refused" },
+        { "path": "groupGuids[0].error.message", "contains": "different stories", "name": "says the stories differ" },
+        { "path": "groupGuids[0].error.message", "contains": "story (floorIndex) 1: ${w3}", "name": "names the story 1 wall" }
+      ]
+    },
+    {
+      "id": "ungroup the story 0 group",
+      "command": "UngroupElements",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g1}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    }
+  ]
+}

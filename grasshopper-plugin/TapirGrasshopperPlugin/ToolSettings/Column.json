@@ -236,6 +236,16 @@
       "subgroup": null
     },
     {
+      "get": "veneer",
+      "set": "veneer",
+      "apiMember": "API_ColumnSegmentType::venType, venThick, venBuildingMaterial",
+      "apiDescription": "The type of the column's segment veneer; the thickness of the column's segment veneer; the Building Material index of column's segment veneer's hatch, used only if structure type is API_BasicStrucure. Written to all segments, read from the first one (each segment's own veneer is in segments).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "visibility",
       "set": "visibility",
       "apiMember": "API_ColumnType::visibility",
@@ -320,6 +330,36 @@
       "set": "coreSymbolPen",
       "apiMember": "API_ColumnType::coreSymbolPen",
       "apiDescription": "The color index of column cross line",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "coreSymbolType",
+      "set": "coreSymbolType",
+      "apiMember": "API_ColumnType::coreSymbolType",
+      "apiDescription": "The floor plan symbol type of the column: Plain, Slash, X or CrossHair.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "coreSymbolPar1",
+      "set": "coreSymbolPar1",
+      "apiMember": "API_ColumnType::coreSymbolPar1",
+      "apiDescription": "The length of the crosshair outside the column's contour line.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": null
+    },
+    {
+      "get": "coreSymbolPar2",
+      "set": "coreSymbolPar2",
+      "apiMember": "API_ColumnType::coreSymbolPar2",
+      "apiDescription": "The distance of the crosshair from the column's center.",
       "label": null,
       "labelSource": null,
       "group": "Floor Plan and Section",

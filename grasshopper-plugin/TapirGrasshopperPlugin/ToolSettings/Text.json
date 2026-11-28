@@ -34,6 +34,26 @@
       "subgroup": null
     },
     {
+      "get": null,
+      "set": "position",
+      "apiMember": "API_TextType::loc",
+      "apiDescription": "Coordinates of text anchor point. ModifyTexts takes it with the key GetDetailsOfElements reads (position, without z, so the floor is kept); the field above maps the read position to coordinate.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "width",
+      "set": "width",
+      "apiMember": "API_TextType::width, API_TextType::nonBreaking",
+      "apiDescription": "Horizontal size of text box in mm; if nonBreaking is false then wrap around at the boundary of the destination rectangle. Read as the box width while word wrap is on and 0 for an auto-width text; written as the wrap width, 0 turns word wrap off.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
       "get": "floorIndex",
       "set": "floorIndex",
       "getFrom": "element",

@@ -1,0 +1,1006 @@
+{
+ "version": 1,
+ "groups": [
+  "Script UI Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "ShowScriptUI",
+   "group": "Script UI Commands",
+   "version": "1.5.4",
+   "description": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) and returns the uiId of its window. Each script can have its own window, picked by uiId or scriptId; without them the first window is used.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "htmlContent": {
+      "type": "string",
+      "description": "The full HTML document to display in the Script UI palette.",
+      "minLength": 1
+     },
+     "width": {
+      "type": "integer",
+      "description": "Optional palette client width in pixels. Leave unset to keep the current size.",
+      "minimum": 1
+     },
+     "height": {
+      "type": "integer",
+      "description": "Optional palette client height in pixels. Leave unset to keep the current size.",
+      "minimum": 1
+     },
+     "title": {
+      "type": "string",
+      "description": "Optional palette window title. Leave unset to keep the current title.",
+      "minLength": 1
+     },
+     "resizable": {
+      "type": "boolean",
+      "description": "Whether the user can drag-resize the palette. Defaults to true."
+     },
+     "zoomEnabled": {
+      "type": "boolean",
+      "description": "Whether Ctrl+scroll/pinch zooming is allowed in the page. Defaults to true."
+     },
+     "zoomLevel": {
+      "type": "number",
+      "description": "Optional initial zoom level (1.0 = 100%). Leave unset to keep the current zoom."
+     },
+     "scrollBarsVisible": {
+      "type": "boolean",
+      "description": "Whether the browser's own scrollbars are shown. Defaults to true."
+     },
+     "contextMenuEnabled": {
+      "type": "boolean",
+      "description": "Whether right-click shows the browser's context menu (e.g. Inspect Element). Defaults to true."
+     },
+     "navigationDisabled": {
+      "type": "boolean",
+      "description": "Prevents the page from navigating away (e.g. clicking a link to another site) once it has loaded. Defaults to false."
+     },
+     "allowSelfSignedCertificates": {
+      "type": "boolean",
+      "description": "Only relevant if htmlContent links to a remote https:// resource with a self-signed certificate. Defaults to false."
+     },
+     "clearCookies": {
+      "type": "boolean",
+      "description": "Deletes all browser cookies before loading htmlContent. Defaults to false."
+     },
+     "autoHeight": {
+      "type": "boolean",
+      "description": "Automatically resizes the palette's height to fit the page content as it changes. Defaults to false."
+     },
+     "uiId": {
+      "type": "integer",
+      "description": "The window to use, as returned by ShowScriptUI (1 to 8). Takes precedence over scriptId.",
+      "minimum": 1,
+      "maximum": 8
+     },
+     "scriptId": {
+      "type": "string",
+      "description": "Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. The Tapir palette gives each script it starts its own id in the TAPIR_SCRIPT_ID environment variable, which aclib passes here automatically; that script's window is titled with its name and is freed when it ends. Without uiId and scriptId the first window is used.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "htmlContent"
+    ]
+   },
+   "outputSchema": {
+    "oneOf": [
+     {
+      "type": "object",
+      "properties": {
+       "success": {
+        "type": "boolean",
+        "enum": [
+         true
+        ]
+       },
+       "uiId": {
+        "type": "integer",
+        "description": "The window the page is shown in (1 to 8). Pass it to GetScriptUIResult, or to a later ShowScriptUI to replace the page."
+       }
+      },
+      "additionalProperties": false,
+      "required": [
+       "success",
+       "uiId"
+      ]
+     },
+     {
+      "$ref": "#/FailedExecutionResult"
+     }
+    ]
+   },
+   "grasshopperComponents": [
+    "ShowScriptUIComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/ShowScriptUI.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/ShowScriptUI.py",
+    "description": "Shows a small HTML page with a button in an Archicad palette with ShowScriptUI. The response names the window (uiId). The page sends its result with window.ACAPI.SubmitResult; read it with GetScriptUIResult and that uiId.",
+    "code": "\"\"\"Shows a small HTML page with a button in an Archicad palette with ShowScriptUI.\n\nThe response names the window (uiId). The page sends its result with window.ACAPI.SubmitResult;\nread it with GetScriptUIResult and that uiId.\n\"\"\"\nimport aclib\n\nhtml = \"\"\"<!DOCTYPE html>\n<html>\n<body style=\"font-family: sans-serif\">\n    <p>Hello from Tapir!</p>\n    <button onclick=\"ACAPI.SubmitResult ('OK clicked').then (function () { ACAPI.ClosePalette (); })\">OK</button>\n</body>\n</html>\"\"\"\n\naclib.PrintJson (aclib.RunTapirCommand ('ShowScriptUI', {\n    'htmlContent': html,\n    'title': 'Tapir',\n    'width': 300,\n    'height': 150,\n    'resizable': False\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ShowScriptUI"
+  },
+  {
+   "name": "GetScriptUIResult",
+   "group": "Script UI Commands",
+   "version": "1.5.4",
+   "description": "Retrieves and clears the result last submitted from a Script UI window's page (via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, so a waiting script can stop when the user closes it. The window is picked by uiId or scriptId; without them the first window is used.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "uiId": {
+      "type": "integer",
+      "description": "The window to use, as returned by ShowScriptUI (1 to 8). Takes precedence over scriptId.",
+      "minimum": 1,
+      "maximum": 8
+     },
+     "scriptId": {
+      "type": "string",
+      "description": "Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. The Tapir palette gives each script it starts its own id in the TAPIR_SCRIPT_ID environment variable, which aclib passes here automatically; that script's window is titled with its name and is freed when it ends. Without uiId and scriptId the first window is used.",
+      "minLength": 1
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "uiId": {
+      "type": "integer",
+      "description": "The window the result was read from (1 to 8). Missing when scriptId was given and that script has no window."
+     },
+     "hasResult": {
+      "type": "boolean",
+      "description": "True if the Script UI page has submitted a result since the last call."
+     },
+     "result": {
+      "type": "string",
+      "description": "The submitted content (as passed to window.ACAPI.SubmitResult). Only present when hasResult is true."
+     },
+     "isOpen": {
+      "type": "boolean",
+      "description": "True while the Script UI palette is open. False before the first ShowScriptUI call and once the user closed the palette with its close box, the page called window.ACAPI.ClosePalette or Archicad closed it; stays true while Archicad only temporarily hides all palettes (e.g. during a modal dialog). Lets a waiting script stop polling when the user closes the palette."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hasResult",
+     "isOpen"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetScriptUIResultComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/GetScriptUIResult.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/GetScriptUIResult.py",
+    "description": "Shows a palette with two buttons and waits for the user's choice with GetScriptUIResult. Polls the window ShowScriptUI returned (its uiId) until a button is clicked or the palette is closed.",
+    "code": "\"\"\"Shows a palette with two buttons and waits for the user's choice with GetScriptUIResult.\n\nPolls the window ShowScriptUI returned (its uiId) until a button is clicked or the palette is closed.\n\"\"\"\nimport time\nimport aclib\n\nhtml = \"\"\"<!DOCTYPE html>\n<html>\n<body style=\"font-family: sans-serif\">\n    <p>Continue?</p>\n    <button onclick=\"ACAPI.SubmitResult ('yes')\">Yes</button>\n    <button onclick=\"ACAPI.SubmitResult ('no')\">No</button>\n</body>\n</html>\"\"\"\nshown = aclib.RunTapirCommand ('ShowScriptUI', {'htmlContent': html, 'title': 'Tapir', 'width': 300, 'height': 150})\n\nwhile True:\n    response = aclib.RunTapirCommand ('GetScriptUIResult', {'uiId': shown['uiId']})\n    if response['hasResult'] or not response['isOpen']:\n        break\n    time.sleep (0.5)\n\nprint (response.get ('result', 'The palette was closed without an answer.'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetScriptUIResult"
+  },
+  {
+   "name": "OpenSettingsDialog",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "$ref": "#/ElementType",
+      "description": "Opens the default settings dialog of this tool. Without it, Archicad 28 and later open the settings of the selected elements, or of the current tool when nothing is selected; Archicad 25 to 27 open the default settings of the current tool."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user closed the dialog with Cancel, false when with OK."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "OpenSettingsDialogComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/OpenSettingsDialog.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/OpenSettingsDialog.py",
+    "description": "Opens the Wall tool's default settings dialog with OpenSettingsDialog and waits for the user. The response tells whether the dialog was closed with OK or Cancel. Leave out elementType to open the settings of the selected elements (Archicad 28 and later) or of the current tool.",
+    "code": "\"\"\"Opens the Wall tool's default settings dialog with OpenSettingsDialog and waits for the user.\n\nThe response tells whether the dialog was closed with OK or Cancel. Leave out elementType to open the\nsettings of the selected elements (Archicad 28 and later) or of the current tool.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('OpenSettingsDialog', {'elementType': 'Wall'})\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'The wall settings were accepted with OK.')\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#OpenSettingsDialog"
+  },
+  {
+   "name": "PickLibraryPart",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementType": {
+      "type": "string",
+      "enum": [
+       "Object",
+       "Lamp",
+       "Window",
+       "Door"
+      ],
+      "description": "Whose settings dialog to open: the Object, Lamp, Window or Door tool's. Without a subtypeUnID the dialog lists the library parts of that tool. Object by default."
+     },
+     "subtypeUnID": {
+      "type": "string",
+      "description": "Limits the dialog to the library parts of this subtype: the unique ID of the subtype library part, its main and revision GUID in the form {main}-{revision}."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user closed the dialog with Cancel; then nothing else is returned."
+     },
+     "libPart": {
+      "$ref": "#/LibPartDetails",
+      "description": "The library part the user chose. Absent when it could not be read."
+     },
+     "subtypeUnID": {
+      "type": "string",
+      "description": "The unique ID of the chosen library part's subtype, as Archicad returned it."
+     },
+     "parameters": {
+      "type": "array",
+      "description": "The GDL parameters of the chosen library part, with the values set in the dialog. Present when the user pressed OK.",
+      "items": {
+       "$ref": "#/StoredGDLParameter"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickLibraryPartComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickLibraryPart.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPart.py",
+    "description": "Lets the user pick a door and set its parameters in Archicad's Door Settings dialog with PickLibraryPart. The response holds the chosen library part and its GDL parameters with the values set in the dialog, or cancelled when the user pressed Cancel. Nothing is placed in the project.",
+    "code": "\"\"\"Lets the user pick a door and set its parameters in Archicad's Door Settings dialog with PickLibraryPart.\n\nThe response holds the chosen library part and its GDL parameters with the values set in the dialog,\nor cancelled when the user pressed Cancel. Nothing is placed in the project.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickLibraryPart', {'elementType': 'Door'})\nif result is not None:\n    if result['cancelled']:\n        print ('Cancelled.')\n    else:\n        print ('Library part: ' + result.get ('libPart', {}).get ('name', '(unknown)'))\n        for parameter in result['parameters'][:10]:\n            print ('  {} = {}'.format (parameter['name'], parameter.get ('value')))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickLibraryPart"
+  },
+  {
+   "name": "PickLibraryPartFile",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "generalGDLObjectsOnly": {
+      "type": "boolean",
+      "description": "Sets the dialog's file filter to General GDL Objects. Default: false."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user cancelled the dialog or chose no valid library part."
+     },
+     "path": {
+      "type": "string",
+      "description": "The location of the chosen library part. Only when cancelled is false."
+     },
+     "openedInExternalEditor": {
+      "type": "boolean",
+      "description": "True when Archicad opened the chosen file in an external editor (Archicad 26 and later; always false in Archicad 25). Only when cancelled is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickLibraryPartFileComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickLibraryPartFile.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPartFile.py",
+    "description": "Lets the user pick a library part in Archicad's Open Library Part dialog with PickLibraryPartFile. The response tells whether the user cancelled; if not, it has the location of the chosen library part. Set generalGDLObjectsOnly to filter the dialog to General GDL Objects.",
+    "code": "\"\"\"Lets the user pick a library part in Archicad's Open Library Part dialog with PickLibraryPartFile.\n\nThe response tells whether the user cancelled; if not, it has the location of the chosen library part.\nSet generalGDLObjectsOnly to filter the dialog to General GDL Objects.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickLibraryPartFile', {'generalGDLObjectsOnly': True})\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'Chosen library part: ' + result['path'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickLibraryPartFile"
+  },
+  {
+   "name": "PickPictureFile",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user cancelled the dialog or chose no valid picture."
+     },
+     "path": {
+      "type": "string",
+      "description": "The location of the chosen picture. Archicad adds the picture to the embedded library when it is not in it yet. Only when cancelled is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickPictureFileComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickPictureFile.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickPictureFile.py",
+    "description": "Lets the user pick a picture in Archicad's Open Picture dialog with PickPictureFile. The response tells whether the user cancelled; if not, it has the location of the chosen picture. Archicad adds the picture to the embedded library when it is not in it yet.",
+    "code": "\"\"\"Lets the user pick a picture in Archicad's Open Picture dialog with PickPictureFile.\n\nThe response tells whether the user cancelled; if not, it has the location of the chosen picture.\nArchicad adds the picture to the embedded library when it is not in it yet.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickPictureFile')\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'Chosen picture: ' + result['path'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickPictureFile"
+  },
+  {
+   "name": "PickZoneStampOrLabelFile",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "objectType": {
+      "type": "string",
+      "enum": [
+       "Label",
+       "ZoneStamp"
+      ],
+      "description": "The type of library part the dialog lets the user open. Default: Label."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user cancelled the dialog or chose no valid zone stamp or label."
+     },
+     "path": {
+      "type": "string",
+      "description": "The location of the chosen zone stamp or label. Only when cancelled is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickZoneStampOrLabelFileComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickZoneStampOrLabelFile.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickZoneStampOrLabelFile.py",
+    "description": "Lets the user pick a zone stamp library part with PickZoneStampOrLabelFile. The response tells whether the user cancelled; if not, it has the location of the chosen file. Leave out objectType (or give 'Label') to pick a label instead.",
+    "code": "\"\"\"Lets the user pick a zone stamp library part with PickZoneStampOrLabelFile.\n\nThe response tells whether the user cancelled; if not, it has the location of the chosen file.\nLeave out objectType (or give 'Label') to pick a label instead.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickZoneStampOrLabelFile', {'objectType': 'ZoneStamp'})\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'Chosen zone stamp: ' + result['path'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickZoneStampOrLabelFile"
+  },
+  {
+   "name": "PickLibraryPartSaveLocation",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "defaultPath": {
+      "type": "string",
+      "description": "The location (library folder and file name) the dialog starts from. Default: <libraryPartType>.gsm in the embedded library of the project."
+     },
+     "libraryPartType": {
+      "type": "string",
+      "enum": [
+       "Object",
+       "Door",
+       "Window"
+      ],
+      "description": "Which Save Library Part dialog to open. Default: Object."
+     },
+     "browseForFolder": {
+      "type": "boolean",
+      "description": "Lets the user save outside the embedded library. Default: false."
+     },
+     "title": {
+      "type": "string",
+      "description": "The title of the dialog. Default: Archicad's own title."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user cancelled the dialog."
+     },
+     "path": {
+      "type": "string",
+      "description": "The location the user chose to save the library part to. Nothing is saved there. Only when cancelled is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickLibraryPartSaveLocationComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickLibraryPartSaveLocation.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPartSaveLocation.py",
+    "description": "Asks the user where to save a door library part with PickLibraryPartSaveLocation. The dialog starts from Door.gsm in the project's embedded library (give defaultPath to start elsewhere). The response tells whether the user cancelled; if not, it has the chosen location. Nothing is saved.",
+    "code": "\"\"\"Asks the user where to save a door library part with PickLibraryPartSaveLocation.\n\nThe dialog starts from Door.gsm in the project's embedded library (give defaultPath to start elsewhere).\nThe response tells whether the user cancelled; if not, it has the chosen location. Nothing is saved.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickLibraryPartSaveLocation', {\n    'libraryPartType': 'Door',\n    'browseForFolder': True,\n    'title': 'Save the generated door'\n})\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'Save the door to: ' + result['path'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickLibraryPartSaveLocation"
+  },
+  {
+   "name": "PickLibraryFolder",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "defaultName": {
+      "type": "string",
+      "description": "The default name the dialog offers for a new library folder. Default: New Library."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user cancelled the dialog."
+     },
+     "path": {
+      "type": "string",
+      "description": "The location of the chosen or created folder. It is not added to the libraries of the project; use AddLibraries for that. Only when cancelled is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickLibraryFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickLibraryFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryFolder.py",
+    "description": "Lets the user choose or create a library folder with PickLibraryFolder. The response tells whether the user cancelled; if not, it has the location of the folder. The folder is not added to the project's libraries; call AddLibraries with the path for that.",
+    "code": "\"\"\"Lets the user choose or create a library folder with PickLibraryFolder.\n\nThe response tells whether the user cancelled; if not, it has the location of the folder.\nThe folder is not added to the project's libraries; call AddLibraries with the path for that.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickLibraryFolder', {'defaultName': 'Script Library'})\nif result is not None:\n    print ('Cancelled.' if result['cancelled'] else 'Chosen library folder: ' + result['path'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickLibraryFolder"
+  },
+  {
+   "name": "ShowIFCExportSettings",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "navigatorItemId": {
+      "$ref": "#/NavigatorItemId",
+      "description": "Optional: the view (an item of the View Map) the dialog starts with."
+     },
+     "translatorName": {
+      "type": "string",
+      "description": "Optional: the name of the IFC export translator the dialog starts with, as GetIFCExportTranslators lists them."
+     }
+    },
+    "additionalProperties": false
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user closed the dialog with Cancel; then no other field is given."
+     },
+     "navigatorItemId": {
+      "$ref": "#/NavigatorItemId",
+      "description": "The view the user chose."
+     },
+     "viewName": {
+      "type": "string",
+      "description": "The name of the chosen view, when Archicad finds it in the navigator."
+     },
+     "translatorName": {
+      "type": "string",
+      "description": "The name of the IFC export translator the user chose, as IFCFileOperation's translatorName takes it."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "ShowIFCExportSettingsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/ShowIFCExportSettings.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/ShowIFCExportSettings.py",
+    "description": "Opens the IFC export settings dialog with ShowIFCExportSettings and waits for the user (Archicad 28 and later). The response is the view and the IFC export translator the user chose, or cancelled. The translator's name can be passed to IFCFileOperation's translatorName to save the project as IFC with it.",
+    "code": "\"\"\"Opens the IFC export settings dialog with ShowIFCExportSettings and waits for the user (Archicad 28 and later).\n\nThe response is the view and the IFC export translator the user chose, or cancelled. The translator's name can be\npassed to IFCFileOperation's translatorName to save the project as IFC with it.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('ShowIFCExportSettings', {})\nif result is not None:\n    if result['cancelled']:\n        print ('Cancelled.')\n    else:\n        print ('View: {}'.format (result.get ('viewName', result['navigatorItemId']['guid'])))\n        print ('Translator: {}'.format (result['translatorName']))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ShowIFCExportSettings"
+  },
+  {
+   "name": "PickAttribute",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeType": {
+      "type": "string",
+      "description": "The type of the attribute to pick. Fill and Line need Archicad 27 or newer. Composite lists the composites only.",
+      "enum": [
+       "Layer",
+       "BuildingMaterial",
+       "Composite",
+       "Profile",
+       "Surface",
+       "Fill",
+       "Line"
+      ]
+     },
+     "attributeId": {
+      "$ref": "#/AttributeId",
+      "description": "The attribute selected when the dialog opens. Without it the picker starts empty and OK is enabled once the user has picked an attribute."
+     },
+     "title": {
+      "type": "string",
+      "description": "The title of the dialog. Default: Pick Attribute."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeType"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user closed the dialog with Cancel, false when with OK."
+     },
+     "attributeType": {
+      "$ref": "#/AttributeType",
+      "description": "The type of the chosen attribute, the attributeType of the input. Only when not cancelled."
+     },
+     "attributeId": {
+      "$ref": "#/AttributeId",
+      "description": "The chosen attribute. Only when not cancelled."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickAttributeComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickAttribute.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickAttribute.py",
+    "description": "Lets the user pick a layer with PickAttribute and waits for the user (Archicad 26 and later). A small dialog shows Archicad's attribute picker; the response is the chosen attribute, or cancelled. The attributeType can also be BuildingMaterial, Composite, Profile or Surface, and Fill or Line from Archicad 27.",
+    "code": "\"\"\"Lets the user pick a layer with PickAttribute and waits for the user (Archicad 26 and later).\n\nA small dialog shows Archicad's attribute picker; the response is the chosen attribute, or cancelled. The\nattributeType can also be BuildingMaterial, Composite, Profile or Surface, and Fill or Line from Archicad 27.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickAttribute', {'attributeType': 'Layer', 'title': 'Choose a layer'})\nif result is not None:\n    if result['cancelled']:\n        print ('Cancelled.')\n    else:\n        print ('Chosen {}: {}'.format (result['attributeType'], result['attributeId']['guid']))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickAttribute"
+  },
+  {
+   "name": "PickAttributeFolder",
+   "group": "Script UI Commands",
+   "version": "2.0.0",
+   "description": "Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "attributeType": {
+      "type": "string",
+      "description": "The type of the attributes whose folders the picker lists. Fill and Line need Archicad 27 or newer.",
+      "enum": [
+       "Layer",
+       "BuildingMaterial",
+       "Composite",
+       "Profile",
+       "Surface",
+       "Fill",
+       "Line"
+      ]
+     },
+     "title": {
+      "type": "string",
+      "description": "The title of the dialog. Default: Pick Attribute Folder."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "attributeType"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "cancelled": {
+      "type": "boolean",
+      "description": "True when the user closed the dialog with Cancel, false when with OK."
+     },
+     "attributeFolder": {
+      "$ref": "#/AttributeFolder",
+      "description": "The chosen folder; its path works as the targetFolder of MoveAttributesAndFolders. Only when not cancelled."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "cancelled"
+    ]
+   },
+   "grasshopperComponents": [
+    "PickAttributeFolderComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/ScriptUI/PickAttributeFolder.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickAttributeFolder.py",
+    "description": "Lets the user pick a layer folder with PickAttributeFolder and waits for the user (Archicad 26 and later). A small dialog shows Archicad's attribute folder picker; the response is the chosen folder as its path from the root folder (an empty path is the root folder), or cancelled. The folder can be the targetFolder of MoveAttributesAndFolders.",
+    "code": "\"\"\"Lets the user pick a layer folder with PickAttributeFolder and waits for the user (Archicad 26 and later).\n\nA small dialog shows Archicad's attribute folder picker; the response is the chosen folder as its path from the\nroot folder (an empty path is the root folder), or cancelled. The folder can be the targetFolder of\nMoveAttributesAndFolders.\n\"\"\"\nimport aclib\n\nresult = aclib.RunTapirCommand ('PickAttributeFolder', {'attributeType': 'Layer'})\nif result is not None:\n    if result['cancelled']:\n        print ('Cancelled.')\n    else:\n        print ('Chosen folder: /' + '/'.join (result['attributeFolder']['path']))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#PickAttributeFolder"
+  }
+ ],
+ "schemaDefinitions": {
+  "AttributeType": {
+   "type": "string",
+   "description": "The type of an attribute.",
+   "enum": [
+    "Layer",
+    "Line",
+    "Fill",
+    "Composite",
+    "Surface",
+    "LayerCombination",
+    "ZoneCategory",
+    "Profile",
+    "PenTable",
+    "MEPSystem",
+    "OperationProfile",
+    "BuildingMaterial"
+   ]
+  },
+  "AttributeFolder": {
+   "type": "object",
+   "description": "An attribute folder, identified by the type of the attributes it holds and its path from the root folder of that type. Attribute folders exist from Archicad 26.",
+   "properties": {
+    "attributeType": {
+     "$ref": "#/AttributeType"
+    },
+    "path": {
+     "type": "array",
+     "description": "The names of the folders from the root folder down to this folder, the root folder itself not included. An empty array is the root folder.",
+     "items": {
+      "type": "string"
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "attributeType",
+    "path"
+   ]
+  },
+  "AttributeId": {
+   "type": "object",
+   "description": "The identifier of an attribute.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ElementType": {
+   "type": "string",
+   "description": "The type of an element.",
+   "enum": [
+    "Wall",
+    "Column",
+    "Beam",
+    "Window",
+    "Door",
+    "Object",
+    "Lamp",
+    "Slab",
+    "Roof",
+    "Mesh",
+    "Dimension",
+    "RadialDimension",
+    "LevelDimension",
+    "AngleDimension",
+    "Text",
+    "Label",
+    "Zone",
+    "Hatch",
+    "Line",
+    "PolyLine",
+    "Arc",
+    "Circle",
+    "Spline",
+    "Hotspot",
+    "CutPlane",
+    "Camera",
+    "CamSet",
+    "Group",
+    "SectElem",
+    "Drawing",
+    "Picture",
+    "Detail",
+    "Elevation",
+    "InteriorElevation",
+    "Worksheet",
+    "Hotlink",
+    "CurtainWall",
+    "CurtainWallSegment",
+    "CurtainWallFrame",
+    "CurtainWallPanel",
+    "CurtainWallJunction",
+    "CurtainWallAccessory",
+    "Shell",
+    "Skylight",
+    "Morph",
+    "ChangeMarker",
+    "Stair",
+    "Riser",
+    "Tread",
+    "StairStructure",
+    "Railing",
+    "RailingToprail",
+    "RailingHandrail",
+    "RailingRail",
+    "RailingPost",
+    "RailingInnerPost",
+    "RailingBaluster",
+    "RailingPanel",
+    "RailingSegment",
+    "RailingNode",
+    "RailingBalusterSet",
+    "RailingPattern",
+    "RailingToprailEnd",
+    "RailingHandrailEnd",
+    "RailingRailEnd",
+    "RailingToprailConnection",
+    "RailingHandrailConnection",
+    "RailingRailConnection",
+    "RailingEndFinish",
+    "BeamSegment",
+    "ColumnSegment",
+    "Opening",
+    "Unknown"
+   ]
+  },
+  "LibPartUnId": {
+   "type": "object",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "LibPartDetails": {
+   "properties": {
+    "name": {
+     "type": "string"
+    },
+    "parentUnID": {
+     "$ref": "#/LibPartUnId"
+    },
+    "ownUnID": {
+     "$ref": "#/LibPartUnId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "parentUnID",
+    "ownUnID"
+   ]
+  },
+  "StoredGDLParameter": {
+   "type": "object",
+   "description": "A GDL parameter as it is stored with a marker or a Favorite, read without a parameter interface (so without isLocked and possibleValues).",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the parameter."
+    },
+    "displayName": {
+     "type": "string",
+     "description": "The display name of the parameter."
+    },
+    "index": {
+     "type": "integer",
+     "description": "The index of the parameter."
+    },
+    "type": {
+     "type": "string",
+     "description": "The type of the parameter."
+    },
+    "dimension1": {
+     "type": "integer",
+     "description": "The 1st dimension of array (in case of array value)."
+    },
+    "dimension2": {
+     "type": "integer",
+     "description": "The 2nd dimension of array (in case of array value)."
+    },
+    "value": {
+     "description": "The value of the parameter."
+    },
+    "valueDescription": {
+     "type": "string",
+     "description": "The value description for numeric parameter."
+    },
+    "itemDescriptions": {
+     "type": "array",
+     "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "flags": {
+     "type": "array",
+     "description": "The flags of the parameter.",
+     "items": {
+      "type": "string",
+      "enum": [
+       "Hidden",
+       "HiddenFromScript",
+       "Disabled",
+       "Child",
+       "Unique",
+       "Fixed",
+       "BoldName",
+       "Open"
+      ]
+     }
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "displayName",
+    "index",
+    "type",
+    "flags"
+   ]
+  },
+  "NavigatorItemId": {
+   "type": "object",
+   "description": "The identifier of a navigator item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  }
+ }
+}

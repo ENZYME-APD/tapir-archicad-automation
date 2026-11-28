@@ -31,6 +31,10 @@
     'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
         'Lo que la API de Archicad no puede hacer, como deshacer, el portapapeles o las filas de un listado, con lo que puede hacer en su lugar y la prueba en el DevKit.',
     'See the limits': 'Ver los límites',
+    'Written tutorials': 'Tutoriales escritos',
+    'Step by step: properties to Excel, Grasshopper, renaming views, numbering doors and windows, and your first Python script.':
+        'Paso a paso: propiedades a Excel, Grasshopper, renombrar vistas, numerar puertas y ventanas, y tu primer script de Python.',
+    'Read the tutorials': 'Leer los tutoriales',
 
     // How it works
     'How it works': 'Cómo funciona',

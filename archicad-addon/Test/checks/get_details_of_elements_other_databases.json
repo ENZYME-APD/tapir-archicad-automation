@@ -1,0 +1,175 @@
+{
+  "title": "GetDetailsOfElements with readFromOtherDatabases reads a Drawing of a closed layout and a worksheet's polyline in full from the floor plan, and puts the floor plan back (#2791)",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "subset for the layout",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": { "subsetsData": [ { "name": "Tapir check other databases" } ] },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
+    },
+    {
+      "id": "source worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check other databases source", "referenceId": "TCOD1" }
+        ]
+      },
+      "save": {
+        "wsDb": "databases[0].databaseId.guid",
+        "ws": "databases[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "polyline in the worksheet",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${wsDb}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 2, "y": 0 }, { "x": 2, "y": 1 } ] } ]
+      },
+      "save": { "polyline": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "layout in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check other databases layout",
+            "masterLayoutName": "Tapir check other databases master",
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "paperWidth": 420,
+            "paperHeight": 297
+          }
+        ]
+      },
+      "save": { "layoutDb": "databases[0].databaseId.guid" }
+    },
+    {
+      "id": "master of the layout",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layoutDb}" } } ] },
+      "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
+    },
+    {
+      "id": "Drawing of the worksheet on the layout",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.1, "y": 0.08 },
+            "nameType": "ViewOrSourceFileName",
+            "scale": 1,
+            "angle": 0
+          }
+        ]
+      },
+      "save": { "drawing": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "wall on the floor plan",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "[Drawing, wall, polyline] without readFromOtherDatabases: an answer for each (headers only before Archicad 29, in full on Archicad 29)",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${drawing}" } },
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "${polyline}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements", "len": 3, "name": "an answer for each element" },
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[1].type", "eq": "Wall" },
+        { "path": "detailsOfElements[2].type", "eq": "PolyLine" }
+      ]
+    },
+    {
+      "id": "[Drawing, wall, polyline] with readFromOtherDatabases: all in full",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${drawing}" } },
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "${polyline}" } }
+        ],
+        "readFromOtherDatabases": true
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].fromOtherDatabase", "exists": false, "name": "Drawing: not a header only entry" },
+        { "path": "detailsOfElements[0].details.pos.x", "approx": 0.1, "tol": 0.0001, "name": "Drawing position x" },
+        { "path": "detailsOfElements[0].details.pos.y", "approx": 0.08, "tol": 0.0001, "name": "Drawing position y" },
+        { "path": "detailsOfElements[0].details.nameType", "eq": "ViewOrSourceFileName" },
+        { "path": "detailsOfElements[0].details.status", "exists": true, "name": "Drawing Manager status" },
+        { "path": "detailsOfElements[1].type", "eq": "Wall", "name": "floor plan element after a layout one" },
+        { "path": "detailsOfElements[1].details", "exists": true, "name": "wall details" },
+        { "path": "detailsOfElements[2].type", "eq": "PolyLine" },
+        { "path": "detailsOfElements[2].fromOtherDatabase", "exists": false, "name": "polyline: not a header only entry" },
+        { "path": "detailsOfElements[2].details.coordinates", "len": 3, "name": "polyline points" },
+        { "path": "detailsOfElements[2].details.coordinates[2].x", "approx": 2, "tol": 0.0001 },
+        { "path": "detailsOfElements[2].details.coordinates[2].y", "approx": 1, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "the floor plan is still the current window",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "FloorPlan" }
+      ]
+    },
+    {
+      "id": "the floor plan is the current database again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wall}" } }, { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall" },
+        { "path": "detailsOfElements[0].fromOtherDatabase", "exists": false, "name": "wall read in full" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ChangeWindow", "params": { "windowType": "FloorPlan" } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${subset}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws}" } } ] } }
+  ]
+}

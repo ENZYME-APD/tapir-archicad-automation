@@ -77,7 +77,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.15'
 
       - name: Install dependencies
         # Deliberately without the OAuth token in the environment: pip can

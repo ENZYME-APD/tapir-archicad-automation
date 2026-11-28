@@ -24,11 +24,6 @@ function CreateTextElement(parentElement, elementType, className, text) {
     return elem;
 }
 
-function PlainText(html) {
-    // Descriptions may contain markup; DOMParser builds an inert document.
-    return new DOMParser().parseFromString(html || '', 'text/html').body.textContent;
-}
-
 // ---- The raw schema tree (json-schema-view-js), shown under "Raw schema" ----
 
 function ResolveReferences(schemaDefinitions, parentNode, parentKey, resolvedKeys) {
@@ -122,6 +117,39 @@ function CompareVersions(a, b) {
 
 function MinorVersion(version) {
     return VersionKey(version).slice(0, 2).join('.');
+}
+
+// The Archicad versions a command works in, read from the sentence of its description that says so
+// (#276): "Available from Archicad 29.", "Requires Archicad 27 or later.", "Needs Archicad 28 or earlier.",
+// "Available in Archicad 25, 26 and 27 only.", "Only for Archicad 27." Returns { label, title, Works } or null
+// for a command that works in every supported version; Works(version) tells whether it works in that Archicad
+// version (the "Works in Archicad" filter, #3046). Only a sentence that starts with one of these phrases counts,
+// so a field that needs a newer Archicad ("from Archicad 29 also ...") does not mark the whole command.
+function ArchicadVersions(descriptionText) {
+    let sentences = String(descriptionText || '').split(/\.\s+/);
+    for (let sentence of sentences) {
+        let match = /^(?:Available from Archicad (\d\d)\b|(?:Requires|Needs) Archicad (\d\d) or (?:later|newer)\b)/.exec(sentence);
+        if (match) {
+            let version = match[1] || match[2];
+            return { label: 'AC' + version + '+', title: 'Archicad ' + version + ' or later',
+                mentioned: [Number(version)], Works: wanted => wanted >= Number(version) };
+        }
+        match = /^(?:Requires|Needs) Archicad (\d\d) or earlier\b/.exec(sentence);
+        if (match) {
+            let version = match[1];
+            return { label: 'AC≤' + version, title: 'Archicad ' + version + ' or earlier',
+                mentioned: [Number(version)], Works: wanted => wanted <= Number(version) };
+        }
+        match = /^(?:Available (?:only )?in|Only for) Archicad (\d\d(?:(?:, | and )\d\d)*)\b/.exec(sentence);
+        if (match) {
+            let versions = match[1].split(/, | and /);
+            let numbers = versions.map(Number);
+            let label = versions.length > 1 ? versions[0] + '–' + versions[versions.length - 1] : versions[0];
+            return { label: 'AC' + label, title: 'Only Archicad ' + match[1],
+                mentioned: numbers, Works: wanted => numbers.indexOf(wanted) !== -1 };
+        }
+    }
+    return null;
 }
 
 // The words of a command name: "GetIFCRelationsOfElements" -> Get, IFC, Relations, Of, Elements.
@@ -410,10 +438,19 @@ function DescriptionText(schema) {
             }
         }
     }
-    Limit('minimum', 'minimum');
-    Limit('exclusiveMinimum', 'greater than');
-    Limit('maximum', 'maximum');
-    Limit('exclusiveMaximum', 'less than');
+    // Archicad validates the schemas as JSON Schema draft 4, where an exclusive limit is
+    // "minimum": x with "exclusiveMinimum": true (a number there is ignored, #3054).
+    function Bound(key, exclusiveKey, label, exclusiveLabel) {
+        for (let source of sources) {
+            if (source[key] !== undefined) {
+                limits.push((source[exclusiveKey] === true ? exclusiveLabel : label) + ' ' + ValueText(source[key]));
+                return;
+            }
+        }
+        Limit(exclusiveKey, exclusiveLabel);
+    }
+    Bound('minimum', 'exclusiveMinimum', 'minimum', 'greater than');
+    Bound('maximum', 'exclusiveMaximum', 'maximum', 'less than');
     Limit('minLength', 'minimum length');
     Limit('minItems', 'minimum items');
     Limit('maxItems', 'maximum items');
@@ -643,9 +680,9 @@ function SampleValue(schema, refs, depth) {
     }
     if (type === 'number' || type === 'integer') {
         if (schema.minimum !== undefined) {
-            return schema.minimum;
+            return schema.exclusiveMinimum === true ? schema.minimum + 1 : schema.minimum;
         }
-        if (schema.exclusiveMinimum !== undefined) {
+        if (typeof schema.exclusiveMinimum === 'number') {
             return schema.exclusiveMinimum + 1;
         }
         return 0;
@@ -710,7 +747,7 @@ function CommandUrl(name) {
 function RenderCommandContent(parentElement, entry, page) {
     let command = entry.command;
     let content = CreateElement(parentElement, 'div', 'command_content', null);
-    CreateElement(content, 'div', 'command_description', command.description);
+    CreateTextElement(content, 'div', 'command_description', command.description);
 
     // The example and the JSON to send, first.
     CreateTextElement(content, 'h4', 'command_section_title', 'Example');
@@ -819,7 +856,12 @@ function RenderCommand(entry, page) {
     // One line of the description; the full text shows on hover and when opened.
     let summary = CreateTextElement(header, 'span', 'command_summary', entry.descriptionText);
     summary.title = entry.descriptionText;
-    CreateTextElement(header, 'span', 'command_version', command.version);
+    if (entry.archicadVersions) {
+        let archicad = CreateTextElement(header, 'span', 'command_archicad', entry.archicadVersions.label);
+        archicad.title = 'Works in ' + entry.archicadVersions.title;
+    }
+    let version = CreateTextElement(header, 'span', 'command_version', command.version);
+    version.title = 'Added in Tapir ' + command.version;
 
     let rendered = false;
     details.addEventListener('toggle', function () {
@@ -883,12 +925,15 @@ function BuildGroups(commands) {
             groups.push(displayGroup);
         }
         for (let command of group.commands) {
-            let descriptionText = PlainText(command.description);
+            // Descriptions are plain text (registered in AddOnMain.cpp); '<LAYOUTID>' is an
+            // Autotext key, not markup, so they are never parsed as HTML (#2313).
+            let descriptionText = command.description || '';
             displayGroup.entries.push({
                 command: command,
                 groupName: group.name,
                 group: displayGroup,
                 descriptionText: descriptionText,
+                archicadVersions: ArchicadVersions(descriptionText),
                 searchText: (command.name + ' ' + descriptionText + ' ' + group.name).toLowerCase(),
                 action: CommandAction(command.name),
                 subjects: CommandSubjects(group.name, command, descriptionText),
@@ -935,6 +980,9 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
     let total = allEntries.length;
     let minVersion = '';
     let versionButtons = [];
+    // The Archicad version picked in "Works in Archicad" (0: any), #3046.
+    let archicadVersion = 0;
+    let archicadButtons = [];
 
     // ---- Toolbar: search, the buttons, the chips and the "Showing" line ----
     let toolbar = CreateElement(parentElement, 'div', 'toolbar', null);
@@ -1081,7 +1129,7 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
         group.section.classList.toggle('group_open', open);
     }
 
-    // ---- The sidebar: the groups (with live counts) and the Added-in filter ----
+    // ---- The sidebar: the groups (with live counts), the Added-in and the Works-in-Archicad filters ----
     let sidebar = document.getElementById('sidebar');
     if (sidebar) {
         sidebar.setAttribute('aria-label', 'Groups');
@@ -1130,6 +1178,36 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
             versionButtons.push(button);
         }
 
+        // The Archicad versions the descriptions name (from "Available in Archicad 25, 26 and 27 only" to
+        // "Available from Archicad 30"), and every version between them. A newer Archicad that no description
+        // names yet gives the same list as the newest one shown.
+        let mentioned = allEntries.reduce((list, entry) => list.concat(entry.archicadVersions ? entry.archicadVersions.mentioned : []), []);
+        if (mentioned.length > 0) {
+            CreateTextElement(sidebar, 'div', 'sidebar_title', 'Works in Archicad');
+            let archicadVersions = CreateElement(sidebar, 'div', 'sidebar_versions', null);
+            archicadVersions.setAttribute('role', 'group');
+            archicadVersions.setAttribute('aria-label', 'Show the commands that work in this Archicad version');
+            let oldest = Math.min(...mentioned);
+            let newest = Math.max(...mentioned);
+            let choices = [0];
+            for (let version = newest; version >= oldest; version--) {
+                choices.push(version);
+            }
+            for (let version of choices) {
+                let button = CreateTextElement(archicadVersions, 'button', 'sidebar_version', version ? 'AC' + version : 'Any');
+                button.type = 'button';
+                button.title = version ? 'Works in Archicad ' + version : 'Any Archicad version';
+                button.setAttribute('aria-pressed', String(version === 0));
+                button.dataset.archicad = String(version);
+                button.addEventListener('click', function () {
+                    // A second click clears it, like the chips.
+                    SetArchicadVersion(archicadVersion === version ? 0 : version);
+                    ApplyFilters();
+                });
+                archicadButtons.push(button);
+            }
+        }
+
         // Close the sheet after following a link on narrow screens.
         sidebar.addEventListener('click', function (event) {
             if (event.target.closest('a')) {
@@ -1162,17 +1240,30 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
         }
     }
 
+    function SetArchicadVersion(version) {
+        archicadVersion = version;
+        for (let button of archicadButtons) {
+            button.setAttribute('aria-pressed', String(button.dataset.archicad === String(version)));
+        }
+    }
+
+    function WorksInArchicad(entry) {
+        return !archicadVersion || !entry.archicadVersions || entry.archicadVersions.Works(archicadVersion);
+    }
+
     function SearchWords() {
         return search.value.toLowerCase().split(/\s+/).filter(word => word.length > 0);
     }
 
     function Filtering() {
-        return SearchWords().length > 0 || minVersion !== '' || actionChips.value !== '' || subjectChips.value !== '';
+        return SearchWords().length > 0 || minVersion !== '' || archicadVersion !== 0 ||
+            actionChips.value !== '' || subjectChips.value !== '';
     }
 
     function ClearFilters() {
         search.value = '';
         SetMinVersion('');
+        SetArchicadVersion(0);
         actionChips.Set('');
         subjectChips.Set('');
     }
@@ -1188,6 +1279,7 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
             for (let entry of group.entries) {
                 entry.visible = words.every(word => entry.searchText.includes(word)) &&
                     (!minVersion || CompareVersions(entry.command.version, minVersion) >= 0) &&
+                    WorksInArchicad(entry) &&
                     (!actionChips.value || entry.action === actionChips.value) &&
                     (!subjectChips.value || entry.subjects.has(subjectChips.value));
                 if (entry.element) {

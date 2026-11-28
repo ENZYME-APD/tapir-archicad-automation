@@ -1,0 +1,2218 @@
+{
+ "version": 1,
+ "groups": [
+  "Design Options Commands"
+ ],
+ "index": "https://archicad-api.com/commands.json",
+ "archicadVersions": [
+  25,
+  26,
+  27,
+  28,
+  29,
+  30
+ ],
+ "howToCall": {
+  "url": "http://127.0.0.1:19723",
+  "command": "API.ExecuteAddOnCommand",
+  "commandNamespace": "TapirCommand"
+ },
+ "commands": [
+  {
+   "name": "GetDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.2.9",
+   "description": "Retrieves information about existing design options. Available from Archicad 29.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptions.py",
+    "description": "Lists the design options of the project with their set and ID, using GetDesignOptions. Requires Archicad 29 or later.",
+    "code": "\"\"\"Lists the design options of the project with their set and ID, using GetDesignOptions.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ndesignOptions = aclib.RunTapirCommand ('GetDesignOptions')['designOptions']\n\nfor designOption in designOptions:\n    print (designOption['ownerSetName'], '/', designOption['id'], designOption['name'])\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDesignOptions"
+  },
+  {
+   "name": "GetDesignOptionSets",
+   "group": "Design Options Commands",
+   "version": "1.2.9",
+   "description": "Retrieves information about existing design option sets, and in Teamwork projects the Teamwork identifier of the design options. Available from Archicad 29.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionSets": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionSetId": {
+         "$ref": "#/GuidId",
+         "description": "The guid identifier of the design option set."
+        },
+        "name": {
+         "type": "string",
+         "description": "The name of the design option set."
+        },
+        "isEditable": {
+         "type": "boolean",
+         "description": "Whether the design option set can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork)."
+        },
+        "notEditableError": {
+         "$ref": "#/Error",
+         "description": "The reason why the design option set is not editable. Only present when isEditable is false."
+        },
+        "designOptions": {
+         "type": "array",
+         "items": {
+          "$ref": "#/DesignOptionIdArrayItem"
+         },
+         "description": "The list of design options in the set."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionSetId",
+        "name",
+        "designOptions"
+       ]
+      }
+     },
+     "teamworkId": {
+      "$ref": "#/GuidId",
+      "description": "The Teamwork identifier of the project's design options. Present only in Teamwork projects."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionSets"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDesignOptionSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDesignOptionSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptionSets.py",
+    "description": "Lists the design option sets of the project and their options with GetDesignOptionSets. Requires Archicad 29 or later.",
+    "code": "\"\"\"Lists the design option sets of the project and their options with GetDesignOptionSets.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetDesignOptionSets'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDesignOptionSets"
+  },
+  {
+   "name": "GetDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.2.9",
+   "description": "Retrieves information about existing design option combinations.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinations": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionCombinationDetails"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinations"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDesignOptionCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDesignOptionCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptionCombinations.py",
+    "description": "Lists the design option combinations of the project and their active options with GetDesignOptionCombinations. Requires Archicad 27 or later.",
+    "code": "\"\"\"Lists the design option combinations of the project and their active options with GetDesignOptionCombinations.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\naclib.PrintJson (aclib.RunTapirCommand ('GetDesignOptionCombinations'))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDesignOptionCombinations"
+  },
+  {
+   "name": "GetElementsOfDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Retrieves the elements associated with the given design options. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionIdArrayItem"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "elementsOfDesignOptions": {
+      "type": "array",
+      "items": {
+       "$ref": "#/ElementsOfDesignOptionOrError"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementsOfDesignOptions"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetElementsOfDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetElementsOfDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetElementsOfDesignOptions.py",
+    "description": "Lists the elements of every design option of the project with GetElementsOfDesignOptions. Requires Archicad 29 or later.",
+    "code": "\"\"\"Lists the elements of every design option of the project with GetElementsOfDesignOptions.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ndesignOptions = aclib.RunTapirCommand ('GetDesignOptions')['designOptions']\nif not designOptions:\n    raise SystemExit ('No design option in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetElementsOfDesignOptions', {\n    'designOptions': [{'designOptionId': d['designOptionId']} for d in designOptions]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetElementsOfDesignOptions"
+  },
+  {
+   "name": "GetDesignOptionForElements",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Retrieves the design option association for the specified elements. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionForElements": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "type": {
+         "$ref": "#/DesignOptionLinkType"
+        },
+        "designOption": {
+         "$ref": "#/DesignOptionDetails"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId",
+        "type"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionForElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDesignOptionForElementsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDesignOptionForElements.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptionForElements.py",
+    "description": "Prints which design option each wall of the project belongs to, with GetDesignOptionForElements. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints which design option each wall of the project belongs to, with GetDesignOptionForElements.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDesignOptionForElements"
+  },
+  {
+   "name": "CreateDesignOptionSets",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Creates new design option sets with the given names. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionSets": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateDesignOptionSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/CreateDesignOptionSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/CreateDesignOptionSets.py",
+    "description": "Creates a design option set with CreateDesignOptionSets, then deletes it again. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set with CreateDesignOptionSets, then deletes it again.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.PrintJson (aclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]}))\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateDesignOptionSets"
+  },
+  {
+   "name": "CreateDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Creates new design options with the given parameters. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionIdsOrErrors": {
+      "$ref": "#/DesignOptionIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionIdsOrErrors"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/CreateDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/CreateDesignOptions.py",
+    "description": "Creates a design option set with two design options in it using CreateDesignOptions. Deletes the set with its options at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set with two design options in it using CreateDesignOptions.\n\nDeletes the set with its options at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\n\naclib.PrintJson (aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [\n        {'name': 'Option A', 'id': 'A', 'ownerSetName': setName},\n        {'name': 'Option B', 'id': 'B', 'ownerSetName': setName}\n    ]\n}))\naclib.RunTapirCommand ('GetDesignOptions')\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateDesignOptions"
+  },
+  {
+   "name": "CreateDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Creates new design option combinations with the given parameters. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinations": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionCombinationData"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinationIdsOrErrors": {
+      "$ref": "#/DesignOptionCombinationIdsOrErrors"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinationIdsOrErrors"
+    ]
+   },
+   "grasshopperComponents": [
+    "CreateDesignOptionCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/CreateDesignOptionCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/CreateDesignOptionCombinations.py",
+    "description": "Creates a design option set with an option, and a combination that shows it, using CreateDesignOptionCombinations. Deletes everything it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set with an option, and a combination that shows it, using CreateDesignOptionCombinations.\n\nDeletes everything it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{\n        'name': 'Tapir Example Combination',\n        'activeDesignOptions': [{'designOptionId': option['designOptionId']}]\n    }]\n})['designOptionCombinationIdsOrErrors'][0]\naclib.PrintJson (combination)\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CreateDesignOptionCombinations"
+  },
+  {
+   "name": "SetActiveDesignOptionsInCombinations",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Sets active design options in the given combinations. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "activeDesignOptionsInCombinations": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionCombinationId": {
+         "$ref": "#/DesignOptionCombinationId"
+        },
+        "activeDesignOptions": {
+         "type": "array",
+         "items": {
+          "$ref": "#/DesignOptionIdArrayItem"
+         },
+         "description": "The list of active design options in the combination."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionCombinationId",
+        "activeDesignOptions"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "activeDesignOptionsInCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetActiveDesignOptionsInCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/SetActiveDesignOptionsInCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetActiveDesignOptionsInCombinations.py",
+    "description": "Creates a combination that shows Option A, then makes it show Option B with SetActiveDesignOptionsInCombinations. Deletes everything it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a combination that shows Option A, then makes it show Option B with SetActiveDesignOptionsInCombinations.\n\nDeletes everything it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noptionA, optionB = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [\n        {'name': 'Option A', 'id': 'A', 'ownerSetName': setName},\n        {'name': 'Option B', 'id': 'B', 'ownerSetName': setName}\n    ]\n})['designOptionIdsOrErrors']\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{\n        'name': 'Tapir Example Combination',\n        'activeDesignOptions': [{'designOptionId': optionA['designOptionId']}]\n    }]\n})['designOptionCombinationIdsOrErrors'][0]\n\n# The given list replaces the active options of the combination.\naclib.PrintJson (aclib.RunTapirCommand ('SetActiveDesignOptionsInCombinations', {\n    'activeDesignOptionsInCombinations': [{\n        'designOptionCombinationId': combination['designOptionCombinationId'],\n        'activeDesignOptions': [{'designOptionId': optionB['designOptionId']}]\n    }]\n}))\naclib.RunTapirCommand ('GetDesignOptionCombinations')\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetActiveDesignOptionsInCombinations"
+  },
+  {
+   "name": "ActivateDesignOptionsInCombinations",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Activates one design option in each of the given combinations, without listing all active design options of the combination. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionsToActivate": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionCombinationId": {
+         "$ref": "#/DesignOptionCombinationId"
+        },
+        "designOptionId": {
+         "$ref": "#/DesignOptionId"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionCombinationId",
+        "designOptionId"
+       ]
+      },
+      "description": "The design options to activate, each in the given combination."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionsToActivate"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ActivateDesignOptionsInCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/ActivateDesignOptionsInCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/ActivateDesignOptionsInCombinations.py",
+    "description": "Creates an empty combination and activates a design option in it with ActivateDesignOptionsInCombinations. Deletes everything it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates an empty combination and activates a design option in it with ActivateDesignOptionsInCombinations.\n\nDeletes everything it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{'name': 'Tapir Example Combination', 'activeDesignOptions': []}]\n})['designOptionCombinationIdsOrErrors'][0]\n\n# The other active options of the combination stay as they are.\naclib.PrintJson (aclib.RunTapirCommand ('ActivateDesignOptionsInCombinations', {\n    'designOptionsToActivate': [{\n        'designOptionCombinationId': combination['designOptionCombinationId'],\n        'designOptionId': option['designOptionId']\n    }]\n}))\naclib.RunTapirCommand ('GetDesignOptionCombinations')\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ActivateDesignOptionsInCombinations"
+  },
+  {
+   "name": "DeactivateDesignOptionsInCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.3",
+   "description": "Turns off the given design options in the given combinations, leaving their other options as they are. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "deactivatedDesignOptionsInCombinations": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionDeactivation"
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "deactivatedDesignOptionsInCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeactivateDesignOptionsInCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/DeactivateDesignOptionsInCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DeactivateDesignOptionsInCombinations.py",
+    "description": "Creates a combination that shows a design option, then turns that option off with DeactivateDesignOptionsInCombinations. Deletes everything it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a combination that shows a design option, then turns that option off with DeactivateDesignOptionsInCombinations.\n\nDeletes everything it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{\n        'name': 'Tapir Example Combination',\n        'activeDesignOptions': [{'designOptionId': option['designOptionId']}]\n    }]\n})['designOptionCombinationIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('DeactivateDesignOptionsInCombinations', {\n    'deactivatedDesignOptionsInCombinations': [{\n        'designOptionCombinationId': combination['designOptionCombinationId'],\n        'designOptions': [{'designOptionId': option['designOptionId']}]\n    }]\n}))\naclib.RunTapirCommand ('GetDesignOptionCombinations')\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeactivateDesignOptionsInCombinations"
+  },
+  {
+   "name": "MoveElementsToDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Moves the given elements into the given design options. Use NULLGuid for design option to remove the element from any design options and move it to the main model. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elementDesignOptionPairs": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "designOptionId": {
+         "description": "The identifier of the design option to move the element into. Use NULLGuid to remove the element from any design option and move it to the main model.",
+         "$ref": "#/DesignOptionId"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId",
+        "designOptionId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elementDesignOptionPairs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "MoveElementsToDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/MoveElementsToDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/MoveElementsToDesignOptions.py",
+    "description": "Moves the first wall into a new design option with MoveElementsToDesignOptions, then back where it was. Needs at least one Wall. Deletes the design option set it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Moves the first wall into a new design option with MoveElementsToDesignOptions, then back where it was.\n\nNeeds at least one Wall. Deletes the design option set it created at the end.\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nNullGuid = {'guid': '00000000-0000-0000-0000-000000000000'}\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements'][:1]\nif not walls:\n    raise SystemExit ('No wall in the project.')\nwallId = walls[0]['elementId']\n\n# Remember the design option of the wall; NullGuid stands for the main model.\noriginal = aclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls})['designOptionForElements'][0]\noriginalOptionId = original['designOption']['designOptionId'] if 'designOption' in original else NullGuid\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('MoveElementsToDesignOptions', {\n    'elementDesignOptionPairs': [{'elementId': wallId, 'designOptionId': option['designOptionId']}]\n}))\naclib.RunTapirCommand ('GetDesignOptionForElements', {'elements': walls})\n\naclib.PrintJson (aclib.RunTapirCommand ('MoveElementsToDesignOptions', {\n    'elementDesignOptionPairs': [{'elementId': wallId, 'designOptionId': originalOptionId}]\n}))\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MoveElementsToDesignOptions"
+  },
+  {
+   "name": "MoveDesignOptionsToAnotherSet",
+   "group": "Design Options Commands",
+   "version": "1.5.1",
+   "description": "Moves the given design options to another sets. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionAndSetPairs": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionId": {
+         "description": "The identifier of the design option to move.",
+         "$ref": "#/DesignOptionId"
+        },
+        "setName": {
+         "type": "string"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionId",
+        "setName"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionAndSetPairs"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "MoveDesignOptionsToAnotherSetComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/MoveDesignOptionsToAnotherSet.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/MoveDesignOptionsToAnotherSet.py",
+    "description": "Creates two design option sets and moves a design option from the first to the second with MoveDesignOptionsToAnotherSet. Deletes both sets at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates two design option sets and moves a design option from the first to the second with MoveDesignOptionsToAnotherSet.\n\nDeletes both sets at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': ['Tapir Example Set 1', 'Tapir Example Set 2']})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': 'Tapir Example Set 1'}]\n})['designOptionIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('MoveDesignOptionsToAnotherSet', {\n    'designOptionAndSetPairs': [{'designOptionId': option['designOptionId'], 'setName': 'Tapir Example Set 2'}]\n}))\naclib.RunTapirCommand ('GetDesignOptions')\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'].startswith ('Tapir Example Set')]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#MoveDesignOptionsToAnotherSet"
+  },
+  {
+   "name": "RenameDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Changes the name and/or the string id of the given design options. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionId": {
+         "$ref": "#/DesignOptionId"
+        },
+        "name": {
+         "type": "string",
+         "description": "The new name of the design option. The name is kept when it is not given."
+        },
+        "id": {
+         "type": "string",
+         "description": "The new string id of the design option. The id is kept when it is not given."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionId"
+       ]
+      },
+      "description": "The design options to rename, each with the new name and/or id. At least one of them must be given."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RenameDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/RenameDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/RenameDesignOptions.py",
+    "description": "Creates a design option and changes its name and ID with RenameDesignOptions. Deletes the design option set it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option and changes its name and ID with RenameDesignOptions.\n\nDeletes the design option set it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('RenameDesignOptions', {\n    'designOptions': [{'designOptionId': option['designOptionId'], 'name': 'Option A (renamed)', 'id': 'A2'}]\n}))\naclib.RunTapirCommand ('GetDesignOptions')\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RenameDesignOptions"
+  },
+  {
+   "name": "RenameDesignOptionSets",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Changes the name of the given design option sets. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionSets": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionSetId": {
+         "$ref": "#/DesignOptionSetId"
+        },
+        "name": {
+         "type": "string",
+         "description": "The new name of the design option set."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionSetId",
+        "name"
+       ]
+      },
+      "description": "The design option sets to rename, each with the new name."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RenameDesignOptionSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/RenameDesignOptionSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/RenameDesignOptionSets.py",
+    "description": "Creates a design option set and renames it with RenameDesignOptionSets. Deletes the set at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set and renames it with RenameDesignOptionSets.\n\nDeletes the set at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\nsetId = next (s['designOptionSetId'] for s in sets if s['name'] == setName)\n\naclib.PrintJson (aclib.RunTapirCommand ('RenameDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': setId, 'name': 'Tapir Renamed Set'}]\n}))\naclib.RunTapirCommand ('GetDesignOptionSets')\n\naclib.RunTapirCommand ('DeleteDesignOptionSets', {'designOptionSets': [{'designOptionSetId': setId}]})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RenameDesignOptionSets"
+  },
+  {
+   "name": "RenameDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Changes the name of the given design option combinations. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinations": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionCombinationId": {
+         "$ref": "#/DesignOptionCombinationId"
+        },
+        "name": {
+         "type": "string",
+         "description": "The new name of the design option combination."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionCombinationId",
+        "name"
+       ]
+      },
+      "description": "The design option combinations to rename, each with the new name."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "RenameDesignOptionCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/RenameDesignOptionCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/RenameDesignOptionCombinations.py",
+    "description": "Creates a design option combination and renames it with RenameDesignOptionCombinations. Deletes the combination at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option combination and renames it with RenameDesignOptionCombinations.\n\nDeletes the combination at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{'name': 'Tapir Example Combination', 'activeDesignOptions': []}]\n})['designOptionCombinationIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('RenameDesignOptionCombinations', {\n    'designOptionCombinations': [{\n        'designOptionCombinationId': combination['designOptionCombinationId'],\n        'name': 'Tapir Renamed Combination'\n    }]\n}))\naclib.RunTapirCommand ('GetDesignOptionCombinations')\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#RenameDesignOptionCombinations"
+  },
+  {
+   "name": "DeleteDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Deletes the given design options. An option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionIdArrayItem"
+      },
+      "description": "The design options to delete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/DeleteDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DeleteDesignOptions.py",
+    "description": "Creates a design option set with an option, then deletes the option with DeleteDesignOptions. Deletes the set too at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set with an option, then deletes the option with DeleteDesignOptions.\n\nDeletes the set too at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteDesignOptions', {'designOptions': [{'designOptionId': option['designOptionId']}]}))\naclib.RunTapirCommand ('GetDesignOptions')\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteDesignOptions"
+  },
+  {
+   "name": "DeleteDesignOptionSets",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Deletes the given design option sets. A set with an option that still holds elements is not deleted (its result is an error naming them, because Archicad would open a modal dialog): move them to the main model or another option with MoveElementsToDesignOptions first. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionSets": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionSetIdArrayItem"
+      },
+      "description": "The design option sets to delete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteDesignOptionSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/DeleteDesignOptionSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DeleteDesignOptionSets.py",
+    "description": "Creates a design option set and deletes it with DeleteDesignOptionSets. Deleting a set deletes its design options too. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option set and deletes it with DeleteDesignOptionSets.\n\nDeleting a set deletes its design options too. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteDesignOptionSets"
+  },
+  {
+   "name": "DeleteDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.2",
+   "description": "Deletes the given design option combinations. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinations": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionCombinationIdArrayItem"
+      },
+      "description": "The design option combinations to delete."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "DeleteDesignOptionCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/DeleteDesignOptionCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DeleteDesignOptionCombinations.py",
+    "description": "Creates a design option combination and deletes it with DeleteDesignOptionCombinations. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option combination and deletes it with DeleteDesignOptionCombinations.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{'name': 'Tapir Example Combination', 'activeDesignOptions': []}]\n})['designOptionCombinationIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DeleteDesignOptionCombinations"
+  },
+  {
+   "name": "GetHotlinkDesignOptionTables",
+   "group": "Design Options Commands",
+   "version": "2.0.0",
+   "description": "Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "hotlinks": {
+      "type": "array",
+      "description": "The hotlink nodes (hotlinkNodeId from GetHotlinks) and placed hotlink instances (elementId of a Hotlink element) to read the design option table of.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "properties": {
+          "hotlinkNodeId": {
+           "$ref": "#/HotlinkNodeId"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "hotlinkNodeId"
+         ]
+        },
+        {
+         "properties": {
+          "elementId": {
+           "$ref": "#/ElementId"
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "elementId"
+         ]
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hotlinks"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "hotlinkDesignOptionTables": {
+      "type": "array",
+      "description": "The design option tables, in the order of the given hotlinks.",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "hotlinkNodeId": {
+           "$ref": "#/HotlinkNodeId",
+           "description": "The hotlink node the table belongs to; for an instance, the node it is placed from."
+          },
+          "filterMode": {
+           "type": "string",
+           "enum": [
+            "MainModelOnly",
+            "FilterByOptions",
+            "FilterByCombination",
+            "Unknown"
+           ],
+           "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+          },
+          "designOptionCombinations": {
+           "type": "array",
+           "items": {
+            "type": "string"
+           },
+           "description": "The names of the design option combinations of the hotlinked module."
+          },
+          "activeDesignOptionCombination": {
+           "type": "string",
+           "description": "The name of the active combination. Missing when no combination is active."
+          },
+          "designOptionSets": {
+           "type": "array",
+           "items": {
+            "type": "object",
+            "properties": {
+             "name": {
+              "type": "string"
+             },
+             "designOptions": {
+              "type": "array",
+              "items": {
+               "type": "string"
+              },
+              "description": "The names of the design options in the set."
+             },
+             "activeDesignOption": {
+              "type": "string",
+              "description": "The name of the active design option of the set. Missing when no option of the set is active."
+             }
+            },
+            "additionalProperties": false,
+            "required": [
+             "name",
+             "designOptions"
+            ]
+           },
+           "description": "The design option sets of the hotlinked module."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "hotlinkNodeId",
+          "filterMode",
+          "designOptionCombinations",
+          "designOptionSets"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hotlinkDesignOptionTables"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetHotlinkDesignOptionTablesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTables.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTables.py",
+    "description": "Prints the design option table of every hotlink node and placed hotlink with GetHotlinkDesignOptionTables. Needs at least one hotlink. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints the design option table of every hotlink node and placed hotlink with GetHotlinkDesignOptionTables.\n\nNeeds at least one hotlink. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ndef AllNodes (hotlinks):\n    for hotlink in hotlinks:\n        yield hotlink\n        yield from AllNodes (hotlink.get ('children', []))\n\nnodes = [n for n in AllNodes (aclib.RunTapirCommand ('GetHotlinks')['hotlinks']) if 'hotlinkNodeId' in n]\ninstances = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Hotlink'})['elements']\nif not nodes and not instances:\n    raise SystemExit ('No hotlink in the project.')\n\n# A hotlink is given by its node or by a placed instance element.\naclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkDesignOptionTables', {\n    'hotlinks': [{'hotlinkNodeId': n['hotlinkNodeId']} for n in nodes] + instances\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetHotlinkDesignOptionTables"
+  },
+  {
+   "name": "SetHotlinkDesignOptionTables",
+   "group": "Design Options Commands",
+   "version": "2.0.0",
+   "description": "Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "hotlinkInstances": {
+      "type": "array",
+      "description": "The placed hotlink instances to change the design option table of. Every field but elementId is optional; what is omitted keeps its current value. The changes are applied in the order filterMode, activeDesignOptionCombination, activeDesignOptions.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "filterMode": {
+         "type": "string",
+         "enum": [
+          "MainModelOnly",
+          "FilterByOptions",
+          "FilterByCombination"
+         ],
+         "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+        },
+        "activeDesignOptionCombination": {
+         "type": "string",
+         "description": "The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination."
+        },
+        "activeDesignOptions": {
+         "type": "array",
+         "description": "The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.",
+         "items": {
+          "type": "object",
+          "properties": {
+           "setName": {
+            "type": "string"
+           },
+           "designOptionName": {
+            "type": "string",
+            "description": "The name of the option to activate in the set. An empty string deactivates every option of the set."
+           }
+          },
+          "additionalProperties": false,
+          "required": [
+           "setName",
+           "designOptionName"
+          ]
+         }
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hotlinkInstances"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetHotlinkDesignOptionTablesComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/SetHotlinkDesignOptionTables.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetHotlinkDesignOptionTables.py",
+    "description": "Makes the first placed hotlink show only the main model with SetHotlinkDesignOptionTables, then restores its filter mode. Needs a placed hotlink. Requires Archicad 29 or later.",
+    "code": "\"\"\"Makes the first placed hotlink show only the main model with SetHotlinkDesignOptionTables, then restores its filter mode.\n\nNeeds a placed hotlink. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ninstances = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Hotlink'})['elements'][:1]\nif not instances:\n    raise SystemExit ('No placed hotlink in the project.')\nelementId = instances[0]['elementId']\n\noriginal = aclib.RunTapirCommand ('GetHotlinkDesignOptionTables', {'hotlinks': instances})['hotlinkDesignOptionTables'][0]\nif original.get ('filterMode', 'Unknown') == 'Unknown':\n    raise SystemExit ('The design option table of the hotlink cannot be read.')\n\naclib.PrintJson (aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {\n    'hotlinkInstances': [{'elementId': elementId, 'filterMode': 'MainModelOnly'}]\n}))\n\nrestore = {'elementId': elementId, 'filterMode': original['filterMode']}\nif 'activeDesignOptionCombination' in original:\n    restore['activeDesignOptionCombination'] = original['activeDesignOptionCombination']\naclib.PrintJson (aclib.RunTapirCommand ('SetHotlinkDesignOptionTables', {'hotlinkInstances': [restore]}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetHotlinkDesignOptionTables"
+  },
+  {
+   "name": "SetDefaultDesignOption",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionId": {
+      "$ref": "#/DesignOptionId",
+      "description": "The design option to set as the default. When it is not given, the Main Model becomes the default."
+     }
+    },
+    "additionalProperties": false,
+    "required": []
+   },
+   "outputSchema": {
+    "$ref": "#/ExecutionResult"
+   },
+   "grasshopperComponents": [
+    "SetDefaultDesignOptionComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/SetDefaultDesignOption.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetDefaultDesignOption.py",
+    "description": "Creates a design option and makes it the default with SetDefaultDesignOption, then sets the Main Model as the default. Deletes the design option set it created at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option and makes it the default with SetDefaultDesignOption, then sets the Main Model as the default.\n\nDeletes the design option set it created at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\naclib.PrintJson (aclib.RunTapirCommand ('SetDefaultDesignOption', {'designOptionId': option['designOptionId']}))\n\n# Without a designOptionId the Main Model becomes the default.\naclib.PrintJson (aclib.RunTapirCommand ('SetDefaultDesignOption', {}))\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetDefaultDesignOption"
+  },
+  {
+   "name": "GetDefaultDesignOption",
+   "group": "Design Options Commands",
+   "version": "2.0.1",
+   "description": "Retrieves which design option, or the Main Model, is the default that new elements go to. The Archicad API has no function for it, so in a project with design options the command creates a temporary slab in the floor plan, reads its design option, moves it to the Main Model and deletes it (without design options the answer is the Main Model and nothing is created). Archicad puts a new element into the default design option only when the undo step that created it ends, so this takes two undo steps, creating and removing the slab, which together leave the project as it was. Needs a window where design options can be edited. Available from Archicad 29.",
+   "inputSchema": null,
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "isMainModel": {
+      "type": "boolean",
+      "description": "True when new elements go to the Main Model, false when they go to designOption."
+     },
+     "designOption": {
+      "$ref": "#/DesignOptionDetails",
+      "description": "The default design option, which new elements go to. Only present when isMainModel is false."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "isMainModel"
+    ]
+   },
+   "grasshopperComponents": [],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDefaultDesignOption.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDefaultDesignOption.py",
+    "description": "Reads the default design option with GetDefaultDesignOption, before and after making a new option the default. Creates a design option set with one option, puts the default back as it was and deletes the set at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Reads the default design option with GetDefaultDesignOption, before and after making a new option the default.\n\nCreates a design option set with one option, puts the default back as it was and deletes the set at the end.\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nbefore = aclib.RunTapirCommand ('GetDefaultDesignOption')\naclib.PrintJson (before)\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noption = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [{'name': 'Option A', 'id': 'A', 'ownerSetName': setName}]\n})['designOptionIdsOrErrors'][0]\n\naclib.RunTapirCommand ('SetDefaultDesignOption', {'designOptionId': option['designOptionId']})\naclib.PrintJson (aclib.RunTapirCommand ('GetDefaultDesignOption'))\n\n# The default as it was: the Main Model, or the design option read at the start.\naclib.RunTapirCommand ('SetDefaultDesignOption', {} if before['isMainModel'] else {'designOptionId': before['designOption']['designOptionId']})\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDefaultDesignOption"
+  },
+  {
+   "name": "ReorderDesignOptionSets",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Moves the given design option sets before another set or to the end of the list. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionSets": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionSetId": {
+         "$ref": "#/DesignOptionSetId",
+         "description": "The design option set to move."
+        },
+        "beforeDesignOptionSetId": {
+         "$ref": "#/DesignOptionSetId",
+         "description": "The design option set to move it before. When it is not given, the set is moved to the end."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionSetId"
+       ]
+      },
+      "description": "The design option sets to move, in the order the moves are done."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionSets"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReorderDesignOptionSetsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/ReorderDesignOptionSets.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/ReorderDesignOptionSets.py",
+    "description": "Creates two design option sets and moves the second before the first with ReorderDesignOptionSets. Deletes both sets at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates two design option sets and moves the second before the first with ReorderDesignOptionSets.\n\nDeletes both sets at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': ['Tapir Example Set 1', 'Tapir Example Set 2']})\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\nsetIds = {s['name']: s['designOptionSetId'] for s in sets}\n\naclib.PrintJson (aclib.RunTapirCommand ('ReorderDesignOptionSets', {\n    'designOptionSets': [{\n        'designOptionSetId': setIds['Tapir Example Set 2'],\n        'beforeDesignOptionSetId': setIds['Tapir Example Set 1']\n    }]\n}))\naclib.RunTapirCommand ('GetDesignOptionSets')\n\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': setIds[name]} for name in ('Tapir Example Set 1', 'Tapir Example Set 2')]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReorderDesignOptionSets"
+  },
+  {
+   "name": "ReorderDesignOptionsInSet",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Moves the given design options before another design option of the same set or to the end of their set. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptions": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "designOptionId": {
+         "$ref": "#/DesignOptionId",
+         "description": "The design option to move within its set."
+        },
+        "beforeDesignOptionId": {
+         "$ref": "#/DesignOptionId",
+         "description": "The design option of the same set to move it before. When it is not given, the design option is moved to the end of its set."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "designOptionId"
+       ]
+      },
+      "description": "The design options to move, in the order the moves are done."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptions"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "ReorderDesignOptionsInSetComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/ReorderDesignOptionsInSet.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/ReorderDesignOptionsInSet.py",
+    "description": "Creates a set with Options A and B and moves B before A with ReorderDesignOptionsInSet. Deletes the set at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a set with Options A and B and moves B before A with ReorderDesignOptionsInSet.\n\nDeletes the set at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nsetName = 'Tapir Example Set'\naclib.RunTapirCommand ('CreateDesignOptionSets', {'designOptionSets': [setName]})\noptionA, optionB = aclib.RunTapirCommand ('CreateDesignOptions', {\n    'designOptions': [\n        {'name': 'Option A', 'id': 'A', 'ownerSetName': setName},\n        {'name': 'Option B', 'id': 'B', 'ownerSetName': setName}\n    ]\n})['designOptionIdsOrErrors']\n\n# Without beforeDesignOptionId the option goes to the end of its set.\naclib.PrintJson (aclib.RunTapirCommand ('ReorderDesignOptionsInSet', {\n    'designOptions': [{'designOptionId': optionB['designOptionId'], 'beforeDesignOptionId': optionA['designOptionId']}]\n}))\naclib.RunTapirCommand ('GetDesignOptionSets')\n\nsets = aclib.RunTapirCommand ('GetDesignOptionSets')['designOptionSets']\naclib.RunTapirCommand ('DeleteDesignOptionSets', {\n    'designOptionSets': [{'designOptionSetId': s['designOptionSetId']} for s in sets if s['name'] == setName]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#ReorderDesignOptionsInSet"
+  },
+  {
+   "name": "CanMoveElementsToDesignOptions",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Checks whether the given elements can be moved to another design option or to the main model, with the reason when they cannot. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "elements": {
+      "$ref": "#/Elements"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "elements"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "canMoveElements": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "elementId": {
+         "$ref": "#/ElementId"
+        },
+        "canMove": {
+         "type": "boolean",
+         "description": "Whether the element can be moved to another design option or to the main model."
+        },
+        "error": {
+         "$ref": "#/Error",
+         "description": "The reason why the element cannot be moved. Only present when canMove is false."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "elementId",
+        "canMove"
+       ]
+      },
+      "description": "The result for each given element, in the order of the input."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "canMoveElements"
+    ]
+   },
+   "grasshopperComponents": [
+    "CanMoveElementsToDesignOptionsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/CanMoveElementsToDesignOptions.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/CanMoveElementsToDesignOptions.py",
+    "description": "Checks which walls of the project can be moved to another design option, with CanMoveElementsToDesignOptions. Requires Archicad 29 or later.",
+    "code": "\"\"\"Checks which walls of the project can be moved to another design option, with CanMoveElementsToDesignOptions.\n\nRequires Archicad 29 or later.\n\"\"\"\nimport aclib\n\nwalls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']\nif not walls:\n    raise SystemExit ('No wall in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('CanMoveElementsToDesignOptions', {'elements': walls}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#CanMoveElementsToDesignOptions"
+  },
+  {
+   "name": "DuplicateDesignOptionCombinations",
+   "group": "Design Options Commands",
+   "version": "1.7.3",
+   "description": "Duplicates the given design option combinations and returns the identifiers of the new combinations. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinations": {
+      "type": "array",
+      "items": {
+       "$ref": "#/DesignOptionCombinationIdArrayItem"
+      },
+      "description": "The design option combinations to duplicate."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinations"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinationIdsOrErrors": {
+      "$ref": "#/DesignOptionCombinationIdsOrErrors",
+      "description": "The identifiers of the new combinations, in the order of the input, or an error for each combination that could not be duplicated."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinationIdsOrErrors"
+    ]
+   },
+   "grasshopperComponents": [
+    "DuplicateDesignOptionCombinationsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/DuplicateDesignOptionCombinations.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DuplicateDesignOptionCombinations.py",
+    "description": "Creates a design option combination and duplicates it with DuplicateDesignOptionCombinations. Deletes both combinations at the end. Requires Archicad 29 or later.",
+    "code": "\"\"\"Creates a design option combination and duplicates it with DuplicateDesignOptionCombinations.\n\nDeletes both combinations at the end. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ncombination = aclib.RunTapirCommand ('CreateDesignOptionCombinations', {\n    'designOptionCombinations': [{'name': 'Tapir Example Combination', 'activeDesignOptions': []}]\n})['designOptionCombinationIdsOrErrors'][0]\n\nduplicates = aclib.RunTapirCommand ('DuplicateDesignOptionCombinations', {\n    'designOptionCombinations': [{'designOptionCombinationId': combination['designOptionCombinationId']}]\n})['designOptionCombinationIdsOrErrors']\naclib.PrintJson (duplicates)\naclib.RunTapirCommand ('GetDesignOptionCombinations')\n\naclib.RunTapirCommand ('DeleteDesignOptionCombinations', {\n    'designOptionCombinations': [combination] + [d for d in duplicates if 'designOptionCombinationId' in d]\n})\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#DuplicateDesignOptionCombinations"
+  },
+  {
+   "name": "GetDesignOptionCombinationOfViews",
+   "group": "Design Options Commands",
+   "version": "2.0.0",
+   "description": "Retrieves which design option combination the given views show: only the main model, a combination, a custom set of design options or a deleted combination. Available from Archicad 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "navigatorItemIds": {
+      "$ref": "#/NavigatorItemIds",
+      "description": "The navigator items of the views (View Map items)."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "navigatorItemIds"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "designOptionCombinationOfViews": {
+      "type": "array",
+      "items": {
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "navigatorItemId": {
+           "$ref": "#/NavigatorItemId"
+          },
+          "status": {
+           "type": "string",
+           "enum": [
+            "MainModelOnly",
+            "Standard",
+            "Custom",
+            "Missing"
+           ],
+           "description": "MainModelOnly: the view shows only the main model, no design option. Standard: the view shows a design option combination. Custom: the view shows a set of design options modified by the user, without a name. Missing: the combination of the view was deleted."
+          },
+          "name": {
+           "type": "string",
+           "description": "The name of the design option combination settings of the view, as Archicad reports it."
+          },
+          "designOptionCombinationId": {
+           "$ref": "#/DesignOptionCombinationId",
+           "description": "The design option combination the view shows. Given for the Standard status and, on Archicad 27 and 28, also for the Custom status (the combination the custom set was made from). On Archicad 29 and newer it is given only when exactly one combination has the name of the view's settings."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "navigatorItemId",
+          "status",
+          "name"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "designOptionCombinationOfViews"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetDesignOptionCombinationOfViewsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetDesignOptionCombinationOfViews.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptionCombinationOfViews.py",
+    "description": "Prints which design option combination each View Map view shows, with GetDesignOptionCombinationOfViews. Requires Archicad 27 or later.",
+    "code": "\"\"\"Prints which design option combination each View Map view shows, with GetDesignOptionCombinationOfViews.\n\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\ndef AllItems (item):\n    for child in item.get ('children', []):\n        yield child['navigatorItem']\n        yield from AllItems (child['navigatorItem'])\n\nviewMap = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'PublicViewMap'})['navigatorItemTree']\nviews = [item for item in AllItems (viewMap) if item['type'] != 'FolderItem']\nif not views:\n    raise SystemExit ('No view in the View Map.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetDesignOptionCombinationOfViews', {\n    'navigatorItemIds': [{'navigatorItemId': view['navigatorItemId']} for view in views]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetDesignOptionCombinationOfViews"
+  },
+  {
+   "name": "SetDesignOptionCombinationOfViews",
+   "group": "Design Options Commands",
+   "version": "2.0.0",
+   "description": "Sets the design option combination the given views show, or makes them show only the main model. Available from Archicad 27.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "navigatorItemIdsWithCombination": {
+      "type": "array",
+      "items": {
+       "type": "object",
+       "properties": {
+        "navigatorItemId": {
+         "$ref": "#/NavigatorItemId"
+        },
+        "designOptionCombinationId": {
+         "$ref": "#/DesignOptionCombinationId",
+         "description": "The design option combination the view should show."
+        },
+        "mainModelOnly": {
+         "type": "boolean",
+         "description": "Set it to true to make the view show only the main model, without any design option."
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "navigatorItemId"
+       ]
+      },
+      "description": "The views (View Map navigator items), each with either a 'designOptionCombinationId' or 'mainModelOnly': true."
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "navigatorItemIdsWithCombination"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "executionResults": {
+      "$ref": "#/ExecutionResults"
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "executionResults"
+    ]
+   },
+   "grasshopperComponents": [
+    "SetDesignOptionCombinationOfViewsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/SetDesignOptionCombinationOfViews.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetDesignOptionCombinationOfViews.py",
+    "description": "Makes a View Map view show only the main model with SetDesignOptionCombinationOfViews, then restores its combination. Needs a View Map view that shows the main model only or a design option combination. Requires Archicad 27 or later.",
+    "code": "\"\"\"Makes a View Map view show only the main model with SetDesignOptionCombinationOfViews, then restores its combination.\n\nNeeds a View Map view that shows the main model only or a design option combination.\nRequires Archicad 27 or later.\n\"\"\"\nimport aclib\n\ndef AllItems (item):\n    for child in item.get ('children', []):\n        yield child['navigatorItem']\n        yield from AllItems (child['navigatorItem'])\n\nviewMap = aclib.RunTapirCommand ('GetNavigatorItemTree', {'navigatorMapId': 'PublicViewMap'})['navigatorItemTree']\nviews = [{'navigatorItemId': item['navigatorItemId']} for item in AllItems (viewMap) if item['type'] != 'FolderItem']\nif not views:\n    raise SystemExit ('No view in the View Map.')\ncombinations = aclib.RunTapirCommand ('GetDesignOptionCombinationOfViews', {\n    'navigatorItemIds': views\n})['designOptionCombinationOfViews']\n\n# Only these two states can be set back exactly.\ncandidates = [c for c in combinations if c.get ('status') in ('MainModelOnly', 'Standard')]\nif not candidates:\n    raise SystemExit ('No suitable view in the View Map.')\noriginal = candidates[0]\n\naclib.PrintJson (aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {\n    'navigatorItemIdsWithCombination': [{'navigatorItemId': original['navigatorItemId'], 'mainModelOnly': True}]\n}))\naclib.RunTapirCommand ('GetDesignOptionCombinationOfViews', {\n    'navigatorItemIds': [{'navigatorItemId': original['navigatorItemId']}]\n})\n\nif original['status'] == 'Standard':\n    aclib.PrintJson (aclib.RunTapirCommand ('SetDesignOptionCombinationOfViews', {\n        'navigatorItemIdsWithCombination': [{\n            'navigatorItemId': original['navigatorItemId'],\n            'designOptionCombinationId': original['designOptionCombinationId']\n        }]\n    }))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#SetDesignOptionCombinationOfViews"
+  },
+  {
+   "name": "GetHotlinkDesignOptionTableDetails",
+   "group": "Design Options Commands",
+   "version": "1.8.0",
+   "description": "Reads the design option table of hotlink nodes: the design option sets, options and combinations of the hotlinked source file, and which of them the node shows. Available from Archicad 29.",
+   "inputSchema": {
+    "type": "object",
+    "properties": {
+     "hotlinkNodes": {
+      "type": "array",
+      "description": "The hotlink nodes, from GetHotlinks or CreateHotlinkNodes.",
+      "items": {
+       "type": "object",
+       "properties": {
+        "hotlinkNodeId": {
+         "$ref": "#/HotlinkNodeId"
+        }
+       },
+       "additionalProperties": false,
+       "required": [
+        "hotlinkNodeId"
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hotlinkNodes"
+    ]
+   },
+   "outputSchema": {
+    "type": "object",
+    "properties": {
+     "hotlinkDesignOptionTables": {
+      "type": "array",
+      "description": "One item per requested node, in order: the design options of the hotlinked source file and which of them the node shows, or an error.",
+      "items": {
+       "type": "object",
+       "oneOf": [
+        {
+         "type": "object",
+         "properties": {
+          "nodeGuid": {
+           "$ref": "#/GuidId",
+           "description": "The node guid the design option table belongs to."
+          },
+          "filterMode": {
+           "type": "string",
+           "enum": [
+            "MainModelOnly",
+            "FilterByOptions",
+            "FilterByCombination"
+           ],
+           "description": "What the node shows: only the main model of the source, the active option of each set, or the active combination."
+          },
+          "sets": {
+           "type": "array",
+           "description": "The design option sets of the source file.",
+           "items": {
+            "type": "object",
+            "properties": {
+             "name": {
+              "type": "string",
+              "description": "The name of the set."
+             },
+             "options": {
+              "type": "array",
+              "description": "The names of the design options in the set.",
+              "items": {
+               "type": "string"
+              }
+             },
+             "activeOption": {
+              "type": "string",
+              "description": "The name of the option the node shows from this set. Left out when none is active."
+             }
+            },
+            "additionalProperties": false,
+            "required": [
+             "name",
+             "options"
+            ]
+           }
+          },
+          "combinations": {
+           "type": "array",
+           "description": "The names of the design option combinations of the source file.",
+           "items": {
+            "type": "string"
+           }
+          },
+          "activeCombination": {
+           "type": "string",
+           "description": "The name of the combination the node shows. Left out when none is active."
+          }
+         },
+         "additionalProperties": false,
+         "required": [
+          "nodeGuid",
+          "filterMode",
+          "sets",
+          "combinations"
+         ]
+        },
+        {
+         "$ref": "#/ErrorItem"
+        }
+       ]
+      }
+     }
+    },
+    "additionalProperties": false,
+    "required": [
+     "hotlinkDesignOptionTables"
+    ]
+   },
+   "grasshopperComponents": [
+    "GetHotlinkDesignOptionTableDetailsComponent"
+   ],
+   "example": {
+    "path": "archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTableDetails.py",
+    "url": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTableDetails.py",
+    "description": "Prints the design options of the source file of every hotlink node with GetHotlinkDesignOptionTableDetails. Needs at least one hotlink. Requires Archicad 29 or later.",
+    "code": "\"\"\"Prints the design options of the source file of every hotlink node with GetHotlinkDesignOptionTableDetails.\n\nNeeds at least one hotlink. Requires Archicad 29 or later.\n\"\"\"\nimport aclib\n\ndef AllNodes (hotlinks):\n    for hotlink in hotlinks:\n        yield hotlink\n        yield from AllNodes (hotlink.get ('children', []))\n\nnodes = [n for n in AllNodes (aclib.RunTapirCommand ('GetHotlinks')['hotlinks']) if 'hotlinkNodeId' in n]\nif not nodes:\n    raise SystemExit ('No hotlink in the project.')\n\naclib.PrintJson (aclib.RunTapirCommand ('GetHotlinkDesignOptionTableDetails', {\n    'hotlinkNodes': [{'hotlinkNodeId': n['hotlinkNodeId']} for n in nodes]\n}))\n"
+   },
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetHotlinkDesignOptionTableDetails"
+  }
+ ],
+ "schemaDefinitions": {
+  "Elements": {
+   "type": "array",
+   "description": "A list of elements.",
+   "items": {
+    "$ref": "#/ElementIdArrayItem"
+   }
+  },
+  "ElementIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "elementId": {
+     "$ref": "#/ElementId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "elementId"
+   ]
+  },
+  "ElementId": {
+   "type": "object",
+   "description": "The identifier of an element.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "GuidId": {
+   "type": "object",
+   "description": "Identifier.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "DesignOptionId": {
+   "type": "object",
+   "description": "The identifier of a design option.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "DesignOptionIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "designOptionId": {
+     "$ref": "#/DesignOptionId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionId"
+   ]
+  },
+  "DesignOptionCombinationIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "designOptionCombinationId": {
+     "$ref": "#/DesignOptionCombinationId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionCombinationId"
+   ]
+  },
+  "DesignOptionSetId": {
+   "type": "object",
+   "description": "The identifier of a design option set.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "DesignOptionSetIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "designOptionSetId": {
+     "$ref": "#/DesignOptionSetId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionSetId"
+   ]
+  },
+  "Guid": {
+   "type": "string",
+   "description": "A Globally Unique Identifier (or Universally Unique Identifier) in its string representation as defined in RFC 4122.",
+   "format": "uuid",
+   "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  },
+  "HotlinkNodeId": {
+   "type": "object",
+   "description": "The identifier of a hotlink node - the reference to a module source file, which instances are placed from.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "Error": {
+   "type": "object",
+   "description": "The details of an error.",
+   "properties": {
+    "code": {
+     "type": "integer",
+     "description": "The code of the error."
+    },
+    "message": {
+     "type": "string",
+     "description": "The error message."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "code",
+    "message"
+   ]
+  },
+  "ErrorItem": {
+   "type": "object",
+   "properties": {
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "error"
+   ]
+  },
+  "SuccessfulExecutionResult": {
+   "type": "object",
+   "description": "The result of a successful execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      true
+     ]
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success"
+   ]
+  },
+  "FailedExecutionResult": {
+   "type": "object",
+   "description": "The result of a failed execution.",
+   "properties": {
+    "success": {
+     "type": "boolean",
+     "enum": [
+      false
+     ]
+    },
+    "error": {
+     "$ref": "#/Error"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "success",
+    "error"
+   ]
+  },
+  "ExecutionResult": {
+   "type": "object",
+   "description": "The result of the execution.",
+   "oneOf": [
+    {
+     "$ref": "#/SuccessfulExecutionResult"
+    },
+    {
+     "$ref": "#/FailedExecutionResult"
+    }
+   ]
+  },
+  "ExecutionResults": {
+   "type": "array",
+   "description": "A list of execution results.",
+   "items": {
+    "$ref": "#/ExecutionResult"
+   }
+  },
+  "DesignOptionLinkType": {
+   "type": "string",
+   "description": "The type of the associated design option.",
+   "enum": [
+    "NotExistingElement",
+    "MissingDesignOption",
+    "NotLinkedToAnyDesignOption",
+    "LinkedToDesignOption"
+   ]
+  },
+  "DesignOptionIdOrError": {
+   "type": "object",
+   "description": "A design option identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/DesignOptionIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "DesignOptionCombinationIdOrError": {
+   "type": "object",
+   "description": "A design option combination identifier or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/DesignOptionCombinationIdArrayItem"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "DesignOptionIdsOrErrors": {
+   "type": "array",
+   "description": "A list of design option identifiers or errors.",
+   "items": {
+    "$ref": "#/DesignOptionIdOrError"
+   }
+  },
+  "DesignOptionCombinationIdsOrErrors": {
+   "type": "array",
+   "description": "A list of design option combination identifiers or errors.",
+   "items": {
+    "$ref": "#/DesignOptionCombinationIdOrError"
+   }
+  },
+  "NavigatorItemIds": {
+   "type": "array",
+   "description": "A list of navigator item identifiers.",
+   "items": {
+    "$ref": "#/NavigatorItemIdArrayItem"
+   }
+  },
+  "NavigatorItemIdArrayItem": {
+   "type": "object",
+   "properties": {
+    "navigatorItemId": {
+     "$ref": "#/NavigatorItemId"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "navigatorItemId"
+   ]
+  },
+  "NavigatorItemId": {
+   "type": "object",
+   "description": "The identifier of a navigator item.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "DesignOptionData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the design option."
+    },
+    "id": {
+     "type": "string",
+     "description": "The string id of the design option."
+    },
+    "ownerSetName": {
+     "type": "string",
+     "description": "The name of the owner design option set."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "id",
+    "ownerSetName"
+   ]
+  },
+  "DesignOptionCombinationDetails": {
+   "type": "object",
+   "properties": {
+    "designOptionCombinationId": {
+     "$ref": "#/GuidId",
+     "description": "The guid identifier of the design option combination."
+    },
+    "name": {
+     "type": "string",
+     "description": "The name of the design option combination."
+    },
+    "activeDesignOptions": {
+     "type": "array",
+     "items": {
+      "$ref": "#/DesignOptionIdArrayItem"
+     },
+     "description": "The list of active design options in the combination. Available from Archicad 29."
+    },
+    "isEditable": {
+     "type": "boolean",
+     "description": "Whether the design option combination can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Available from Archicad 29."
+    },
+    "notEditableError": {
+     "$ref": "#/Error",
+     "description": "The reason why the design option combination is not editable. Only present when isEditable is false."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionCombinationId",
+    "name"
+   ]
+  },
+  "DesignOptionCombinationData": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the design option combination."
+    },
+    "activeDesignOptions": {
+     "type": "array",
+     "items": {
+      "$ref": "#/DesignOptionIdArrayItem"
+     },
+     "description": "The list of active design options in the combination."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "name",
+    "activeDesignOptions"
+   ]
+  },
+  "ElementsOfDesignOption": {
+   "type": "object",
+   "properties": {
+    "designOptionId": {
+     "$ref": "#/DesignOptionId"
+    },
+    "elements": {
+     "$ref": "#/Elements"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionId",
+    "elements"
+   ]
+  },
+  "ElementsOfDesignOptionOrError": {
+   "type": "object",
+   "description": "The elements of the design option or an error.",
+   "oneOf": [
+    {
+     "$ref": "#/ElementsOfDesignOption"
+    },
+    {
+     "$ref": "#/ErrorItem"
+    }
+   ]
+  },
+  "DesignOptionCombinationId": {
+   "type": "object",
+   "description": "The identifier of a design option combination.",
+   "properties": {
+    "guid": {
+     "$ref": "#/Guid"
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "guid"
+   ]
+  },
+  "DesignOptionDetails": {
+   "type": "object",
+   "properties": {
+    "designOptionId": {
+     "$ref": "#/DesignOptionId"
+    },
+    "name": {
+     "type": "string",
+     "description": "The name of the design option."
+    },
+    "id": {
+     "type": "string",
+     "description": "The string id of the design option."
+    },
+    "ownerSetName": {
+     "type": "string",
+     "description": "The name of the owner design option set."
+    },
+    "isEditable": {
+     "type": "boolean",
+     "description": "Whether the design option can be renamed, deleted or changed now (for example it is not reserved by someone else in Teamwork). Returned by GetDesignOptions."
+    },
+    "notEditableError": {
+     "$ref": "#/Error",
+     "description": "The reason why the design option is not editable. Only present when isEditable is false."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionId",
+    "name",
+    "id",
+    "ownerSetName"
+   ]
+  },
+  "DesignOptionDeactivation": {
+   "type": "object",
+   "properties": {
+    "designOptionCombinationId": {
+     "$ref": "#/DesignOptionCombinationId"
+    },
+    "designOptions": {
+     "type": "array",
+     "items": {
+      "$ref": "#/DesignOptionIdArrayItem"
+     },
+     "description": "The design options to turn off in the combination. The other options of the combination are left as they are."
+    }
+   },
+   "additionalProperties": false,
+   "required": [
+    "designOptionCombinationId",
+    "designOptions"
+   ]
+  }
+ }
+}

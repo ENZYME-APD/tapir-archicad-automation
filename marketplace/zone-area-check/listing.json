@@ -3,11 +3,17 @@
     "name": "Zone Area Check",
     "summary": "Compares the area of every zone with a target area property within a tolerance, and highlights the zones over, under and on target.",
     "category": "zones-areas",
-    "tags": ["zones", "areas", "check", "highlight"],
+    "tags": ["zones", "areas", "check", "highlight", "dimensions"],
     "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "ZoneAreaCheck.py",
     "versions": [
+        {
+            "version": "1.1.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "2.0.1",
+            "changelog": "New Dimension perimeters button: places a linear dimension along each straight edge of the zones, inside the room, with one dimension for parallel edges of the same length, and skips the edges that already have a dimension. You can choose a Dimension favorite, a layer, the offset from the edge, the shortest edge and whether to dimension holes. Curved edges and zones measured to the walls' reference lines are not dimensioned. The script now changes the model when you press that button."
+        },
         {
             "version": "1.0.1",
             "archicadVersions": [25, 26, 27, 28, 29, 30],

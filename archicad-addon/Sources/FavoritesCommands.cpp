@@ -6,6 +6,9 @@
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
+#include "HashSet.hpp"
+#include <algorithm>
+#include <vector>
 
 #ifdef ServerMainVers_2900
 #include "ACAPI/Result.hpp"
@@ -13,7 +16,6 @@
 #include "ACAPI/Element/Opening/OpeningDefault.hpp"
 #include <cmath>
 #include <optional>
-#include <vector>
 #endif
 
 
@@ -936,6 +938,58 @@ static API_FavoriteNameConflictResolutionPolicy ParseConflictPolicy (
     return fallback;
 }
 
+// The names of every Favorite of the project, of all element types; a type ACAPI_Favorite_GetNum
+// refuses is skipped, as in SearchFavorites.
+static std::vector<GS::UniString> GetAllFavoriteNames ()
+{
+    std::vector<GS::UniString> allNames;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        GS::Array<GS::UniString> names;
+#ifdef ServerMainVers_2600
+        const GSErrCode err = ACAPI_Favorite_GetNum (static_cast<API_ElemTypeID> (type), nullptr, nullptr, &names);
+#else
+        const GSErrCode err = ACAPI_Favorite_GetNum (static_cast<API_ElemTypeID> (type), APIVarId_Generic, nullptr, nullptr, &names);
+#endif
+        if (err != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            allNames.push_back (name);
+        }
+    }
+    return allNames;
+}
+
+static GS::HashSet<GS::UniString> GetAllFavoriteNameSet ()
+{
+    GS::HashSet<GS::UniString> nameSet;
+    for (const GS::UniString& name : GetAllFavoriteNames ()) {
+        nameSet.Add (name);
+    }
+    return nameSet;
+}
+
+// The successful answer of ImportFavorites: success, and the Favorites the project has now and
+// did not have before the import (namesBefore).
+static GS::ObjectState CreateImportFavoritesResponse (const GS::HashSet<GS::UniString>& namesBefore)
+{
+    std::vector<GS::UniString> addedNames;
+    for (const GS::UniString& name : GetAllFavoriteNames ()) {
+        if (!namesBefore.Contains (name)) {
+            addedNames.push_back (name);
+        }
+    }
+    std::sort (addedNames.begin (), addedNames.end ());
+
+    GS::ObjectState response;
+    response.Add ("success", true);
+    const auto& addedNamesList = response.AddList<GS::UniString> ("addedFavoriteNames");
+    for (const GS::UniString& name : addedNames) {
+        addedNamesList (name);
+    }
+    return response;
+}
+
 #ifdef ServerMainVers_2900
 
 // The conflict policies of the ACAPI::Favorite::FavoriteManager calls (Archicad 29+), which differ
@@ -1129,11 +1183,21 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetRawResponseSchema () cons
     return R"({
         "type": "object",
         "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "True when the Favorites were imported. False when conflictPolicy=Error with the prefs format stopped the import on a name that already exists (firstConflictName); nothing was imported then."
+            },
+            "addedFavoriteNames": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Set when success is true: the names of the Favorites the project has after the import and did not have before it, sorted. A Favorite that replaced one of the same name (Overwrite, OverwriteExisting) is not listed, and one RenameNew or Append renamed is listed under its new name."
+            },
             "firstConflictName": {
                 "type": "string",
-                "description": "Set when conflictPolicy=Error and a name collided; absent otherwise."
+                "description": "Set when conflictPolicy=Error with the prefs format and a name collided (success is false then); absent otherwise."
             }
         },
+        "required": ["success"],
         "additionalProperties": false
     })";
 }
@@ -1188,6 +1252,8 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
             }
         }
 
+        const GS::HashSet<GS::UniString> namesBefore = GetAllFavoriteNameSet ();
+
         // The import changes the project's Favorites, so it runs in an undoable command like every
         // other Favorites change: outside one, a Teamwork project drops it without an error (#1756).
         GS::UniString importErrorText;
@@ -1216,7 +1282,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         if (importErr != NoError) {
             return CreateErrorResponse (importErr, GS::UniString::Printf ("Failed to import favorites: %T", importErrorText.ToPrintf ()));
         }
-        return GS::ObjectState ();
+        return CreateImportFavoritesResponse (namesBefore);
 #else
         UNUSED_VARIABLE (hasTargetFolder);
         return CreateErrorResponse (APIERR_NOTSUPPORTED, GS::UniString::Printf ("The %T format requires Archicad 29 or newer.", format.ToPrintf ()));
@@ -1229,6 +1295,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     GS::UniString policyStr = "Overwrite";
     parameters.Get ("conflictPolicy", policyStr);
     const auto policy = ParseConflictPolicy (policyStr, API_FavoriteOverwrite);
+    const GS::HashSet<GS::UniString> namesBefore = GetAllFavoriteNameSet ();
     GS::UniString firstConflictName;
     // In an undoable command like every other Favorites change: outside one, a Teamwork project
     // drops the import without an error (#1756).
@@ -1244,6 +1311,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
     // shape response so the field reaches the caller.
     if (err == APIERR_NAMEALREADYUSED && !firstConflictName.IsEmpty ()) {
         GS::ObjectState response;
+        response.Add ("success", false);
         response.Add ("firstConflictName", firstConflictName);
         return response;
     }
@@ -1254,7 +1322,7 @@ GS::ObjectState ImportFavoritesCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (err, "ACAPI_Favorite_Import failed.");
     }
 
-    GS::ObjectState response;
+    GS::ObjectState response = CreateImportFavoritesResponse (namesBefore);
     if (!firstConflictName.IsEmpty ()) {
         response.Add ("firstConflictName", firstConflictName);
     }
@@ -1277,7 +1345,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
         "properties": {
             "path": {
                 "type": "string",
-                "description": "Absolute path on the AC host. With the prefs format: if extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
+                "description": "Absolute path on the AC host. With the prefs format: Archicad writes a single file when the path has the extension of its Favorite binary file, otherwise a folder of that name. Archicad 29 creates a folder even at a .prefs path (seen with build 3200, #3087); ImportFavorites with the prefs format reads that folder back, and the legacyPRF format writes a single file. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write."
             },
             "names": {
                 "type": "array",
@@ -1290,7 +1358,7 @@ GS::Optional<GS::UniString> ExportFavoritesCommand::GetInputParametersSchema () 
             },
             "overwrite": {
                 "type": "boolean",
-                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
+                "description": "Optional, true by default: an existing file is overwritten. false refuses to export when a file or folder already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's."
             }
         },
         "required": ["path"],
@@ -1778,6 +1846,94 @@ static GSErrCode RestoreStairFlightWidth (const API_Element& elementBefore)
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// The mask of the settings on the Floor Plan and Section panel of the element's settings dialog,
+// for the 'FloorPlanAndSection' setting group of ApplyFavoritesToElements (#2802): story
+// visibility, floor plan display and projection, the pens and line types of the cut, uncut,
+// overhead and hidden lines, the cut fill pens and the cover fill - the same fields
+// ModifyColumns and ModifyBeams write as the floor plan display. Nothing of the geometry, the
+// cross section (building material, profile, size, which live in the memo's segments), the
+// structural function or the layer is in it. Returns false for an element type it has no
+// field list for.
+static bool SetFloorPlanAndSectionMask (const API_Elem_Head& header, API_Element& mask)
+{
+    switch (GetElemTypeId (header)) {
+        case API_ColumnID: {
+            API_ColumnType& column = mask.column;
+            MaskWholeMember (column.visibility);
+            MaskWholeMember (column.isAutoOnStoryVisibility);
+            MaskWholeMember (column.displayOption);
+            MaskWholeMember (column.viewDepthLimitation);
+            MaskWholeMember (column.corePen);
+            MaskWholeMember (column.contLtype);
+            MaskWholeMember (column.venLinePen);
+            MaskWholeMember (column.venLineType);
+            MaskWholeMember (column.coreSymbolType);
+            MaskWholeMember (column.coreSymbolPen);
+            MaskWholeMember (column.coreSymbolPar1);
+            MaskWholeMember (column.coreSymbolPar2);
+            MaskWholeMember (column.belowViewLinePen);
+            MaskWholeMember (column.belowViewLineType);
+            MaskWholeMember (column.aboveViewLinePen);
+            MaskWholeMember (column.aboveViewLineType);
+            MaskWholeMember (column.hiddenLinePen);
+            MaskWholeMember (column.hiddenLineType);
+#ifdef ServerMainVers_2700
+            MaskWholeMember (column.cutFillPen);
+            MaskWholeMember (column.cutFillBackgroundPen);
+#else
+            MaskWholeMember (column.penOverride);
+#endif
+            MaskWholeMember (column.useCoverFill);
+            MaskWholeMember (column.useCoverFillFromSurface);
+            MaskWholeMember (column.coverFillOrientationComesFrom3D);
+            MaskWholeMember (column.coverFillType);
+            MaskWholeMember (column.coverFillForegroundPen);
+            MaskWholeMember (column.coverFillBackgroundPen);
+            MaskWholeMember (column.coverFillTransformationType);
+            MaskWholeMember (column.coverFillTransformation);
+            return true;
+        }
+        case API_BeamID: {
+            API_BeamType& beam = mask.beam;
+            MaskWholeMember (beam.visibility);
+            MaskWholeMember (beam.isAutoOnStoryVisibility);
+            MaskWholeMember (beam.displayOption);
+            MaskWholeMember (beam.viewDepthLimitation);
+            MaskWholeMember (beam.uncutProjectionMode);
+            MaskWholeMember (beam.overheadProjectionMode);
+            MaskWholeMember (beam.showContourLines);
+            MaskWholeMember (beam.showReferenceAxis);
+            MaskWholeMember (beam.cutContourLinePen);
+            MaskWholeMember (beam.cutContourLineType);
+            MaskWholeMember (beam.belowViewLinePen);
+            MaskWholeMember (beam.belowViewLineType);
+            MaskWholeMember (beam.aboveViewLinePen);
+            MaskWholeMember (beam.aboveViewLineType);
+            MaskWholeMember (beam.hiddenLinePen);
+            MaskWholeMember (beam.hiddenLineType);
+            MaskWholeMember (beam.refPen);
+            MaskWholeMember (beam.refLtype);
+#ifdef ServerMainVers_2700
+            MaskWholeMember (beam.cutFillPen);
+            MaskWholeMember (beam.cutFillBackgroundPen);
+#else
+            MaskWholeMember (beam.penOverride);
+#endif
+            MaskWholeMember (beam.useCoverFill);
+            MaskWholeMember (beam.useCoverFillFromSurface);
+            MaskWholeMember (beam.coverFillOrientationComesFrom3D);
+            MaskWholeMember (beam.coverFillType);
+            MaskWholeMember (beam.coverFillForegroundPen);
+            MaskWholeMember (beam.coverFillBackgroundPen);
+            MaskWholeMember (beam.coverFillTransformationType);
+            MaskWholeMember (beam.coverFillTransformation);
+            return true;
+        }
+        default:
+            return false;
+    }
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1834,6 +1990,18 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "items": {
                     "$ref": "#/FavoriteKeepField"
                 }
+            },
+            "settingGroups": {
+                "type": "array",
+                "description": "Apply only these panels of the Favorite's settings dialog, and nothing else of it - a positive list instead of keepFields. 'FloorPlanAndSection' applies the Floor Plan and Section settings: story visibility (Show on Stories), floor plan display and projection, the pens and line types of the cut, uncut, overhead and hidden lines (a Beam's reference axis too), the cut fill pens and the cover fill; geometry, size, cross section, building material, profile, layer and the other panels stay the target's. It is supported for Column and Beam elements; another element type gets a failed execution result and is left unchanged. 'ClassificationAndProperties' applies the Favorite's classifications, element categories (e.g. structural function) and property values, each still only when its own apply flag is not false; without it in the list none of them is applied. applySettings false turns 'FloorPlanAndSection' off. keepFields still applies. Default: the whole Favorite is applied as described for applySettings.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "FloorPlanAndSection",
+                        "ClassificationAndProperties"
+                    ]
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false
@@ -1864,7 +2032,33 @@ struct FavoriteApplyOptions
     bool applyCategories = true;
     bool applyProperties = true;
     KeptFields keptFields;
+    // settingGroups (#2802): when given, only the listed panels of the Favorite are applied.
+    bool hasSettingGroups = false;
+    bool floorPlanAndSection = false;
+    bool classificationAndProperties = false;
 };
+
+static GS::Optional<GS::UniString> ParseSettingGroups (const GS::Array<GS::UniString>& names, FavoriteApplyOptions& options)
+{
+    options.hasSettingGroups = true;
+    for (const GS::UniString& name : names) {
+        if (name == "FloorPlanAndSection") {
+            options.floorPlanAndSection = true;
+        } else if (name == "ClassificationAndProperties") {
+            options.classificationAndProperties = true;
+        } else {
+            return GS::UniString::Printf ("Unknown settingGroups value '%T'.", name.ToPrintf ());
+        }
+    }
+    // The classifications, categories and properties of the Favorite are the Classification and
+    // Properties panel: without it in the list none of them is applied, whatever their own flags.
+    if (!options.classificationAndProperties) {
+        options.applyClassifications = false;
+        options.applyCategories = false;
+        options.applyProperties = false;
+    }
+    return {};
+}
 
 // Reads the Favorite of the given name for ApplyFavoritesToElements, with its memo, properties,
 // classifications and element category values. On an error the memo is disposed and errorMessage
@@ -1907,6 +2101,15 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
         return CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type.");
     }
 
+    // Checked before anything is applied, so an element of a type without the group's field list
+    // is left as it was instead of getting only the Favorite's classifications (#2802).
+    API_Element settingGroupsMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (settingGroupsMask);
+    const bool applySettingGroups = options.applySettings && options.hasSettingGroups && options.floorPlanAndSection;
+    if (applySettingGroups && !SetFloorPlanAndSectionMask (targetElement.header, settingGroupsMask)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "settingGroups: 'FloorPlanAndSection' is only supported for Column and Beam elements yet; nothing was applied to this element.");
+    }
+
     // The Element ID is read off the memo before anything is applied - see RestoreKeptFields.
     API_ElementMemo targetIdMemo = {};
     const GS::OnExit disposeTargetIdMemo ([&targetIdMemo] () { ACAPI_DisposeElemMemoHdls (&targetIdMemo); });
@@ -1934,7 +2137,15 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
     // always keeps the target's own guid - exactly the "apply favorite settings"
     // semantics we want here. The memo is the one part that can carry geometry, so
     // it is withheld for the types where it does (see MemoCarriesGeometry above).
-    if (options.applySettings) {
+    if (options.hasSettingGroups) {
+        // Only the masked fields of the listed panels, and no memo: the memo carries the cross
+        // section (building material, profile, size) and the geometry, none of which is on them.
+        if (applySettingGroups) {
+            GS::Array<API_Guid> targetGuids;
+            targetGuids.Push (targetGuid);
+            err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, nullptr, &settingGroupsMask);
+        }
+    } else if (options.applySettings) {
         if (IsWindowOrDoor (targetElement.header)) {
             err = ApplyFavoriteToOpening (targetElement, favorite);
         } else {
@@ -2010,6 +2221,14 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
     GS::Array<GS::UniString> keepFieldNames;
     if (parameters.Get ("keepFields", keepFieldNames)) {
         const auto parseError = ParseKeptFields (keepFieldNames, options.keptFields);
+        if (parseError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
+        }
+    }
+
+    GS::Array<GS::UniString> settingGroupNames;
+    if (parameters.Get ("settingGroups", settingGroupNames)) {
+        const auto parseError = ParseSettingGroups (settingGroupNames, options);
         if (parseError.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
         }

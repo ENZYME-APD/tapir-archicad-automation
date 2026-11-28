@@ -1,6 +1,7 @@
 #include "ProjectCommands.hpp"
 #include "MigrationHelper.hpp"
 #include "Location.hpp"
+#include "FileSystem.hpp"
 #include "NativeImage.hpp"
 #include "MemoryOChannel32.hpp"
 #include "Base64Converter.hpp"
@@ -2192,6 +2193,67 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
     return response;
 }
 
+// The story at this position (0 is the bottom one) as GetStories reports it (#/StoryParameters).
+static GS::ObjectState CreateStoryParametersObjectState (const API_StoryInfo& storyInfo, const short position)
+{
+    // The array holds one record more than there are stories: the virtual story above
+    // the top one, whose level is where the top story ends (API_StoryInfo says it is
+    // there so that the height of the top story can be calculated). The record count
+    // comes from the handle itself, so a level is never read past the array.
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+
+    const API_StoryType& story = (*storyInfo.data)[position];
+    GS::ObjectState storyData;
+    GS::UniString uName = story.uName;
+
+    storyData.Add ("index", story.index);
+    storyData.Add ("floorId", story.floorId);
+    storyData.Add ("dispOnSections", story.dispOnSections);
+    storyData.Add ("level", story.level);
+    if (position + 1 < recordCount) {
+        storyData.Add ("height", (*storyInfo.data)[position + 1].level - story.level);
+    }
+    storyData.Add ("name", uName);
+
+#ifdef ServerMainVers_2800
+    // The IFC GlobalId of the IfcBuildingStorey the story is exported as. The IFC
+    // object accessor only exists from Archicad 28; older versions leave the field out.
+    auto ifcAccessor = IFCAPI::GetObjectAccessor ();
+    auto storyObjectID = ifcAccessor.CreateIfcBuildingStoreyObjectID (story.index);
+    if (storyObjectID.IsOk ()) {
+        auto unWrappedStoryObjectID = storyObjectID.Unwrap ();
+        auto ifcId = ifcAccessor.GetGlobalId (unWrappedStoryObjectID);
+        if (ifcId.IsOk ()) {
+            storyData.Add ("ifcId", ifcId.Unwrap ());
+        }
+    }
+#endif
+
+    return storyData;
+}
+
+// The height of the story at this position (0 is the bottom one), from the level of the record
+// above it (the virtual one for the top story); 0 when there is no such record.
+static double GetStoryHeightAt (const API_StoryInfo& storyInfo, const short position)
+{
+    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+    if (position < 0 || position + 1 >= recordCount) {
+        return 0.0;
+    }
+    return (*storyInfo.data)[position + 1].level - (*storyInfo.data)[position].level;
+}
+
+// The position (0 is the bottom one) of the story with this floorId, or -1.
+static short FindStoryPosition (const API_StoryInfo& storyInfo, const short floorId)
+{
+    for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+        if ((*storyInfo.data)[i].floorId == floorId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 GetStoriesCommand::GetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -2257,42 +2319,8 @@ GS::ObjectState GetStoriesCommand::Execute (const GS::ObjectState& /*parameters*
     const auto& listAdder = response.AddList<GS::ObjectState> ("stories");
 
     short storyCount = storyInfo.lastStory - storyInfo.firstStory + 1;
-    // The array holds one record more than there are stories: the virtual story above
-    // the top one, whose level is where the top story ends (API_StoryInfo says it is
-    // there so that the height of the top story can be calculated). The record count
-    // comes from the handle itself, so a level is never read past the array.
-    const short recordCount = (short) (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
-#ifdef ServerMainVers_2800
-    auto ifcAccessor = IFCAPI::GetObjectAccessor ();
-#endif
     for (short i = 0; i < storyCount; i++) {
-        const API_StoryType& story = (*storyInfo.data)[i];
-        GS::ObjectState storyData;
-        GS::UniString uName = story.uName;
-
-        storyData.Add ("index", story.index);
-        storyData.Add ("floorId", story.floorId);
-        storyData.Add ("dispOnSections", story.dispOnSections);
-        storyData.Add ("level", story.level);
-        if (i + 1 < recordCount) {
-            storyData.Add ("height", (*storyInfo.data)[i + 1].level - story.level);
-        }
-        storyData.Add ("name", uName);
-
-#ifdef ServerMainVers_2800
-        // The IFC GlobalId of the IfcBuildingStorey the story is exported as. The IFC
-        // object accessor only exists from Archicad 28; older versions leave the field out.
-        auto storyObjectID = ifcAccessor.CreateIfcBuildingStoreyObjectID (story.index);
-        if (storyObjectID.IsOk ()) {
-            auto unWrappedStoryObjectID = storyObjectID.Unwrap ();
-            auto ifcId = ifcAccessor.GetGlobalId (unWrappedStoryObjectID);
-            if (ifcId.IsOk ()) {
-                storyData.Add ("ifcId", ifcId.Unwrap ());
-            }
-        }
-#endif
-
-        listAdder (storyData);
+        listAdder (CreateStoryParametersObjectState (storyInfo, i));
     }
 
     BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
@@ -2384,6 +2412,8 @@ static GSErrCode RefreshStoryInfo (API_StoryInfo& storyInfo)
     return ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
 }
 
+static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count);
+
 SetStoriesCommand::SetStoriesCommand () :
     CommandBase (CommonSchema::NotUsed)
 {
@@ -2401,6 +2431,10 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
         "properties": {
             "stories": {
                 "$ref": "#/StoriesSettings"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun",
+                "description": "If true, nothing is changed in the project and no undo step is created: the list is checked as in a real run, and the response lists the existing stories a real run would delete (with the number of elements Archicad would delete with each) and the number of stories it would insert. Default is false."
             }
         },
         "additionalProperties": false,
@@ -2413,34 +2447,128 @@ GS::Optional<GS::UniString> SetStoriesCommand::GetInputParametersSchema () const
 GS::Optional<GS::UniString> SetStoriesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the story structure was set, or on a dry run, whether the list passed the checks a real run makes first."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDeleteStories": {
+                "type": "array",
+                "description": "Only on a successful dry run: the existing stories a real run would delete, from the bottom up. Empty when it would delete none.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "index": {
+                            "type": "integer",
+                            "description": "The index of the story."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the story."
+                        },
+                        "elementCount": {
+                            "type": "integer",
+                            "description": "The number of elements whose home story is the story (in the floor plan database): Archicad deletes them together with it."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "index",
+                        "name",
+                        "elementCount"
+                    ]
+                }
+            },
+            "wouldInsertStoryCount": {
+                "type": "integer",
+                "description": "Only on a successful dry run: the number of new stories a real run would add below and above the existing ones until they reach the requested indices. When the requested indices leave a gap above or below the existing stories, this includes the stories in the gap, which the real run deletes again."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
     })";
 }
 
 
 GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    const bool dryRun = IsDryRun (parameters);
+    const auto failed = [dryRun] (GSErrCode errorCode, const GS::UniString& errorMessage) {
+        GS::ObjectState result = CreateFailedExecutionResult (errorCode, errorMessage);
+        AddDryRunField (result, dryRun);
+        return result;
+    };
+
     GS::Array<GS::ObjectState> stories;
     parameters.Get ("stories", stories);
 
     if (stories.IsEmpty ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "stories is missing or empty.");
+        return failed (APIERR_BADPARS, "stories is missing or empty.");
     }
 
     API_StoryInfo storyInfo = {};
     GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
     if (err != NoError) {
         BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+        return failed (err, "Failed to retrive stories info.");
     }
 
     short newFirstStory = storyInfo.firstStory;
     if (!GetNewFirstStoryIndex (stories, storyInfo.firstStory, newFirstStory)) {
         BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
-        return CreateFailedExecutionResult (APIERR_BADPARS, "The given story indices are not consecutive.");
+        return failed (APIERR_BADPARS, "The given story indices are not consecutive.");
     }
 
     const short newLastStory = newFirstStory + static_cast<short> (stories.GetSize ()) - 1;
+
+    if (dryRun) {
+        // A real run first inserts stories below and above the existing structure until it
+        // spans the requested indices, then deletes as many stories from the bottom and from
+        // the top as the grown structure has below and above them. So of the existing stories
+        // it deletes the ones outside the requested index range (with the elements on them),
+        // and of the inserted ones those in a gap between the existing and requested ranges.
+        GS::Array<StorySnapshot> existingStories;
+        TakeStorySnapshot (storyInfo, existingStories);
+        const short firstStory = storyInfo.firstStory;
+        const short lastStory  = storyInfo.lastStory;
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+
+        GS::ObjectState result ("success", true);
+        const auto& wouldDeleteStories = result.AddList<GS::ObjectState> ("wouldDeleteStories");
+        for (const StorySnapshot& story : existingStories) {
+            if (story.index >= newFirstStory && story.index <= newLastStory) {
+                continue;
+            }
+
+            GS::USize elementCount = 0;
+            err = CountElementsOnStory (story.index, elementCount);
+            if (err != NoError) {
+                return failed (err, "Failed to count the elements on the stories to delete.");
+            }
+
+            wouldDeleteStories (GS::ObjectState (
+                "index", story.index,
+                "name", story.name,
+                "elementCount", static_cast<Int32> (elementCount)));
+        }
+
+        // The stories the real run inserts below and above the existing structure, including
+        // the ones in a gap between it and the requested indices, which it deletes again.
+        const Int32 insertBelowCount = GS::Max (0, static_cast<Int32> (firstStory) - static_cast<Int32> (newFirstStory));
+        const Int32 insertAboveCount = GS::Max (0, static_cast<Int32> (newLastStory) - static_cast<Int32> (lastStory));
+        result.Add ("wouldInsertStoryCount", insertBelowCount + insertAboveCount);
+        AddDryRunField (result, dryRun);
+        return result;
+    }
 
     // Grow the structure first - downwards and upwards - and only then cut off the
     // stories which are not needed any more, so the project never runs out of stories.
@@ -2495,11 +2623,16 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
     }
 
     // Deleting a story deletes its elements as well, so never delete more stories than
-    // the number the grown structure has above the requested one.
-    GS::USize storiesToDelete = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) - stories.GetSize ();
+    // the number the grown structure has above the requested one. The number to delete
+    // from the bottom and from the top is fixed here, on the grown structure, rather than
+    // read from the indices after each deletion: Archicad may renumber the remaining
+    // stories when one is deleted, and then the stories deleted would no longer be the
+    // ones outside the requested indices (nor the ones a dry run lists).
+    GS::USize storiesToDeleteBelow = static_cast<GS::USize> (GS::Max (0, static_cast<Int32> (newFirstStory) - static_cast<Int32> (storyInfo.firstStory)));
+    GS::USize storiesToDeleteAbove = static_cast<GS::USize> (GS::Max (0, static_cast<Int32> (storyInfo.lastStory) - static_cast<Int32> (newLastStory)));
 
-    while (storiesToDelete > 0 && (storyInfo.firstStory < newFirstStory || storyInfo.lastStory > newLastStory)) {
-        const bool deleteFromBottom = storyInfo.firstStory < newFirstStory;
+    while (storiesToDeleteBelow > 0 || storiesToDeleteAbove > 0) {
+        const bool deleteFromBottom = storiesToDeleteBelow > 0;
 
         API_StoryCmdType storyCmd = {};
         storyCmd.action = APIStory_Delete;
@@ -2524,7 +2657,11 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
             return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to delete story.");
         }
 
-        --storiesToDelete;
+        if (deleteFromBottom) {
+            --storiesToDeleteBelow;
+        } else {
+            --storiesToDeleteAbove;
+        }
     }
 
     const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);
@@ -2693,6 +2830,1004 @@ GS::ObjectState SetStoriesCommand::Execute (const GS::ObjectState& parameters, G
     return CreateSuccessfulExecutionResult ();
 }
 
+// The number of elements of the floor plan whose home story is the given one: the elements
+// Archicad deletes together with the story. They are listed in the floor plan database,
+// which is made the current one for the count when another database (a section, a layout)
+// is current, and put back afterwards.
+static GSErrCode CountElementsPerStory (std::map<short, GS::USize>& countByStoryIndex)
+{
+    countByStoryIndex.clear ();
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    bool databaseChanged = false;
+    if (startingDatabase.typeID != APIWind_FloorPlanID) {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase);
+        err = ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase);
+        if (err != NoError) {
+            return err;
+        }
+        databaseChanged = true;
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseChanged) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+
+    GS::Array<API_Guid> elemList;
+    err = ACAPI_Element_GetElemList (API_ZombieElemID, &elemList);
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const API_Guid& elemGuid : elemList) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = elemGuid;
+        if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+            ++countByStoryIndex[elemHead.floorInd];
+        }
+    }
+
+    return NoError;
+}
+
+static GSErrCode CountElementsOnStory (const short storyIndex, GS::USize& count)
+{
+    std::map<short, GS::USize> countByStoryIndex;
+    const GSErrCode err = CountElementsPerStory (countByStoryIndex);
+    const auto found = countByStoryIndex.find (storyIndex);
+    count = found != countByStoryIndex.end () ? found->second : 0;
+    return err;
+}
+
+// The number of floor plan elements per story, keyed by the story's floorId, which, unlike its
+// index, does not change when a story is inserted or deleted. Elements whose home story index
+// is not a story are counted under the key ElementsOnNoStory.
+constexpr short ElementsOnNoStory = -32768;
+static GSErrCode CountElementsPerFloorId (std::map<short, GS::USize>& countByFloorId)
+{
+    countByFloorId.clear ();
+
+    std::map<short, GS::USize> countByStoryIndex;
+    GSErrCode err = CountElementsPerStory (countByStoryIndex);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_StoryInfo storyInfo = {};
+    err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    for (const auto& entry : countByStoryIndex) {
+        const bool isStory = entry.first >= storyInfo.firstStory && entry.first <= storyInfo.lastStory;
+        const short key = isStory ? (*storyInfo.data)[entry.first - storyInfo.firstStory].floorId : ElementsOnNoStory;
+        countByFloorId[key] += entry.second;
+    }
+    return NoError;
+}
+
+// Whether every story kept its elements, comparing the counts by floorId from before and after
+// a change of the stories; the story of skippedFloorId (a deleted one) is left out. The stories
+// whose count changed are described in difference.
+static bool ElementsKeptTheirStories (const std::map<short, GS::USize>& before,
+                                      const std::map<short, GS::USize>& after,
+                                      const short skippedFloorId,
+                                      GS::UniString& difference)
+{
+    std::map<short, std::pair<GS::USize, GS::USize>> counts;
+    for (const auto& entry : before) {
+        counts[entry.first].first = entry.second;
+    }
+    for (const auto& entry : after) {
+        counts[entry.first].second = entry.second;
+    }
+
+    for (const auto& entry : counts) {
+        if (entry.first == skippedFloorId || entry.second.first == entry.second.second) {
+            continue;
+        }
+        if (!difference.IsEmpty ()) {
+            difference += ", ";
+        }
+        if (entry.first == ElementsOnNoStory) {
+            difference += GS::UniString::Printf ("no story: %u before, %u after",
+                static_cast<unsigned int> (entry.second.first), static_cast<unsigned int> (entry.second.second));
+        } else {
+            difference += GS::UniString::Printf ("floorId %d: %u before, %u after", static_cast<int> (entry.first),
+                static_cast<unsigned int> (entry.second.first), static_cast<unsigned int> (entry.second.second));
+        }
+    }
+    return difference.IsEmpty ();
+}
+
+// Runs func with the floor plan database as the current one, and puts back the database that
+// was current before.
+static GSErrCode RunOnFloorPlanDatabase (const std::function<GSErrCode ()>& func)
+{
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return err;
+    }
+
+    bool databaseChanged = false;
+    if (startingDatabase.typeID != APIWind_FloorPlanID) {
+        API_DatabaseInfo floorPlanDatabase = {};
+        floorPlanDatabase.typeID = APIWind_FloorPlanID;
+        ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase);
+        err = ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase);
+        if (err != NoError) {
+            return err;
+        }
+        databaseChanged = true;
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (databaseChanged) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+        }
+    });
+
+    return func ();
+}
+
+// The home story (floorId) of every floor plan element; ElementsOnNoStory for an element whose
+// home story index is not a story.
+static GSErrCode GetHomeStoryOfElements (GS::Array<std::pair<API_Guid, short>>& floorIdByElement)
+{
+    floorIdByElement.Clear ();
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    return RunOnFloorPlanDatabase ([&] () -> GSErrCode {
+        GS::Array<API_Guid> elemList;
+        const GSErrCode listErr = ACAPI_Element_GetElemList (API_ZombieElemID, &elemList);
+        if (listErr != NoError) {
+            return listErr;
+        }
+        for (const API_Guid& elemGuid : elemList) {
+            API_Elem_Head elemHead = {};
+            elemHead.guid = elemGuid;
+            if (ACAPI_Element_GetHeader (&elemHead) == NoError) {
+                const bool isStory = elemHead.floorInd >= storyInfo.firstStory && elemHead.floorInd <= storyInfo.lastStory;
+                floorIdByElement.Push ({ elemGuid, isStory ? (*storyInfo.data)[elemHead.floorInd - storyInfo.firstStory].floorId : ElementsOnNoStory });
+            }
+        }
+        return NoError;
+    });
+}
+
+// Archicad keeps some elements on their story index, not on their story, when a story is inserted
+// or deleted: on Archicad 30, inserting a story below Ground Floor (done as APIStory_InsAbove on
+// the story under it) moved the walls of Ground Floor up with it, but left its Elevation markers
+// and the elements that belong to them on the old index, which became the new story (#2843).
+// Every floor plan element whose home story is not the one of floorIdBefore any more is put back
+// on that story. The elements that could not be put back are counted in failedCount.
+static GSErrCode RestoreHomeStoryOfElements (const GS::Array<std::pair<API_Guid, short>>& homeStoriesBefore, GS::USize& failedCount)
+{
+    failedCount = 0;
+
+    GS::HashTable<API_Guid, short> floorIdBefore;
+    for (const auto& entry : homeStoriesBefore) {
+        floorIdBefore.Put (entry.first, entry.second);
+    }
+
+    GS::Array<std::pair<API_Guid, short>> floorIdAfter;
+    GSErrCode err = GetHomeStoryOfElements (floorIdAfter);
+    if (err != NoError) {
+        return err;
+    }
+
+    API_StoryInfo storyInfo = {};
+    err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::Array<std::pair<API_Guid, short>> elementsToMove;
+    for (const auto& entry : floorIdAfter) {
+        const API_Guid& elemGuid = entry.first;
+        if (!floorIdBefore.ContainsKey (elemGuid)) {
+            continue;
+        }
+        const short before = floorIdBefore.Get (elemGuid);
+        if (before == ElementsOnNoStory || before == entry.second) {
+            continue;
+        }
+        const short position = FindStoryPosition (storyInfo, before);
+        if (position < 0) {
+            continue;
+        }
+        elementsToMove.Push ({ elemGuid, (*storyInfo.data)[position].index });
+    }
+    if (elementsToMove.IsEmpty ()) {
+        return NoError;
+    }
+
+    return RunOnFloorPlanDatabase ([&] () -> GSErrCode {
+        return ACAPI_CallUndoableCommand ("Keep the home stories of the elements", [&] () -> GSErrCode {
+            for (const auto& elementToMove : elementsToMove) {
+                API_Element element = {};
+                element.header.guid = elementToMove.first;
+                if (ACAPI_Element_Get (&element) != NoError) {
+                    ++failedCount;
+                    continue;
+                }
+                // An element that belongs to another one may have moved with it already.
+                if (element.header.floorInd == elementToMove.second) {
+                    continue;
+                }
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                element.header.floorInd = elementToMove.second;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                if (ACAPI_Element_Change (&element, &mask, nullptr, 0, true) != NoError) {
+                    ++failedCount;
+                }
+            }
+            return NoError;
+        });
+    });
+}
+
+InsertStoryCommand::InsertStoryCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String InsertStoryCommand::GetName () const
+{
+    return "InsertStory";
+}
+
+GS::Optional<GS::UniString> InsertStoryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of an existing story (see GetStories) next to which the new story is inserted."
+            },
+            "position": {
+                "type": "string",
+                "description": "Whether the new story is inserted directly above or directly below the story of storyIndex.",
+                "enum": [
+                    "Above",
+                    "Below"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the new story. Default is an empty name."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the new story, greater than zero. Default is the height of the story of storyIndex.",
+                "minimum": 0, "exclusiveMinimum": true
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Whether the level line of the new story appears on sections and elevations. Default is what Archicad gives a new story."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex",
+            "position"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> InsertStoryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "story": {
+                "$ref": "#/StoryParameters",
+                "description": "The new story, as GetStories reports it after the insertion."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "story"
+        ]
+    })";
+}
+
+GS::ObjectState InsertStoryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    short storyIndex = 0;
+    GS::UniString position;
+    if (!parameters.Get ("storyIndex", storyIndex) || !parameters.Get ("position", position)) {
+        return CreateErrorResponse (APIERR_BADPARS, "storyIndex and position are required.");
+    }
+    if (position != "Above" && position != "Below") {
+        return CreateErrorResponse (APIERR_BADPARS, "position must be Above or Below.");
+    }
+    const bool insertAbove = position == "Above";
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+        return CreateErrorResponse (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+    }
+
+    // Archicad's APIStory_InsBelow leaves the elements of the stories that move up on their old
+    // index, so they end up one story lower (tested on Archicad 30 in #2843: the elements of the
+    // story of storyIndex were then on the new story). Below a story that has a story under it,
+    // the new story is the same as one inserted above that lower story, so APIStory_InsAbove is
+    // used there; APIStory_InsBelow only below the bottom story, where no story moves up.
+    const short referencePosition = storyIndex - storyInfo.firstStory;
+    const bool useInsAbove = insertAbove || storyIndex > storyInfo.firstStory;
+    const short cmdPosition = insertAbove || !useInsAbove ? referencePosition : referencePosition - 1;
+
+    // The heights of the reference story and of the story of the command (the same one, except
+    // for a Below insert done as Above); the array has a record above the top story too (see
+    // CreateStoryParametersObjectState), so every story has one. A story may be 0 high (a datum).
+    const short referenceFloorId = (*storyInfo.data)[referencePosition].floorId;
+    const short cmdFloorId = (*storyInfo.data)[cmdPosition].floorId;
+    const short originalActFloorId = (*storyInfo.data)[storyInfo.actStory - storyInfo.firstStory].floorId;
+    const double referenceHeight = GetStoryHeightAt (storyInfo, referencePosition);
+    const double cmdHeight = GetStoryHeightAt (storyInfo, cmdPosition);
+    if (referenceHeight < 0.0 || cmdHeight < 0.0) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to read the height of the story of storyIndex.");
+    }
+
+    // The elements per story, to check afterwards that every element is still on its story.
+    std::map<short, GS::USize> elementsBefore;
+    err = CountElementsPerFloorId (elementsBefore);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to count the elements of the stories.");
+    }
+    GS::Array<std::pair<API_Guid, short>> homeStoriesBefore;
+    err = GetHomeStoryOfElements (homeStoriesBefore);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the home stories of the elements.");
+    }
+
+    double height = referenceHeight;
+    if (parameters.Get ("height", height) && height <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
+    }
+
+    // The new story is the one whose floorId was not there before: the indices of the other
+    // stories may change with the insertion.
+    GS::HashSet<short> floorIdsBefore;
+    for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+        floorIdsBefore.Add ((*storyInfo.data)[i].floorId);
+    }
+    const short storyCountBefore = storyInfo.lastStory - storyInfo.firstStory + 1;
+
+    API_StoryCmdType storyCmd = {};
+    storyCmd.action = useInsAbove ? APIStory_InsAbove : APIStory_InsBelow;
+    storyCmd.index  = (*storyInfo.data)[cmdPosition].index;
+    // Archicad gives this height to the story of the command, not to the new one (tested on
+    // Archicad 30 in #2843: the new story got the reference story's old height). So that
+    // story is asked to keep its own height, and the new story's height is set afterwards
+    // with APIStory_SetHeight; the heights are read back and checked.
+    storyCmd.height = cmdHeight;
+
+    GS::UniString name;
+    parameters.Get ("name", name);
+    GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
+
+    err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to insert the story.");
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+    if (storyInfo.lastStory - storyInfo.firstStory + 1 != storyCountBefore + 1) {
+        return CreateErrorResponse (APIERR_GENERAL, "Archicad did not insert the story.");
+    }
+
+    short newPosition = -1;
+    for (short i = 0; i <= storyInfo.lastStory - storyInfo.firstStory; ++i) {
+        if (!floorIdsBefore.Contains ((*storyInfo.data)[i].floorId)) {
+            newPosition = i;
+            break;
+        }
+    }
+    if (newPosition < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to find the inserted story.");
+    }
+    const short newFloorId = (*storyInfo.data)[newPosition].floorId;
+
+    // The heights are set on the active story, as in the DevKit's Environment_Control example;
+    // the story that was active before is made active again afterwards.
+    bool actStoryMoved = false;
+    const GS::OnExit restoreActStory ([&] () {
+        if (actStoryMoved && RefreshStoryInfo (storyInfo) == NoError) {
+            const short actPosition = FindStoryPosition (storyInfo, originalActFloorId);
+            if (actPosition >= 0) {
+                API_StoryCmdType goToCmd = {};
+                goToCmd.action = APIStory_GoTo;
+                goToCmd.index  = (*storyInfo.data)[actPosition].index;
+                ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+            }
+        }
+    });
+    const auto setStoryHeight = [&] (const short floorId, const double targetHeight) -> GSErrCode {
+        const short position = FindStoryPosition (storyInfo, floorId);
+        if (position < 0) {
+            return APIERR_GENERAL;
+        }
+        if (std::abs (GetStoryHeightAt (storyInfo, position) - targetHeight) < StoryLevelTolerance) {
+            return NoError;
+        }
+
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = (*storyInfo.data)[position].index;
+        GSErrCode cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        actStoryMoved = true;
+
+        API_StoryCmdType heightCmd = {};
+        heightCmd.action = APIStory_SetHeight;
+        heightCmd.index  = goToCmd.index;
+        heightCmd.height = targetHeight;
+        cmdErr = ACAPI_ProjectSetting_ChangeStorySettings (&heightCmd);
+        if (cmdErr != NoError) {
+            return cmdErr;
+        }
+        return RefreshStoryInfo (storyInfo);
+    };
+
+    err = setStoryHeight (cmdFloorId, cmdHeight);
+    if (err == NoError && referenceFloorId != cmdFloorId) {
+        err = setStoryHeight (referenceFloorId, referenceHeight);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to keep the height of the story next to it.");
+    }
+    err = setStoryHeight (newFloorId, height);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to set its height.");
+    }
+
+    const short referencePositionAfter = FindStoryPosition (storyInfo, referenceFloorId);
+    const short cmdPositionAfter = FindStoryPosition (storyInfo, cmdFloorId);
+    newPosition = FindStoryPosition (storyInfo, newFloorId);
+    if (newPosition < 0 || referencePositionAfter < 0 || cmdPositionAfter < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+    if (std::abs (GetStoryHeightAt (storyInfo, newPosition) - height) >= StoryLevelTolerance ||
+        std::abs (GetStoryHeightAt (storyInfo, referencePositionAfter) - referenceHeight) >= StoryLevelTolerance ||
+        std::abs (GetStoryHeightAt (storyInfo, cmdPositionAfter) - cmdHeight) >= StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad gave it the height %.4f instead of %.4f, and the story of storyIndex the height %.4f instead of %.4f.",
+            GetStoryHeightAt (storyInfo, newPosition), height, GetStoryHeightAt (storyInfo, referencePositionAfter), referenceHeight));
+    }
+    if (insertAbove ? newPosition != referencePositionAfter + 1 : newPosition + 1 != referencePositionAfter) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story was inserted, but not next to the story of storyIndex.");
+    }
+
+    GS::USize notRestoredCount = 0;
+    err = RestoreHomeStoryOfElements (homeStoriesBefore, notRestoredCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to put the elements back on their home stories.");
+    }
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+    newPosition = FindStoryPosition (storyInfo, newFloorId);
+    if (newPosition < 0) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+
+    std::map<short, GS::USize> elementsAfter;
+    err = CountElementsPerFloorId (elementsAfter);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "The story was inserted, but failed to count the elements of the stories.");
+    }
+    GS::UniString elementDifference;
+    if (!ElementsKeptTheirStories (elementsBefore, elementsAfter, newFloorId, elementDifference)) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad changed the home story of elements, and %u of them could not be put back (element counts per story ",
+            static_cast<unsigned int> (notRestoredCount)) + elementDifference + ").");
+    }
+    if (elementsAfter.find (newFloorId) != elementsAfter.end ()) {
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The story was inserted, but Archicad put %u element(s) on it.", static_cast<unsigned int> (elementsAfter.at (newFloorId))));
+    }
+
+    bool dispOnSections = false;
+    if (parameters.Get ("dispOnSections", dispOnSections) && (*storyInfo.data)[newPosition].dispOnSections != dispOnSections) {
+        API_StoryCmdType dispCmd = {};
+        dispCmd.action         = APIStory_SetDispOnSections;
+        dispCmd.index          = (*storyInfo.data)[newPosition].index;
+        dispCmd.dispOnSections = dispOnSections;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&dispCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "The story was inserted, but failed to set its dispOnSections.");
+        }
+
+        err = RefreshStoryInfo (storyInfo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to retrive stories info.");
+        }
+        if (newPosition > storyInfo.lastStory - storyInfo.firstStory) {
+            return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+        }
+    }
+
+    GS::ObjectState response;
+    response.Add ("story", CreateStoryParametersObjectState (storyInfo, newPosition));
+    return response;
+}
+
+DeleteStoryCommand::DeleteStoryCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String DeleteStoryCommand::GetName () const
+{
+    return "DeleteStory";
+}
+
+GS::Optional<GS::UniString> DeleteStoryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story to delete (see GetStories)."
+            },
+            "deleteElements": {
+                "type": "boolean",
+                "description": "Archicad deletes every element whose home story is the deleted story. Without true here, a story that is the home story of any element is not deleted, and the response says how many elements it has. Default is false."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteStoryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "description": "Whether the story was deleted, or on a dry run, whether a real run would delete it."
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "description": "Present, and true, on a dry run that a real run would delete the story.",
+                "enum": [ true ]
+            },
+            "elementCount": {
+                "type": "integer",
+                "description": "The number of elements whose home story is the story (in the floor plan database): the elements deleted with it, or that kept it from being deleted. Absent when the story was not found."
+            },
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteStoryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const bool dryRun = IsDryRun (parameters);
+
+    short storyIndex = 0;
+    if (!parameters.Get ("storyIndex", storyIndex)) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "storyIndex is required.");
+    }
+    bool deleteElements = false;
+    parameters.Get ("deleteElements", deleteElements);
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+
+    if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+        return CreateFailedExecutionResult (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+    }
+    if (storyInfo.firstStory == storyInfo.lastStory) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "The only story of the project cannot be deleted.");
+    }
+    const short storyCountBefore = storyInfo.lastStory - storyInfo.firstStory + 1;
+
+    GS::USize elementCount = 0;
+    err = CountElementsOnStory (storyIndex, elementCount);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to count the elements on the story.");
+    }
+
+    if (elementCount > 0 && !deleteElements) {
+        GS::ObjectState result = CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf (
+            "The story is the home story of %u element(s), which would be deleted with it; give deleteElements: true to delete them as well.",
+            static_cast<unsigned int> (elementCount)));
+        result.Add ("elementCount", static_cast<Int32> (elementCount));
+        AddDryRunField (result, dryRun);
+        return result;
+    }
+
+    if (dryRun) {
+        GS::ObjectState result = CreateDryRunExecutionResult ("wouldDelete");
+        result.Add ("elementCount", static_cast<Int32> (elementCount));
+        AddDryRunField (result, dryRun);
+        return result;
+    }
+
+    // The elements per story, to check afterwards that the elements of the other stories are
+    // still on their stories (the stories above the deleted one get lower indices).
+    const short deletedFloorId = (*storyInfo.data)[storyIndex - storyInfo.firstStory].floorId;
+    std::map<short, GS::USize> elementsBefore;
+    err = CountElementsPerFloorId (elementsBefore);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to count the elements of the stories.");
+    }
+    GS::Array<std::pair<API_Guid, short>> homeStoriesBefore;
+    err = GetHomeStoryOfElements (homeStoriesBefore);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the home stories of the elements.");
+    }
+
+    // APIStory_Delete is a complete, undoable operation of its own (ACAPI_ProjectSetting_ChangeStorySettings).
+    API_StoryCmdType storyCmd = {};
+    storyCmd.action = APIStory_Delete;
+    storyCmd.index  = storyIndex;
+    err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to delete the story.");
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to retrive stories info.");
+    }
+    if (storyInfo.lastStory - storyInfo.firstStory + 1 != storyCountBefore - 1) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not delete the story.");
+    }
+
+    // The elements of the deleted story are gone, and its floorId is no story any more, so only
+    // the elements of the other stories are put back.
+    GS::USize notRestoredCount = 0;
+    err = RestoreHomeStoryOfElements (homeStoriesBefore, notRestoredCount);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The story was deleted, but failed to put the elements of the other stories back on their home stories.");
+    }
+
+    std::map<short, GS::USize> elementsAfter;
+    err = CountElementsPerFloorId (elementsAfter);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "The story was deleted, but failed to count the elements of the stories.");
+    }
+    GS::UniString elementDifference;
+    if (!ElementsKeptTheirStories (elementsBefore, elementsAfter, deletedFloorId, elementDifference)) {
+        GS::ObjectState failed = CreateFailedExecutionResult (APIERR_GENERAL,
+            GS::UniString ("The story was deleted, but Archicad changed the home story of elements of other stories (element counts per story ") + elementDifference + ").");
+        failed.Add ("elementCount", static_cast<Int32> (elementCount));
+        return failed;
+    }
+
+    GS::ObjectState result = CreateSuccessfulExecutionResult ();
+    result.Add ("elementCount", static_cast<Int32> (elementCount));
+    return result;
+}
+
+ModifyStoryCommand::ModifyStoryCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String ModifyStoryCommand::GetName () const
+{
+    return "ModifyStory";
+}
+
+GS::Optional<GS::UniString> ModifyStoryCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story to modify (see GetStories)."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The new level of the story. Only this story moves: the story below gets taller or shorter, and the stories above stay where they are unless height is given too. It must stay above the level of the story below, and, without height, below the level of the story above. On the top story without height its top stays where it is: moving it up makes it shorter by as much, and moving it down taller."
+            },
+            "height": {
+                "type": "number",
+                "description": "The new height of the story, greater than zero. As in Archicad's Story Settings dialog, every story above moves up or down with the top of this story and keeps its height.",
+                "minimum": 0, "exclusiveMinimum": true
+            },
+            "dispOnSections": {
+                "type": "boolean",
+                "description": "Whether the level line of the story appears on sections and elevations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "storyIndex"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifyStoryCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "story": {
+                "$ref": "#/StoryParameters",
+                "description": "The modified story, as GetStories reports it after the change."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "story"
+        ]
+    })";
+}
+
+GS::ObjectState ModifyStoryCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    short storyIndex = 0;
+    if (!parameters.Get ("storyIndex", storyIndex)) {
+        return CreateErrorResponse (APIERR_BADPARS, "storyIndex is required.");
+    }
+
+    GS::UniString name;
+    const bool hasName = parameters.Get ("name", name);
+    double level = 0.0;
+    const bool hasLevel = parameters.Get ("level", level);
+    double height = 0.0;
+    const bool hasHeight = parameters.Get ("height", height);
+    bool dispOnSections = false;
+    const bool hasDispOnSections = parameters.Get ("dispOnSections", dispOnSections);
+
+    if (!hasName && !hasLevel && !hasHeight && !hasDispOnSections) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give at least one of name, level, height and dispOnSections.");
+    }
+    if (hasHeight && height <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "height must be greater than zero.");
+    }
+
+    API_StoryInfo storyInfo = {};
+    GSErrCode err = ACAPI_ProjectSetting_GetStorySettings (&storyInfo);
+    const GS::OnExit disposeStoryInfo ([&] () {
+        BMKillHandle (reinterpret_cast<GSHandle *> (&storyInfo.data));
+    });
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    if (storyIndex < storyInfo.firstStory || storyIndex > storyInfo.lastStory) {
+        return CreateErrorResponse (APIERR_BADINDEX, "storyIndex is out of range; see GetStories for the valid story indices.");
+    }
+
+    // Copied out of the handle, which every refresh disposes (see StorySnapshot).
+    GS::Array<StorySnapshot> before;
+    TakeStorySnapshot (storyInfo, before);
+    const GS::USize storyCount = static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1);
+    if (before.GetSize () != storyCount) {
+        return CreateErrorResponse (APIERR_GENERAL, "Failed to read the story structure.");
+    }
+
+    const GS::UIndex position = static_cast<GS::UIndex> (storyIndex - storyInfo.firstStory);
+    const bool isTopStory = position + 1 == storyCount;
+    const double oldLevel = before[position].level;
+
+    // Where the story ends now: the level of the story above, or for the top story that of the
+    // virtual story Archicad keeps above it (see CreateStoryParametersObjectState).
+    const GS::USize recordCount = static_cast<GS::USize> (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+    const bool hasOldTop = position + 1 < recordCount;
+    const double oldTop = hasOldTop ? (*storyInfo.data)[position + 1].level : 0.0;
+
+    const double targetLevel = hasLevel ? level : oldLevel;
+    if (hasLevel && position > 0 && targetLevel <= before[position - 1].level + StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "level must be above the level of the story below (%.4f).", before[position - 1].level));
+    }
+    if (hasLevel && !hasHeight && !isTopStory && targetLevel >= before[position + 1].level - StoryLevelTolerance) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+            "level must be below the level of the story above (%.4f), unless height is given too.", before[position + 1].level));
+    }
+
+    // How far the stories above this one move: with the top of this story when height is given.
+    const double aboveShift = (hasHeight && !isTopStory) ? targetLevel + height - before[position + 1].level : 0.0;
+
+    // Neither renaming a story nor changing its level line display moves any story.
+    if (hasDispOnSections && before[position].dispOnSections != dispOnSections) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action         = APIStory_SetDispOnSections;
+        storyCmd.index          = storyIndex;
+        storyCmd.dispOnSections = dispOnSections;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to modify dispOnSections.");
+        }
+    }
+
+    if (hasName && before[position].name != name) {
+        API_StoryCmdType storyCmd = {};
+        storyCmd.action = APIStory_Rename;
+        storyCmd.index  = storyIndex;
+        GS::ucscpy (storyCmd.uName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) GS::ArraySize (storyCmd.uName) - 1)).Get ());
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to rename the story.");
+        }
+    }
+
+    const bool levelGoesUp   = targetLevel >= oldLevel + StoryLevelTolerance;
+    const bool levelGoesDown = targetLevel <= oldLevel - StoryLevelTolerance;
+
+    if (levelGoesUp || levelGoesDown || hasHeight) {
+        // The story is made the active one, as Archicad's own example does for APIStory_SetHeight
+        // (on which side of the boundary SetHeight moves depends on the active story, see
+        // SetStoriesCommand), and the previously active story is restored afterwards.
+        const short originalActStory = storyInfo.actStory;
+        bool actStoryMoved = false;
+        const GS::OnExit restoreActStory ([&] () {
+            if (actStoryMoved) {
+                API_StoryCmdType storyCmd = {};
+                storyCmd.action = APIStory_GoTo;
+                storyCmd.index  = originalActStory;
+                ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+            }
+        });
+
+        API_StoryCmdType goToCmd = {};
+        goToCmd.action = APIStory_GoTo;
+        goToCmd.index  = storyIndex;
+        err = ACAPI_ProjectSetting_ChangeStorySettings (&goToCmd);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to make the story active to change its level or height.");
+        }
+        actStoryMoved = storyIndex != originalActStory;
+
+        // APIStory_SetElevation moves this story and nothing else, APIStory_SetHeight moves every
+        // story above it with its top. A story never crosses a neighbour: when it goes up and
+        // height is given, the stories above are moved up first, to where they end up.
+        const auto setElevation = [&] () -> GSErrCode {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action    = APIStory_SetElevation;
+            storyCmd.index     = storyIndex;
+            storyCmd.elevation = targetLevel;
+            return ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        };
+        const auto setHeight = [&] (const double newHeight) -> GSErrCode {
+            API_StoryCmdType storyCmd = {};
+            storyCmd.action = APIStory_SetHeight;
+            storyCmd.index  = storyIndex;
+            storyCmd.height = newHeight;
+            return ACAPI_ProjectSetting_ChangeStorySettings (&storyCmd);
+        };
+
+        // The height is only left alone when the level stays and the height is already right.
+        const bool heightAlreadySet = !levelGoesUp && !levelGoesDown && hasOldTop && std::abs ((oldTop - oldLevel) - height) < StoryLevelTolerance;
+
+        if (levelGoesUp && hasHeight && !isTopStory) {
+            err = setHeight (targetLevel + height - oldLevel);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to change the story height.");
+            }
+            err = setElevation ();
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to change the story level.");
+            }
+        } else {
+            if (levelGoesUp || levelGoesDown) {
+                err = setElevation ();
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to change the story level.");
+                }
+            }
+            if (hasHeight && !heightAlreadySet) {
+                err = setHeight (height);
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to change the story height.");
+                }
+            }
+        }
+    }
+
+    err = RefreshStoryInfo (storyInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrive stories info.");
+    }
+
+    GS::Array<StorySnapshot> after;
+    TakeStorySnapshot (storyInfo, after);
+    if (after.GetSize () != storyCount || static_cast<GS::USize> (storyInfo.lastStory - storyInfo.firstStory + 1) != storyCount) {
+        return CreateErrorResponse (APIERR_GENERAL, "The story structure changed unexpectedly.");
+    }
+
+    // A structure which silently ended up somewhere else than requested is worse than an error,
+    // so every level is checked: the stories below stay, this one is on its level, the ones above
+    // moved by aboveShift. The changes made are undoable in Archicad (Edit > Undo).
+    for (GS::UIndex i = 0; i < storyCount; ++i) {
+        const double expectedLevel = i < position ? before[i].level : (i == position ? targetLevel : before[i].level + aboveShift);
+        if (std::abs (after[i].level - expectedLevel) >= StoryLevelTolerance) {
+            return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+                "Failed to modify the story: story %d is at level %.4f instead of %.4f.",
+                static_cast<int> (after[i].index), after[i].level, expectedLevel));
+        }
+    }
+    if (hasHeight) {
+        const GS::USize newRecordCount = static_cast<GS::USize> (BMGetHandleSize ((GSHandle) storyInfo.data) / sizeof (API_StoryType));
+        if (position + 1 < newRecordCount) {
+            const double newHeight = (*storyInfo.data)[position + 1].level - (*storyInfo.data)[position].level;
+            if (std::abs (newHeight - height) >= StoryLevelTolerance) {
+                return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+                    "Failed to set the height of the story: requested %.4f, got %.4f.", height, newHeight));
+            }
+        }
+    }
+
+    GS::ObjectState response;
+    response.Add ("story", CreateStoryParametersObjectState (storyInfo, static_cast<short> (position)));
+    return response;
+}
+
 OpenProjectCommand::OpenProjectCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2835,9 +3970,55 @@ GS::Optional<GS::UniString> CloseProjectCommand::GetRawResponseSchema () const
     })";
 }
 
+// What tells the open project apart from another one: whether it is saved or Teamwork, its file
+// (or server location) and the modification stamp of its database.
+struct OpenProjectIdentity {
+    bool          untitled = false;
+    bool          teamwork = false;
+    GS::UniString location;
+    UInt64        modiStamp = 0;
+
+    explicit OpenProjectIdentity (const API_ProjectInfo& projectInfo) :
+        untitled (projectInfo.untitled),
+        teamwork (projectInfo.teamwork),
+        modiStamp (projectInfo.modiStamp)
+    {
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        if (!projectInfo.untitled && projectLocation != nullptr) {
+            location = projectLocation->ToDisplayText ();
+        }
+    }
+
+    bool IsSameAs (const OpenProjectIdentity& other) const
+    {
+        return untitled == other.untitled && teamwork == other.teamwork && location == other.location && modiStamp == other.modiStamp;
+    }
+};
+
+// ACAPI_ProjectOperation_Close can answer NoError and leave the project open (#2798, Archicad 29
+// on macOS: Archicad keeps its last open project), so the project is read again afterwards and
+// the command only succeeds when the project it found before is no longer the open one.
 GS::ObjectState CloseProjectCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    GSErrCode err = ACAPI_ProjectOperation_Close ();
+    GS::Optional<OpenProjectIdentity> projectBefore;
+    {
+        API_ProjectInfo projectInfo = {};
+        if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError) {
+            projectBefore = OpenProjectIdentity (projectInfo);
+        }
+    }
+
+    const GSErrCode err = ACAPI_ProjectOperation_Close ();
+
+    // Archicad 26 on Windows answers an error instead of NoError for its last open project (#2808),
+    // so the project is read again in both cases; the error code stays the one each case had.
+    if (projectBefore.HasValue ()) {
+        API_ProjectInfo projectInfo = {};
+        if (ACAPI_ProjectOperation_Project (&projectInfo) == NoError && OpenProjectIdentity (projectInfo).IsSameAs (*projectBefore)) {
+            return CreateFailedExecutionResult (err != NoError ? APIERR_COMMANDFAILED : APIERR_REFUSEDCMD, "Archicad did not close the project: it is still open. Archicad keeps its last open project open; use OpenProject or NewProject to replace it, or QuitArchicad to quit.");
+        }
+    }
+
     if (err != NoError) {
         return CreateFailedExecutionResult (APIERR_COMMANDFAILED, "Failed to close the project. There might be none currently open.");
     }
@@ -4462,144 +5643,13 @@ GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetInputParametersSche
 
 GS::Optional<GS::UniString> GetDimensionStandardsCommand::GetRawResponseSchema () const
 {
-    const GS::UniString lengthDimFormatSchema = R"({
-        "type": "object",
-        "properties": {
-            "unit": {
-                "$ref": "#/LengthType"
-            },
-            "decimals": {
-                "type": "integer",
-                "description": "Number of decimals displayed."
-            },
-            "showSmall5": {
-                "type": "integer",
-                "description": "The extra accuracy (small 5) setting of the displayed values, 0 when off, as Archicad stores it."
-            },
-            "roundInch": {
-                "type": "integer",
-                "description": "Rounding of fractional inches."
-            },
-            "showZeroWhole": {
-                "type": "boolean",
-                "description": "Whether a zero whole part is displayed."
-            },
-            "showZeroInch": {
-                "type": "integer",
-                "description": "Whether zero inches are displayed, as Archicad stores it."
-            },
-            "hideZeroDecimals": {
-                "type": "boolean",
-                "description": "Whether trailing zero decimals are hidden."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "unit",
-            "decimals",
-            "showSmall5",
-            "roundInch",
-            "showZeroWhole",
-            "showZeroInch",
-            "hideZeroDecimals"
-        ]
-    })";
-
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionStandards": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "A dimension standard of the project, as listed in Options > Project Preferences > Dimensions.",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The 1-based index of the dimension standard."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the dimension standard, as the dimensionStyle of GetViewSettings and SetViewSettings."
-                        },
-                        "settings": {
-                            "type": "object",
-                            "properties": {
-                                "linear": )") + lengthDimFormatSchema + R"(,
-                                "angle": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AngleType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "accuracy": {
-                                            "type": "integer",
-                                            "description": "Accuracy of the angle values."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "accuracy",
-                                        "hideZeroDecimals"
-                                    ]
-                                },
-                                "radial": )" + lengthDimFormatSchema + R"(,
-                                "level": )" + lengthDimFormatSchema + R"(,
-                                "elevation": )" + lengthDimFormatSchema + R"(,
-                                "doorWindow": )" + lengthDimFormatSchema + R"(,
-                                "parapet": )" + lengthDimFormatSchema + R"(,
-                                "area": {
-                                    "type": "object",
-                                    "properties": {
-                                        "unit": {
-                                            "$ref": "#/AreaType"
-                                        },
-                                        "decimals": {
-                                            "type": "integer",
-                                            "description": "Number of decimals displayed."
-                                        },
-                                        "hideZeroDecimals": {
-                                            "type": "boolean",
-                                            "description": "Whether trailing zero decimals are hidden."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "unit",
-                                        "decimals",
-                                        "hideZeroDecimals"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "linear",
-                                "angle",
-                                "radial",
-                                "level",
-                                "elevation",
-                                "doorWindow",
-                                "parapet",
-                                "area"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index",
-                        "name",
-                        "settings"
-                    ]
+                    "$ref": "#/DimensionStandard"
                 }
             }
         },
@@ -5025,6 +6075,155 @@ static GS::ObjectState CreateFloorPlanCutPlaneObjectState (const API_FloorPlanCu
             "relativeStory", static_cast<Int32> (prefs.bottomCutBaseStoryRelInd),
             "offset", prefs.bottomCutLevel),
         "absoluteDisplayLimit", prefs.fixLevel2Absolute0);
+}
+
+// The Legacy page (API_LegacyPrefs): the column intersection priority, the line types of
+// construction elements shown above and below their home story, the roof contour display
+// and two switches. The line types are answered as attribute ids.
+static GS::UniString ConvertRoofContourDisplay (API_RoofContourDisplay display)
+{
+    switch (display) {
+        case APIRoofDisplay_OnlyTheTopSurfaceOldWay: return "OnlyTheTopSurface";
+        case APIRoofDisplay_AllVisibleContours:
+        default:                                     return "AllVisibleContours";
+    }
+}
+
+static GS::ObjectState CreateLegacyObjectState (const API_LegacyPrefs& prefs)
+{
+    return GS::ObjectState (
+        "columnIntersectionPriority", static_cast<Int32> (prefs.coluConnPriority),
+        "aboveHomeStoryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, prefs.aboveLineType)),
+        "belowHomeStoryLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, prefs.belowLineType)),
+        "roofContourDisplay", ConvertRoofContourDisplay (prefs.roofContourDisplay),
+        "useLegacyIntersections", prefs.useLegacyIntersections,
+        "hideZonesOnSections", prefs.hideZonesOnSections);
+}
+
+// The Imaging and Calculation page of the Work Environment (API_ImagingAndCalcPrefs).
+// The report level and the listing of selected elements are the APIReportLevel_* and
+// APICalcSelElems_* values, answered by name.
+static GS::UniString ConvertReportLevel (short reportLevel)
+{
+    switch (reportLevel) {
+        case APIReportLevel_Brief:    return "Brief";
+        case APIReportLevel_Short:    return "Short";
+        case APIReportLevel_Detailed: return "Detailed";
+        case APIReportLevel_Full:     return "Full";
+        case APIReportLevel_No:
+        default:                      return "No";
+    }
+}
+
+static GS::UniString ConvertSelectedElementsListing (short selElemsListing)
+{
+    switch (selElemsListing) {
+        case APICalcSelElems_ListAll:    return "ListAll";
+        case APICalcSelElems_UseFilters: return "UseFilters";
+        case APICalcSelElems_ShowAlert:
+        default:                         return "ShowAlert";
+    }
+}
+
+static GS::ObjectState CreateImagingAndCalculationObjectState (const API_ImagingAndCalcPrefs& prefs)
+{
+    return GS::ObjectState (
+        "autoRebuild3D", prefs.autoRebuild3D,
+        "activate3DOnChange", prefs.activate3DOnChange,
+        "keepZoomedSection", prefs.keepZoomedSection,
+        "showProgressWindow", prefs.showProgressWindow,
+        "interruptOnError", prefs.interruptOnError,
+        "progressSounds", prefs.progressSounds,
+        "generate3DReport", prefs.generate3DReport,
+        "reportLevel", ConvertReportLevel (prefs.reportLevel),
+        "selectedElementsListing", ConvertSelectedElementsListing (prefs.selElemsListing));
+}
+
+// The Layouts page (API_LayoutsPrefs).
+static GS::ObjectState CreateLayoutsObjectState (const API_LayoutsPrefs& prefs)
+{
+    return GS::ObjectState (
+        "masterItemsColor", GS::ObjectState ("red", prefs.masterColor.f_red, "green", prefs.masterColor.f_green, "blue", prefs.masterColor.f_blue),
+        "useOwnMasterItemsColor", prefs.useOwnMasterColor,
+        "adjustDrawingFrameToViewZoom", prefs.adjustDrawingFrameToViewZoom);
+}
+
+// The Data Safety page (API_SafetyPrefs): ACAPI_ProjectSetting_GetPreferences allocates
+// the temporary folder's location, which the caller deletes (as in the DevKit's
+// Environment_Control example). ACAPI_ProjectSetting_SetPreferences refuses this page.
+static GSErrCode GetDataSafetyObjectState (GS::ObjectState& result)
+{
+    API_SafetyPrefs prefs = {};
+    const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_DataSafetyID);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::UniString temporaryFolder;
+    if (prefs.tempFolder != nullptr) {
+        prefs.tempFolder->ToPath (&temporaryFolder);
+        delete prefs.tempFolder;
+    }
+
+    result = GS::ObjectState ("temporaryFolder", temporaryFolder);
+    return NoError;
+}
+
+// The Calculation Rules page (API_CalcRulesPrefs): the conditional element rules and the
+// fill sets Archicad counts as insulation and air fills. The fills are answered as
+// attribute ids, the element types of a rule by their non-localized names.
+static GS::UniString ConvertConditionalElementPropertyType (API_ConditionalElementPropertyTypeID propertyType)
+{
+    switch (propertyType) {
+        case APIConditionalElementPropertyType_Surface: return "Surface";
+        case APIConditionalElementPropertyType_Length:  return "Length";
+        case APIConditionalElementPropertyType_Volume:
+        default:                                        return "Volume";
+    }
+}
+
+// The element types of a rule are API_ElemType from Archicad 26, API_ElemTypeID before.
+#ifdef ServerMainVers_2600
+static API_ElemTypeID GetCalculationRuleElementTypeID (const API_ElemType& elemType)
+{
+    return elemType.typeID;
+}
+#else
+static API_ElemTypeID GetCalculationRuleElementTypeID (API_ElemTypeID elemType)
+{
+    return elemType;
+}
+#endif
+
+static GS::Array<GS::ObjectState> CreateFillAttributeIds (const GS::HashSet<API_AttributeIndex>& fills)
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    for (const API_AttributeIndex& fill : fills) {
+        attributeIds.Push (GS::ObjectState ("attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, fill))));
+    }
+    return attributeIds;
+}
+
+static GS::ObjectState CreateCalculationRulesObjectState (const API_CalcRulesPrefs& prefs)
+{
+    GS::Array<GS::ObjectState> elementRules;
+    for (const API_ConditionalElementRule& rule : prefs.elementRules) {
+        GS::Array<GS::UniString> elementTypes;
+        for (const auto& elemType : rule.elementTypes) {
+            elementTypes.Push (GetElementTypeNonLocalizedName (GetCalculationRuleElementTypeID (elemType)));
+        }
+        elementRules.Push (GS::ObjectState (
+            "propertyType", ConvertConditionalElementPropertyType (rule.propertyType),
+            "holeLimit", rule.holeLimit,
+            "elementTypes", elementTypes));
+    }
+
+    return GS::ObjectState (
+        "elementRules", elementRules,
+        "wallInsulationFills", CreateFillAttributeIds (prefs.wallInsulationFills),
+        "wallAirFills", CreateFillAttributeIds (prefs.wallAirFills),
+        "roofInsulationFills", CreateFillAttributeIds (prefs.roofInsulationFills),
+        "shellInsulationFills", CreateFillAttributeIds (prefs.shellInsulationFills));
 }
 
 #ifdef ServerMainVers_2700
@@ -5455,6 +6654,222 @@ static GS::Optional<GS::UniString> ApplyFloorPlanCutPlane (const GS::ObjectState
     return GS::NoValue;
 }
 
+// --- Legacy page
+
+static GS::Optional<GS::UniString> ApplyLegacyLineType (const GS::ObjectState& os, const char* key, API_AttributeIndex& target, bool& changed)
+{
+    GS::ObjectState lineTypeId;
+    if (!os.Get (key, lineTypeId)) {
+        return GS::NoValue;
+    }
+
+    const API_Guid guid = GetGuidFromObjectState (lineTypeId);
+    const API_AttributeIndex index = guid != APINULLGuid ? GetAttributeIndexFromGuid (API_LinetypeID, guid) : ACAPI_CreateAttributeIndex (-1);
+    if (!index.IsPositive ()) {
+        return GS::UniString (key) + " is not the attributeId of a line type of the project.";
+    }
+    target = index;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyLegacy (const GS::ObjectState& os, API_LegacyPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceIntegerField (os, "columnIntersectionPriority", prefs.coluConnPriority);
+
+    GS::Optional<GS::UniString> error = ApplyLegacyLineType (os, "aboveHomeStoryLineTypeId", prefs.aboveLineType, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+    error = ApplyLegacyLineType (os, "belowHomeStoryLineTypeId", prefs.belowLineType, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    GS::UniString roofContourDisplay;
+    if (os.Get ("roofContourDisplay", roofContourDisplay)) {
+        if (roofContourDisplay == "AllVisibleContours") {
+            prefs.roofContourDisplay = APIRoofDisplay_AllVisibleContours;
+        } else if (roofContourDisplay == "OnlyTheTopSurface") {
+            prefs.roofContourDisplay = APIRoofDisplay_OnlyTheTopSurfaceOldWay;
+        } else {
+            return GS::UniString ("Unknown roofContourDisplay: ") + roofContourDisplay;
+        }
+        changed = true;
+    }
+
+    changed |= GetPreferenceFlagField (os, "useLegacyIntersections", prefs.useLegacyIntersections);
+    changed |= GetPreferenceFlagField (os, "hideZonesOnSections", prefs.hideZonesOnSections);
+    return GS::NoValue;
+}
+
+// --- Imaging and Calculation page
+
+static GS::Optional<GS::UniString> ApplyImagingAndCalculation (const GS::ObjectState& os, API_ImagingAndCalcPrefs& prefs, bool& changed)
+{
+    changed |= GetPreferenceFlagField (os, "autoRebuild3D", prefs.autoRebuild3D);
+    changed |= GetPreferenceFlagField (os, "activate3DOnChange", prefs.activate3DOnChange);
+    changed |= GetPreferenceFlagField (os, "keepZoomedSection", prefs.keepZoomedSection);
+    changed |= GetPreferenceFlagField (os, "showProgressWindow", prefs.showProgressWindow);
+    changed |= GetPreferenceFlagField (os, "interruptOnError", prefs.interruptOnError);
+    changed |= GetPreferenceFlagField (os, "progressSounds", prefs.progressSounds);
+    changed |= GetPreferenceFlagField (os, "generate3DReport", prefs.generate3DReport);
+
+    GS::UniString reportLevel;
+    if (os.Get ("reportLevel", reportLevel)) {
+        static const short reportLevels[] = { APIReportLevel_No, APIReportLevel_Brief, APIReportLevel_Short, APIReportLevel_Detailed, APIReportLevel_Full };
+        bool found = false;
+        for (short level : reportLevels) {
+            if (ConvertReportLevel (level) == reportLevel) {
+                prefs.reportLevel = level;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Unknown reportLevel: ") + reportLevel;
+        }
+        changed = true;
+    }
+
+    GS::UniString selectedElementsListing;
+    if (os.Get ("selectedElementsListing", selectedElementsListing)) {
+        static const short listings[] = { APICalcSelElems_ShowAlert, APICalcSelElems_ListAll, APICalcSelElems_UseFilters };
+        bool found = false;
+        for (short listing : listings) {
+            if (ConvertSelectedElementsListing (listing) == selectedElementsListing) {
+                prefs.selElemsListing = listing;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Unknown selectedElementsListing: ") + selectedElementsListing;
+        }
+        changed = true;
+    }
+
+    return GS::NoValue;
+}
+
+// --- Layouts page
+
+static GS::Optional<GS::UniString> ApplyLayouts (const GS::ObjectState& os, API_LayoutsPrefs& prefs, bool& changed)
+{
+    changed |= GetColor (os, "masterItemsColor", prefs.masterColor);
+    changed |= GetPreferenceFlagField (os, "useOwnMasterItemsColor", prefs.useOwnMasterColor);
+    changed |= GetPreferenceFlagField (os, "adjustDrawingFrameToViewZoom", prefs.adjustDrawingFrameToViewZoom);
+    return GS::NoValue;
+}
+
+// --- Calculation Rules page
+
+// The element types the API documents as valid for each property type of a rule.
+static bool IsValidCalculationRuleElementType (API_ConditionalElementPropertyTypeID propertyType, API_ElemTypeID typeID)
+{
+    switch (propertyType) {
+        case APIConditionalElementPropertyType_Volume:
+            return typeID == API_WallID || typeID == API_SlabID || typeID == API_RoofID || typeID == API_ShellID || typeID == API_BeamID;
+        case APIConditionalElementPropertyType_Surface:
+            return typeID == API_WallID || typeID == API_SlabID || typeID == API_RoofID || typeID == API_ShellID;
+        case APIConditionalElementPropertyType_Length:
+            return typeID == API_WallID;
+        default:
+            return false;
+    }
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRuleElementRules (const GS::ObjectState& os, GS::Array<API_ConditionalElementRule>& target, bool& changed)
+{
+    GS::Array<GS::ObjectState> elementRules;
+    if (!os.Get ("elementRules", elementRules)) {
+        return GS::NoValue;
+    }
+
+    GS::Array<API_ConditionalElementRule> rules;
+    for (const GS::ObjectState& ruleOs : elementRules) {
+        API_ConditionalElementRule rule = {};
+
+        GS::UniString propertyType;
+        if (!ruleOs.Get ("propertyType", propertyType) ||
+            !ParseEnumByName (propertyType, {
+                APIConditionalElementPropertyType_Volume,
+                APIConditionalElementPropertyType_Surface,
+                APIConditionalElementPropertyType_Length
+            }, ConvertConditionalElementPropertyType, rule.propertyType)) {
+            return GS::UniString ("Unknown propertyType of an element rule: ") + propertyType;
+        }
+
+        if (!ruleOs.Get ("holeLimit", rule.holeLimit)) {
+            return GS::UniString ("An element rule has no holeLimit.");
+        }
+        if (rule.holeLimit < 0.0) {
+            return GS::UniString ("The holeLimit of an element rule must not be negative.");
+        }
+
+        GS::Array<GS::UniString> elementTypes;
+        ruleOs.Get ("elementTypes", elementTypes);
+        if (elementTypes.IsEmpty ()) {
+            return GS::UniString ("An element rule has no elementTypes.");
+        }
+        for (const GS::UniString& elementType : elementTypes) {
+            const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementType);
+            if (!IsValidCalculationRuleElementType (rule.propertyType, typeID)) {
+                return GS::UniString ("The element type ") + elementType + " cannot have a " + propertyType + " rule.";
+            }
+            rule.elementTypes.Add (API_ElemType (typeID));
+        }
+
+        rules.Push (rule);
+    }
+
+    target = rules;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRuleFills (const GS::ObjectState& os, const char* key, GS::HashSet<API_AttributeIndex>& target, bool& changed)
+{
+    GS::Array<GS::ObjectState> attributeIds;
+    if (!os.Get (key, attributeIds)) {
+        return GS::NoValue;
+    }
+
+    GS::HashSet<API_AttributeIndex> fills;
+    for (const GS::ObjectState& item : attributeIds) {
+        GS::ObjectState attributeId;
+        const API_Guid guid = item.Get ("attributeId", attributeId) ? GetGuidFromObjectState (attributeId) : APINULLGuid;
+        const API_AttributeIndex index = guid != APINULLGuid ? GetAttributeIndexFromGuid (API_FilltypeID, guid) : ACAPI_CreateAttributeIndex (-1);
+        if (!index.IsPositive ()) {
+            return GS::UniString (key) + " holds an attributeId that is not a fill of the project.";
+        }
+        fills.Add (index);
+    }
+
+    target = fills;
+    changed = true;
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> ApplyCalculationRules (const GS::ObjectState& os, API_CalcRulesPrefs& prefs, bool& changed)
+{
+    GS::Optional<GS::UniString> error = ApplyCalculationRuleElementRules (os, prefs.elementRules, changed);
+    if (error.HasValue ()) {
+        return error;
+    }
+
+    static const char* fillKeys[] = { "wallInsulationFills", "wallAirFills", "roofInsulationFills", "shellInsulationFills" };
+    GS::HashSet<API_AttributeIndex>* fillSets[] = { &prefs.wallInsulationFills, &prefs.wallAirFills, &prefs.roofInsulationFills, &prefs.shellInsulationFills };
+    for (UIndex i = 0; i < 4; ++i) {
+        error = ApplyCalculationRuleFills (os, fillKeys[i], *fillSets[i], changed);
+        if (error.HasValue ()) {
+            return error;
+        }
+    }
+
+    return GS::NoValue;
+}
+
 // --- The commands
 
 // Reads the page `prefsType`, applies the fields of `pageFields` to it with `apply`
@@ -5530,482 +6945,275 @@ static GS::UniString GetProjectPreferencesRequiredFields (bool allFieldsRequired
 
 static GS::UniString GetWorkingUnitsSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Working Units page: the units and the number of decimals the model's lengths, areas, volumes and angles are shown with.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetLengthDimFormatSchema (bool allFieldsRequired, const GS::UniString& description)
-{
-    GS::UniString schema = GS::UniString (R"({
-                "type": "object",
-                "description": ")") + description + R"(",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "roundInch": {
-                        "type": "integer",
-                        "description": "Rounding of the fractional inch units, as the denominator of the smallest fraction shown: 1, 2, 4, 8, 16, 32 or 64."
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "showZeroWhole": {
-                        "type": "boolean",
-                        "description": "Show the zero before the decimal point of values below one."
-                    },
-                    "showZeroInch": {
-                        "type": "boolean",
-                        "description": "Show zero inches in feet and inches values."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "roundInch", "accuracy", "showZeroWhole", "showZeroInch", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAngleDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the angle dimensions.",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetAreaDimFormatSchema (bool allFieldsRequired)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": "The format of the area values the dimensions show (area calculations).",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display."
-                    },
-                    "hideZeroDecimals": {
-                        "type": "boolean",
-                        "description": "Hide the zero decimals at the end of the values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "hideZeroDecimals")");
-    schema += R"(
-            })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/WorkingUnitPreferences"})";
+    }
+    return R"({"$ref": "#/WorkingUnitPreferencesUpdate"})";
 }
 
 static GS::UniString GetDimensionsSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Dimensions page: the dimension standard and the format (unit, decimals, extra accuracy and zero handling) of each dimension type.",
-        "properties": {
-            "dimensionStandardIndex": {
-                "type": "integer",
-                "description": "The index of the dimension standard the page follows."
-            },
-            "linear": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the linear dimensions.");
-    schema += R"(,
-            "angle": )";
-    schema += GetAngleDimFormatSchema (allFieldsRequired);
-    schema += R"(,
-            "radial": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the radial dimensions.");
-    schema += R"(,
-            "level": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the level dimensions.");
-    schema += R"(,
-            "elevation": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the elevation dimensions.");
-    schema += R"(,
-            "doorWindow": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the door, window and skylight dimensions.");
-    schema += R"(,
-            "parapet": )";
-    schema += GetLengthDimFormatSchema (allFieldsRequired, "The format of the sill height (parapet) dimensions.");
-    schema += R"(,
-            "area": )";
-    schema += GetAreaDimFormatSchema (allFieldsRequired);
-    schema += R"(
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("dimensionStandardIndex", "linear", "angle", "radial", "level", "elevation", "doorWindow", "parapet", "area")");
-    schema += R"(
-    })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/DimensionPreferences"})";
+    }
+    return R"({"$ref": "#/DimensionPreferencesUpdate"})";
 }
 
 static GS::UniString GetCalculationUnitsPageSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Calculation Units page: the units, the number of decimals and the extra accuracy of the values in element lists and schedules. GetCalculationUnits answers the same page.",
-        "properties": {
-            "length": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/LengthType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for length values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "area": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AreaType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for area values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "volume": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/VolumeType"
-                    },
-                    "accuracy": {
-                        "$ref": "#/AccuracyType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for volume values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "accuracy", "decimals")");
-    schema += R"(
-            },
-            "angle": {
-                "type": "object",
-                "properties": {
-                    "unit": {
-                        "$ref": "#/AngleType"
-                    },
-                    "decimals": {
-                        "type": "integer",
-                        "description": "Number of decimals to display for angle values."
-                    },
-                    "accuracy": {
-                        "type": "integer",
-                        "description": "Accuracy for angle values."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("unit", "decimals", "accuracy")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("length", "area", "volume", "angle")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-// The item count of the height limits list: all three in the response of
-// GetProjectPreferences, one to three in the input of SetProjectPreferences,
-// where the given items change the limits of the same index.
-static GS::UniString GetProjectPreferencesHeightLimitsItemCount (bool allFieldsRequired)
-{
     if (allFieldsRequired) {
-        return "\"minItems\": 3, \"maxItems\": 3";
+        return R"({"$ref": "#/CalculationUnitPreferences"})";
     }
-    return "\"minItems\": 1, \"maxItems\": 3";
+    return R"({"$ref": "#/CalculationUnitPreferencesUpdate"})";
 }
 
 static GS::UniString GetZonesSchema (bool allFieldsRequired)
 {
-    GS::UniString schema = R"({
-        "type": "object",
-        "description": "The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.",
-        "properties": {
-            "lowCeilingAreaReduction": {
-                "type": "object",
-                "description": "Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.",
-                "properties": {
-                    "activeHeightLimits": {
-                        "type": "integer",
-                        "description": "How many of the three height limits are in use: 0 (no reduction) to 3."
-                    },
-                    "heightLimits": {
-                        "type": "array",
-                        "description": "The three height limits, each with the reduction of the area under it (and above the previous limit); the first activeHeightLimits of them are in use. In SetProjectPreferences the given items change the limits of the same index.",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "height": {
-                                    "type": "number",
-                                    "description": "The ceiling height limit in meters."
-                                },
-                                "reductionPercent": {
-                                    "type": "number",
-                                    "description": "The reduction of the area under this limit, in percent."
-                                }
-                            },
-                            "additionalProperties": false,
-                            )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("height", "reductionPercent")");
-    schema += R"(
-                        },
-                        )";
-    schema += GetProjectPreferencesHeightLimitsItemCount (allFieldsRequired);
-    schema += R"(
-                    },
-                    "reductionPercentAboveHeightLimits": {
-                        "type": "number",
-                        "description": "The reduction of the area above the highest height limit, in percent."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("activeHeightLimits", "heightLimits", "reductionPercentAboveHeightLimits")");
-    schema += R"(
-            }
-        },
-        "additionalProperties": false,
-        )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("lowCeilingAreaReduction")");
-    schema += R"(
-    })";
-    return schema;
-}
-
-static GS::UniString GetReferenceLevelSchema (bool allFieldsRequired, const char* description)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": ")";
-    schema += description;
-    schema += R"(",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the reference level, e.g. Sea Level."
-                    },
-                    "elevation": {
-                        "type": "number",
-                        "description": "The elevation of the reference level from Project Zero in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("name", "elevation")");
-    schema += R"(
-            })";
-    return schema;
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/ZonePreferences"})";
+    }
+    return R"({"$ref": "#/ZonePreferencesUpdate"})";
 }
 
 static GS::UniString GetReferenceLevelsSchema (bool allFieldsRequired)
 {
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/ProjectReferenceLevels"})";
+    }
+    return R"({"$ref": "#/ProjectReferenceLevelsUpdate"})";
+}
+
+static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
+{
+    if (allFieldsRequired) {
+        return R"({"$ref": "#/FloorPlanCutPlanePreferences"})";
+    }
+    return R"({"$ref": "#/FloorPlanCutPlanePreferencesUpdate"})";
+}
+
+static GS::UniString GetLegacySchema (bool allFieldsRequired)
+{
     GS::UniString schema = R"({
         "type": "object",
-        "description": "The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.",
+        "description": "The Legacy page: settings kept for compatibility with projects made in earlier Archicad versions.",
         "properties": {
-            "level1": )";
-    schema += GetReferenceLevelSchema (allFieldsRequired, "The first reference level.");
-    schema += R"(,
-            "level2": )";
-    schema += GetReferenceLevelSchema (allFieldsRequired, "The second reference level.");
-    schema += R"(
+            "columnIntersectionPriority": {
+                "type": "integer",
+                "description": "The priority of columns when they intersect other elements, as set on the page."
+            },
+            "aboveHomeStoryLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of construction elements shown above their home story. It affects library parts only when their Use Symbol Linetypes checkbox is off, and not ghost story elements."
+            },
+            "belowHomeStoryLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of construction elements shown below their home story. It affects library parts only when their Use Symbol Linetypes checkbox is off, and not ghost story elements."
+            },
+            "roofContourDisplay": {
+                "type": "string",
+                "description": "How roofs are shown: with all their visible contours, or only with their top surface (the earlier way).",
+                "enum": [
+                    "AllVisibleContours",
+                    "OnlyTheTopSurface"
+                ]
+            },
+            "useLegacyIntersections": {
+                "type": "boolean",
+                "description": "Use the legacy intersection and surface methods for model elements."
+            },
+            "hideZonesOnSections": {
+                "type": "boolean",
+                "description": "Hide zones on sections."
+            }
         },
         "additionalProperties": false,
         )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("level1", "level2")");
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("columnIntersectionPriority", "aboveHomeStoryLineTypeId", "belowHomeStoryLineTypeId", "roofContourDisplay", "useLegacyIntersections", "hideZonesOnSections")");
     schema += R"(
     })";
     return schema;
 }
 
-static GS::UniString GetFloorPlanCutLevelSchema (bool allFieldsRequired, const char* description)
-{
-    GS::UniString schema = R"({
-                "type": "object",
-                "description": ")";
-    schema += description;
-    schema += R"(",
-                "properties": {
-                    "relativeStory": {
-                        "type": "integer",
-                        "description": "The story the level is measured from, relative to the current story: 0 is the current story, 1 the story above it, -1 the story below it."
-                    },
-                    "offset": {
-                        "type": "number",
-                        "description": "The offset of the level from that story in meters."
-                    }
-                },
-                "additionalProperties": false,
-                )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("relativeStory", "offset")");
-    schema += R"(
-            })";
-    return schema;
-}
-
-static GS::UniString GetFloorPlanCutPlaneSchema (bool allFieldsRequired)
+static GS::UniString GetImagingAndCalculationSchema (bool allFieldsRequired)
 {
     GS::UniString schema = R"({
         "type": "object",
-        "description": "The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.",
+        "description": "The Imaging and Calculation page of the Work Environment (Options > Work Environment), not of the Project Preferences: these settings belong to the user's Archicad, not to the project.",
         "properties": {
-            "cutPlaneHeight": {
-                "type": "number",
-                "description": "The height of the cut plane from the current story in meters."
+            "autoRebuild3D": {
+                "type": "boolean",
+                "description": "Rebuild the 3D window whenever it is brought to the front."
             },
-            "topLevel": )";
-    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The top of the floor plan range: elements are shown up to this level.");
-    schema += R"(,
-            "bottomLevel": )";
-    schema += GetFloorPlanCutLevelSchema (allFieldsRequired, "The bottom of the floor plan range: elements are shown down to this level.");
-    schema += R"(,
-            "absoluteDisplayLimit": {
-                "type": "number",
-                "description": "The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level."
+            "activate3DOnChange": {
+                "type": "boolean",
+                "description": "Bring the 3D window to the front whenever the 3D projection settings or the rendering mode change."
+            },
+            "keepZoomedSection": {
+                "type": "boolean",
+                "description": "Keep the magnified detail of a section window when it is rebuilt."
+            },
+            "showProgressWindow": {
+                "type": "boolean",
+                "description": "Show the 3D progress window."
+            },
+            "interruptOnError": {
+                "type": "boolean",
+                "description": "Interrupt imaging processes with error messages."
+            },
+            "progressSounds": {
+                "type": "boolean",
+                "description": "Play sounds for 3D processes."
+            },
+            "generate3DReport": {
+                "type": "boolean",
+                "description": "Write the 3D report."
+            },
+            "reportLevel": {
+                "type": "string",
+                "description": "The level of detail of the 3D report.",
+                "enum": [
+                    "No",
+                    "Brief",
+                    "Short",
+                    "Detailed",
+                    "Full"
+                ]
+            },
+            "selectedElementsListing": {
+                "type": "string",
+                "description": "How selected elements are listed: ShowAlert asks each time, ListAll lists every selected element, UseFilters applies the filters set for the listing.",
+                "enum": [
+                    "ShowAlert",
+                    "ListAll",
+                    "UseFilters"
+                ]
             }
         },
         "additionalProperties": false,
         )";
-    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("cutPlaneHeight", "topLevel", "bottomLevel", "absoluteDisplayLimit")");
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("autoRebuild3D", "activate3DOnChange", "keepZoomedSection", "showProgressWindow", "interruptOnError", "progressSounds", "generate3DReport", "reportLevel", "selectedElementsListing")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+static GS::UniString GetLayoutsSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Layouts page.",
+        "properties": {
+            "masterItemsColor": {
+                "$ref": "#/ColorRGB",
+                "description": "The color master items are shown in on layouts, when useOwnMasterItemsColor is false."
+            },
+            "useOwnMasterItemsColor": {
+                "type": "boolean",
+                "description": "Show the master items in their own colors instead of masterItemsColor."
+            },
+            "adjustDrawingFrameToViewZoom": {
+                "type": "boolean",
+                "description": "When a model view is placed onto a layout, fit its drawing frame to the zoomed area of the view."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("masterItemsColor", "useOwnMasterItemsColor", "adjustDrawingFrameToViewZoom")");
+    schema += R"(
+    })";
+    return schema;
+}
+
+// Not named Get...Schema: the docs generator reads such a call without
+// arguments as the command's own schema method.
+static GS::UniString BuildDataSafetySchema ()
+{
+    return R"({
+        "type": "object",
+        "description": "The Data Safety page. Read only: Archicad does not let add-ons change it, so SetProjectPreferences has no dataSafety page.",
+        "properties": {
+            "temporaryFolder": {
+                "type": "string",
+                "description": "The path of the folder Archicad keeps its temporary files in; empty when Archicad gives none."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "temporaryFolder"
+        ]
+    })";
+}
+
+static GS::UniString GetCalculationRulesSchema (bool allFieldsRequired)
+{
+    GS::UniString schema = R"({
+        "type": "object",
+        "description": "The Calculation Rules page: the conditional rules that leave small holes out of element quantities, and the fills counted as insulation and air in walls, roofs and shells. A list given to SetProjectPreferences replaces the whole list on the page.",
+        "properties": {
+            "elementRules": {
+                "type": "array",
+                "description": "The conditional element rules. Each rule ignores the holes smaller than its holeLimit in a quantity (propertyType) of the given element types.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "propertyType": {
+                            "type": "string",
+                            "description": "The quantity the rule applies to. Volume rules can apply to walls, slabs, roofs, shells and beams, Surface rules to walls, slabs, roofs and shells, Length rules to walls only.",
+                            "enum": [
+                                "Volume",
+                                "Surface",
+                                "Length"
+                            ]
+                        },
+                        "holeLimit": {
+                            "type": "number",
+                            "description": "The hole size limit: holes smaller than this are ignored in the quantity. In SI units, as Archicad stores it.",
+                            "minimum": 0
+                        },
+                        "elementTypes": {
+                            "type": "array",
+                            "description": "The element types the rule applies to.",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "Wall",
+                                    "Slab",
+                                    "Roof",
+                                    "Shell",
+                                    "Beam"
+                                ]
+                            },
+                            "minItems": 1
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "propertyType",
+                        "holeLimit",
+                        "elementTypes"
+                    ]
+                }
+            },
+            "wallInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in walls."
+            },
+            "wallAirFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as air in walls."
+            },
+            "roofInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in roofs."
+            },
+            "shellInsulationFills": {
+                "$ref": "#/AttributeIds",
+                "description": "The fills counted as insulation in shells."
+            }
+        },
+        "additionalProperties": false,
+        )";
+    schema += GetProjectPreferencesRequiredFields (allFieldsRequired, R"("elementRules", "wallInsulationFills", "wallAirFills", "roofInsulationFills", "shellInsulationFills")");
     schema += R"(
     })";
     return schema;
@@ -6030,22 +7238,13 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The preference pages to get. Every page when missing.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "WorkingUnits",
-                        "Dimensions",
-                        "CalculationUnits",
-                        "Zones",
-                        "ReferenceLevels",
-                        "FloorPlanCutPlane"
-                    ]
+                    "$ref": "#/ProjectPreferenceType"
                 },
                 "minItems": 1
             }
         },
         "additionalProperties": false,
-        "required": [
-        ]
+        "required": []
     })";
 }
 
@@ -6072,6 +7271,21 @@ GS::Optional<GS::UniString> GetProjectPreferencesCommand::GetRawResponseSchema (
     schema += R"(,
             "floorPlanCutPlane": )";
     schema += GetFloorPlanCutPlaneSchema (true);
+    schema += R"(,
+            "legacy": )";
+    schema += GetLegacySchema (true);
+    schema += R"(,
+            "imagingAndCalculation": )";
+    schema += GetImagingAndCalculationSchema (true);
+    schema += R"(,
+            "layouts": )";
+    schema += GetLayoutsSchema (true);
+    schema += R"(,
+            "dataSafety": )";
+    schema += BuildDataSafetySchema ();
+    schema += R"(,
+            "calculationRules": )";
+    schema += GetCalculationRulesSchema (true);
     schema += R"(
         },
         "additionalProperties": false,
@@ -6091,6 +7305,11 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         preferenceTypes.Push ("Zones");
         preferenceTypes.Push ("ReferenceLevels");
         preferenceTypes.Push ("FloorPlanCutPlane");
+        preferenceTypes.Push ("Legacy");
+        preferenceTypes.Push ("ImagingAndCalculation");
+        preferenceTypes.Push ("Layouts");
+        preferenceTypes.Push ("DataSafety");
+        preferenceTypes.Push ("CalculationRules");
     }
 
     GS::ObjectState response;
@@ -6137,6 +7356,41 @@ GS::ObjectState GetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
                 return CreateErrorResponse (err, "Failed to read the floor plan cut plane settings.");
             }
             response.Add ("floorPlanCutPlane", CreateFloorPlanCutPlaneObjectState (prefs));
+        } else if (preferenceType == "Legacy") {
+            API_LegacyPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_LegacyID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the legacy preferences.");
+            }
+            response.Add ("legacy", CreateLegacyObjectState (prefs));
+        } else if (preferenceType == "ImagingAndCalculation") {
+            API_ImagingAndCalcPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_ImagingAndCalcID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the imaging and calculation preferences.");
+            }
+            response.Add ("imagingAndCalculation", CreateImagingAndCalculationObjectState (prefs));
+        } else if (preferenceType == "Layouts") {
+            API_LayoutsPrefs prefs = {};
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_LayoutsID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the layouts preferences.");
+            }
+            response.Add ("layouts", CreateLayoutsObjectState (prefs));
+        } else if (preferenceType == "DataSafety") {
+            GS::ObjectState dataSafety;
+            const GSErrCode err = GetDataSafetyObjectState (dataSafety);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the data safety preferences.");
+            }
+            response.Add ("dataSafety", dataSafety);
+        } else if (preferenceType == "CalculationRules") {
+            API_CalcRulesPrefs prefs;
+            const GSErrCode err = ACAPI_ProjectSetting_GetPreferences (&prefs, APIPrefs_CalcRulesID);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to read the calculation rules preferences.");
+            }
+            response.Add ("calculationRules", CreateCalculationRulesObjectState (prefs));
         } else {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown preference type: ") + preferenceType);
         }
@@ -6178,6 +7432,18 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetInputParametersSche
     schema += R"(,
             "floorPlanCutPlane": )";
     schema += GetFloorPlanCutPlaneSchema (false);
+    schema += R"(,
+            "legacy": )";
+    schema += GetLegacySchema (false);
+    schema += R"(,
+            "imagingAndCalculation": )";
+    schema += GetImagingAndCalculationSchema (false);
+    schema += R"(,
+            "layouts": )";
+    schema += GetLayoutsSchema (false);
+    schema += R"(,
+            "calculationRules": )";
+    schema += GetCalculationRulesSchema (false);
     schema += R"(
         },
         "additionalProperties": false,
@@ -6209,6 +7475,18 @@ GS::Optional<GS::UniString> SetProjectPreferencesCommand::GetRawResponseSchema (
                 "$ref": "#/ExecutionResult"
             },
             "floorPlanCutPlane": {
+                "$ref": "#/ExecutionResult"
+            },
+            "legacy": {
+                "$ref": "#/ExecutionResult"
+            },
+            "imagingAndCalculation": {
+                "$ref": "#/ExecutionResult"
+            },
+            "layouts": {
+                "$ref": "#/ExecutionResult"
+            },
+            "calculationRules": {
                 "$ref": "#/ExecutionResult"
             }
         },
@@ -6260,8 +7538,32 @@ GS::ObjectState SetProjectPreferencesCommand::Execute (const GS::ObjectState& pa
         response.Add ("floorPlanCutPlane", SetProjectPreferencesPage<API_FloorPlanCutDefinition> ("floor plan cut plane", APIPrefs_FloorPlanCutPlaneDef, floorPlanCutPlane, ApplyFloorPlanCutPlane));
     }
 
+    GS::ObjectState legacy;
+    if (parameters.Get ("legacy", legacy)) {
+        anyPage = true;
+        response.Add ("legacy", SetProjectPreferencesPage<API_LegacyPrefs> ("legacy", APIPrefs_LegacyID, legacy, ApplyLegacy));
+    }
+
+    GS::ObjectState imagingAndCalculation;
+    if (parameters.Get ("imagingAndCalculation", imagingAndCalculation)) {
+        anyPage = true;
+        response.Add ("imagingAndCalculation", SetProjectPreferencesPage<API_ImagingAndCalcPrefs> ("imaging and calculation", APIPrefs_ImagingAndCalcID, imagingAndCalculation, ApplyImagingAndCalculation));
+    }
+
+    GS::ObjectState layouts;
+    if (parameters.Get ("layouts", layouts)) {
+        anyPage = true;
+        response.Add ("layouts", SetProjectPreferencesPage<API_LayoutsPrefs> ("layouts", APIPrefs_LayoutsID, layouts, ApplyLayouts));
+    }
+
+    GS::ObjectState calculationRules;
+    if (parameters.Get ("calculationRules", calculationRules)) {
+        anyPage = true;
+        response.Add ("calculationRules", SetProjectPreferencesPage<API_CalcRulesPrefs> ("calculation rules", APIPrefs_CalcRulesID, calculationRules, ApplyCalculationRules));
+    }
+
     if (!anyPage) {
-        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels or floorPlanCutPlane.");
+        return CreateErrorResponse (APIERR_BADPARS, "No preference page given. Give workingUnits, dimensions, calculationUnits, zones, referenceLevels, floorPlanCutPlane, legacy, imagingAndCalculation, layouts or calculationRules.");
     }
 
     return response;
@@ -7677,6 +8979,232 @@ GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () c
 GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     return RemoveHotlinkNodes (parameters, HotlinkNodeRemoval::Delete);
+}
+
+MergeFileCommand::MergeFileCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String MergeFileCommand::GetName () const
+{
+    return "MergeFile";
+}
+
+GS::Optional<GS::UniString> MergeFileCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "sourceLocation": {
+                "type": "string",
+                "description": "Absolute path of the file to merge: an Archicad project (.pln, .pla) or module (.mod). It cannot be a file the project already hotlinks: breaking that hotlink would turn its placed instances into ordinary elements too."
+            },
+            "origin": {
+                "$ref": "#/HotlinkOrigin",
+                "description": "Optional. Where the origin of the file lands in the project. Defaults to the project origin; if z is omitted, it is 0."
+            },
+            "rotationAngle": {
+                "type": "number",
+                "description": "Optional rotation about the origin, counter-clockwise, in radians. Defaults to 0."
+            },
+            "mirrored": {
+                "type": "boolean",
+                "description": "Optional. Reflects the file's local X axis before the rotation. Defaults to false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional story of the project that the story with index 0 of the file goes to; the other stories of the file follow it. Defaults to 0, so each story of the file goes to the story with the same index."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sourceLocation"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> MergeFileCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements the merge added to the model, every element of the file's model. Archicad leaves them grouped together, as it leaves the elements of a broken hotlink; UngroupElements dissolves the group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+// The guids of every element of the current database.
+static GS::HashSet<API_Guid> GetElementGuidSetOfCurrentDatabase ()
+{
+    GS::Array<API_Guid> guids;
+    ACAPI_Element_GetElemList (API_ZombieElemID, &guids);
+    GS::HashSet<API_Guid> guidSet;
+    for (const API_Guid& guid : guids) {
+        guidSet.Add (guid);
+    }
+    return guidSet;
+}
+
+GS::ObjectState MergeFileCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString sourcePath;
+    if (!parameters.Get ("sourceLocation", sourcePath) || sourcePath.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "sourceLocation is missing.");
+    }
+    IO::Location sourceLocation (sourcePath);
+    IO::Name lastLocalName;
+    if (sourceLocation.GetLastLocalName (&lastLocalName) != NoError) {
+        return CreateErrorResponse (APIERR_BADPARS, "sourceLocation is not a valid path.");
+    }
+    bool exists = false;
+    if (IO::fileSystem.Contains (sourceLocation, &exists) != NoError || !exists) {
+        return CreateErrorResponse (APIERR_BADPARS, "There is no file at sourceLocation '" + sourcePath + "'. Nothing was changed.");
+    }
+    // Breaking a hotlink node breaks every instance placed from it, so a file the project already
+    // hotlinks would lose its hotlinks as well.
+    const GS::Optional<API_Guid> existingNode = FindHotlinkNodeBySource (sourceLocation);
+    if (existingNode.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "The file is already hotlinked in the project (hotlinkNodeId " + APIGuidToString (existingNode.Get ()) +
+            "): merging it would break that hotlink too. Nothing was changed.");
+    }
+
+    API_Coord3D origin = {};
+    const GS::ObjectState* originOS = parameters.Get ("origin");
+    if (originOS != nullptr) {
+        origin = Get3DCoordinateFromObjectState (*originOS);
+    }
+    double rotationAngle = 0.0;
+    parameters.Get ("rotationAngle", rotationAngle);
+    bool mirrored = false;
+    parameters.Get ("mirrored", mirrored);
+    Int32 floorIndex = 0;
+    parameters.Get ("floorIndex", floorIndex);
+
+    // The model elements are in the floor plan database, whatever window is in front.
+    API_DatabaseInfo previousDatabase = {};
+    bool switchedDatabase = false;
+    GSErrCode err = SwitchCurrentDatabaseToFloorPlan (previousDatabase, switchedDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to make the floor plan the current database. Nothing was changed.");
+    }
+    const GS::OnExit restoreDatabase ([&] () {
+        if (switchedDatabase) {
+            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
+        }
+    });
+
+    // The merged elements are the ones that are new after the break.
+    const GS::HashSet<API_Guid> elementsBefore = GetElementGuidSetOfCurrentDatabase ();
+
+    // The Archicad API has no merge (the ACAPI_ProjectOperation functions open, save, close,
+    // print and publish), so the file is placed as a hotlink, as CreateHotlinkNodes and
+    // CreateHotlinkInstances do, and the hotlink is broken, as BreakHotlinkNodes does, which leaves
+    // the placed elements as ordinary elements. One undo step; a step that fails returns its error
+    // from the command, which undoes the steps before it.
+    GS::Array<API_Guid> mergedElements;
+    API_Guid instanceGuid = APINULLGuid;
+    GSErrCode stepErr = NoError;
+    GS::UniString failure;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Merge File", [&] () -> GSErrCode {
+        const auto fail = [&] (GSErrCode failErr, const GS::UniString& message) -> GSErrCode {
+            stepErr = failErr != NoError ? failErr : APIERR_GENERAL;
+            failure = message;
+            return stepErr;
+        };
+
+        // 1. The node, every story of the file, its story 0 as the reference story.
+        API_HotlinkNode hotlinkNode = {};
+        hotlinkNode.type = APIHotlink_Module;
+        hotlinkNode.storyRangeType = APIHotlink_AllStories;
+        hotlinkNode.refFloorInd = 0;
+        const GS::UniString nodeName = lastLocalName.ToString ();
+        GS::ucsncpy (hotlinkNode.name, nodeName.ToUStr (), API_UniLongNameLen - 1);
+        hotlinkNode.name[API_UniLongNameLen - 1] = 0;
+        // API_HotlinkNode's destructor frees sourceLocation (see CreateHotlinkNodes); on failure it is
+        // freed here and nulled.
+        IO::Location* ownedLocation = new IO::Location (sourceLocation);
+        hotlinkNode.sourceLocation = ownedLocation;
+#ifdef ServerMainVers_2800
+        ACAPI_Hotlink_GetHotlinkStoryInfo (&hotlinkNode);
+#endif
+        GSErrCode apiErr = ACAPI_Hotlink_CreateHotlinkNode (&hotlinkNode);
+        if (apiErr != NoError) {
+            delete ownedLocation;
+            hotlinkNode.sourceLocation = nullptr;
+            return fail (apiErr, "Failed to read the file as a hotlink module: it must be an Archicad project or module file that can be read, and not the open project.");
+        }
+        const API_Guid nodeGuid = hotlinkNode.guid;
+
+        // 2. One instance of it. The instance is gone after the break, so it goes on the ARCHICAD
+        // Layer, which cannot be deleted, rather than on a default layer that may be hidden or gone.
+        API_Element instance = {};
+#ifdef ServerMainVers_2600
+        instance.header.type = API_HotlinkID;
+#else
+        instance.header.typeID = API_HotlinkID;
+#endif
+        apiErr = ACAPI_Element_GetDefaults (&instance, nullptr);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to get the hotlink instance defaults.");
+        }
+        instance.header.layer = ACAPI_CreateAttributeIndex (1);
+        instance.header.floorInd = static_cast<short> (floorIndex);
+        instance.hotlink.type = APIHotlink_Module;
+        instance.hotlink.hotlinkNodeGuid = nodeGuid;
+        instance.hotlink.transformation = CreateHotlinkTransformation (origin, rotationAngle, mirrored);
+        apiErr = ACAPI_Element_Create (&instance, nullptr);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to place the file as a hotlink instance (is floorIndex a story of the project?).");
+        }
+        instanceGuid = instance.header.guid;
+
+        // 3. The break: the placed elements become ordinary elements and the node goes.
+        apiErr = ACAPI_Hotlink_BreakHotlinkNode (&nodeGuid);
+        if (apiErr != NoError) {
+            return fail (apiErr, "Failed to break the hotlink, which turns the placed file into ordinary elements.");
+        }
+
+        // 4. Read back: the instance is gone, and the elements that are new are the merged ones.
+        API_Elem_Head instanceHead = {};
+        if (LoadElementHeaderByGuid (instanceGuid, instanceHead)) {
+            return fail (APIERR_GENERAL, "Archicad kept the hotlink instance after breaking the hotlink.");
+        }
+        GS::Array<API_Guid> elementsAfter;
+        ACAPI_Element_GetElemList (API_ZombieElemID, &elementsAfter);
+        for (const API_Guid& guid : elementsAfter) {
+            if (!elementsBefore.Contains (guid)) {
+                mergedElements.Push (guid);
+            }
+        }
+        return NoError;
+    });
+
+    if (stepErr != NoError || undoErr != NoError) {
+        GS::UniString message = stepErr != NoError ? failure : GS::UniString ("Failed to open an undoable command.");
+        // The command was undone; the instance is named when Archicad kept it all the same.
+        API_Elem_Head instanceHead = {};
+        if (instanceGuid != APINULLGuid && LoadElementHeaderByGuid (instanceGuid, instanceHead)) {
+            message += " The hotlink instance was left in the project, with elementId " + APIGuidToString (instanceGuid) + "; delete its node with DeleteHotlinkNodes.";
+        } else {
+            message += " Nothing was merged.";
+        }
+        return CreateErrorResponse (stepErr != NoError ? stepErr : undoErr, message);
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+    for (const API_Guid& guid : mergedElements) {
+        elements (CreateElementIdObjectState (guid));
+    }
+    return response;
 }
 
 GetHotlinkOwnersOfElementsCommand::GetHotlinkOwnersOfElementsCommand () :

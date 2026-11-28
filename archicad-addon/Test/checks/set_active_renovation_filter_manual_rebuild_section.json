@@ -1,0 +1,184 @@
+{
+  "title": "SetActiveRenovationFilter refuses a section that is not Auto-rebuild Model instead of hanging on Archicad's warning dialog (#3107)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CutPlane" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "two renovation filters of the template",
+      "command": "GetRenovationFilters",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "save": {
+        "filterA": "renovationFilters[0].renovationFilterId.guid",
+        "filterB": "renovationFilters[1].renovationFilterId.guid"
+      },
+      "expect": [
+        { "path": "renovationFilters[1].renovationFilterId.guid", "exists": true, "name": "the template has at least two renovation filters" }
+      ]
+    },
+    {
+      "id": "an auto-rebuild section",
+      "command": "CreateSections",
+      "stopOnFail": true,
+      "params": {
+        "sectionsData": [
+          {
+            "startCoordinate": { "x": 960.0, "y": 960.0 },
+            "endCoordinate": { "x": 966.0, "y": 960.0 },
+            "name": "TapirCheck 3107",
+            "floorIndex": 0,
+            "details": { "intendedPlanConnectivity": "Online" }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "its viewpoint",
+      "command": "GetDatabases",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "types": [ "Section" ] },
+      "save": { "sectionDb": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].databaseId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the Section window (auto-rebuild)",
+      "command": "ChangeWindow",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "an auto-rebuild section takes filter A",
+      "command": "SetActiveRenovationFilter",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "renovationFilterId": { "guid": "${filterA}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "no warning for an auto-rebuild viewpoint" }
+      ]
+    },
+    {
+      "id": "the section has filter A",
+      "command": "GetRenovationFilters",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "activeRenovationFilterId.guid", "eq": "${filterA}" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the section set to Rebuild Model manually",
+      "command": "SetSectionsAndElevationsDetails",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "elementsWithDetails": [ { "elementId": { "guid": "${s1}" }, "details": { "intendedPlanConnectivity": "Offline" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the section reads Offline",
+      "command": "GetSectionsAndElevationsDetails",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].intendedPlanConnectivity", "eq": "Offline" }
+      ]
+    },
+    {
+      "id": "the Section window (manual rebuild)",
+      "command": "ChangeWindow",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "databaseId": { "guid": "${sectionDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "filter B is refused up front (was: a modal warning and no answer)",
+      "command": "SetActiveRenovationFilter",
+      "creates": false,
+      "stopOnFail": true,
+      "params": { "renovationFilterId": { "guid": "${filterB}" } },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused, not hanging" },
+        { "path": "error.message", "contains": "Auto-rebuild Model", "name": "says why" }
+      ]
+    },
+    {
+      "id": "the section still has filter A",
+      "command": "GetRenovationFilters",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "activeRenovationFilterId.guid", "eq": "${filterA}", "name": "nothing changed" }
+      ]
+    },
+    {
+      "id": "the filter it already has succeeds without the warning",
+      "command": "SetActiveRenovationFilter",
+      "creates": false,
+      "params": { "renovationFilterId": { "guid": "${filterA}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "no change, no dialog" }
+      ]
+    },
+    {
+      "id": "the floor plan again",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the floor plan takes filter B",
+      "command": "SetActiveRenovationFilter",
+      "creates": false,
+      "params": { "renovationFilterId": { "guid": "${filterB}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "the floor plan is not refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    }
+  ]
+}

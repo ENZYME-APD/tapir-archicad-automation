@@ -1,7 +1,7 @@
 """Gives the first wall without a web link a link with SetURLReferencesOfElements and reads it back.
 
 Needs a Wall without a link. The link stays on the wall: this command cannot replace or remove an
-existing link.
+existing link. Without a description, the URL is used as the description.
 """
 import aclib
 

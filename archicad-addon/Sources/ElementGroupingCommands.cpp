@@ -18,6 +18,44 @@ static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& ele
         }
     }
 
+    // Archicad groups only elements of one story (ACAPI_Grouping_CreateGroup: "Passed elements have to be on the same floor").
+    // A group given as a member is placed by the stories of its elements (#3089).
+    GS::Array<short> floorIndices;
+    GS::Array<GS::UniString> membersOfFloors;
+    for (const API_Guid& guid : elemGuids) {
+        GS::Array<API_Guid> memberElemGuids;
+        if (ACAPI_Grouping_GetAllGroupedElems (guid, &memberElemGuids) != NoError || memberElemGuids.IsEmpty ()) {
+            memberElemGuids.Clear ();
+            memberElemGuids.Push (guid);
+        }
+
+        for (const API_Guid& memberElemGuid : memberElemGuids) {
+            API_Elem_Head elemHead = {};
+            elemHead.guid = memberElemGuid;
+            if (ACAPI_Element_GetHeader (&elemHead) != NoError) {
+                continue;
+            }
+
+            const GS::UniString memberGuidStr = APIGuidToString (guid);
+            UIndex floorIdx = floorIndices.FindFirst (elemHead.floorInd);
+            if (floorIdx == MaxUIndex) {
+                floorIndices.Push (elemHead.floorInd);
+                membersOfFloors.Push (memberGuidStr);
+            }
+            else if (!membersOfFloors[floorIdx].Contains (memberGuidStr)) {
+                membersOfFloors[floorIdx] += ", " + memberGuidStr;
+            }
+        }
+    }
+
+    if (floorIndices.GetSize () > 1) {
+        GS::UniString message = "Failed to create group. The elements are on different stories, and Archicad groups elements of one story only:";
+        for (UIndex i = 0; i < floorIndices.GetSize (); ++i) {
+            message += GS::UniString::Printf (" story (floorIndex) %d: ", static_cast<int> (floorIndices[i])) + membersOfFloors[i] + (i + 1 < floorIndices.GetSize () ? ";" : ".");
+        }
+        return message;
+    }
+
     return "Failed to create group.";
 }
 #endif

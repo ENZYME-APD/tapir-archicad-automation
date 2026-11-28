@@ -1,0 +1,122 @@
+{
+  "title": "ModifyCurtainWalls refuses the reference line, height and elevation of a slanted curtain wall and leaves it as it was (#3011)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "CurtainWall" ],
+  "steps": [
+    {
+      "id": "a curtain wall S at 60 degrees and a vertical one V, both 3 m high",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [ { "x": 1040.0, "y": 1050.0 }, { "x": 1046.0, "y": 1050.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "angle": 60.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "coordinates": [ { "x": 1040.0, "y": 1060.0 }, { "x": 1046.0, "y": 1060.0 } ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid", "v": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slanted curtain wall S created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "vertical curtain wall V created" }
+      ]
+    },
+    {
+      "id": "S before: angle, height, reference line and elevation",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "sz": "detailsOfElements[0].details.zCoordinate" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.angle", "approx": 60.0, "name": "S is at 60 degrees" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 1046.0, "name": "S reference line ends at x 1046" }
+      ]
+    },
+    {
+      "id": "new coordinates, a new height and a new zCoordinate on S, each in its own item",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "coordinates": [ { "x": 1040.0, "y": 1050.0 }, { "x": 1044.0, "y": 1050.0 } ] },
+          { "elementId": { "guid": "${s}" }, "height": 2.0 },
+          { "elementId": { "guid": "${s}" }, "zCoordinate": 2.5, "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "coordinates of a slanted curtain wall refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "height of a slanted curtain wall refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "zCoordinate of a slanted curtain wall refused" }
+      ]
+    },
+    {
+      "id": "S is as it was",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.angle", "approx": 60.0, "name": "S still at 60 degrees" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "S still 3 m high" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": "${sz}", "name": "S still at the same elevation" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 1040.0, "name": "S reference line still starts at x 1040" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 1050.0, "name": "S reference line still starts at y 1050" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 1046.0, "name": "S reference line still ends at x 1046" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].y", "approx": 1050.0, "name": "S reference line still ends at y 1050" }
+      ]
+    },
+    {
+      "id": "a setting that is not geometry still changes on S",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "pen": 25 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen of a slanted curtain wall accepted" }
+      ]
+    },
+    {
+      "id": "the vertical V still takes new coordinates",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${v}" }, "coordinates": [ { "x": 1040.0, "y": 1060.0 }, { "x": 1044.0, "y": 1060.0 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "coordinates of a vertical curtain wall accepted" }
+      ]
+    },
+    {
+      "id": "S and V read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } }, { "elementId": { "guid": "${v}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pen", "eq": 25, "name": "S has pen 25" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 1046.0, "name": "S reference line still ends at x 1046" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].x", "approx": 1044.0, "name": "V reference line ends at x 1044 now" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].y", "approx": 1060.0, "name": "V reference line still at y 1060" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${v}" } } ] } }
+  ]
+}

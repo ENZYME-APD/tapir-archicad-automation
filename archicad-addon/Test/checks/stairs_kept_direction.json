@@ -1,0 +1,45 @@
+{
+  "title": "CreateStairs and ModifyStairs still succeed for a walking direction Archicad keeps, now that they read it back (#2940; every Archicad version)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create an upward stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 760.0, "y": 740.0 },
+              { "x": 766.0, "y": 740.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "treadDepth": 0.28,
+            "inputDirection": "Upward"
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "an Upward stair is created" },
+        { "path": "elements[0].error", "exists": false, "name": "the read-back finds no difference for a kept direction" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: the direction the stair already has",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "inputDirection": "Upward" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "a kept direction still succeeds" }
+      ]
+    }
+  ]
+}

@@ -10,6 +10,24 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         'Archicad と Grasshopper で Tapir が動く様子を紹介する短い動画（英語）。すべて YouTube の 1 つの再生リストにまとめています。',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': '<em>読んで</em>学ぶ。',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        'Archicad の自動化についてよくある質問に、Tapir にすでにある機能を使って、順を追ってお答えします。',
+    'Export Archicad element properties to Excel with Python': 'Python で Archicad の要素のプロパティを Excel に書き出す',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        'プロパティの値を要素ごとに 1 行で Excel または CSV ファイルに書き出し、編集した値を戻します。',
+    'Read the tutorial': 'チュートリアルを読む',
+    'Connect Grasshopper to Archicad': 'Grasshopper を Archicad に接続する',
+    'Install the tapir package, read a wall and change its height.': 'tapir パッケージをインストールし、壁を読み取って高さを変更します。',
+    'Batch rename views in Archicad': 'Archicad でビューの名前を一括変更する',
+    'Find and replace, a prefix or a counter in the names of the views.': 'ビュー名の検索と置換、接頭辞、連番。',
+    'Elements': '要素',
+    'Number doors and windows by room in Archicad': 'Archicad でドアと窓を部屋ごとに番号付けする',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.': '各ドアや窓が開く側のゾーンから、1.04-D1 のような要素 ID を付けます。',
+    'Your first Archicad Python script': 'はじめての Archicad Python スクリプト',
+    'A few lines that call one Tapir command, run from the Tapir palette.': '1 つの Tapir コマンドを呼び出す数行のスクリプトを、Tapir パレットから実行します。',
+
     // The videos
     'Videos': '動画',
     'Getting started': 'はじめに',

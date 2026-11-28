@@ -1,0 +1,18 @@
+{
+    "slug": "assign-home-story",
+    "name": "Assign Home Story",
+    "summary": "Gives the selected elements the home story they sit on in 3D, by the centre, bottom or most of their height, and keeps them in place.",
+    "category": "modeling-geometry",
+    "tags": ["stories", "home-story", "cleanup", "import"],
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
+    "license": "MIT",
+    "entry": "AssignHomeStory.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace."
+        }
+    ]
+}

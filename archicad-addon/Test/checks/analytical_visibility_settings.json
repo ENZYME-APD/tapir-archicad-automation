@@ -35,7 +35,8 @@
         }
       },
       "expect": [
-        { "path": "success", "eq": true }
+        { "path": "success", "eq": true },
+        { "path": "error.message", "exists": false, "name": "read back: no setting Archicad did not keep" }
       ]
     },
     {

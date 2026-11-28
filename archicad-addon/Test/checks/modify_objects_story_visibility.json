@@ -1,0 +1,206 @@
+{
+  "title": "ModifyObjects and ModifyLamps write every field of the story visibility, not only showOnHome (#2821)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "a Lamp of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Lamp" },
+      "save": { "lampParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "own object and lamp library parts",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check Visibility Object 2821",
+            "parentId": "${objectParent}",
+            "type": "Object",
+            "path": "TapirCheckVisibility2821/Tapir Check Visibility Object 2821.gsm",
+            "a": 1.0,
+            "b": 0.5,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 0.5"
+          },
+          {
+            "name": "Tapir Check Visibility Lamp 2821",
+            "parentId": "${lampParent}",
+            "type": "Lamp",
+            "path": "TapirCheckVisibility2821/Tapir Check Visibility Lamp 2821.gsm",
+            "a": 0.4,
+            "b": 0.4,
+            "script2D": "CIRCLE2 0, 0, A / 2",
+            "script3D": "SPHERE A / 2"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "one answer per part" },
+        { "path": "libraryParts[0].path", "exists": true, "name": "object part created" },
+        { "path": "libraryParts[1].path", "exists": true, "name": "lamp part created" }
+      ]
+    },
+    {
+      "id": "create object shown on its home story only",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check Visibility Object 2821",
+            "coordinates": { "x": 960.0, "y": 960.0, "z": 0.0 },
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "save": { "object": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object created" }
+      ]
+    },
+    {
+      "id": "create lamp shown on its home story only",
+      "command": "CreateLamps",
+      "params": {
+        "lampsData": [
+          {
+            "libraryPartName": "Tapir Check Visibility Lamp 2821",
+            "coordinates": { "x": 965.0, "y": 960.0, "z": 0.0 },
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 0, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "save": { "lamp": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "lamp created" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "${lamp}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "object automatic visibility off as created" },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 0, "name": "object no relative stories above as created" },
+        { "path": "detailsOfElements[0].details.visibility.showRelBelow", "eq": 0, "name": "object no relative stories below as created" },
+        { "path": "detailsOfElements[1].details.isAutoOnStoryVisibility", "eq": false, "name": "lamp automatic visibility off as created" },
+        { "path": "detailsOfElements[1].details.visibility.showRelAbove", "eq": 0, "name": "lamp no relative stories above as created" }
+      ]
+    },
+    {
+      "id": "modify object relative visibility",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": {
+        "objectsWithDetails": [
+          {
+            "elementId": { "guid": "${object}" },
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 1, "showRelBelow": 1 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "object modified" }
+      ]
+    },
+    {
+      "id": "modify lamp relative visibility",
+      "command": "ModifyLamps",
+      "creates": false,
+      "params": {
+        "lampsWithDetails": [
+          {
+            "elementId": { "guid": "${lamp}" },
+            "isAutoOnStoryVisibility": false,
+            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 1, "showRelBelow": 0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "lamp modified" }
+      ]
+    },
+    {
+      "id": "read back the relative visibility",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "${lamp}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "object automatic visibility still off" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "object still shown on its home story" },
+        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "object shown one story above" },
+        { "path": "detailsOfElements[0].details.visibility.showRelBelow", "eq": 1, "name": "object shown one story below" },
+        { "path": "detailsOfElements[1].details.visibility.showRelAbove", "eq": 1, "name": "lamp shown one story above" },
+        { "path": "detailsOfElements[1].details.visibility.showRelBelow", "eq": 0, "name": "lamp not shown below" }
+      ]
+    },
+    {
+      "id": "modify object to show on all stories above",
+      "command": "ModifyObjects",
+      "creates": false,
+      "params": {
+        "objectsWithDetails": [
+          {
+            "elementId": { "guid": "${object}" },
+            "visibility": { "showAllAbove": true }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "object modified" }
+      ]
+    },
+    {
+      "id": "read back all stories above",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": true, "name": "object shown on all stories above" },
+        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "omitted showOnHome kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckVisibility2821" }
+        ]
+      }
+    }
+  ]
+}

@@ -31,6 +31,10 @@
     'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
         '元に戻す、クリップボード、一覧表の行など、Archicad API にできないことを、代わりにできることと DevKit での根拠とともにまとめています。',
     'See the limits': '限界を見る',
+    'Written tutorials': 'チュートリアル記事',
+    'Step by step: properties to Excel, Grasshopper, renaming views, numbering doors and windows, and your first Python script.':
+        'プロパティの Excel への書き出し、Grasshopper、ビューの名前変更、ドアと窓の番号付け、はじめての Python スクリプトを、順を追って解説します。',
+    'Read the tutorials': 'チュートリアルを読む',
 
     // How it works
     'How it works': '仕組み',

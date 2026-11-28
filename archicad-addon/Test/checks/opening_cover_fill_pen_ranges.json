@@ -1,0 +1,79 @@
+{
+  "title": "Opening cover fill pens (#3054): SetOpeningDefault accepts the background pen -1 that GetOpeningDefault returns, and refuses the foreground pen 0",
+  "minTapir": "2.0.2",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "remember the defaults",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "save": {
+        "pen0": "floorPlanParameters.coverFillPen",
+        "bgPen0": "floorPlanParameters.coverFillBackgroundPen"
+      },
+      "expect": [
+        { "path": "floorPlanParameters.coverFillBackgroundPen", "exists": true, "name": "has a cover fill background pen" }
+      ]
+    },
+    {
+      "id": "background pen -1",
+      "command": "SetOpeningDefault",
+      "creates": false,
+      "params": {
+        "floorPlanParameters": {
+          "coverFillPen": 4,
+          "coverFillBackgroundPen": -1
+        }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": false, "name": "-1 passes the schema" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "read -1 back",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "floorPlanParameters.coverFillPen", "eq": 4 },
+        { "path": "floorPlanParameters.coverFillBackgroundPen", "eq": -1 }
+      ]
+    },
+    {
+      "id": "foreground pen 0",
+      "command": "SetOpeningDefault",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "floorPlanParameters": {
+          "coverFillPen": 0
+        }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema (minimum 1)" }
+      ]
+    },
+    {
+      "id": "foreground pen kept",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "floorPlanParameters.coverFillPen", "eq": 4 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetOpeningDefault",
+      "params": {
+        "floorPlanParameters": {
+          "coverFillPen": "${pen0}",
+          "coverFillBackgroundPen": "${bgPen0}"
+        }
+      }
+    }
+  ]
+}

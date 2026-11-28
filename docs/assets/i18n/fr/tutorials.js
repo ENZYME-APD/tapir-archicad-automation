@@ -10,6 +10,29 @@
     'Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.':
         'De courtes vidéos (en anglais) qui montrent Tapir à l\'œuvre dans Archicad et Grasshopper, toutes dans une playlist sur YouTube.',
 
+    // Written tutorials
+    'Written <em>tutorials.</em>': 'Des tutoriels <em>écrits.</em>',
+    'Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.':
+        'Pas à pas, pour des questions que l’on pose sur l’automatisation d’Archicad, chacune résolue avec ce que Tapir propose déjà.',
+    'Export Archicad element properties to Excel with Python':
+        'Exporter les propriétés des éléments Archicad vers Excel avec Python',
+    'Property values to an Excel or CSV file, one row per element, and the edited values back.':
+        'Les valeurs des propriétés vers un fichier Excel ou CSV, une ligne par élément, et les valeurs modifiées en retour.',
+    'Read the tutorial': 'Lire le tutoriel',
+    'Connect Grasshopper to Archicad': 'Connecter Grasshopper à Archicad',
+    'Install the tapir package, read a wall and change its height.':
+        'Installer le paquet tapir, lire un mur et changer sa hauteur.',
+    'Batch rename views in Archicad': 'Renommer des vues par lots dans Archicad',
+    'Find and replace, a prefix or a counter in the names of the views.':
+        'Rechercher et remplacer, un préfixe ou un compteur dans les noms des vues.',
+    'Elements': 'Éléments',
+    'Number doors and windows by room in Archicad': 'Numéroter portes et fenêtres par pièce dans Archicad',
+    'Element IDs such as 1.04-D1, from the zone each door or window opens into.':
+        'Des ID d’élément comme 1.04-D1, d’après la zone dans laquelle chaque porte ou fenêtre s’ouvre.',
+    'Your first Archicad Python script': 'Votre premier script Python pour Archicad',
+    'A few lines that call one Tapir command, run from the Tapir palette.':
+        'Quelques lignes qui appellent une commande Tapir, lancées depuis la palette Tapir.',
+
     // The videos
     'Videos': 'Vidéos',
     'Getting started': 'Premiers pas',

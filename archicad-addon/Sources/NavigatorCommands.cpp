@@ -5,7 +5,12 @@
 #include "Transformation2D.hpp"
 #include "Matrix2.hpp"
 #include "TM.h"
+#include "Folder.hpp"
+#include "File.hpp"
 #include <memory>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 
 static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
 {
@@ -26,8 +31,84 @@ static GS::HashTable<GS::UniString, API_Guid> GetPublisherSetNameGuidTable()
     return table;
 }
 
+// The saved local or LAN output folder of a publisher set, empty when it publishes elsewhere.
+static IO::Location GetPublisherSetPath (const API_Guid& rootGuid)
+{
+    Int32 numberOfPublisherSets = 0;
+    ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets);
+
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        set.wantsExtraInfo = true;
+        const GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&set, &ii);
+
+        // The publishing parameters are allocated by Archicad and owned by the caller.
+        std::unique_ptr<IO::Location> path (set.path);
+        std::unique_ptr<IO::Location> twFileServerPath (set.twFileServerPath);
+        std::unique_ptr<GS::UniString> host (set.host);
+        std::unique_ptr<GS::UniString> dirName (set.dirName);
+
+        if (err == NoError && set.rootGuid == rootGuid) {
+            // For a set published to a BIMcloud/Teamwork file server, path is only the
+            // temporary local folder Archicad uploads from, so no folder is reported.
+            if (path == nullptr || twFileServerPath != nullptr) {
+                return {};
+            }
+            return *path;
+        }
+    }
+
+    return {};
+}
+
+static const UInt32 MaxScannedOutputEntries = 20000;
+
+// Collects the files under the folder with their modification times. Returns false when the
+// folder holds more than MaxScannedOutputEntries entries, so a huge folder is not listed.
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes, UInt32& entryCount)
+{
+    IO::Folder folder (folderLoc);
+    if (folder.GetStatus () != NoError) {
+        return true;
+    }
+
+    bool withinLimit = true;
+    GS::Array<IO::Location> subFolders;
+    folder.Enumerate ([&] (const IO::Name& name, bool isFolder) {
+        if (!withinLimit || ++entryCount > MaxScannedOutputEntries) {
+            withinLimit = false;
+            return;
+        }
+
+        const IO::Location entryLoc (folderLoc, name);
+        if (isFolder) {
+            subFolders.Push (entryLoc);
+            return;
+        }
+
+        GSTime modificationTime = 0;
+        IO::File (entryLoc).GetModificationTime (&modificationTime);
+        fileTimes.Put (entryLoc.ToDisplayText (), modificationTime);
+    });
+
+    for (const IO::Location& subFolder : subFolders) {
+        if (!withinLimit || !CollectFileTimes (subFolder, fileTimes, entryCount)) {
+            return false;
+        }
+    }
+
+    return withinLimit;
+}
+
+static bool CollectFileTimes (const IO::Location& folderLoc, GS::HashTable<GS::UniString, GSTime>& fileTimes)
+{
+    UInt32 entryCount = 0;
+    return CollectFileTimes (folderLoc, fileTimes, entryCount);
+}
+
 PublishPublisherSetCommand::PublishPublisherSetCommand() :
-    CommandBase(CommonSchema::NotUsed)
+    CommandBase(CommonSchema::Used)
 {
 }
 
@@ -53,7 +134,7 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
             },
             "selectedNavigatorItemIds": {
                 "$ref": "#/NavigatorItemIds",
-                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set."
+                "description": "Optional publisher-tree navigator items to publish instead of the whole publisher set. Each item wraps its id in navigatorItemId, as the items of GetNavigatorItemTree do: [{\"navigatorItemId\": {\"guid\": \"6E1C3A9B-0F2D-4B8E-9C7A-1D2E3F405162\"}}], not [{\"guid\": \"...\"}]."
             }
         },
         "additionalProperties": false,
@@ -63,25 +144,35 @@ GS::Optional<GS::UniString> PublishPublisherSetCommand::GetInputParametersSchema
     })";
 }
 
+GS::Optional<GS::UniString> PublishPublisherSetCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "outputFolder": {
+                "type": "string",
+                "description": "The local or LAN folder the set was published to: outputPath, else the path saved in the publisher set. Absent when the set publishes elsewhere (to the Internet or a BIMcloud/Teamwork file server)."
+            },
+            "writtenFiles": {
+                "type": "array",
+                "description": "Full paths of the files in outputFolder and its subfolders that were created or changed while the command ran, as found when Archicad reported the publishing finished. Absent when outputFolder is absent or holds more than 20000 files and folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::UniString publisherSetName;
     parameters.Get("publisherSetName", publisherSetName);
 
-    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
-    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
-        return CreateErrorResponse(Error, "Not valid publisher set name.");
-    }
-
-    API_PublishPars publishPars = {};
-    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
-
-    if (parameters.Contains("outputPath")) {
-        GS::UniString outputPath;
-        parameters.Get("outputPath", outputPath);
-        publishPars.path = new IO::Location(outputPath);
-    }
-
+    // Archicad does not refuse items of the wrong shape by the input schema, so they are checked
+    // here, before the name, and the error says what is wrong with them.
     GS::Array<API_Guid> selectedLinks;
     const GS::Array<API_Guid>* selectedLinksPtr = nullptr;
     if (parameters.Contains("selectedNavigatorItemIds")) {
@@ -91,8 +182,7 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         for (const GS::ObjectState& navigatorItemIdArrayItem : selectedNavigatorItemIds) {
             const API_Guid selectedGuid = GetGuidFromNavigatorItemIdArrayItem(navigatorItemIdArrayItem);
             if (selectedGuid == APINULLGuid) {
-                delete publishPars.path;
-                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing.");
+                return CreateErrorResponse(APIERR_BADPARS, "selectedNavigatorItemId is corrupt or missing. Each item must be {\"navigatorItemId\": {\"guid\": \"...\"}}.");
             }
             selectedLinks.Push(selectedGuid);
         }
@@ -102,6 +192,29 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         }
     }
 
+    const auto publisherSetNameGuidTable = GetPublisherSetNameGuidTable();
+    if (!publisherSetNameGuidTable.ContainsKey(publisherSetName)) {
+        return CreateErrorResponse(Error, GS::UniString("Not valid publisher set name: no publisher set is named \"") + publisherSetName + "\". GetPublisherSets lists the names.");
+    }
+
+    API_PublishPars publishPars = {};
+    publishPars.guid = publisherSetNameGuidTable.Get(publisherSetName);
+
+    IO::Location outputFolder;
+    if (parameters.Contains("outputPath")) {
+        GS::UniString outputPath;
+        parameters.Get("outputPath", outputPath);
+        publishPars.path = new IO::Location(outputPath);
+        outputFolder = *publishPars.path;
+    } else {
+        outputFolder = GetPublisherSetPath(publishPars.guid);
+    }
+
+    // The API reports neither the files it writes nor a later end of publishing, so the files
+    // are found by comparing the output folder before and after the call.
+    GS::HashTable<GS::UniString, GSTime> filesBefore;
+    bool canListFiles = !outputFolder.IsEmpty() && CollectFileTimes(outputFolder, filesBefore);
+
     GSErrCode err = ACAPI_ProjectOperation_Publish(&publishPars, selectedLinksPtr);
     delete publishPars.path;
 
@@ -109,7 +222,31 @@ GS::ObjectState PublishPublisherSetCommand::Execute(const GS::ObjectState& param
         return CreateErrorResponse(err, "Publishing failed. Check output path!");
     }
 
-    return {};
+    GS::ObjectState response;
+    if (outputFolder.IsEmpty()) {
+        return response;
+    }
+
+    response.Add("outputFolder", outputFolder.ToDisplayText());
+
+    GS::HashTable<GS::UniString, GSTime> filesAfter;
+    canListFiles = canListFiles && CollectFileTimes(outputFolder, filesAfter);
+    if (canListFiles) {
+        std::vector<GS::UniString> writtenFiles;
+        filesAfter.Enumerate([&](const GS::UniString& path, const GSTime& modificationTime) {
+            if (!filesBefore.ContainsKey(path) || filesBefore.Get(path) != modificationTime) {
+                writtenFiles.push_back(path);
+            }
+        });
+        std::sort(writtenFiles.begin(), writtenFiles.end());
+
+        const auto& writtenFilesList = response.AddList<GS::UniString>("writtenFiles");
+        for (const GS::UniString& path : writtenFiles) {
+            writtenFilesList(path);
+        }
+    }
+
+    return response;
 }
 
 GetPublisherSetsCommand::GetPublisherSetsCommand () :
@@ -895,6 +1032,47 @@ struct ViewOptionsReader {
     }
 };
 
+// Compares the given fields of a JSON object with an API_ViewOptions read back after the change, and
+// names each one that differs ("modelViewOptions.railing.railing2DDisplayCompPosts is true.").
+struct ViewOptionsChecker {
+    const GS::ObjectState* current;
+    GS::UniString path;
+    GS::UniString notKept;
+
+    template<class F>
+    void Group (const char* name, F check)
+    {
+        const GS::ObjectState* child = current->Get (name);
+        if (child == nullptr) {
+            return;
+        }
+        const GS::ObjectState* parent = current;
+        const GS::UniString parentPath = path;
+        current = child;
+        path = parentPath + name + ".";
+        check ();
+        current = parent;
+        path = parentPath;
+    }
+    void Number (const char* name, char& value) { CompareNumber (name, (Int32) value); }
+    void Number (const char* name, short& value) { CompareNumber (name, (Int32) value); }
+    void Flag (const char* name, bool& value)
+    {
+        bool wanted = false;
+        if (current->Get (name, wanted) && wanted != value) {
+            notKept += " " + path + name + (value ? " is true." : " is false.");
+        }
+    }
+    void Attribute (const char* name, API_AttributeIndex& value) { CompareNumber (name, (Int32) GetAttributeIndex (value)); }
+    void CompareNumber (const char* name, Int32 value)
+    {
+        Int32 wanted = 0;
+        if (current->Get (name, wanted) && wanted != value) {
+            notKept += " " + path + name + GS::UniString::Printf (" is %d.", (int) value);
+        }
+    }
+};
+
 // The one list of the model view option fields shared by reading and writing, used for the current
 // window (VisitViewOptions) and for the stored combinations (GetModelViewOptionDetails). The
 // gdlOptions pointer and the fillers are left out.
@@ -1089,6 +1267,11 @@ GS::Optional<GS::UniString> GetModelViewOptionDetailsCommand::GetRawResponseSche
                             "modelViewOptions": {
                                 "type": "object",
                                 "description": "The fields of API_ModelViewOptions stored in the combination, with the curtainWall, stair and railing parts as nested objects: the same fields as viewOptions.modelViewOptions of GetViewOptions. Values are the numeric API constants; attribute indices are plain integers.",
+                                "properties": {
+                                    "railing": {
+                                        "$ref": "#/RailingModelViewOptions"
+                                    }
+                                },
                                 "additionalProperties": true
                             },
                             "gdlOptions": {
@@ -1292,9 +1475,6 @@ GS::ObjectState GetModelViewOptionDetailsCommand::Execute (const GS::ObjectState
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "Available from Archicad 27.");
 #endif
 }
-
-// Defined at CreateViewsInViewMap below; frees what ACAPI_Navigator_GetNavigatorView allocates.
-static void FreeNavigatorView (API_NavigatorView& navigatorView);
 
 struct RenovationFilter {
     API_Guid      guid;
@@ -1503,8 +1683,112 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
         return CreateErrorResponse (err, "Failed to change the view options. Check the model view option index and that a plan window is open.");
     }
 
+    // The options are read back, so a given field Archicad did not keep is reported instead of a
+    // success. With an index the combination's model view options apply, not the given ones, so
+    // only the on-screen view options are compared then.
+    if (viewOptionsOS != nullptr) {
+        API_ViewOptions changed = {};
+        short changedIndex = 0;
+        err = ACAPI_Navigator_GetViewOptions (&changed, &changedIndex);
+        if (err != NoError) {
+            DisposeViewOptions (changed);
+            return CreateErrorResponse (err, "Failed to read the view options back after the change.");
+        }
+        GS::ObjectState onScreenOnly;
+        const GS::ObjectState* onScreenOS = viewOptionsOS->Get ("onScreenViewOptions");
+        if (onScreenOS != nullptr) {
+            onScreenOnly.Add ("onScreenViewOptions", *onScreenOS);
+        }
+        ViewOptionsChecker checker { switchCombination ? &onScreenOnly : viewOptionsOS, GS::UniString (), GS::UniString () };
+        VisitViewOptions (checker, changed);
+        DisposeViewOptions (changed);
+        if (!checker.notKept.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_GENERAL, "Archicad did not keep every given view option:" + checker.notKept);
+        }
+    }
+
     return {};
 }
+
+#ifdef ServerMainVers_2700
+
+// A view's own (Custom) layer settings: the layer states Archicad stores in the view when it stores
+// its layers (saveLaySet) under no layer combination name, as the View Settings dialog's "Get Current
+// Window's Settings" does. ACAPI_Navigator_GetNavigatorView allocates the table (FreeNavigatorView
+// deletes it). ACAPI_Navigator_ChangeNavigatorView keeps the stored table whatever it is given
+// (Archicad 29), so SetViewSettings only accepts the states the view already stores.
+using LayerStatTable = GS::HashTable<API_AttributeIndex, API_LayerStat>;
+
+static bool HasCustomLayers (const API_NavigatorView& navigatorView)
+{
+    return navigatorView.saveLaySet && navigatorView.layerCombination[0] == '\0' && navigatorView.layerStats != nullptr;
+}
+
+// The layer states ordered by layer index, so that the response does not depend on the order of
+// the hash table.
+static std::vector<std::pair<API_AttributeIndex, API_LayerStat>> SortedLayerStats (const LayerStatTable& stats)
+{
+    std::vector<std::pair<API_AttributeIndex, API_LayerStat>> sorted;
+    for (const auto& kv : stats) {
+#ifdef ServerMainVers_2800
+        sorted.emplace_back (kv.key, kv.value);
+#else
+        sorted.emplace_back (*kv.key, *kv.value);
+#endif
+    }
+    std::sort (sorted.begin (), sorted.end (), [] (const auto& a, const auto& b) {
+        return GetAttributeIndex (a.first) < GetAttributeIndex (b.first);
+    });
+    return sorted;
+}
+
+static GS::ObjectState CreateViewLayerStateObjectState (const API_AttributeIndex& layerIndex, const API_LayerStat& layerStat)
+{
+    return GS::ObjectState (
+        "attributeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LayerID, layerIndex)),
+        "isHidden", (layerStat.lFlags & APILay_Hidden) != 0,
+        "isLocked", (layerStat.lFlags & APILay_Locked) != 0,
+        "isWireframe", (layerStat.lFlags & APILay_ForceToWire) != 0,
+        "intersectionGroupNr", layerStat.conClassId);
+}
+
+static bool LayerFlagDiffers (const GS::ObjectState& layerState, const char* field, short flag, const API_LayerStat& stored)
+{
+    bool value = false;
+    return layerState.Get (field, value) && value != ((stored.lFlags & flag) != 0);
+}
+
+// What is wrong with customLayers given to SetViewSettings, if anything: each field given must be the
+// state the view already stores, because Archicad's API can't change them.
+static GS::Optional<GS::UniString> CheckCustomLayersUnchanged (const GS::Array<GS::ObjectState>& customLayers, const API_NavigatorView& navigatorView)
+{
+    const GS::UniString cantChange =
+        " Archicad's API can't change a view's own (custom) layer states, so customLayers must give the states the view stores, as GetViewSettings returns them."
+        " To change the layers a view shows, give it a layerCombination instead. Nothing was written.";
+    if (!HasCustomLayers (navigatorView)) {
+        return GS::UniString ("The view stores no custom layers.") + cantChange;
+    }
+    for (UIndex i = 0; i < customLayers.GetSize (); ++i) {
+        const GS::ObjectState& layerState = customLayers[i];
+        const GS::ObjectState* attributeIdOS = layerState.Get ("attributeId");
+        const API_Guid layerGuid = attributeIdOS != nullptr ? GetGuidFromObjectState (*attributeIdOS) : APINULLGuid;
+        const API_AttributeIndex layerIndex = GetAttributeIndexFromGuid (API_LayerID, layerGuid);
+        if (layerGuid == APINULLGuid || !navigatorView.layerStats->ContainsKey (layerIndex)) {
+            return GS::UniString::Printf ("customLayers[%u]: the attributeId names no layer the view stores.", i) + cantChange;
+        }
+        const API_LayerStat& stored = (*navigatorView.layerStats)[layerIndex];
+        Int32 intersectionGroupNr = 0;
+        if (LayerFlagDiffers (layerState, "isHidden", APILay_Hidden, stored) ||
+            LayerFlagDiffers (layerState, "isLocked", APILay_Locked, stored) ||
+            LayerFlagDiffers (layerState, "isWireframe", APILay_ForceToWire, stored) ||
+            (layerState.Get ("intersectionGroupNr", intersectionGroupNr) && intersectionGroupNr != stored.conClassId)) {
+            return GS::UniString::Printf ("customLayers[%u] differs from the state the view stores.", i) + cantChange;
+        }
+    }
+    return GS::NoValue;
+}
+
+#endif
 
 GetViewSettingsCommand::GetViewSettingsCommand () :
     CommandBase (CommonSchema::Used)
@@ -1598,6 +1882,15 @@ GS::ObjectState GetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             "dimensions", navigatorView.saveDim,
             "penSet", navigatorView.savePenSet,
             "structureDisplay", navigatorView.saveStructureDisplay));
+
+#ifdef ServerMainVers_2700
+        if (HasCustomLayers (navigatorView)) {
+            const auto& customLayers = viewSetting.AddList<GS::ObjectState> ("customLayers");
+            for (const auto& item : SortedLayerStats (*navigatorView.layerStats)) {
+                customLayers (CreateViewLayerStateObjectState (item.first, item.second));
+            }
+        }
+#endif
 
         if (navigatorView.saveZoom) {
             viewSetting.Add ("zoom", GS::ObjectState (
@@ -1759,6 +2052,20 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
         }
         const GS::OnExit freeView ([&navigatorView] () { FreeNavigatorView (navigatorView); });
 
+        GS::Array<GS::ObjectState> customLayers;
+        if (viewSettingsOS->Get ("customLayers", customLayers)) {
+#ifdef ServerMainVers_2700
+            const GS::Optional<GS::UniString> customLayersError = CheckCustomLayersUnchanged (customLayers, navigatorView);
+            if (customLayersError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, *customLayersError));
+                continue;
+            }
+#else
+            executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "customLayers needs Archicad 27 or later. Nothing was written."));
+            continue;
+#endif
+        }
+
         SetCharProperty (viewSettingsOS, "modelViewOptions", navigatorView.modelViewOptName);
         SetCharProperty (viewSettingsOS, "layerCombination", navigatorView.layerCombination);
         SetCharProperty (viewSettingsOS, "dimensionStyle", navigatorView.dimName);
@@ -1893,6 +2200,27 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
                 executionResults (CreateFailedExecutionResult (APIERR_BADNAME,
                     "The dimensionStyle '" + requestedDimensionStyle + "' was not applied, the view still uses '" + appliedDimensionStyle +
                     "'. Probably the project has no dimension standard with this name. The other view settings given were written."));
+                continue;
+            }
+        }
+
+        // Archicad keeps the view's layer combination without an error when it is given an empty
+        // name (custom layers), so the view is read back to report whether the name was applied.
+        GS::UniString requestedLayerCombination;
+        if (viewSettingsOS->Get ("layerCombination", requestedLayerCombination)) {
+            API_NavigatorView changedNavigatorView = {};
+            err = ACAPI_Navigator_GetNavigatorView (&navigatorItem, &changedNavigatorView);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The view settings were written, but the view could not be read back to check the layerCombination."));
+                continue;
+            }
+            const GS::OnExit freeChangedView ([&changedNavigatorView] () { FreeNavigatorView (changedNavigatorView); });
+
+            const GS::UniString appliedLayerCombination (changedNavigatorView.layerCombination);
+            if (changedNavigatorView.saveLaySet && appliedLayerCombination.Compare (requestedLayerCombination, CaseInsensitive) != GS::UniString::Equal) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL,
+                    "The layerCombination '" + requestedLayerCombination + "' was not applied, the view still uses '" + appliedLayerCombination +
+                    "'. Archicad's API can't switch a view to custom layers (an empty name), and keeps the old one when no layer combination has the name given. The other view settings given were written."));
                 continue;
             }
         }
@@ -2133,6 +2461,89 @@ GS::ObjectState GetRenovationFiltersCommand::Execute (const GS::ObjectState& /*p
     return response;
 }
 
+static bool IsAutoRebuild (API_CutPlanePlanConn currPlanConn, API_CutPlanePlanConn intPlanConn)
+{
+    return currPlanConn == APICutPl_Online && intPlanConn == APICutPl_Online;
+}
+
+// Changing the renovation filter of a section, elevation, interior elevation or 3D document
+// whose status is not Auto-rebuild Model (Rebuild Model manually, or Drawing) makes Archicad
+// open a modal warning ("You are changing the Renovation Filter of a non Auto-rebuild
+// viewpoint"), which a JSON client cannot answer: the command never returns and every later
+// command waits until someone closes the dialog by hand (#3107). The API has no way to answer
+// or suppress it, so such a window is refused up front, as CreateZones (#822) and
+// DeleteElements (#901) refuse their dialogs. Returns the kind of the window when it is such a
+// viewpoint, nothing otherwise (also when its status cannot be read).
+static GS::Optional<GS::UniString> GetNonAutoRebuildViewpointOfCurrentWindow ()
+{
+    API_DatabaseInfo dbInfo = {};
+    if (ACAPI_Database_GetCurrentDatabase (&dbInfo) != NoError) {
+        return GS::NoValue;
+    }
+    // Fills in the type and the linked element of the database from its id.
+    if (ACAPI_Window_GetDatabaseInfo (&dbInfo) != NoError) {
+        return GS::NoValue;
+    }
+
+    if (dbInfo.typeID == APIWind_DocumentFrom3DID) {
+        API_DocumentFrom3DType settings = {};
+        if (ACAPI_View_GetDocumentFrom3DSettings (&dbInfo.databaseUnId, &settings) != NoError) {
+            return GS::NoValue;
+        }
+        const bool autoRebuild = IsAutoRebuild (settings.currPlanConn, settings.intPlanConn);
+        if (settings.cutSetting.shapes != nullptr) {
+            BMKillHandle ((GSHandle*) &(settings.cutSetting.shapes));
+        }
+        return autoRebuild ? GS::Optional<GS::UniString> () : GS::Optional<GS::UniString> (GS::UniString ("3D document"));
+    }
+
+    if (dbInfo.typeID != APIWind_SectionID && dbInfo.typeID != APIWind_ElevationID && dbInfo.typeID != APIWind_InteriorElevationID) {
+        return GS::NoValue;
+    }
+    if (dbInfo.linkedElement == APINULLGuid) {
+        return GS::NoValue;
+    }
+
+    API_Element element = {};
+    element.header.guid = dbInfo.linkedElement;
+    if (ACAPI_Element_Get (&element) != NoError) {
+        return GS::NoValue;
+    }
+
+    switch (GetElemTypeId (element.header)) {
+        case API_CutPlaneID:
+            if (IsAutoRebuild (element.cutPlane.segment.currPlanConn, element.cutPlane.segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("section");
+        case API_ElevationID:
+            if (IsAutoRebuild (element.elevation.segment.currPlanConn, element.elevation.segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("elevation");
+        case API_InteriorElevationID: {
+            // The segments of an interior elevation are in its memo; each has its own window.
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_All) != NoError || memo.intElevSegments == nullptr) {
+                return GS::NoValue;
+            }
+            const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.intElevSegments)) / sizeof (API_SectionSegment);
+            const Int32 segmentIndex = dbInfo.linkedSegmentMemoIndex;
+            if (segmentIndex < 0 || segmentIndex >= nSegments) {
+                return GS::NoValue;
+            }
+            const API_SectionSegment& segment = memo.intElevSegments[segmentIndex];
+            if (IsAutoRebuild (segment.currPlanConn, segment.intPlanConn)) {
+                return GS::NoValue;
+            }
+            return GS::UniString ("interior elevation");
+        }
+        default:
+            return GS::NoValue;
+    }
+}
+
 SetActiveRenovationFilterCommand::SetActiveRenovationFilterCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -2208,6 +2619,20 @@ GS::ObjectState SetActiveRenovationFilterCommand::Execute (const GS::ObjectState
         if (renovationFilterGuid == APINULLGuid) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "The project has no renovation filter named \"" + name + "\". Its renovation filters: " + availableNames);
         }
+    }
+
+    // Setting the filter the window already has changes nothing, so it needs no check.
+    API_Guid activeRenovationFilterGuid = APINULLGuid;
+    if (ACAPI_Renovation_GetActualRenovationFilter (&activeRenovationFilterGuid) == NoError && activeRenovationFilterGuid == renovationFilterGuid) {
+        return CreateSuccessfulExecutionResult ();
+    }
+
+    const GS::Optional<GS::UniString> nonAutoRebuildViewpoint = GetNonAutoRebuildViewpointOfCurrentWindow ();
+    if (nonAutoRebuildViewpoint.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDCMD,
+            "The current window is a " + *nonAutoRebuildViewpoint + " that is not set to Auto-rebuild Model (it rebuilds manually or is a Drawing). "
+            "Archicad would open a modal warning that a JSON command cannot answer, and wait for it. "
+            "Bring a floor plan, a 3D window or an auto-rebuild viewpoint to the front first, or set the renovation filter of this viewpoint in Archicad.");
     }
 
     err = ACAPI_Renovation_SetActualRenovationFilter (&renovationFilterGuid);
@@ -3146,7 +3571,7 @@ GS::Optional<GS::UniString> SetZoomCommand::GetInputParametersSchema () const
         "properties": {
             "zoomBox": {
                 "$ref": "#/Zoom",
-                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is."
+                "description": "The area to zoom the current 2D window to, in model coordinates (meters). The window keeps its aspect ratio, so the shown area may be larger than the box. The rotation of the window is kept as it is; in a rotated window the whole box is shown, so the shown area is larger than the box."
             }
         },
         "additionalProperties": false,
@@ -3161,6 +3586,39 @@ GS::Optional<GS::UniString> SetZoomCommand::GetRawResponseSchema () const
     return R"({
         "$ref": "#/ExecutionResult"
     })";
+}
+
+static bool IsUnrotatedWindowTransformation (const API_Tranmat& tranmat)
+{
+    const double eps = 1e-9;
+    return std::abs (tranmat.tmx[0] - 1.0) < eps && std::abs (tranmat.tmx[1]) < eps &&
+           std::abs (tranmat.tmx[4]) < eps && std::abs (tranmat.tmx[5] - 1.0) < eps;
+}
+
+static API_Box GetZoomBoxInWindowFrame (const API_Box& modelBox, const API_Tranmat& tranmat)
+{
+    if (IsUnrotatedWindowTransformation (tranmat)) {
+        return modelBox;
+    }
+
+    const double cornerX[4] = { modelBox.xMin, modelBox.xMax, modelBox.xMax, modelBox.xMin };
+    const double cornerY[4] = { modelBox.yMin, modelBox.yMin, modelBox.yMax, modelBox.yMax };
+
+    API_Box frameBox = {};
+    for (UInt32 i = 0; i < 4; ++i) {
+        const double x = tranmat.tmx[0] * cornerX[i] + tranmat.tmx[1] * cornerY[i] + tranmat.tmx[3];
+        const double y = tranmat.tmx[4] * cornerX[i] + tranmat.tmx[5] * cornerY[i] + tranmat.tmx[7];
+        if (i == 0) {
+            frameBox.xMin = frameBox.xMax = x;
+            frameBox.yMin = frameBox.yMax = y;
+        } else {
+            frameBox.xMin = GS::Min (frameBox.xMin, x);
+            frameBox.xMax = GS::Max (frameBox.xMax, x);
+            frameBox.yMin = GS::Min (frameBox.yMin, y);
+            frameBox.yMax = GS::Max (frameBox.yMax, y);
+        }
+    }
+    return frameBox;
 }
 
 GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -3197,7 +3655,14 @@ GS::ObjectState SetZoomCommand::Execute (const GS::ObjectState& parameters, GS::
         return CreateFailedExecutionResult (err, "Failed to get the current zoom and rotation of the current window.");
     }
 
-    err = ACAPI_View_SetZoom (&zoomBox, &currentTranmat);
+    // ACAPI_View_SetZoom takes the box in the window's own frame, which on a rotated
+    // window is the model rotated by the window's transformation (the same frame
+    // ACAPI_View_GetZoom reports the box in), not in model coordinates (issue #2846).
+    // So the four corners of the model box are transformed into that frame and
+    // their bounding box is set, which shows the whole model box. An unrotated
+    // window is left as before, its frame is the model's.
+    API_Box windowFrameBox = GetZoomBoxInWindowFrame (zoomBox, currentTranmat);
+    err = ACAPI_View_SetZoom (&windowFrameBox, &currentTranmat);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the zoom of the current window.");
     }
@@ -3433,26 +3898,6 @@ GS::Optional<GS::UniString> CreateViewsInViewMapCommand::GetRawResponseSchema ()
         "additionalProperties": false,
         "required": ["navigatorItems"]
     })";
-}
-
-// Frees what ACAPI_Navigator_GetNavigatorView allocates for a view with
-// custom settings (as the DevKit's Navigator_Test example does).
-static void FreeNavigatorView (API_NavigatorView& navigatorView)
-{
-    if (navigatorView.modelViewOpt != nullptr) {
-        ACAPI_FreeGDLModelViewOptionsPtr (&navigatorView.modelViewOpt->gdlOptions);
-        BMKillPtr ((GSPtr*) &navigatorView.modelViewOpt);
-    }
-#ifdef ServerMainVers_2700
-    delete navigatorView.layerStats;
-    navigatorView.layerStats = nullptr;
-    delete navigatorView.pens;
-    navigatorView.pens = nullptr;
-#else
-    BMKillHandle ((GSHandle*) &navigatorView.layerStats);
-    BMKillPtr ((GSPtr*) &navigatorView.pens);
-#endif
-    BMKillPtr ((GSPtr*) &navigatorView.dimPrefs);
 }
 
 GS::ObjectState CreateViewsInViewMapCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -4113,6 +4558,23 @@ static bool IsProjectMapItem (const API_Guid& guid)
     return ContainsNavigatorItem (rootItem, API_ProjectMap, guid);
 }
 
+// True when guid is the root item of a publisher set (the rootGuid of its API_NavigatorSet).
+static bool IsPublisherSetRoot (const API_Guid& guid)
+{
+    Int32 numberOfPublisherSets = 0;
+    if (ACAPI_Navigator_GetNavigatorSetNum (&numberOfPublisherSets) != NoError) {
+        return false;
+    }
+    for (Int32 ii = 0; ii < numberOfPublisherSets; ++ii) {
+        API_NavigatorSet set = {};
+        set.mapId = API_PublisherSets;
+        if (ACAPI_Navigator_GetNavigatorSet (&set, &ii) == NoError && set.rootGuid == guid) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Finds the Drawing element of a placed Drawing's Layout Book item in the current database, which is the database
 // of the item's layout. Neither the element's guid nor its drawingGuid is the item's guid; what links them is the
 // view the Drawing shows: the item's sourceGuid is the Drawing's linkGuid (ACAPI_Drawing_GetDrawingLink, tested on
@@ -4274,6 +4736,18 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
     // element behind the viewpoint is renamed instead (#466, #755). It is found
     // through the viewpoint's database, which links back to it. Every other Project
     // Map item is refused here.
+    // A publisher set is named by its API_NavigatorSet, which the API only reads
+    // (ACAPI_Navigator_GetNavigatorSet; there is no function that changes a set).
+    // ACAPI_Navigator_ChangeNavigatorItem on the set's root item returns NoError and the
+    // read-back below gets the new name, but only that hidden root item is renamed: the set
+    // keeps its name in the Navigator, the Organizer and GetPublisherSets (tested on
+    // Archicad 30 build 3001). So a new name or ID is refused there; dropping a custom name
+    // stays allowed, to clean up a root item renamed before this check.
+    if ((hasNewName || hasNewId) && IsPublisherSetRoot (guid)) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
+            "This is the root item of a publisher set. Archicad's API cannot rename a publisher set: renaming its root item only changes a hidden item, not the name of the set. Rename the set in Archicad's Organizer.");
+    }
+
     const bool isProjectMapItem = (hasNewName || resetCustomName || hasNewId) && IsProjectMapItem (guid);
     API_DatabaseInfo dbInfo = navItem.db;
     const bool renameLinkedElement = isProjectMapItem &&

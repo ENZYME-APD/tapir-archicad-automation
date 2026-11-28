@@ -95,6 +95,106 @@
       ]
     },
     {
+      "id": "three segments without their own lengths (#3086)",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 660.0, "y": 655.0 },
+            "endCoordinate": { "x": 667.0, "y": 655.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "segmentCount": 3
+          }
+        ]
+      },
+      "save": { "three": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the three segments each have a third of the beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${three}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 3 },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthType", "eq": "Proportional" },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthProportion", "approx": 0.333333333, "tol": 0.0001, "name": "first segment is a third, not 2/9" },
+        { "path": "detailsOfElements[0].details.segments[1].geometry.length.lengthProportion", "approx": 0.333333333, "tol": 0.0001, "name": "second segment is a third, not 4/9" },
+        { "path": "detailsOfElements[0].details.segments[2].geometry.length.lengthProportion", "approx": 0.333333333, "tol": 0.0001, "name": "third segment is a third" }
+      ]
+    },
+    {
+      "id": "seven segments without their own lengths (#3086)",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 660.0, "y": 658.0 },
+            "endCoordinate": { "x": 667.0, "y": 658.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "segmentCount": 7
+          }
+        ]
+      },
+      "save": { "seven": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the seven segments each have a seventh of the beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${seven}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 7 },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthProportion", "approx": 0.142857143, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.segments[3].geometry.length.lengthProportion", "approx": 0.142857143, "tol": 0.0001 },
+        { "path": "detailsOfElements[0].details.segments[5].geometry.length.lengthProportion", "approx": 0.142857143, "tol": 0.0001, "name": "sixth segment is a seventh, not 22/49" },
+        { "path": "detailsOfElements[0].details.segments[6].geometry.length.lengthProportion", "approx": 0.142857143, "tol": 0.0001 }
+      ]
+    },
+    {
+      "id": "three segments with explicit proportional lengths (#3086)",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 670.0, "y": 655.0 },
+            "endCoordinate": { "x": 676.0, "y": 655.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "segmentCount": 3,
+            "segments": [
+              { "geometry": { "length": { "lengthType": "Proportional", "lengthProportion": 0.5 } } },
+              { "geometry": { "length": { "lengthType": "Proportional", "lengthProportion": 0.25 } } },
+              { "geometry": { "length": { "lengthType": "Proportional", "lengthProportion": 0.25 } } }
+            ]
+          }
+        ]
+      },
+      "save": { "explicit": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the given proportions are kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${explicit}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments", "len": 3 },
+        { "path": "detailsOfElements[0].details.segments[0].geometry.length.lengthProportion", "approx": 0.5, "tol": 0.0001, "name": "first proportion kept" },
+        { "path": "detailsOfElements[0].details.segments[1].geometry.length.lengthProportion", "approx": 0.25, "tol": 0.0001, "name": "second proportion kept" },
+        { "path": "detailsOfElements[0].details.segments[2].geometry.length.lengthProportion", "approx": 0.25, "tol": 0.0001, "name": "third proportion kept" }
+      ]
+    },
+    {
       "id": "a segments item past segmentCount is refused",
       "command": "CreateBeams",
       "params": {

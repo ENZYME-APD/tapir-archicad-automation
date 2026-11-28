@@ -1,0 +1,139 @@
+{
+  "title": "SetProjectPreferences writes the Legacy, Imaging and Calculation and Layouts pages, refuses an unknown line type, and GetProjectPreferences reads them back with the read-only Data Safety page (#3036)",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "read the pages of the template",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "Legacy", "ImagingAndCalculation", "Layouts", "DataSafety" ] },
+      "save": {
+        "legacy0": "legacy",
+        "imaging0": "imagingAndCalculation",
+        "layouts0": "layouts",
+        "above0": "legacy.aboveHomeStoryLineTypeId.guid",
+        "below0": "legacy.belowHomeStoryLineTypeId.guid"
+      },
+      "expect": [
+        { "path": "legacy.columnIntersectionPriority", "exists": true, "name": "legacy page read" },
+        { "path": "legacy.aboveHomeStoryLineTypeId.guid", "exists": true, "name": "above home story line type read" },
+        { "path": "imagingAndCalculation.reportLevel", "exists": true, "name": "imaging and calculation page read" },
+        { "path": "layouts.masterItemsColor.red", "exists": true, "name": "layouts page read" },
+        { "path": "dataSafety.temporaryFolder", "exists": true, "name": "data safety page read" },
+        { "path": "workingUnits", "exists": false, "name": "only the pages asked for" }
+      ]
+    },
+    {
+      "id": "set the three pages",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "legacy": {
+          "aboveHomeStoryLineTypeId": { "guid": "${below0}" },
+          "belowHomeStoryLineTypeId": { "guid": "${above0}" },
+          "roofContourDisplay": "OnlyTheTopSurface",
+          "hideZonesOnSections": true
+        },
+        "imagingAndCalculation": {
+          "reportLevel": "Detailed",
+          "selectedElementsListing": "ListAll"
+        },
+        "layouts": {
+          "masterItemsColor": { "red": 0.25, "green": 0.5, "blue": 0.75 },
+          "useOwnMasterItemsColor": false,
+          "adjustDrawingFrameToViewZoom": true
+        }
+      },
+      "expect": [
+        { "path": "legacy.success", "eq": true },
+        { "path": "imagingAndCalculation.success", "eq": true },
+        { "path": "layouts.success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the set values",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "Legacy", "ImagingAndCalculation", "Layouts" ] },
+      "expect": [
+        { "path": "legacy.aboveHomeStoryLineTypeId.guid", "eq": "${below0}", "name": "above line type swapped" },
+        { "path": "legacy.belowHomeStoryLineTypeId.guid", "eq": "${above0}", "name": "below line type swapped" },
+        { "path": "legacy.roofContourDisplay", "eq": "OnlyTheTopSurface", "name": "roof contour display" },
+        { "path": "legacy.hideZonesOnSections", "eq": true, "name": "hide zones on sections" },
+        { "path": "imagingAndCalculation.reportLevel", "eq": "Detailed", "name": "report level" },
+        { "path": "imagingAndCalculation.selectedElementsListing", "eq": "ListAll", "name": "selected elements listing" },
+        { "path": "layouts.masterItemsColor.red", "approx": 0.25, "tol": 0.01, "name": "master color red" },
+        { "path": "layouts.masterItemsColor.green", "approx": 0.5, "tol": 0.01, "name": "master color green" },
+        { "path": "layouts.masterItemsColor.blue", "approx": 0.75, "tol": 0.01, "name": "master color blue" },
+        { "path": "layouts.useOwnMasterItemsColor", "eq": false, "name": "own master color off" },
+        { "path": "layouts.adjustDrawingFrameToViewZoom", "eq": true, "name": "adjust drawing frame on" }
+      ]
+    },
+    {
+      "id": "set the other values",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "legacy": { "roofContourDisplay": "AllVisibleContours", "hideZonesOnSections": false },
+        "imagingAndCalculation": { "reportLevel": "Brief", "selectedElementsListing": "UseFilters" },
+        "layouts": { "adjustDrawingFrameToViewZoom": false }
+      },
+      "expect": [
+        { "path": "legacy.success", "eq": true },
+        { "path": "imagingAndCalculation.success", "eq": true },
+        { "path": "layouts.success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the other values, the fields not given kept",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "Legacy", "ImagingAndCalculation", "Layouts" ] },
+      "expect": [
+        { "path": "legacy.roofContourDisplay", "eq": "AllVisibleContours", "name": "roof contour display" },
+        { "path": "legacy.hideZonesOnSections", "eq": false, "name": "hide zones on sections" },
+        { "path": "legacy.aboveHomeStoryLineTypeId.guid", "eq": "${below0}", "name": "above line type kept" },
+        { "path": "imagingAndCalculation.reportLevel", "eq": "Brief", "name": "report level" },
+        { "path": "imagingAndCalculation.selectedElementsListing", "eq": "UseFilters", "name": "selected elements listing" },
+        { "path": "layouts.adjustDrawingFrameToViewZoom", "eq": false, "name": "adjust drawing frame off" },
+        { "path": "layouts.masterItemsColor.green", "approx": 0.5, "tol": 0.01, "name": "master color kept" }
+      ]
+    },
+    {
+      "id": "[an unknown line type]",
+      "command": "SetProjectPreferences",
+      "creates": false,
+      "params": {
+        "legacy": {
+          "belowHomeStoryLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+          "hideZonesOnSections": true
+        }
+      },
+      "expect": [
+        { "path": "legacy.success", "eq": false, "name": "refused" },
+        { "path": "legacy.error.message", "exists": true, "name": "with a message" }
+      ]
+    },
+    {
+      "id": "the refused call changed nothing",
+      "command": "GetProjectPreferences",
+      "creates": false,
+      "params": { "preferenceTypes": [ "Legacy" ] },
+      "expect": [
+        { "path": "legacy.belowHomeStoryLineTypeId.guid", "eq": "${above0}", "name": "below line type unchanged" },
+        { "path": "legacy.hideZonesOnSections", "eq": false, "name": "the other field of the refused page not set" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetProjectPreferences",
+      "params": {
+        "legacy": "${legacy0}",
+        "imagingAndCalculation": "${imaging0}",
+        "layouts": "${layouts0}"
+      }
+    }
+  ]
+}

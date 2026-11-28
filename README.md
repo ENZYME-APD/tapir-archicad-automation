@@ -1,6 +1,9 @@
 # Tapir: Archicad automation
 
+[![Website](https://img.shields.io/badge/Website-archicad--api.com-blue)](https://archicad-api.com/)
 [![Discord](https://img.shields.io/badge/Discord-join-blue?logo=discord&logoColor=fafafa)](https://discord.gg/NAnSennmpY)
+
+**Website: [archicad-api.com](https://archicad-api.com/)** (command reference, scripts, coverage checklists and community)
 
 Tapir adds hundreds of JSON commands to Graphisoft Archicad, on top of the official ones Graphisoft provides, so that the work you do by hand can be automated: reading and changing elements, properties, classifications, attributes, views, layouts, issues and more. You use them from Python scripts, from Grasshopper (Rhino) through the Tapir Grasshopper plugin, or without programming from the Tapir palette inside Archicad, which runs ready-made scripts with one click. Tapir is free and open source, made by ENZYME-APD and its community.
 
@@ -154,6 +157,15 @@ The diagram below explains the components and their dependencies.
 ## Roadmap
 
 [The Tapir Roadmap](https://github.com/orgs/ENZYME-APD/projects/4/views/1) is the older planning board; current work is in the [issues](https://github.com/ENZYME-APD/tapir-archicad-automation/issues) and [pull requests](https://github.com/ENZYME-APD/tapir-archicad-automation/pulls).
+
+## Contributing
+
+Tapir is developed in this repository: the Add-On, the Grasshopper plugin, the Python client, the
+installer, the marketplace scripts and the docs. [CONTRIBUTING.md](CONTRIBUTING.md) has how to build
+it, how to run the tests, how to add a command and what a pull request needs. Testing a pull request's
+build on your Archicad is a contribution on its own — the
+[community test runner](tools/community-test-runner/) does the work. Please report security problems
+privately, as [SECURITY.md](SECURITY.md) describes, not in an issue.
 
 ## Code signing policy
 

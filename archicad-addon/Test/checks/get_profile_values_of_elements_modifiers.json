@@ -1,0 +1,158 @@
+{
+  "title": "GetProfileValuesOfElements returns the offset modifiers of a Profile wall and the profile of a single-segment Profile beam (#3085)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a 0.3 x 0.5 Profile for walls and beams",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 3085",
+            "wallType": true,
+            "beamType": true,
+            "coluType": false,
+            "handrailType": false,
+            "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.3, "y": 0.0 }, { "x": 0.3, "y": 0.5 }, { "x": 0.0, "y": 0.5 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "contourPen": 4,
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "p": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": false, "name": "profile created" }
+      ]
+    },
+    {
+      "id": "the skin of the profile",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${p}" } } ], "fields": [ "skins" ] },
+      "save": { "skin": "profiles[0].skins[0].skinId" },
+      "expect": [ { "path": "profiles[0].skins", "len": 1 } ]
+    },
+    {
+      "id": "add a 'Thickness' modifier moving the right side",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": { "guid": "${p}" },
+            "name": "TapirCheck Profile 3085",
+            "newProfileModifiers": [
+              {
+                "name": "Thickness",
+                "edges": [ { "skinId": "${skin}", "edgeIndex": 2 } ],
+                "begin": { "type": "Fixed", "position": { "x": 0.0, "y": 0.25 } },
+                "end": { "type": "Edge", "skinId": "${skin}", "edgeIndex": 2 },
+                "projectionAngle": 0.0
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [ { "path": "attributeIds[0].error", "exists": false, "name": "modifier added" } ]
+    },
+    {
+      "id": "the profile attribute has the modifier",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${p}" } } ], "fields": [ "profileModifiers" ] },
+      "expect": [
+        { "path": "profiles[0].profileModifiers", "len": 1 },
+        { "path": "profiles[0].profileModifiers[0].value", "approx": 0.3, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "a Profile wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 690.0, "y": 640.0 },
+            "endCoordinate": { "x": 694.0, "y": 640.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "structureType": "Profile",
+            "profileId": { "attributeId": { "guid": "${p}" } }
+          }
+        ]
+      },
+      "save": { "pw": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true } ]
+    },
+    {
+      "id": "a single-segment beam with the profile",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 690.0, "y": 650.0 },
+            "endCoordinate": { "x": 695.0, "y": 650.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "profileId": { "attributeId": { "guid": "${p}" } }
+          }
+        ]
+      },
+      "save": { "pb": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true } ]
+    },
+    {
+      "id": "read the profile values",
+      "command": "GetProfileValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${pw}" } },
+          { "elementId": { "guid": "${pb}" } }
+        ]
+      },
+      "expect": [
+        { "path": "profileValuesOfElements", "len": 2 },
+        { "path": "profileValuesOfElements[0].profiles", "len": 1, "name": "the Profile wall has its profile" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileId.attributeId.guid", "eq": "${p}" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileModifiers", "len": 1, "name": "the wall has the profile's modifier" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileModifiers[0].name", "eq": "Thickness" },
+        { "path": "profileValuesOfElements[0].profiles[0].profileModifiers[0].value", "approx": 0.3, "tol": 0.001, "name": "the wall's modifier value" },
+        { "path": "profileValuesOfElements[0].profiles[0].modifiersIncludeStretch", "exists": true },
+        { "path": "profileValuesOfElements[1].profiles", "len": 1, "name": "the single-segment beam has its profile" },
+        { "path": "profileValuesOfElements[1].profiles[0].segmentIndex", "eq": 0 },
+        { "path": "profileValuesOfElements[1].profiles[0].profileId.attributeId.guid", "eq": "${p}" },
+        { "path": "profileValuesOfElements[1].profiles[0].width", "approx": 0.3, "tol": 0.001 },
+        { "path": "profileValuesOfElements[1].profiles[0].height", "approx": 0.5, "tol": 0.001 },
+        { "path": "profileValuesOfElements[1].profiles[0].profileModifiers", "len": 1, "name": "the beam has the profile's modifier" },
+        { "path": "profileValuesOfElements[1].profiles[0].profileModifiers[0].value", "approx": 0.3, "tol": 0.001 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${p}" } } }
+        ]
+      }
+    }
+  ]
+}

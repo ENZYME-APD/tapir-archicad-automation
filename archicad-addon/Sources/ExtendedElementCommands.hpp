@@ -34,6 +34,10 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed);
 
+// The settings of an Interior Elevation and of each of its segments (#/InteriorElevationDetails),
+// read by GetDetailsOfElements (#2851).
+void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os);
+
 // The surface, cut fill and cover fill settings each Create and Modify pair shares (#2220): the
 // schema fragment ends the item schema of both commands, and the function writes the given keys
 // into the element and its mask (the Create commands discard the mask). Returns an error text,
@@ -87,7 +91,7 @@ class CreateWallsCommand : public CreateElementsCommandBase
 public:
     CreateWallsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateBeamsCommand : public CreateElementsCommandBase
@@ -97,6 +101,11 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+
+private:
+    // The segment length schemes SetTypeSpecificParameters gave the item being created, written
+    // again by AfterCreate when Archicad stored other ones (#3086).
+    mutable GS::Array<API_AssemblySegmentSchemeData> requestedSchemes;
 };
 
 class CreateStairsCommand : public CreateElementsCommandBase
@@ -105,6 +114,8 @@ public:
     CreateStairsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+protected:
+    virtual GS::UniString GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
 
 class CreateShellsCommand : public CreateElementsCommandBase
@@ -121,6 +132,20 @@ public:
     CreateSkylightsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateRadialDimensionsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateRadialDimensionsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& failureReason) const override;
+
+private:
+    // Kept here because CreateElementsCommandBase calls ACAPI_Element_Create after
+    // SetTypeSpecificParameters has returned.
+    mutable GS::UniString customText;
 };
 
 class SolveStairBaselineCommand : public CommandBase
@@ -147,6 +172,76 @@ class RecreateStairsCommand : public CommandBase
 {
 public:
     RecreateStairsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateCurtainWallsCommand : public CommandBase
+{
+public:
+    RecreateCurtainWallsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateRailingsCommand : public CommandBase
+{
+public:
+    RecreateRailingsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateWindowsCommand : public CommandBase
+{
+public:
+    RecreateWindowsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateDoorsCommand : public CommandBase
+{
+public:
+    RecreateDoorsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateZonesCommand : public CommandBase
+{
+public:
+    RecreateZonesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateAngleDimensionsCommand : public CommandBase
+{
+public:
+    RecreateAngleDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RecreateSkylightsCommand : public CommandBase
+{
+public:
+    RecreateSkylightsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -445,6 +540,10 @@ void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& ele
 // definition: GetDetailsOfElements and SolveStairBaseline return them (#2531, #2526).
 GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules);
 
+// The headroom of a stair (API_StairHeadroomData), with the keys of the StairHeadroom definition:
+// GetDetailsOfElements returns it (#2857).
+GS::ObjectState CreateStairHeadroomObjectState (const API_StairHeadroomData& headroom);
+
 class CreateElevationsCommand : public CommandBase
 {
 public:
@@ -469,6 +568,16 @@ class SetSectionsAndElevationsDetailsCommand : public CommandBase
 {
 public:
     SetSectionsAndElevationsDetailsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetInteriorElevationsDetailsCommand : public CommandBase
+{
+public:
+    SetInteriorElevationsDetailsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

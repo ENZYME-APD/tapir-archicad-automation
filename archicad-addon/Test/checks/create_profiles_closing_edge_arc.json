@@ -1,0 +1,180 @@
+{
+  "title": "CreateProfiles puts an arc on the closing edge of a newSkins contour (n-1 -> 0) on that edge and refuses an arc that is not on an edge (#2828)",
+  "minTapir": "2.0.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "A: arc on the closing edge, 3 -> 0",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2828 A",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.1}, {"x": 0.0, "y": 0.1}],
+                  "polygonArcs": [{"begIndex": 3, "endIndex": 0, "arcAngle": 1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"pA": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back A: one skin with the arc on its closing edge",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pA}"}}], "fields": ["width", "height", "skins", "skinOutlines"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins", "len": 1, "name": "the skin is there"},
+        {"path": "profiles[0].width", "gt": 0.299, "name": "width at least the rectangle's"},
+        {"path": "profiles[0].width", "lt": 0.33, "name": "width not garbage"},
+        {"path": "profiles[0].height", "approx": 0.1, "tol": 0.0001},
+        {"path": "profiles[0].skins[0].outlineArcs", "len": 1, "name": "one arc"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].begIndex", "eq": 4, "name": "arc starts at the last vertex"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].endIndex", "eq": 5, "name": "arc ends at the closing vertex, not the first"}
+      ]
+    },
+    {
+      "id": "B: the closing edge reversed (0 -> 3), the closing edge as 3 -> 4, and an inner edge (1 -> 2), each in its own skin",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2828 B",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.1}, {"x": 0.0, "y": 0.1}],
+                  "polygonArcs": [{"begIndex": 0, "endIndex": 3, "arcAngle": -1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              },
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.2}, {"x": 0.3, "y": 0.2}, {"x": 0.3, "y": 0.3}, {"x": 0.0, "y": 0.3}],
+                  "polygonArcs": [{"begIndex": 3, "endIndex": 4, "arcAngle": 1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              },
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.4}, {"x": 0.3, "y": 0.4}, {"x": 0.3, "y": 0.5}, {"x": 0.0, "y": 0.5}],
+                  "polygonArcs": [{"begIndex": 1, "endIndex": 2, "arcAngle": 1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"pB": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back B: all three skins are there, each with its arc",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${pB}"}}], "fields": ["skins", "skinOutlines"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].skins", "len": 3, "name": "no skin is missing"},
+        {"path": "profiles[0].skins[0].outlineArcs", "len": 1},
+        {"path": "profiles[0].skins[0].outlineArcs[0].begIndex", "eq": 4, "name": "reversed arc stored forward: starts at the last vertex"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].endIndex", "eq": 5, "name": "reversed arc stored forward: ends at the closing vertex"},
+        {"path": "profiles[0].skins[0].outlineArcs[0].arcAngle", "approx": 1.0, "tol": 0.0001, "name": "reversed arc's angle negated"},
+        {"path": "profiles[0].skins[1].outlineArcs", "len": 1},
+        {"path": "profiles[0].skins[2].outlineArcs", "len": 1}
+      ]
+    },
+    {
+      "id": "C: an arc between two vertices that share no edge is refused, nothing is created",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2828 C",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.1}, {"x": 0.0, "y": 0.1}],
+                  "polygonArcs": [{"begIndex": 0, "endIndex": 2, "arcAngle": 1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/newSkins/0/contours/0/polygonArcs/0", "name": "the error names the arc"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "D: an arc index past the contour is refused",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 2828 D",
+            "wallType": true,
+            "newSkins": [
+              {
+                "contours": [{
+                  "polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.1}, {"x": 0.0, "y": 0.1}],
+                  "polygonArcs": [{"begIndex": 5, "endIndex": 6, "arcAngle": 1.0}]
+                }],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}}
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${pB}"}}}]}
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${pA}"}}}]}
+    }
+  ]
+}

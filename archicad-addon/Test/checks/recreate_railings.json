@@ -1,0 +1,120 @@
+{
+  "title": "RecreateRailings gives a railing a new reference line with more nodes, keeping its settings and Element ID",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a straight railing, 1.21 m high, with an Element ID",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          { "coordinates": [ { "x": 560.0, "y": 500.0 }, { "x": 564.0, "y": 500.0 } ], "floorIndex": 0, "height": 1.21, "id": "CHK-RECREATE-RAIL" }
+        ]
+      },
+      "save": { "old": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" } ]
+    },
+    {
+      "id": "recreate it on four points",
+      "command": "RecreateRailings",
+      "params": {
+        "railings": [
+          {
+            "elementId": { "guid": "${old}" },
+            "coordinates": [ { "x": 560.0, "y": 500.0 }, { "x": 564.0, "y": 500.0 }, { "x": 564.0, "y": 503.0 }, { "x": 567.0, "y": 503.0 } ]
+          }
+        ]
+      },
+      "save": { "new": "results[0].elementId.guid" },
+      "expect": [
+        { "path": "results[0].elementId.guid", "exists": true, "name": "new railing created" },
+        { "path": "results[0].oldElementId.guid", "eq": "${old}", "name": "the old railing is named" },
+        { "path": "results[0].notCarriedOver", "len": 0, "name": "nothing linked to it was lost" }
+      ]
+    },
+    {
+      "id": "the new railing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${new}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-RAIL", "name": "keeps the Element ID" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 4, "name": "four nodes" },
+        { "path": "detailsOfElements[0].details.segmentHeights", "len": 3, "name": "three segments" },
+        { "path": "detailsOfElements[0].details.segmentHeights[2]", "approx": 1.21, "name": "the new segments have the old railing's height" },
+        { "path": "detailsOfElements[0].details.referenceLine[3].x", "approx": 567.0, "name": "the new reference line" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "same home story" }
+      ]
+    },
+    {
+      "id": "the old railing is gone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${old}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].error.code", "exists": true, "name": "the old railing was deleted" } ]
+    },
+    {
+      "id": "recreate it again with an elevation per node",
+      "command": "RecreateRailings",
+      "params": {
+        "railings": [
+          {
+            "elementId": { "guid": "${new}" },
+            "polylineCoordinates": [ { "x": 560.0, "y": 500.0, "z": 0.0 }, { "x": 564.0, "y": 500.0, "z": 0.6 } ]
+          }
+        ]
+      },
+      "save": { "climbing": "results[0].elementId.guid" },
+      "expect": [ { "path": "results[0].elementId.guid", "exists": true, "name": "climbing railing created" } ]
+    },
+    {
+      "id": "the climbing railing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${climbing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RECREATE-RAIL", "name": "still the same Element ID" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "two nodes" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.21, "name": "still the old height" }
+      ]
+    },
+    {
+      "id": "a wall to give as railing",
+      "command": "CreateWalls",
+      "params": { "wallsData": [ { "begCoordinate": { "x": 560.0, "y": 510.0 }, "endCoordinate": { "x": 564.0, "y": 510.0 }, "zCoordinate": 0.0, "height": 3.0, "thickness": 0.3 } ] },
+      "save": { "w": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "bad inputs",
+      "command": "RecreateRailings",
+      "params": {
+        "railings": [
+          { "elementId": { "guid": "${climbing}" } },
+          {
+            "elementId": { "guid": "${climbing}" },
+            "coordinates": [ { "x": 560.0, "y": 500.0 }, { "x": 564.0, "y": 500.0 } ],
+            "polylineCoordinates": [ { "x": 560.0, "y": 500.0, "z": 0.0 }, { "x": 564.0, "y": 500.0, "z": 0.0 } ]
+          },
+          { "elementId": { "guid": "${w}" }, "coordinates": [ { "x": 560.0, "y": 500.0 }, { "x": 564.0, "y": 500.0 } ] },
+          { "elementId": { "guid": "${climbing}" }, "coordinates": [ { "x": 560.0, "y": 500.0 }, { "x": 560.0, "y": 500.0 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].error.code", "exists": true, "name": "no reference line refused" },
+        { "path": "results[1].error.code", "exists": true, "name": "both reference lines refused" },
+        { "path": "results[2].error.code", "exists": true, "name": "a wall refused" },
+        { "path": "results[3].error.code", "exists": true, "name": "a zero-length segment refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${climbing}" } } ] },
+      "expect": [ { "path": "detailsOfElements[0].details.referenceLine", "len": 2, "name": "the climbing railing is still there, unchanged" } ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${climbing}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${new}" } } ] } }
+  ]
+}

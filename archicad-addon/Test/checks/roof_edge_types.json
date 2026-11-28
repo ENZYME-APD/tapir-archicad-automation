@@ -76,7 +76,7 @@
       ]
     },
     {
-      "id": "edge types; a wrong edge count, a multi-plane roof and edge types with a new outline",
+      "id": "edge types; a wrong edge count, multi-plane edge types with a new overhang and edge types with a new outline",
       "command": "ModifyRoofs",
       "creates": false,
       "params": {
@@ -91,7 +91,8 @@
           },
           {
             "elementId": { "guid": "${r2}" },
-            "edgeTypes": [ "Eaves", "Eaves", "Eaves", "Eaves" ]
+            "edgeTypes": [ "Eaves", "Eaves", "Eaves", "Eaves" ],
+            "eavesOverhang": 0.4
           },
           {
             "elementId": { "guid": "${r1}" },
@@ -109,7 +110,7 @@
         { "path": "executionResults", "len": 4, "name": "one result per item" },
         { "path": "executionResults[0].success", "eq": true, "name": "edge types set" },
         { "path": "executionResults[1].success", "eq": false, "name": "wrong edge count refused" },
-        { "path": "executionResults[2].success", "eq": false, "name": "multi-plane roof refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "multi-plane edge types with eavesOverhang refused" },
         { "path": "executionResults[3].success", "eq": false, "name": "edge types with polygonOutline refused" }
       ]
     },
@@ -132,7 +133,8 @@
         { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": 904.0, "name": "corner kept (y)" },
         { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "name": "angle kept" },
         { "path": "detailsOfElements[1].details.roofClass", "eq": "MultiPlane" },
-        { "path": "detailsOfElements[1].details.edgeTypes", "exists": false, "name": "no edge types for a multi-plane roof" }
+        { "path": "detailsOfElements[1].details.edgeTypes", "len": 4, "name": "a multi-plane roof has one edge type per contour edge" },
+        { "path": "detailsOfElements[1].details.eavesOverhang", "approx": 0.3, "name": "the refused multi-plane item kept the overhang" }
       ]
     },
     {
