@@ -6803,27 +6803,7 @@
                 "type": "array",
                 "description": "The packages this package depends on.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the package."
-                        },
-                        "packageId": {
-                            "type": "string",
-                            "description": "The GUID of the package."
-                        },
-                        "version": {
-                            "type": "integer",
-                            "description": "The version of the package that is needed."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "packageId",
-                        "version"
-                    ]
+                    "$ref": "#/LibraryPackageDependency"
                 }
             }
         },
@@ -20124,9 +20104,21 @@
         },
         "additionalProperties": false,
         "oneOf": [
-            { "required": [ "index" ] },
-            { "required": [ "name" ] },
-            { "required": [ "unId" ] }
+            {
+                "required": [
+                    "index"
+                ]
+            },
+            {
+                "required": [
+                    "name"
+                ]
+            },
+            {
+                "required": [
+                    "unId"
+                ]
+            }
         ]
     },
     "ElementsWithExecutionResults": {
@@ -25194,63 +25186,7 @@
                 "type": "array",
                 "description": "Optional. The parameters of the library part besides A and B, in the order they appear in the settings dialog. Only simple (non-array) parameters can be defined.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The GDL variable name of the parameter (at most 31 characters)."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The type of the parameter, named as GetGDLParametersOfElements reports it.",
-                            "enum": [
-                                "Integer",
-                                "Length",
-                                "Angle",
-                                "RealNumber",
-                                "LightSwitch",
-                                "RGBColor",
-                                "Intensity",
-                                "LineType",
-                                "Material",
-                                "FillPattern",
-                                "PenColor",
-                                "String",
-                                "Boolean",
-                                "Separator",
-                                "Title",
-                                "BuildingMaterial",
-                                "Profile"
-                            ]
-                        },
-                        "value": {
-                            "description": "Optional. The default value: a number for the numeric and attribute index types, a string for String and Title, true or false for Boolean, 'On' or 'Off' for LightSwitch.",
-                            "oneOf": [
-                                {
-                                    "type": "number"
-                                },
-                                {
-                                    "type": "string"
-                                },
-                                {
-                                    "type": "boolean"
-                                }
-                            ]
-                        },
-                        "description": {
-                            "type": "string",
-                            "description": "Optional. The display name of the parameter in the settings dialog."
-                        },
-                        "isHidden": {
-                            "type": "boolean",
-                            "description": "Optional. When true, the parameter is hidden from the settings dialog. False by default."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "type"
-                    ]
+                    "$ref": "#/LibraryPartParameterData"
                 }
             }
         },
@@ -25312,15 +25248,7 @@
                 "description": "The type of the library part. For GDL objects it is the type of the tool that places it: 'Window', 'Door', 'Skylight', 'Lamp', 'Room', 'Label' or 'Object' (wall ends are placed by the Window or Door tool, so they are 'Window' or 'Door')."
             },
             "type": {
-                "type": "string",
-                "enum": [
-                    "Object",
-                    "Image",
-                    "Text",
-                    "BinaryListCrit",
-                    "Other"
-                ],
-                "description": "The kind of the library part file, not its type (see typeId): a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when Archicad cannot find the file by its fileName."
+                "$ref": "#/AvailableLibraryPartType"
             }
         }
     },
@@ -25353,30 +25281,7 @@
         "type": "object",
         "properties": {
             "library": {
-                "type": "object",
-                "properties": {
-                    "displayName": {
-                        "type": "string"
-                    },
-                    "path": {
-                        "type": "string"
-                    },
-                    "isEmbedded": {
-                        "type": "boolean"
-                    },
-                    "isBuiltIn": {
-                        "type": "boolean"
-                    },
-                    "isPackage": {
-                        "type": "boolean"
-                    },
-                    "isLocal": {
-                        "type": "boolean"
-                    },
-                    "isMissing": {
-                        "type": "boolean"
-                    }
-                }
+                "$ref": "#/LibraryPartLocation"
             },
             "libraryTreePath": {
                 "type": "array",
@@ -25386,15 +25291,7 @@
                 }
             },
             "error": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "integer"
-                    },
-                    "message": {
-                        "type": "string"
-                    }
-                }
+                "$ref": "#/LibraryLookupError"
             }
         }
     },
@@ -25564,6 +25461,804 @@
             }
         ]
     },
+    "ElementLibraryPartChange": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "libraryPart": {
+                "type": "object",
+                "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part.",
+                "oneOf": [
+                    {
+                        "$ref": "#/LibraryPartByName"
+                    },
+                    {
+                        "$ref": "#/LibraryPartByIndex"
+                    },
+                    {
+                        "$ref": "#/LibraryPartByGuid"
+                    }
+                ]
+            },
+            "keepParameters": {
+                "type": "boolean",
+                "description": "Copies the values of the element's GDL parameters to the parameters of the new library part that have the same name, type and array dimensions; the other parameters get the new part's defaults. Default: true."
+            },
+            "keepSize": {
+                "type": "boolean",
+                "description": "Keeps the size (A and B) of the element; when false, the element gets the new part's default size. Default: true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "libraryPart"
+        ],
+        "description": "A library part replacement for one element."
+    },
+    "LibraryPartByName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ],
+        "description": "A library part selected by its name."
+    },
+    "LibraryPartByGuid": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string",
+                "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ],
+        "description": "A library part selected by its unique identifier."
+    },
+    "CreatedLibraryPart": {
+        "type": "object",
+        "description": "The new library part, in the same form as in GetAvailableLibraryParts.",
+        "properties": {
+            "guid": {
+                "type": "string"
+            },
+            "index": {
+                "type": "integer"
+            },
+            "documentName": {
+                "type": "string"
+            },
+            "fileName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid",
+            "index",
+            "documentName",
+            "fileName"
+        ]
+    },
+    "LibraryPartParameterData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The GDL variable name of the parameter (at most 31 characters)."
+            },
+            "type": {
+                "$ref": "#/LibraryPartParameterType"
+            },
+            "value": {
+                "description": "Optional. The default value: a number for the numeric and attribute index types, a string for String and Title, true or false for Boolean, 'On' or 'Off' for LightSwitch.",
+                "oneOf": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "boolean"
+                    }
+                ]
+            },
+            "description": {
+                "type": "string",
+                "description": "Optional. The display name of the parameter in the settings dialog."
+            },
+            "isHidden": {
+                "type": "boolean",
+                "description": "Optional. When true, the parameter is hidden from the settings dialog. False by default."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "type"
+        ],
+        "description": "A parameter of a new library part."
+    },
+    "LibraryPartParameterType": {
+        "type": "string",
+        "description": "The type of the parameter, named as GetGDLParametersOfElements reports it.",
+        "enum": [
+            "Integer",
+            "Length",
+            "Angle",
+            "RealNumber",
+            "LightSwitch",
+            "RGBColor",
+            "Intensity",
+            "LineType",
+            "Material",
+            "FillPattern",
+            "PenColor",
+            "String",
+            "Boolean",
+            "Separator",
+            "Title",
+            "BuildingMaterial",
+            "Profile"
+        ]
+    },
+    "AvailableLibraryPartType": {
+        "type": "string",
+        "enum": [
+            "Object",
+            "Image",
+            "Text",
+            "BinaryListCrit",
+            "Other"
+        ],
+        "description": "The kind of the library part file, not its type (see typeId): a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when Archicad cannot find the file by its fileName."
+    },
+    "LibraryPartTransformation": {
+        "type": "object",
+        "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+        "properties": {
+            "location": {
+                "$ref": "#/Coordinate2D",
+                "description": "The location of the referenced library part on the floor plan."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The rotation angle in radians."
+            },
+            "xRatio": {
+                "type": "number",
+                "description": "The scaling along the rotated x axis."
+            },
+            "yRatio": {
+                "type": "number",
+                "description": "The scaling along the rotated y axis."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "location",
+            "angle",
+            "xRatio",
+            "yRatio"
+        ]
+    },
+    "LibraryPackageDependency": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the package."
+            },
+            "packageId": {
+                "type": "string",
+                "description": "The GUID of the package."
+            },
+            "version": {
+                "type": "integer",
+                "description": "The version of the package that is needed."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "packageId",
+            "version"
+        ],
+        "description": "A library package required by another package."
+    },
+    "LibraryPartGDLParameterQuery": {
+        "type": "object",
+        "properties": {
+            "libraryPartName": {
+                "type": "string",
+                "description": "The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName. The file name with its .gsm extension, as GetAvailableLibraryParts returns it and SetLibraryPartParameters takes it, is accepted too."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartName"
+        ],
+        "description": "A library part whose default GDL parameters are requested."
+    },
+    "GDLDate": {
+        "type": "object",
+        "description": "The date GDL scripts see.",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "description": "1 to 12. Archicad can also report 0, which SetGDLDate accepts back.",
+                "minimum": 0,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "description": "1 to 31. Archicad can also report 0, which SetGDLDate accepts back.",
+                "minimum": 0,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second"
+        ]
+    },
+    "ElementGDLParameterData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "value": {
+                "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ],
+        "description": "A GDL parameter value used when placing a library part instance."
+    },
+    "LibraryPartGDLParameters": {
+        "type": "object",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails",
+                "description": "The library part found by the name. Absent when it could not be read."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the library part with their default values as stored in the library part (its Parameter Script is not run). The description of each parameter is the displayName of the same entry.",
+                "items": {
+                    "$ref": "#/LibraryPartStoredGDLParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "parameters"
+        ],
+        "description": "The default GDL parameters returned for one library part."
+    },
+    "LibraryPartStoredGDLParameter": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "displayName": {
+                "type": "string",
+                "description": "The display name (description) of the parameter."
+            },
+            "index": {
+                "type": "integer",
+                "description": "The index of the parameter."
+            },
+            "type": {
+                "type": "string",
+                "description": "The type of the parameter."
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "The 1st dimension of array (in case of array value)."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "The 2nd dimension of array (in case of array value)."
+            },
+            "value": {
+                "description": "The default value of the parameter. An array value is a flat list of dimension1 x dimension2 items, as GetGDLParametersOfElements returns it. Absent for a Dictionary parameter."
+            },
+            "valueDescription": {
+                "type": "string",
+                "description": "The value description for numeric parameter."
+            },
+            "itemDescriptions": {
+                "type": "array",
+                "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "flags": {
+                "type": "array",
+                "description": "The flags of the parameter.",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Hidden",
+                        "HiddenFromScript",
+                        "Disabled",
+                        "Child",
+                        "Unique",
+                        "Fixed",
+                        "BoldName",
+                        "Open"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "displayName",
+            "index",
+            "type",
+            "flags"
+        ],
+        "description": "A stored default GDL parameter of a library part."
+    },
+    "LibraryPart2DPrimitive": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/LibraryPart2DPrimitiveType"
+            },
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The start point of a Line."
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end point of a Line."
+            },
+            "origin": {
+                "$ref": "#/Coordinate2D",
+                "description": "The center of an Arc."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius of an Arc."
+            },
+            "begAngle": {
+                "type": "number",
+                "description": "The start angle of an Arc, in radians."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "The end angle of an Arc, in radians."
+            },
+            "isWhole": {
+                "type": "boolean",
+                "description": "Whether an Arc is a full circle."
+            },
+            "isFill": {
+                "type": "boolean",
+                "description": "Whether a Polygon is the outline of a fill."
+            },
+            "coordinates": {
+                "type": "array",
+                "description": "The outline of a Polygon.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "holes": {
+                "type": "array",
+                "description": "The holes of a Polygon.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "coordinates": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/Coordinate2D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "coordinates"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
+    },
+    "LibraryPart2DPrimitiveType": {
+        "type": "string",
+        "enum": [
+            "Line",
+            "Arc",
+            "Polygon"
+        ]
+    },
+    "LibraryPartParameterValuesByName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "LibraryPartScriptQueryByName": {
+        "type": "object",
+        "properties": {
+            "libraryPartName": {
+                "type": "string",
+                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartName"
+        ]
+    },
+    "LibraryPartScriptQueryByElement": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "LibraryPartTypeDetails": {
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The current index of the library part. It may change when the libraries are reloaded."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part."
+            },
+            "fileName": {
+                "type": "string",
+                "description": "The file name of the library part."
+            },
+            "unId": {
+                "type": "string",
+                "description": "The full unique ID (main and revision GUID) of the library part."
+            },
+            "parentUnId": {
+                "type": "string",
+                "description": "The full unique ID of the direct parent subtype of the library part."
+            },
+            "typeId": {
+                "$ref": "#/LibraryPartType"
+            },
+            "isPlaceable": {
+                "type": "boolean"
+            },
+            "isTemplate": {
+                "type": "boolean"
+            },
+            "objectDetails": {
+                "$ref": "#/LibraryPartObjectDetails"
+            },
+            "doorWindowDetails": {
+                "$ref": "#/LibraryPartDoorWindowDetails"
+            },
+            "creatorElementType": {
+                "$ref": "#/ElementType",
+                "description": "The type of the element the library part is placed as (its creator tool). Missing when Archicad does not report one."
+            },
+            "creatorVariation": {
+                "type": "string",
+                "description": "The four character variation ID of the creator tool, when it is not the generic variation."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "name",
+            "fileName",
+            "unId",
+            "parentUnId",
+            "typeId",
+            "isPlaceable",
+            "isTemplate"
+        ]
+    },
+    "LibraryPartSubtypeCheck": {
+        "properties": {
+            "unId": {
+                "type": "string",
+                "description": "The full unique ID of the checked library part."
+            },
+            "isSubtypeOf": {
+                "type": "boolean",
+                "description": "True if the ancestor is anywhere up the subtype hierarchy of the library part. False for the ancestor itself: a library part is not a subtype of itself."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unId",
+            "isSubtypeOf"
+        ],
+        "description": "The result of checking a library part against a subtype."
+    },
+    "LibraryLookupError": {
+        "type": "object",
+        "properties": {
+            "code": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            }
+        }
+    },
+    "LibraryPartLocation": {
+        "type": "object",
+        "properties": {
+            "displayName": {
+                "type": "string"
+            },
+            "path": {
+                "type": "string"
+            },
+            "isEmbedded": {
+                "type": "boolean"
+            },
+            "isBuiltIn": {
+                "type": "boolean"
+            },
+            "isPackage": {
+                "type": "boolean"
+            },
+            "isLocal": {
+                "type": "boolean"
+            },
+            "isMissing": {
+                "type": "boolean"
+            }
+        }
+    },
+    "LibraryPartLibraryDetails": {
+        "type": "object",
+        "description": "The library containing the library part.",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the library."
+            },
+            "localizedName": {
+                "type": "string",
+                "description": "The localized name of the library, when it has one. Archicad 29 or newer."
+            },
+            "path": {
+                "type": "string",
+                "description": "The location of the library."
+            },
+            "isServer": {
+                "type": "boolean",
+                "description": "True if it is a Teamwork server library."
+            },
+            "twServerPath": {
+                "type": "string",
+                "description": "The path of the library on the Teamwork server. Only for server libraries."
+            },
+            "twServerUrl": {
+                "type": "string",
+                "description": "The URL of the Teamwork server. Only for server libraries."
+            }
+        },
+        "additionalProperties": false
+    },
+    "LibraryPartObjectScriptAvailability": {
+        "type": "object",
+        "description": "The availability of the scripts of a library part.",
+        "properties": {
+            "interface": {
+                "type": "string"
+            },
+            "forwardMigration": {
+                "type": "string"
+            },
+            "backwardMigration": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false
+    },
+    "LibraryPartParameterValue": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "type": {
+                "$ref": "#/LibraryPartParameterValueType"
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "The 1st dimension of an array parameter."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+            },
+            "value": {
+                "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "type",
+            "value"
+        ]
+    },
+    "LibraryPartParameterValueType": {
+        "type": "string",
+        "enum": [
+            "Integer",
+            "Length",
+            "Angle",
+            "RealNumber",
+            "LightSwitch",
+            "RGBColor",
+            "Intensity",
+            "LineType",
+            "Material",
+            "FillPattern",
+            "PenColor",
+            "String",
+            "Boolean",
+            "BuildingMaterial",
+            "Profile"
+        ],
+        "description": "The type of the parameter."
+    },
+    "LibraryPartPickerElementType": {
+        "type": "string",
+        "enum": [
+            "Object",
+            "Lamp",
+            "Window",
+            "Door"
+        ],
+        "description": "Whose settings dialog to open: the Object, Lamp, Window or Door tool's."
+    },
+    "LibraryPartSaveLocationType": {
+        "type": "string",
+        "enum": [
+            "Object",
+            "Door",
+            "Window"
+        ],
+        "description": "Which Save Library Part dialog to open."
+    },
+    "LibraryPartSectionUpdate": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/LibraryPartSectionUpdateType"
+            },
+            "subIdent": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65535,
+                "description": "The secondary identifier of the section, for a library part with more sections of the same type. Default value is 0."
+            },
+            "text": {
+                "type": "string",
+                "description": "The new content of the section."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "text"
+        ],
+        "description": "A library part section to write or remove."
+    },
+    "LibraryPartSectionUpdateType": {
+        "type": "string",
+        "enum": [
+            "MasterScript",
+            "2DScript",
+            "3DScript",
+            "ParameterScript",
+            "UIScript",
+            "Comment",
+            "Keywords",
+            "Copyright"
+        ],
+        "description": "The type of the text section."
+    },
+    "LibraryPartSection": {
+        "type": "object",
+        "properties": {
+            "sectionType": {
+                "type": "string",
+                "description": "The four-character code of the section type, as GetLibraryPartSection takes it."
+            },
+            "subIdent": {
+                "type": "integer",
+                "description": "The sub-identifier that tells apart sections of the same type."
+            },
+            "size": {
+                "type": "integer",
+                "description": "The size of the section content in bytes. Missing when Archicad could not read the section, for example a protected one without its password."
+            },
+            "isText": {
+                "type": "boolean",
+                "description": "True when Archicad returns the section as text (scripts, comments), which GetLibraryPartSection reads. Binary sections, such as previews, are only listed. Missing when Archicad could not read the section."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sectionType",
+            "subIdent"
+        ],
+        "description": "A section read from a library part."
+    },
     "LibraryPartDetails": {
         "type": "object",
         "properties": {
@@ -25618,35 +26313,7 @@
                 ]
             },
             "library": {
-                "type": "object",
-                "description": "The library containing the library part.",
-                "properties": {
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the library."
-                    },
-                    "localizedName": {
-                        "type": "string",
-                        "description": "The localized name of the library, when it has one. Archicad 29 or newer."
-                    },
-                    "path": {
-                        "type": "string",
-                        "description": "The location of the library."
-                    },
-                    "isServer": {
-                        "type": "boolean",
-                        "description": "True if it is a Teamwork server library."
-                    },
-                    "twServerPath": {
-                        "type": "string",
-                        "description": "The path of the library on the Teamwork server. Only for server libraries."
-                    },
-                    "twServerUrl": {
-                        "type": "string",
-                        "description": "The URL of the Teamwork server. Only for server libraries."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/LibraryPartLibraryDetails"
             },
             "gsmObject": {
                 "type": "object",
@@ -25722,20 +26389,8 @@
                         ]
                     },
                     "scripts": {
-                        "type": "object",
-                        "description": "The scripts of the library part. Only when includeScripts is true. A script is omitted when the library part has none or it cannot be read, e.g. without the right password.",
-                        "properties": {
-                            "interface": {
-                                "type": "string"
-                            },
-                            "forwardMigration": {
-                                "type": "string"
-                            },
-                            "backwardMigration": {
-                                "type": "string"
-                            }
-                        },
-                        "additionalProperties": false
+                        "$ref": "#/LibraryPartObjectScriptAvailability",
+                        "description": "Only when includeScripts is true. A script is omitted when the library part has none or it cannot be read, e.g. without the right password."
                     }
                 },
                 "additionalProperties": false,
@@ -25877,30 +26532,7 @@
                 "type": "array",
                 "description": "The sections of the library part, in the order Archicad lists them.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "sectionType": {
-                            "type": "string",
-                            "description": "The four-character code of the section type, as GetLibraryPartSection takes it."
-                        },
-                        "subIdent": {
-                            "type": "integer",
-                            "description": "The sub-identifier that tells apart sections of the same type."
-                        },
-                        "size": {
-                            "type": "integer",
-                            "description": "The size of the section content in bytes. Missing when Archicad could not read the section, for example a protected one without its password."
-                        },
-                        "isText": {
-                            "type": "boolean",
-                            "description": "True when Archicad returns the section as text (scripts, comments), which GetLibraryPartSection reads. Binary sections, such as previews, are only listed. Missing when Archicad could not read the section."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "sectionType",
-                        "subIdent"
-                    ]
+                    "$ref": "#/LibraryPartSection"
                 }
             }
         },
@@ -26273,55 +26905,7 @@
         "type": "array",
         "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
         "items": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string",
-                    "description": "The name of the parameter."
-                },
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "Integer",
-                        "Length",
-                        "Angle",
-                        "RealNumber",
-                        "LightSwitch",
-                        "RGBColor",
-                        "Intensity",
-                        "LineType",
-                        "Material",
-                        "FillPattern",
-                        "PenColor",
-                        "String",
-                        "Boolean",
-                        "BuildingMaterial",
-                        "Profile"
-                    ],
-                    "description": "The type of the parameter."
-                },
-                "dimension1": {
-                    "type": "integer",
-                    "description": "The 1st dimension of an array parameter."
-                },
-                "dimension2": {
-                    "type": "integer",
-                    "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
-                },
-                "value": {
-                    "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
-                },
-                "description": {
-                    "type": "string",
-                    "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "name",
-                "type",
-                "value"
-            ]
+            "$ref": "#/LibraryPartParameterValue"
         }
     },
     "LibraryPartParameterValues": {
@@ -33330,33 +33914,7 @@
         "type": "object",
         "properties": {
             "transformation": {
-                "type": "object",
-                "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
-                "properties": {
-                    "location": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "The location of the referenced library part on the floor plan."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "The rotation angle in radians."
-                    },
-                    "xRatio": {
-                        "type": "number",
-                        "description": "The scaling along the rotated x axis."
-                    },
-                    "yRatio": {
-                        "type": "number",
-                        "description": "The scaling along the rotated y axis."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "location",
-                    "angle",
-                    "xRatio",
-                    "yRatio"
-                ]
+                "$ref": "#/LibraryPartTransformation"
             }
         },
         "additionalProperties": false,

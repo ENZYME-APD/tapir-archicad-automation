@@ -353,9 +353,8 @@ GS::Optional<GS::UniString> PickLibraryPartCommand::GetInputParametersSchema () 
         "type": "object",
         "properties": {
             "elementType": {
-                "type": "string",
-                "enum": ["Object", "Lamp", "Window", "Door"],
-                "description": "Whose settings dialog to open: the Object, Lamp, Window or Door tool's. Without a subtypeUnID the dialog lists the library parts of that tool. Object by default."
+                "$ref": "#/LibraryPartPickerElementType",
+                "description": "Without a subtypeUnID the dialog lists the library parts of that tool. Object by default."
             },
             "subtypeUnID": {
                 "type": "string",
@@ -666,7 +665,7 @@ GS::ObjectState PickZoneStampOrLabelFileCommand::Execute (const GS::ObjectState&
 }
 
 PickLibraryPartSaveLocationCommand::PickLibraryPartSaveLocationCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -685,9 +684,8 @@ GS::Optional<GS::UniString> PickLibraryPartSaveLocationCommand::GetInputParamete
                 "description": "The location (library folder and file name) the dialog starts from. Default: <libraryPartType>.gsm in the embedded library of the project."
             },
             "libraryPartType": {
-                "type": "string",
-                "enum": ["Object", "Door", "Window"],
-                "description": "Which Save Library Part dialog to open. Default: Object."
+                "$ref": "#/LibraryPartSaveLocationType",
+                "description": "Default: Object."
             },
             "browseForFolder": {
                 "type": "boolean",

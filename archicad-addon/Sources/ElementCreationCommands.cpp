@@ -4344,6 +4344,8 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
 // through the same Printf call never crashed). Root cause not confirmed further (suspected fixed-size
 // internal buffer in GS::UniString::Printf/PrintfFwd's va_arg handling) - concatenating instead
 // avoids the vararg path entirely for the large piece.
+
+
 static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                                                   const char* elementSingularName,
                                                   const char* libraryPartNameDescription,
@@ -4390,15 +4392,7 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "parameters": {
                             "type": "array",
                             "description": "Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": { "type": "string" },
-                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["name", "value"]
-                            }
+                            "items": {"$ref": "#/ElementGDLParameterData"}
                         },
                         "layerIndex": {
                             "type": "integer",
