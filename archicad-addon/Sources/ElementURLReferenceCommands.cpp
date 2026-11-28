@@ -66,24 +66,7 @@ GS::Optional<GS::UniString> GetURLReferencesOfElementsCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "title": "URLReference",
-                            "description": "The web link of an element.",
-                            "properties": {
-                                "url": {
-                                    "type": "string",
-                                    "description": "The URL of the link, e.g. https://www.graphisoft.com."
-                                },
-                                "description": {
-                                    "type": "string",
-                                    "description": "The description of the link, e.g. GRAPHISOFT Home Page."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "url",
-                                "description"
-                            ]
+                            "$ref": "#/ElementURLReference"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -169,25 +152,7 @@ GS::Optional<GS::UniString> SetURLReferencesOfElementsCommand::GetInputParameter
                 "type": "array",
                 "description": "The elements and the web link to set on each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "url": {
-                            "type": "string",
-                            "description": "The URL of the link, e.g. https://www.graphisoft.com. At most 511 bytes in UTF-8."
-                        },
-                        "description": {
-                            "type": "string",
-                            "description": "The description of the link, e.g. GRAPHISOFT Home Page. At most 255 bytes in UTF-8. When omitted or empty, the URL is used as the description (then the URL must fit in 255 bytes), because Archicad does not take a link with an empty description."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "url"
-                    ]
+                    "$ref": "#/ElementURLReferenceUpdate"
                 }
             }
         },

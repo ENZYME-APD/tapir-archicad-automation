@@ -583,32 +583,7 @@ GS::Optional<GS::UniString> GetSplineMaxDistancesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The spline segments to measure and the coordinates to measure from them.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "A Spline element."
-                        },
-                        "segmentIndex": {
-                            "type": "integer",
-                            "description": "The segment of the spline between its fit points segmentIndex and segmentIndex + 1, from 0 to the number of fit points - 2 (the fit points are the coordinates GetDetailsOfElements returns for the spline).",
-                            "minimum": 0
-                        },
-                        "coordinates": {
-                            "type": "array",
-                            "description": "The 2D coordinates to measure from the segment.",
-                            "items": {
-                                "$ref": "#/Coordinate2D"
-                            },
-                            "minItems": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "segmentIndex",
-                        "coordinates"
-                    ]
+                    "$ref": "#/SplineDistanceInput"
                 }
             }
         },
@@ -630,17 +605,7 @@ GS::Optional<GS::UniString> GetSplineMaxDistancesCommand::GetRawResponseSchema (
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "maxDistance": {
-                                    "type": "number",
-                                    "description": "The largest distance of the given coordinates from the spline segment."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "maxDistance"
-                            ]
+                            "$ref": "#/SplineMaxDistance"
                         },
                         {
                             "$ref": "#/ErrorItem"

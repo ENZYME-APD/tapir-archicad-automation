@@ -24874,13 +24874,7 @@ GS::Optional<GS::UniString> SetSectionsAndElevationsDetailsCommand::GetInputPara
             "elementsWithDetails": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "details": { "$ref": "#/SectionElevationSettableDetails" }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "details"]
+                    "$ref": "#/SectionOrElevationDetailsUpdate"
                 }
             }
         },
@@ -24968,13 +24962,7 @@ GS::Optional<GS::UniString> SetInteriorElevationsDetailsCommand::GetInputParamet
             "interiorElevationsWithDetails": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "details": { "$ref": "#/InteriorElevationSettableDetails" }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "details"]
+                    "$ref": "#/InteriorElevationWithDetails"
                 }
             }
         },

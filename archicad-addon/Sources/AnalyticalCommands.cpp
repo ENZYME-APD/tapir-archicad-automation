@@ -2735,16 +2735,7 @@ GS::Optional<GS::UniString> GetAnalyticalMemberTypesOfElementsCommand::GetRawRes
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "memberType": {
-                                    "$ref": "#/AnalyticalMemberType"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "memberType"
-                            ]
+                            "$ref": "#/AnalyticalMemberTypeResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4283,16 +4274,7 @@ GS::Optional<GS::UniString> GetAnalyticalReleasesCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "release": {
-                                    "$ref": "#/AnalyticalRelease"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "release"
-                            ]
+                            "$ref": "#/AnalyticalReleaseResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4659,16 +4641,7 @@ GS::Optional<GS::UniString> GetLCSOfAnalyticalMembersCommand::GetRawResponseSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "localCoordinateSystem": {
-                                    "$ref": "#/AnalyticalCoordinateSystem"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "localCoordinateSystem"
-                            ]
+                            "$ref": "#/AnalyticalMemberCoordinateSystem"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4823,28 +4796,10 @@ GS::Optional<GS::UniString> GetAnalyticalMemberPartGeometriesCommand::GetRawResp
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "node": {
-                                    "$ref": "#/AnalyticalNode"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "node"
-                            ]
+                            "$ref": "#/AnalyticalMemberPartNode"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "curve": {
-                                    "$ref": "#/AnalyticalCurve"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "curve"
-                            ]
+                            "$ref": "#/AnalyticalMemberPartCurve"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5351,16 +5306,7 @@ GS::Optional<GS::UniString> ConvertAnalyticalLinksToNonShortestCommand::GetRawRe
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "link": {
-                                    "$ref": "#/AnalyticalLink"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "link"
-                            ]
+                            "$ref": "#/ConvertedAnalyticalLink"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5537,48 +5483,13 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadsCommand::GetInputParametersSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "pointLoad": {
-                                    "$ref": "#/AnalyticalPointLoad"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "pointLoad"
-                            ]
+                            "$ref": "#/AnalyticalPointLoadData"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "edgeLoad": {
-                                    "$ref": "#/AnalyticalEdgeLoad"
-                                },
-                                "customData": {
-                                    "$ref": "#/AnalyticalEdgeLoadCustomData"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "edgeLoad",
-                                "customData"
-                            ]
+                            "$ref": "#/AnalyticalEdgeLoadData"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "surfaceLoad": {
-                                    "$ref": "#/AnalyticalSurfaceLoad"
-                                },
-                                "customData": {
-                                    "$ref": "#/AnalyticalSurfaceLoadCustomData"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "surfaceLoad",
-                                "customData"
-                            ]
+                            "$ref": "#/AnalyticalSurfaceLoadData"
                         }
                     ]
                 }
