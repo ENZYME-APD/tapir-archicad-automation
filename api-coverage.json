@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 04:08 UTC",
+ "generatedAt": "2026-11-28 04:56 UTC",
  "versions": [
   25,
   26,
@@ -4888,7 +4888,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    }
+   ],
    "issues": []
   },
   {
@@ -5773,6 +5778,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -7274,6 +7283,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    },
+    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -7835,6 +7848,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -16954,7 +16971,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    }
+   ],
    "issues": []
   },
   {
@@ -19435,7 +19457,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    }
+   ],
    "issues": []
   },
   {
@@ -20094,7 +20121,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3110,
+     "title": "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"
+    }
+   ],
    "issues": []
   },
   {
