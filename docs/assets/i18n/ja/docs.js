@@ -67,5 +67,13 @@
     'Use Tapir with AI': 'AI で Tapir を使う',
     'Learn by watching': '見て学ぶ',
     'Six videos, from installing Tapir to whole workflows.': 'Tapir のインストールからワークフロー全体まで、6 本の動画。',
-    'Watch the tutorials': 'チュートリアルを見る'
+    'Watch the tutorials': 'チュートリアルを見る',
+
+    // The field coverage teaser
+    'Element settings':
+        '要素の設定',
+    'Field coverage':
+        'フィールドカバレッジ',
+    'Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.':
+        '各 Archicad 要素タイプのどの設定に Tapir コマンドのキーがあり、どの設定にはスクリプトが汎用のフィールドコマンドでしか届かないか。'
 });

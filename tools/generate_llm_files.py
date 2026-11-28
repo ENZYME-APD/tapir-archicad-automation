@@ -61,6 +61,9 @@ LIVE_PAGES = [
                       + RAW + '/api-coverage/api-coverage.md'),
     ('gh-coverage/', 'Which Tapir commands have a Grasshopper component; data: '
                      + RAW + '/api-coverage/gh-coverage.md'),
+    ('field-coverage/', 'Which settings of each Archicad element type a Tapir command has a key of its own for, '
+                        'and which only GetElementFields / SetElementFields reach; data: '
+                        + RAW + '/api-coverage/field-coverage.md'),
     ('grasshopper-components/', 'Every Grasshopper component with its inputs, outputs, Tapir commands and JSON keys; data: '
                                 + RAW + '/main/docs/grasshopper-components/components.js'),
 ]

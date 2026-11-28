@@ -29,7 +29,7 @@ One folder per language, each with:
 - `data-i18n-partial` on the `<html>` element, next to `data-i18n-pages`, is for a page that stays
   mostly English: it loads the page's dictionaries but keeps `<html lang="en">`, and each translated
   element gets its own `lang`. The reference pages (`archicad-addon/`, `api-coverage/`,
-  `gh-coverage/`) use it with `reference.js`: their heads, headings and introductions are
+  `gh-coverage/`, `field-coverage/`) use it with `reference.js`: their heads, headings and introductions are
   translated, while the commands, schemas and checklists stay English.
 - A script that fills in a part of a marked element (as `api-coverage/` fills `#archicad-range` in
   its introduction) does so in `TapirI18n.ready`: the translation looks the element up by its

@@ -1854,7 +1854,7 @@ Returns:
 
 Grasshopper: `SetURLReferencesOfElementsComponent`
 
-Example: [archicad-addon/Examples/Element/SetURLReferencesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetURLReferencesOfElements.py): Gives the first wall without a web link a link with SetURLReferencesOfElements and reads it back. Needs a Wall without a link. The link stays on the wall: this command cannot replace or remove an existing link.
+Example: [archicad-addon/Examples/Element/SetURLReferencesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetURLReferencesOfElements.py): Gives the first wall without a web link a link with SetURLReferencesOfElements and reads it back. Needs a Wall without a link. The link stays on the wall: this command cannot replace or remove an existing link. Without a description, the URL is used as the description.
 
 ### ChangeLibraryPartOfElements
 

@@ -1004,7 +1004,7 @@ Returns:
 
 Grasshopper: `GetProjectPreferencesComponent`
 
-Example: [archicad-addon/Examples/Project/GetProjectPreferences.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetProjectPreferences.py): Prints the working units, the reference levels and the floor plan cut plane with GetProjectPreferences. Without preferenceTypes every page is returned.
+Example: [archicad-addon/Examples/Project/GetProjectPreferences.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetProjectPreferences.py): Prints the working units, the reference levels, the floor plan cut plane, the legacy settings, the calculation rules and the temporary folder with GetProjectPreferences. Without preferenceTypes every page is returned. ImagingAndCalculation is the Work Environment page of the same name.
 
 ### SetProjectPreferences
 
@@ -1056,7 +1056,7 @@ Returns:
 
 Grasshopper: `SetProjectPreferencesComponent`
 
-Example: [archicad-addon/Examples/Project/SetProjectPreferences.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SetProjectPreferences.py): Sets the working length unit to millimeters and the floor plan cut plane height to 1.2 m with SetProjectPreferences, then restores both. Only the given fields change. In Teamwork the PreferencesDialog lockable object set must be reserved first. Requires Archicad 27 or later.
+Example: [archicad-addon/Examples/Project/SetProjectPreferences.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SetProjectPreferences.py): Sets the working length unit to millimeters, the floor plan cut plane height to 1.2 m and the color of master items on layouts to red with SetProjectPreferences, then restores all three. Only the given fields change. The DataSafety page cannot be set. In Teamwork the PreferencesDialog lockable object set must be reserved first. Requires Archicad 27 or later.
 
 ### ConvertUnitValues
 

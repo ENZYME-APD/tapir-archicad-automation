@@ -1,8 +1,8 @@
-/* The two coverage pages (api-coverage/ and gh-coverage/), on top of site.css and its tokens:
+/* The three coverage pages (api-coverage/, gh-coverage/ and field-coverage/), on top of site.css and its tokens:
    an overview (headline, tiles, bar, legend, tables) over a sticky filter bar and the full
    checklist, with a sidebar that becomes a drawer on narrow screens.
 
-   Statuses are drawn the same way on both pages: a .pill.status with a .swatch in the colour
+   Statuses are drawn the same way on all three pages: a .pill.status with a .swatch in the colour
    of its segment in the bars, and the legend shows the same pills. Progress uses one moss ramp:
    used on main is the strongest step, open is the neutral track. */
 

@@ -47,5 +47,23 @@
         'Grasshopper 运算器调用了哪些 Tapir 命令，以及它们还缺少哪些参数。',
     'Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command\'s parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin\'s code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.':
         'Tapir Grasshopper 插件的运算器调用了 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir 插件</a>的哪些 JSON 命令，以及这些运算器是否覆盖了命令的参数。每个 issue 和对 main 的 push 后几分钟内更新，每个 pull request 后一小时内更新。这是对插件代码的静态检查：它显示运算器写出了哪些参数，而不保证每个参数都能正常工作。另请参阅<a href="../archicad-addon/">命令参考</a>和 <a href="../api-coverage/">Archicad API 覆盖率</a>。',
-    'Parameters of the used commands': '已使用命令的参数'
+    'Parameters of the used commands': '已使用命令的参数',
+
+    // The field coverage (field-coverage/), and the line linking it from the two other coverage pages
+    'Field coverage of the Archicad element types | Tapir':
+        'Archicad 元素类型的字段覆盖率 | Tapir',
+    'Which settings of every Archicad element type a Tapir command has a key of its own for, and which a script can reach only through GetElementFields and SetElementFields.':
+        '每种 Archicad 元素类型的哪些设置在 Tapir 命令中有专门的键，哪些只能由脚本通过 GetElementFields 和 SetElementFields 访问。',
+    '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Field coverage':
+        '<a href="../">Tapir</a> / <a href="../docs/">文档</a> / 字段覆盖率',
+    'Field <em>coverage.</em>':
+        '字段<em>覆盖率。</em>',
+    'Which settings of each Archicad element type a Tapir command has a key for, and which a script reaches only through the generic field commands.':
+        '每种 Archicad 元素类型的哪些设置在 Tapir 命令中有对应的键，哪些只能由脚本通过通用字段命令访问。',
+    'Every field of every element type of the Archicad API (<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …), and whether code of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> writes or reads it by name, so that a command most likely has a key of its own for it. The rest a script reaches only through <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> and <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a>, on Archicad 29 and 30. This is a static estimate from the code, updated with every push to main: "written" does not prove that a command takes the field as input. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.':
+        'Archicad API 每种元素类型的每个字段（<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …），以及 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> 的代码是否按名称写入或读取它，即某个命令很可能有专门的键。其余字段只能由脚本通过 <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> 和 <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a> 访问，适用于 Archicad 29 和 30。这是根据代码做的静态估计，每次推送到 main 时更新：“写入”并不证明某个命令接受该字段作为输入。另见<a href="../archicad-addon/">命令参考</a>和 <a href="../api-coverage/">Archicad API 覆盖率</a>。',
+    'By element type':
+        '按元素类型',
+    'Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.':
+        '每种 Archicad 元素类型的哪些设置在命令中有专门的键，请见<a href="../field-coverage/">字段覆盖率</a>。'
 });
