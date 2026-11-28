@@ -40,6 +40,8 @@ static GS::UniString SolidLinkCreateErrorMessage (GSErrCode err)
             return prefix + " Archicad does not accept this operation for a solid element link.";
         case APIERR_REFUSEDPAR:
             return prefix + " Hotlinked elements cannot be linked.";
+        case APIERR_NO3D:
+            return prefix + " targetId or operatorId is an element without a 3D body of its own. Of an MEP route, the routing element (the whole route) or one of its rigid segments can be linked, a routing segment cannot.";
         case APIERR_BADDATABASE:
         case APIERR_NOTMINE:
             return prefix + " Archicad cannot change these elements in the current database, or a Teamwork element is not reserved.";

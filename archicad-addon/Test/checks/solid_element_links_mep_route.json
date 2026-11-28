@@ -1,0 +1,323 @@
+{
+  "title": "CreateSolidElementLinks takes an MEP route as the operator: the pipe bores the Morph, and its routing segment is refused with the reason",
+  "minTapir": "2.0.2",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "a 1 m Morph cube",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "basePoint": {
+              "x": 701,
+              "y": 699.5,
+              "z": 1.5
+            },
+            "size": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "save": {
+        "morph": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "a pipe route through the cube",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              {
+                "x": 700,
+                "y": 700,
+                "z": 2
+              },
+              {
+                "x": 703,
+                "y": 700,
+                "z": 2
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "route": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "the route's routing segment and rigid segment",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${route}"
+            }
+          }
+        ]
+      },
+      "save": {
+        "segment": "routingElements[0].segments[0].elementId.guid",
+        "rigid": "routingElements[0].segments[0].rigidSegments[0].elementId.guid"
+      }
+    },
+    {
+      "id": "the uncut cube has 8 vertices",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${morph}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "geometries3D[0].bodies[0].vertices",
+          "len": 8
+        }
+      ]
+    },
+    {
+      "id": "link the routing element",
+      "command": "CreateSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          {
+            "targetId": {
+              "guid": "${morph}"
+            },
+            "operatorId": {
+              "guid": "${route}"
+            },
+            "operation": "Subtraction"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "the link reads back",
+      "command": "GetSolidElementLinks",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${morph}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "solidLinks[0].solidLinksWithTheGivenTarget",
+          "len": 1
+        },
+        {
+          "path": "solidLinks[0].solidLinksWithTheGivenTarget[0].operatorId.guid",
+          "eq": "${route}"
+        },
+        {
+          "path": "solidLinks[0].solidLinksWithTheGivenTarget[0].operation",
+          "eq": "Subtraction"
+        }
+      ]
+    },
+    {
+      "id": "the cube is bored",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${morph}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "name": "the body has the vertices of the bore",
+          "path": "geometries3D[0].bodies[0].vertices[8]",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "linking it again says it is linked",
+      "command": "CreateSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          {
+            "targetId": {
+              "guid": "${morph}"
+            },
+            "operatorId": {
+              "guid": "${route}"
+            },
+            "operation": "Subtraction"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false
+        },
+        {
+          "path": "executionResults[0].error.code",
+          "eq": -2130312994
+        }
+      ]
+    },
+    {
+      "id": "the routing segment is refused with the reason",
+      "command": "CreateSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          {
+            "targetId": {
+              "guid": "${morph}"
+            },
+            "operatorId": {
+              "guid": "${segment}"
+            },
+            "operation": "Subtraction"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false
+        },
+        {
+          "path": "executionResults[0].error.code",
+          "eq": -2130313015
+        },
+        {
+          "path": "executionResults[0].error.message",
+          "contains": "routing element"
+        }
+      ]
+    },
+    {
+      "id": "remove the route's link",
+      "command": "RemoveSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          {
+            "targetId": {
+              "guid": "${morph}"
+            },
+            "operatorId": {
+              "guid": "${route}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "the cube is whole again",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${morph}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "geometries3D[0].bodies[0].vertices",
+          "len": 8
+        }
+      ]
+    },
+    {
+      "id": "link the rigid segment",
+      "command": "CreateSolidElementLinks",
+      "creates": false,
+      "params": {
+        "solidLinks": [
+          {
+            "targetId": {
+              "guid": "${morph}"
+            },
+            "operatorId": {
+              "guid": "${rigid}"
+            },
+            "operation": "Subtraction"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "the cube is bored by the rigid segment",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${morph}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "geometries3D[0].bodies[0].vertices[8]",
+          "exists": true
+        }
+      ]
+    }
+  ]
+}

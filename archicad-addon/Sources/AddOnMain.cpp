@@ -3735,7 +3735,7 @@ GSErrCode Initialize (void)
         CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
         err |= RegisterCommand<CreateSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
-            "Creates solid element operation links between target and operator elements."
+            "Creates solid element operation links between target and operator elements. An MEP route is linked by its routing element (the whole route, with its elbows, is the operator) or by one of its rigid segments; a routing segment has no 3D body of its own and is refused."
         );
         err |= RegisterCommand<RemoveSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
