@@ -9850,8 +9850,9 @@ static bool GetNoteArrowVisible (const API_NoteType& note)
 #endif
 }
 
-// The text box of a dimension text as #/DimensionNote returns it, with all of its fields.
-static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
+// The text box of a dimension text as #/DimensionNote returns it, with all of its fields. Also used
+// by the radial dimension commands (ExtendedElementCommands.cpp).
+GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
 {
     GS::ObjectState os;
     os.Add ("textAngle", note.noteAngle);
@@ -9873,7 +9874,7 @@ static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
     return os;
 }
 
-static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState& os, const char* name, const char* path, Int32 minimum, short& pen, bool& given)
+static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState& os, const char* name, const GS::UniString& path, Int32 minimum, short& pen, bool& given)
 {
     Int32 value = 0;
     given = os.Get (name, value);
@@ -9888,10 +9889,12 @@ static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState&
 }
 
 // Writes the fields of a #/DimensionNote given in noteOS to note (a dimension's API_NoteType), and
-// marks them in noteMask, the same note in the element mask, when it is not nullptr. The arrowhead
-// is written as a whole, as ApplyLabelLeaderLineSettableDetails does: Archicad drops a change of
-// one arrowData field unless all of them are masked. Returns the error response of an invalid value.
-static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, API_NoteType& note, API_NoteType* noteMask)
+// marks them in noteMask, the same note in the element mask, when it is not nullptr. path is the key
+// of noteOS (textBox), named in the error messages. The arrowhead is written as a whole, as
+// ApplyLabelLeaderLineSettableDetails does: Archicad drops a change of one arrowData field unless
+// all of them are masked. Returns the error response of an invalid value. Also used by the radial
+// dimension commands (ExtendedElementCommands.cpp).
+GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, const GS::UniString& path, API_NoteType& note, API_NoteType* noteMask)
 {
     if (noteOS.Get ("textAngle", note.noteAngle) && noteMask != nullptr) {
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, noteAngle);
@@ -9904,14 +9907,14 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     }
 
     bool given = false;
-    auto penError = GetPenOfObjectState (noteOS, "backgroundPen", "textBox.backgroundPen", -1, note.backgroundPen, given);
+    auto penError = GetPenOfObjectState (noteOS, "backgroundPen", path + ".backgroundPen", -1, note.backgroundPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
     if (given && noteMask != nullptr) {
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, backgroundPen);
     }
-    penError = GetPenOfObjectState (noteOS, "framePen", "textBox.framePen", 1, note.framePen, given);
+    penError = GetPenOfObjectState (noteOS, "framePen", path + ".framePen", 1, note.framePen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -9922,7 +9925,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     GS::UniString name;
     if (noteOS.Get ("justification", name)) {
         if (!ParseNoteJustification (name, note.just)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.justification' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".justification' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, just);
@@ -9934,7 +9937,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         } else if (name == "Last") {
             note.rowAnchor = 1;
         } else {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorRow' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".anchorRow' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, rowAnchor);
@@ -9942,7 +9945,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     }
     if (noteOS.Get ("anchorPoint", name)) {
         if (!ParseNoteAnchorPoint (name, note.anchorPoint)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorPoint' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".anchorPoint' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorPoint);
@@ -9952,7 +9955,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorAtTextEnd);
     }
 
-    penError = GetPenOfObjectState (noteOS, "leaderPen", "textBox.leaderPen", 1, note.leaderPen, given);
+    penError = GetPenOfObjectState (noteOS, "leaderPen", path + ".leaderPen", 1, note.leaderPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -9962,7 +9965,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     const GS::ObjectState* lineTypeId = noteOS.Get ("leaderLineTypeId");
     if (lineTypeId != nullptr) {
         if (!ResolveAttributeIndex (*lineTypeId, API_LinetypeID, note.leaderLineType)) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textBox.leaderLineTypeId' is not an existing line type.");
+            return CreateErrorResponse (APIERR_BADPARS, "'" + path + ".leaderLineTypeId' is not an existing line type.");
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderLineType);
@@ -9974,7 +9977,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         } else if (name == "Splinear") {
             note.leaderShape = API_Splinear;
         } else {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.leaderShape' value: " + name + " (a dimension text takes Segmented or Splinear).");
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".leaderShape' value: " + name + " (a dimension text takes Segmented or Splinear).");
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderShape);
@@ -9984,7 +9987,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     bool arrowTouched = false;
     if (noteOS.Get ("arrowType", name)) {
         if (!ParseArrowTypeName (name, note.arrowData.arrowType)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.arrowType' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".arrowType' value: " + name);
         }
         arrowTouched = true;
     }
@@ -9997,7 +10000,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
 #endif
         arrowTouched = true;
     }
-    penError = GetPenOfObjectState (noteOS, "arrowPen", "textBox.arrowPen", 1, note.arrowData.arrowPen, given);
+    penError = GetPenOfObjectState (noteOS, "arrowPen", path + ".arrowPen", 1, note.arrowData.arrowPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -10005,7 +10008,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     double arrowSize = 0.0;
     if (noteOS.Get ("arrowSize", arrowSize)) {
         if (arrowSize <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textBox.arrowSize' must be greater than 0.");
+            return CreateErrorResponse (APIERR_BADPARS, "'" + path + ".arrowSize' must be greater than 0.");
         }
         note.arrowData.arrowSize = arrowSize;
         arrowTouched = true;
@@ -10026,8 +10029,9 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
 }
 
 // Names (each with a leading space, prefixed with path) the fields of a #/DimensionNote given in
-// noteOS that Archicad did not keep: got is the note read back, wanted the note as written.
-static GS::UniString GetDimensionNoteNotKept (const GS::ObjectState& noteOS, const API_NoteType& wanted, const API_NoteType& got, const GS::UniString& path)
+// noteOS that Archicad did not keep: got is the note read back, wanted the note as written. Also
+// used by the radial dimension commands (ExtendedElementCommands.cpp).
+GS::UniString GetDimensionNoteNotKept (const GS::ObjectState& noteOS, const API_NoteType& wanted, const API_NoteType& got, const GS::UniString& path)
 {
     const double tolerance = 1e-6;
     GS::UniString notKept;
@@ -10229,7 +10233,7 @@ static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::Obje
 
     const GS::ObjectState* textBox = parameters.Get ("textBox");
     if (textBox != nullptr) {
-        auto noteError = ApplyDimensionNote (*textBox, angleDimension.note, mask != nullptr ? &mask->angleDimension.note : nullptr);
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", angleDimension.note, mask != nullptr ? &mask->angleDimension.note : nullptr);
         if (noteError.HasValue ()) {
             return noteError;
         }

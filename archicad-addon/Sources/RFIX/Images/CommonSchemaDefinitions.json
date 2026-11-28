@@ -15861,7 +15861,7 @@
     },
     "DimensionMarker": {
         "type": "object",
-        "description": "The marker at the witness points of a linear dimension, or at the ends of the arc of an angle dimension (API_MarkerData). CreateAssociativeDimensions, CreateAngleDimensions, ModifyAngleDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "description": "The marker at the witness points of a linear dimension, or at the ends of the arc of an angle dimension, or at the end of the line of a radial dimension (API_MarkerData). CreateAssociativeDimensions, CreateAngleDimensions, ModifyAngleDimensions, CreateRadialDimensions, ModifyRadialDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
         "properties": {
             "type": {
                 "type": "string",
@@ -15904,7 +15904,7 @@
     },
     "DimensionNote": {
         "type": "object",
-        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
+        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension and radial dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
         "properties": {
             "textAngle": {
                 "type": "number",
@@ -16058,25 +16058,8 @@
                 "description": "The pen of the dimension line."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the end of the dimension line.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    },
-                    "size": {
-                        "type": "number",
-                        "description": "The size of the marker as Archicad stores it, in millimeters."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen", "size"]
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the end of the dimension line, always with its type, pen and size."
             },
             "textHeight": {
                 "type": "number",
@@ -16108,6 +16091,14 @@
             "onlyDimensionText": {
                 "type": "boolean",
                 "description": "Whether only the dimension text is shown, without the dimension line."
+            },
+            "prefix": {
+                "type": "string",
+                "description": "The text shown before the measured radius, e.g. R in R 7.55 (API prefix, prefixUStr). Empty when the dimension has none."
+            },
+            "textBox": {
+                "$ref": "#/DimensionNote",
+                "description": "The text box of the dimension text, always with all of its fields."
             }
         },
         "additionalProperties": false,
@@ -16123,7 +16114,9 @@
             "textDirection",
             "textContent",
             "showOrigin",
-            "onlyDimensionText"
+            "onlyDimensionText",
+            "prefix",
+            "textBox"
         ]
     },
     "TextDetails": {
