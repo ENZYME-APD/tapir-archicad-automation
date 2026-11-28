@@ -7817,8 +7817,12 @@ GS::UniString SkylightDetailSchemaFields ()
 {
     return R"(
         "anchorPosition": { "$ref": "#/Coordinate2D", "description": "Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified." },
-        "anchorPoint": { "type": "string", "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"], "description": "Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint)." },
-        "fixMode": { "type": "string", "enum": ["Horizontal", "Vertical"], "description": "What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode)." },
+        "anchorPoint": {
+            "$ref": "#/SkylightAnchorPoint"
+        },
+        "fixMode": {
+            "$ref": "#/SkylightFixMode"
+        },
         "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "azimuthAngle": { "type": "number", "description": "Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle)." },
@@ -10323,8 +10327,7 @@ GS::Optional<GS::UniString> CreateShellsCommand::GetInputParametersSchema () con
                         "description": "Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool."
                     },
                     "shellClass": {
-                        "type": "string",
-                        "enum": ["Extruded", "Revolved", "Ruled"],
+                        "$ref": "#/ShellClass",
                         "description": "Extruded: 'profile' swept along 'extrusionVector'. Revolved: 'profile' turned around 'axis'. Ruled: a surface ruled between 'profile' and 'secondProfile'."
                     },
                     "floorIndex": {
@@ -10411,9 +10414,7 @@ GS::Optional<GS::UniString> CreateShellsCommand::GetInputParametersSchema () con
                         "description": "Ruled only, required: the plane of 'secondProfile', in base plane coordinates."
                     },
                     "morphingRule": {
-                        "type": "string",
-                        "enum": ["Paired", "Smooth"],
-                        "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                        "$ref": "#/ShellMorphingRule"
                     },
                     "contour": {
                         "$ref": "#/ShellCutPolygon",
@@ -19658,15 +19659,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallFramesCommand::GetInputParametersSc
                     "properties": {
                         "frameId": { "$ref": "#/ElementId" },
                         "frameContour": {
-                            "type": "object",
-                            "description": "The contour of the frame, as GetDetailsOfElements returns it. Only the given keys are changed.",
-                            "properties": {
-                                "a1": { "type": "number", "minimum": 0.0, "description": "Contour width inside." },
-                                "a2": { "type": "number", "minimum": 0.0, "description": "Contour width outside." },
-                                "b1": { "type": "number", "minimum": 0.0, "description": "Contour length inside." },
-                                "b2": { "type": "number", "minimum": 0.0, "description": "Contour length outside." }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/CurtainWallFrameContourUpdate"
                         },
                         "classIndex": {
                             "type": "integer",
@@ -21106,24 +21099,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "description": "Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon (overhangType Offset), which replaces a manual contour. Per-edge overhangs are set with pivotEdges. Cannot be combined with contourPolygon."
                         },
                         "contourPolygon": {
-                            "type": "object",
-                            "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, holes (the holes of the pivot polygon), pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
-                            "properties": {
-                                "polygonOutline": {
-                                    "type": "array",
-                                    "description": "The plan (x, y) coordinates of the contour's outline.",
-                                    "items": { "$ref": "#/Coordinate2D" },
-                                    "minItems": 3
-                                },
-                                "polygonArcs": {
-                                    "type": "array",
-                                    "description": "The arcs of the contour's outline.",
-                                    "items": { "$ref": "#/PolyArc" }
-                                },
-                                "holes": { "$ref": "#/Holes2D" }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "polygonOutline" ]
+                            "$ref": "#/RoofContourPolygonUpdate"
                         },
                         "levels": {
                             "type": "array",
@@ -21134,9 +21110,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             }
                         },
                         "segmentType": {
-                            "type": "string",
-                            "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
-                            "description": "Multi-plane roofs only: how the curved edges of the pivot polygon (polygonArcs) are resolved into planes, as GetDetailsOfElements reports it. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments. Written to the roof and to every edge of its pivot polygon; the roof is read back and the item fails when Archicad did not apply it. Cannot be combined with contourPolygon, as none of segmentsByArc and segmentsByCircle can."
+                            "$ref": "#/RoofSegmentType"
                         },
                         "segmentsByArc": {
                             "type": "integer",
@@ -21178,24 +21152,14 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
-                            "type": "string",
-                            "enum": [ "ContoursDown", "PivotLinesDown" ],
-                            "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
+                            "$ref": "#/RoofCutBodyTypeUpdate"
                         },
                         "angle": {
                             "type": "number",
                             "description": "Single-plane roofs only: the angle of the plane to the XY plane."
                         },
                         "pivotLine": {
-                            "type": "object",
-                            "description": "Single-plane roofs only: the line the plane rises from. The ends are named begCoordinate and endCoordinate as in CreateRoofs, or begin and end as GetDetailsOfElements reports them.",
-                            "properties": {
-                                "begCoordinate": { "$ref": "#/Coordinate2D" },
-                                "endCoordinate": { "$ref": "#/Coordinate2D" },
-                                "begin": { "$ref": "#/Coordinate2D" },
-                                "end": { "$ref": "#/Coordinate2D" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/RoofPivotLineUpdate"
                         },
                         "edgeTrims": {
                             "type": "array",
@@ -21204,8 +21168,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "type": "object",
                                 "properties": {
                                     "trimType": {
-                                        "type": "string",
-                                        "enum": [ "Vertical", "Perpendicular", "Horizontal", "CustomAngle" ],
+                                        "$ref": "#/EdgeTrimTypeUpdate",
                                         "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle)."
                                     },
                                     "angle": {
@@ -21995,8 +21958,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "description": "Ruled shells only: the new plane of the second profile, in base plane coordinates, as GetDetailsOfElements returns it. Only the parts given change, as for profilePlane."
                         },
                         "morphingRule": {
-                            "type": "string",
-                            "enum": [ "Paired", "Smooth" ],
+                            "$ref": "#/ShellMorphingRule",
                             "description": "Ruled shells only: how the two profiles are joined, segment by segment (Paired) or smoothly."
                         },
                         "axis": {
@@ -22024,8 +21986,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
                         },
                         "segmentType": {
-                            "type": "string",
-                            "enum": [ "ByCircle", "ByArc" ],
+                            "$ref": "#/ShellSegmentType",
                             "description": "Revolved shells only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
                         },
                         "segmentsByCircle": {
@@ -22043,9 +22004,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "description": "Revolved shells only: whether the revolved surface is broken into planes along the revolution arc."
                         },
                         "cutBodyType": {
-                            "type": "string",
-                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
-                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
+                            "$ref": "#/ShellCutBodyTypeUpdate"
                         },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,

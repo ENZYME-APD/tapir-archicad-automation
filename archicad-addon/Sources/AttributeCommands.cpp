@@ -8666,7 +8666,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
         "properties": {
             "profileDataArray": {
                 "type": "array",
-                "description" : "Array of data to create new Profiles.",
+                "description": "Array of data to create new Profiles.",
                 "items": {
                     "type": "object",
                     "description": "Data to create or modify a Profile. Its geometry (the cross-section shape) comes from sourceAttributeId (an existing Profile's geometry, copied), from newSkins (AC27+ only, caller-supplied polygon geometry), or both combined. When creating a brand-new Profile (overwriteExisting false, or true but no existing match), at least one of the two must be given. When overwriteExisting targets an existing Profile, both are optional - the existing Profile's own current geometry is preserved by default (e.g. to change only wallType, or to add newSkins on top of the unchanged existing shape). skinOverrides and newSkins' edgeOverrides target skins/edges by the identifiers/indices GetProfiles reports.",
@@ -8761,7 +8761,9 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                     }
                                 },
                                 "additionalProperties": false,
-                                "required": ["skinId"]
+                                "required": [
+                                    "skinId"
+                                ]
                             }
                         },
                         "moveVertices": {
@@ -8802,7 +8804,9 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                                     }
                                 },
                                 "additionalProperties": false,
-                                "required": ["vector"]
+                                "required": [
+                                    "vector"
+                                ]
                             }
                         },
                         "newSkins": {
@@ -8828,77 +8832,18 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                             "type": "array",
                             "description": "Adds offset modifiers (Profile Manager, Modifiers) to the Profile, read back with GetProfiles' profileModifiers. Applied after skinOverrides, moveVertices and newSkins, so edges and anchors refer to the final shape; their skinIds come from GetProfiles, so a Profile built from newSkins gets its modifiers in a second CreateProfiles call with overwriteExisting. A modifier's value is the distance its dimension measures on the shape: draw the shape so it measures the default value you want. Archicad has no function to delete one modifier: to remove modifiers, rebuild the Profile with replaceSkins (which drops them all) and add the ones to keep again.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The modifier's name, unique in the Profile."
-                                    },
-                                    "edges": {
-                                        "type": "array",
-                                        "description": "The edges the modifier moves, at least one.",
-                                        "items": {
-                                            "$ref": "#/ProfileModifierEdge"
-                                        }
-                                    },
-                                    "begin": {
-                                        "$ref": "#/ProfileModifierAnchor",
-                                        "description": "The anchor the modifier's dimension starts at, usually a Fixed point or a Vertex that does not move."
-                                    },
-                                    "end": {
-                                        "$ref": "#/ProfileModifierAnchor",
-                                        "description": "The anchor the modifier's dimension ends at, usually an Edge anchor on one of the moved edges."
-                                    },
-                                    "projectionAngle": {
-                                        "type": "number",
-                                        "description": "The direction, in radians from the x axis, to measure the dimension along, e.g. 0 for a horizontal offset. Omit to measure it along its nominal direction."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["name", "edges", "begin", "end"]
+                                "$ref": "#/ProfileModifierCreationData"
                             }
                         },
                         "renameProfileModifiers": {
                             "type": "array",
                             "description": "Renames offset modifiers of the Profile. Applied before newProfileModifiers.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "modifierId": {
-                                        "type": "string",
-                                        "description": "The modifier, from GetProfiles' profileModifiers[].modifierId."
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The new name, unique in the Profile."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["modifierId", "name"]
+                                "$ref": "#/ProfileModifierRename"
                             }
                         },
                         "stretchZones": {
-                            "type": "object",
-                            "description": "Sets or removes the stretch zones of the Profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), so a wall, beam or column using it can change its width or height. A Profile with a horizontal zone is widthStretchable, one with a vertical zone heightStretchable. Applied last, so the coordinates are those of the final geometry, as GetProfiles reports them in skins[].outlineCoords and stretchZones. A zone that is neither given nor removed is kept as it is (copied from sourceAttributeId, or preserved when overwriting).",
-                            "properties": {
-                                "horizontal": {
-                                    "$ref": "#/ProfileStretchZone",
-                                    "description": "The horizontal stretch zone (width): the x range of the profile that stretches when the element's width differs from the profile's."
-                                },
-                                "vertical": {
-                                    "$ref": "#/ProfileStretchZone",
-                                    "description": "The vertical stretch zone (height): the y range of the profile that stretches when the element's height differs from the profile's."
-                                },
-                                "removeHorizontal": {
-                                    "type": "boolean",
-                                    "description": "Removes the horizontal stretch zone, so the width is fixed. Cannot be given together with horizontal."
-                                },
-                                "removeVertical": {
-                                    "type": "boolean",
-                                    "description": "Removes the vertical stretch zone, so the height is fixed. Cannot be given together with vertical."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/ProfileStretchZonesData"
                         },
                         "nominalSize": {
                             "$ref": "#/ProfileNominalSize",
@@ -8913,7 +8858,7 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                         }
                     },
                     "additionalProperties": false,
-                    "required" : [
+                    "required": [
                         "name"
                     ]
                 }

@@ -2442,12 +2442,7 @@
         "description": "The component area method of a profile skin (Profile Manager): the line or circle the skin's area is projected onto. None: no projection shape. Line: the line from lineBegin to lineEnd. Circle: the circle with center and radius. Coordinates are those of GetProfiles' skins[].outlineCoords.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "None",
-                    "Line",
-                    "Circle"
-                ]
+                "$ref": "#/ProfileAreaMethodType"
             },
             "lineBegin": {
                 "$ref": "#/Coordinate2D",
@@ -2522,12 +2517,7 @@
                 "description": "The edge of the skin, the same position as in GetProfiles' skins[].edges."
             },
             "direction": {
-                "type": "string",
-                "enum": [
-                    "Left",
-                    "Right"
-                ],
-                "description": "Which way Archicad moves the edge for a growing value, as it stores it. CreateProfiles works it out from the shape when it is omitted."
+                "$ref": "#/ProfileModifierEdgeDirection"
             }
         },
         "additionalProperties": false,
@@ -2541,21 +2531,7 @@
         "description": "One end of an offset modifier's dimension. Fixed: a point (position). Vertex: a vertex of a skin (skinId, vertexIndex: a position in GetProfiles' skins[].outlineCoords, 1 or more). Edge: an edge of a skin (skinId, edgeIndex, as in ProfileModifierEdge), measured perpendicular to it. The other types follow the profile's bounding box corners or stretch zone limits and need nothing else.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [
-                    "Fixed",
-                    "Vertex",
-                    "Edge",
-                    "BoundingBoxUpperLeft",
-                    "BoundingBoxUpperRight",
-                    "BoundingBoxLowerLeft",
-                    "BoundingBoxLowerRight",
-                    "StretchZoneLeft",
-                    "StretchZoneRight",
-                    "StretchZoneBottom",
-                    "StretchZoneTop",
-                    "Undefined"
-                ]
+                "$ref": "#/ProfileModifierAnchorType"
             },
             "position": {
                 "$ref": "#/Coordinate2D",
@@ -3538,8 +3514,7 @@
                 "type": "array",
                 "description": "The sizes (widths of the columns or heights of the rows) of the pattern unit in meters, in order from the start of the segment or from the bottom. The unit is repeated to fill the segment.",
                 "items": {
-                    "type": "number",
-                    "minimum": 0.0, "exclusiveMinimum": true
+                    "$ref": "#/CurtainWallPatternSize"
                 },
                 "minItems": 1
             },
@@ -3553,8 +3528,7 @@
                 "type": "array",
                 "description": "Zero-based indices of the columns/rows of the pattern unit that 'BestDivision' may stretch. When omitted, all of them are flexible. Ignored by 'FixedSizes'.",
                 "items": {
-                    "type": "integer",
-                    "minimum": 0
+                    "$ref": "#/CurtainWallFlexibleIndex"
                 }
             }
         },
@@ -4129,8 +4103,7 @@
         "description": "How a shell edge is cut.",
         "properties": {
             "trimType": {
-                "type": "string",
-                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle"],
+                "$ref": "#/EdgeTrimTypeUpdate",
                 "description": "Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle)."
             },
             "angle": {
@@ -4148,9 +4121,7 @@
         "description": "How an edge of a roof's polygon (a single-plane roof's outline or a multi-plane roof's contour) is cut (the edge's cut in the roof's Custom Edge Settings).",
         "properties": {
             "trimType": {
-                "type": "string",
-                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
-                "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof."
+                "$ref": "#/RoofEdgeTrimType"
             },
             "angle": {
                 "type": "number",
@@ -4164,9 +4135,7 @@
         "description": "The Edge Angle of a slab edge (Geometry and Positioning panel of Slab Settings): vertical, or at a custom angle.",
         "properties": {
             "trimType": {
-                "type": "string",
-                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
-                "description": "Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab."
+                "$ref": "#/SlabEdgeTrimType"
             },
             "angle": {
                 "type": "number",
@@ -10832,6 +10801,453 @@
             "verticalCurveHeight"
         ]
     },
+    "CurtainWallPatternSize": {
+        "type": "number",
+        "minimum": 0.0,
+        "exclusiveMinimum": true
+    },
+    "CurtainWallFlexibleIndex": {
+        "type": "integer",
+        "minimum": 0
+    },
+    "ShellClass": {
+        "type": "string",
+        "enum": [
+            "Extruded",
+            "Revolved",
+            "Ruled"
+        ]
+    },
+    "RoofPivotEdge": {
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The roof plane of the edge on each level, from the pivot polygon upwards.",
+                "items": {
+                    "$ref": "#/RoofPivotEdgeLevel"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "levels"
+        ]
+    },
+    "RoofPivotEdgeLevel": {
+        "type": "object",
+        "properties": {
+            "angle": {
+                "type": "number",
+                "description": "Angle of the plane to the XY plane."
+            },
+            "eavesOverhang": {
+                "type": "number",
+                "description": "Extension of the eaves outside the pivot polygon."
+            },
+            "angleType": {
+                "$ref": "#/RoofPivotEdgeAngleType"
+            },
+            "topMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own top surface (Custom Plane Settings). Omitted when it names no surface."
+            },
+            "bottomMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own bottom surface (Custom Plane Settings). Omitted when it names no surface."
+            },
+            "coverFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own cover fill (Custom Plane Settings). Omitted when it names no fill."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "angle",
+            "eavesOverhang",
+            "angleType"
+        ]
+    },
+    "RoofPivotEdgeAngleType": {
+        "type": "string",
+        "enum": [
+            "Sloped",
+            "Gable"
+        ],
+        "description": "Gable for a vertical gable plane, Sloped otherwise."
+    },
+    "ShellBaseCutBodyType": {
+        "type": "string",
+        "enum": [
+            "Editable",
+            "ContoursDown",
+            "PivotLinesDown",
+            "UpwardsExtrusion",
+            "DownwardsExtrusion"
+        ],
+        "description": "How a roof or shell body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel)."
+    },
+    "RoofPivotEdgeLevelUpdate": {
+        "type": "object",
+        "properties": {
+            "angle": {
+                "type": "number",
+                "description": "Angle of the plane to the XY plane."
+            },
+            "eavesOverhang": {
+                "type": "number",
+                "description": "Extension of the eaves outside the pivot polygon."
+            },
+            "angleType": {
+                "$ref": "#/RoofPivotEdgeAngleType"
+            },
+            "topMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own top surface (Custom Plane Settings). The roof is read back after the change, and the item fails if Archicad did not apply it (CreateRoofs then does not create the roof)."
+            },
+            "bottomMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own bottom surface (Custom Plane Settings). Read back like topMaterialId."
+            },
+            "coverFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The plane's own cover fill (Custom Plane Settings). Read back like topMaterialId."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RoofPivotLineUpdate": {
+        "type": "object",
+        "description": "Single-plane roofs only: the line the plane rises from. The ends are named begCoordinate and endCoordinate as in CreateRoofs, or begin and end as GetDetailsOfElements reports them.",
+        "properties": {
+            "begCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "endCoordinate": {
+                "$ref": "#/Coordinate2D"
+            },
+            "begin": {
+                "$ref": "#/Coordinate2D"
+            },
+            "end": {
+                "$ref": "#/Coordinate2D"
+            }
+        },
+        "additionalProperties": false
+    },
+    "RoofEdgeTrimType": {
+        "type": "string",
+        "enum": [
+            "Vertical",
+            "Perpendicular",
+            "Horizontal",
+            "CustomAngle",
+            "AlignWithCut"
+        ],
+        "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof."
+    },
+    "EdgeTrimTypeUpdate": {
+        "type": "string",
+        "enum": [
+            "Vertical",
+            "Perpendicular",
+            "Horizontal",
+            "CustomAngle"
+        ],
+        "description": "The trim direction of a roof or shell edge: Vertical, Perpendicular to its plane, Horizontal, or at angle (CustomAngle)."
+    },
+    "SkylightAnchorPoint": {
+        "type": "string",
+        "enum": [
+            "BottomCenter",
+            "BottomLeft",
+            "BottomRight",
+            "TopCenter",
+            "TopLeft",
+            "TopRight"
+        ],
+        "description": "Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint)."
+    },
+    "SkylightFixMode": {
+        "type": "string",
+        "enum": [
+            "Horizontal",
+            "Vertical"
+        ],
+        "description": "What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode)."
+    },
+    "CurtainWallFrameContourUpdate": {
+        "type": "object",
+        "description": "The contour of the frame, as GetDetailsOfElements returns it. Only the given keys are changed.",
+        "properties": {
+            "a1": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Contour width inside."
+            },
+            "a2": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Contour width outside."
+            },
+            "b1": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Contour length inside."
+            },
+            "b2": {
+                "type": "number",
+                "minimum": 0.0,
+                "description": "Contour length outside."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ColumnVeneerType": {
+        "type": "string",
+        "enum": [
+            "Core",
+            "Finish",
+            "Other"
+        ]
+    },
+    "ProfileModifierRename": {
+        "type": "object",
+        "properties": {
+            "modifierId": {
+                "type": "string",
+                "description": "The modifier, from GetProfiles' profileModifiers[].modifierId."
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name, unique in the Profile."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modifierId",
+            "name"
+        ]
+    },
+    "ProfileModifierCreationData": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The modifier's name, unique in the Profile."
+            },
+            "edges": {
+                "type": "array",
+                "description": "The edges the modifier moves, at least one.",
+                "items": {
+                    "$ref": "#/ProfileModifierEdge"
+                }
+            },
+            "begin": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension starts at, usually a Fixed point or a Vertex that does not move."
+            },
+            "end": {
+                "$ref": "#/ProfileModifierAnchor",
+                "description": "The anchor the modifier's dimension ends at, usually an Edge anchor on one of the moved edges."
+            },
+            "projectionAngle": {
+                "type": "number",
+                "description": "The direction, in radians from the x axis, to measure the dimension along, e.g. 0 for a horizontal offset. Omit to measure it along its nominal direction."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "edges",
+            "begin",
+            "end"
+        ]
+    },
+    "ProfileStretchZonesData": {
+        "type": "object",
+        "description": "Sets or removes the stretch zones of the Profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), so a wall, beam or column using it can change its width or height. A Profile with a horizontal zone is widthStretchable, one with a vertical zone heightStretchable. Applied last, so the coordinates are those of the final geometry, as GetProfiles reports them in skins[].outlineCoords and stretchZones. A zone that is neither given nor removed is kept as it is (copied from sourceAttributeId, or preserved when overwriting).",
+        "properties": {
+            "horizontal": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The horizontal stretch zone (width): the x range of the profile that stretches when the element's width differs from the profile's."
+            },
+            "vertical": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The vertical stretch zone (height): the y range of the profile that stretches when the element's height differs from the profile's."
+            },
+            "removeHorizontal": {
+                "type": "boolean",
+                "description": "Removes the horizontal stretch zone, so the width is fixed. Cannot be given together with horizontal."
+            },
+            "removeVertical": {
+                "type": "boolean",
+                "description": "Removes the vertical stretch zone, so the height is fixed. Cannot be given together with vertical."
+            }
+        },
+        "additionalProperties": false
+    },
+    "RoofContourPolygonUpdate": {
+        "type": "object",
+        "description": "Multi-plane roofs only: the roof's contour (the finished outline of the eaves, as Edit Roof Contour in Archicad changes it), written without moving the pivot polygon. Switches the roof's overhang to Manual (overhangType of GetDetailsOfElements). Takes the contour as GetDetailsOfElements returns it in polygonOutline, polygonArcs and holes. The edges of the new contour that lie on an edge of the old one keep its side surface and edge type. After writing, the roof is read back, and the item fails when Archicad did not keep the overhang Manual or the contour does not have the given points and holes. Cannot be combined with polygonOutline, holes (the holes of the pivot polygon), pivotEdges, eavesOverhang or edgeTrims (send the trims of the new contour in a second call).",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The plan (x, y) coordinates of the contour's outline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "The arcs of the contour's outline.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline"
+        ]
+    },
+    "AssemblySegmentLengthType": {
+        "type": "string",
+        "enum": [
+            "Fixed",
+            "Proportional",
+            "Unknown"
+        ],
+        "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; the commands that write a length (AssemblySegmentLengthModification) accept only Fixed or Proportional."
+    },
+    "CurtainWallAccessoryCategory": {
+        "type": "string",
+        "enum": [
+            "System",
+            "Custom"
+        ],
+        "description": "Whether the accessory is a system accessory or a custom one (API_CWAccessoryType::category)."
+    },
+    "CurtainWallJunctionCategory": {
+        "type": "string",
+        "enum": [
+            "System",
+            "Custom"
+        ],
+        "description": "Whether the junction is a system junction or a custom one (API_CWJunctionType::category)."
+    },
+    "ProfileAreaMethodType": {
+        "type": "string",
+        "enum": [
+            "None",
+            "Line",
+            "Circle"
+        ]
+    },
+    "ProfileModifierAnchorType": {
+        "type": "string",
+        "enum": [
+            "Fixed",
+            "Vertex",
+            "Edge",
+            "BoundingBoxUpperLeft",
+            "BoundingBoxUpperRight",
+            "BoundingBoxLowerLeft",
+            "BoundingBoxLowerRight",
+            "StretchZoneLeft",
+            "StretchZoneRight",
+            "StretchZoneBottom",
+            "StretchZoneTop",
+            "Undefined"
+        ]
+    },
+    "ProfileModifierEdgeDirection": {
+        "type": "string",
+        "enum": [
+            "Left",
+            "Right"
+        ],
+        "description": "Which way Archicad moves the edge for a growing value, as it stores it. CreateProfiles works it out from the shape when it is omitted."
+    },
+    "RoofOverhangType": {
+        "type": "string",
+        "enum": [
+            "Offset",
+            "Manual"
+        ],
+        "description": "Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour."
+    },
+    "RoofSegmentType": {
+        "type": "string",
+        "enum": [
+            "SegmentsByCircle",
+            "SegmentsByArc"
+        ],
+        "description": "Multi-plane roofs only: how the curved edges of the pivot polygon (polygonArcs) are resolved into planes, as GetDetailsOfElements reports it. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments. Written to the roof and to every edge of its pivot polygon; the roof is read back and the item fails when Archicad did not apply it. Cannot be combined with contourPolygon, as none of segmentsByArc and segmentsByCircle can."
+    },
+    "RoofCutBodyTypeUpdate": {
+        "type": "string",
+        "enum": [
+            "ContoursDown",
+            "PivotLinesDown"
+        ],
+        "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
+    },
+    "ShellSegmentType": {
+        "type": "string",
+        "enum": [
+            "ByCircle",
+            "ByArc"
+        ],
+        "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+    },
+    "SlabEdgeTrimType": {
+        "type": "string",
+        "enum": [
+            "Vertical",
+            "Perpendicular",
+            "Horizontal",
+            "CustomAngle",
+            "AlignWithCut"
+        ],
+        "description": "Vertical (the default, perpendicular to the slab), or at 'angle' (CustomAngle). ModifySlabs writes only these two; the others are only reported, should Archicad store one on a slab."
+    },
+    "ZoneBoundaryMethod": {
+        "type": "string",
+        "description": "How an automatic zone found its boundary: ReferenceLine when it is surrounded by the reference lines of the walls, InnerEdge when by their inner edges (side lines). A ReferenceLine zone's polygon is expected to differ from the inner faces of its walls, and only such a zone uses polygonDisplay. Read only; only present when isManual is false.",
+        "enum": [
+            "ReferenceLine",
+            "InnerEdge"
+        ]
+    },
+    "ShellMorphingRule": {
+        "type": "string",
+        "enum": [
+            "Paired",
+            "Smooth"
+        ],
+        "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+    },
+    "ShellCutBodyTypeUpdate": {
+        "type": "string",
+        "enum": [
+            "UpwardsExtrusion",
+            "DownwardsExtrusion"
+        ],
+        "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
+    },
+    "AssemblySegmentLengthTypeInput": {
+        "type": "string",
+        "enum": [
+            "Fixed",
+            "Proportional"
+        ],
+        "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+    },
     "RoofDetails": {
         "type": "object",
         "properties": {
@@ -10891,9 +11307,8 @@
                 "description": "The stories the roof's cover fill is shown on (API_ShellBaseType::visibilityFill)."
             },
             "cutBodyType": {
-                "type": "string",
-                "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel of Roof Settings). A roof uses ContoursDown or PivotLinesDown, which ModifyRoofs sets."
+                "$ref": "#/ShellBaseCutBodyType",
+                "description": "A roof uses ContoursDown or PivotLinesDown; ModifyRoofs sets these values."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -10941,9 +11356,7 @@
                 "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
             },
             "overhangType": {
-                "type": "string",
-                "enum": [ "Offset", "Manual" ],
-                "description": "Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour."
+                "$ref": "#/RoofOverhangType"
             },
             "levels": {
                 "type": "array",
@@ -10967,8 +11380,7 @@
                 }
             },
             "segmentType": {
-                "type": "string",
-                "enum": [ "SegmentsByCircle", "SegmentsByArc" ],
+                "$ref": "#/RoofSegmentType",
                 "description": "Multi-plane: how the curved edges of the pivot polygon are resolved into planes. SegmentsByCircle cuts a whole circle into segmentsByCircle segments and uses as many as the arc covers; SegmentsByArc cuts each arc into segmentsByArc segments."
             },
             "segmentsByArc": {
@@ -11024,28 +11436,7 @@
                 "type": "array",
                 "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon. Item i belongs to the edge from vertex i to vertex i + 1 of pivotPolygonOutline; for a pivot polygon with holes, the edges of each hole follow, contour by contour.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "levels": {
-                            "type": "array",
-                            "description": "The roof plane of the edge on each level, from the pivot polygon upwards.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
-                                    "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." },
-                                    "topMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own top surface (Custom Plane Settings). Omitted when it names no surface." },
-                                    "bottomMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own bottom surface (Custom Plane Settings). Omitted when it names no surface." },
-                                    "coverFillId": { "$ref": "#/AttributeId", "description": "The plane's own cover fill (Custom Plane Settings). Omitted when it names no fill." }
-                                },
-                                "additionalProperties": false,
-                                "required": [ "angle", "eavesOverhang", "angleType" ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "levels" ]
+                    "$ref": "#/RoofPivotEdge"
                 }
             }
         },
@@ -11086,8 +11477,7 @@
         "type": "object",
         "properties": {
             "shellClass": {
-                "type": "string",
-                "enum": [ "Extruded", "Revolved", "Ruled" ]
+                "$ref": "#/ShellClass"
             },
             "structureType": {
                 "$ref": "#/ShellStructureType"
@@ -11144,9 +11534,8 @@
                 "description": "The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill)."
             },
             "cutBodyType": {
-                "type": "string",
-                "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
+                "$ref": "#/ShellBaseCutBodyType",
+                "description": "A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -11217,9 +11606,7 @@
                 "description": "Revolved only: shear of the revolution, in radians; pi/2 is no shear."
             },
             "segmentType": {
-                "type": "string",
-                "enum": [ "ByCircle", "ByArc" ],
-                "description": "Revolved only: how the curve is resolved into segments, by the segments of a full circle (segmentsByCircle) or of the revolution arc (segmentsByArc)."
+                "$ref": "#/ShellSegmentType"
             },
             "segmentsByCircle": {
                 "type": "integer",
@@ -11246,9 +11633,7 @@
                 "description": "Ruled only: the plane of secondProfile, in base plane coordinates (API_RuledShellData::plane2), as CreateShells takes it."
             },
             "morphingRule": {
-                "type": "string",
-                "enum": [ "Paired", "Smooth" ],
-                "description": "Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly."
+                "$ref": "#/ShellMorphingRule"
             },
             "extrusionStart": {
                 "$ref": "#/Coordinate3D",
@@ -11634,8 +12019,7 @@
         "description": "The veneer of a column segment. A thickness of 0 means no veneer. When writing, only the given fields change.",
         "properties": {
             "type": {
-                "type": "string",
-                "enum": [ "Core", "Finish", "Other" ]
+                "$ref": "#/ColumnVeneerType"
             },
             "thickness": {
                 "type": "number",
@@ -11654,9 +12038,7 @@
         "description": "How the length of a segment of a beam or column is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.",
         "properties": {
             "lengthType": {
-                "type": "string",
-                "enum": [ "Fixed", "Proportional", "Unknown" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave. Unknown is only returned, for a scheme Archicad reports as neither; the commands that write a length (AssemblySegmentLengthModification) accept only Fixed or Proportional."
+                "$ref": "#/AssemblySegmentLengthType"
             },
             "fixedLength": {
                 "type": "number",
@@ -11791,9 +12173,7 @@
         "description": "The length scheme to write to a segment of a beam or column, in the shape of AssemblySegmentLength. Only the given fields change; Archicad uses the value of the lengthType.",
         "properties": {
             "lengthType": {
-                "type": "string",
-                "enum": [ "Fixed", "Proportional" ],
-                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+                "$ref": "#/AssemblySegmentLengthTypeInput"
             },
             "fixedLength": {
                 "type": "number",
@@ -12568,13 +12948,11 @@
                 "description": "Global XY coordinates of the skylight's anchor point."
             },
             "anchorPoint": {
-                "type": "string",
-                "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"],
+                "$ref": "#/SkylightAnchorPoint",
                 "description": "Which point of the skylight anchorPosition places."
             },
             "fixMode": {
-                "type": "string",
-                "enum": ["Horizontal", "Vertical"],
+                "$ref": "#/SkylightFixMode",
                 "description": "What the skylight keeps when the angle or the height of its owner changes."
             },
             "anchorLevel": {
@@ -13078,12 +13456,7 @@
                 "description": "The reference point an automatic zone was placed from (the referencePosition of CreateZones); the zone is found around it when zones are updated. Only present when isManual is false."
             },
             "boundaryMethod": {
-                "type": "string",
-                "description": "How an automatic zone found its boundary: ReferenceLine when it is surrounded by the reference lines of the walls, InnerEdge when by their inner edges (side lines). A ReferenceLine zone's polygon is expected to differ from the inner faces of its walls, and only such a zone uses polygonDisplay. Read only; only present when isManual is false.",
-                "enum": [
-                    "ReferenceLine",
-                    "InnerEdge"
-                ]
+                "$ref": "#/ZoneBoundaryMethod"
             },
             "polygonOutline": {
                 "type": "array",
@@ -14293,9 +14666,7 @@
         "description": "A junction of a curtain wall: a GDL object Archicad places where frames and panels meet (API_CWJunctionType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
         "properties": {
             "category": {
-                "type": "string",
-                "enum": [ "System", "Custom" ],
-                "description": "Whether the junction is a system junction or a custom one (API_CWJunctionType::category)."
+                "$ref": "#/CurtainWallJunctionCategory"
             },
             "flipped": {
                 "type": "boolean",
@@ -14328,9 +14699,7 @@
         "description": "An accessory of a curtain wall: a GDL object Archicad joins to a frame (API_CWAccessoryType). Its parameters are read by GetGDLParametersOfElements and its library part by the libraryPartUnId field.",
         "properties": {
             "category": {
-                "type": "string",
-                "enum": [ "System", "Custom" ],
-                "description": "Whether the accessory is a system accessory or a custom one (API_CWAccessoryType::category)."
+                "$ref": "#/CurtainWallAccessoryCategory"
             },
             "flipped": {
                 "type": "boolean",
@@ -18181,7 +18550,8 @@
             },
             "levelAngle": {
                 "type": "number",
-                "minimum": 0.0, "exclusiveMinimum": true
+                "minimum": 0.0,
+                "exclusiveMinimum": true
             },
             "height": {
                 "type": "number",
@@ -18189,7 +18559,8 @@
             },
             "angle": {
                 "type": "number",
-                "minimum": 0.0, "exclusiveMinimum": true,
+                "minimum": 0.0,
+                "exclusiveMinimum": true,
                 "description": "The same as levelAngle, as GetDetailsOfElements reads it."
             }
         },
@@ -18233,16 +18604,7 @@
                 "type": "array",
                 "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
-                        "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." },
-                        "topMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own top surface (Custom Plane Settings). The roof is read back after the change, and the item fails if Archicad did not apply it (CreateRoofs then does not create the roof)." },
-                        "bottomMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own bottom surface (Custom Plane Settings). Read back like topMaterialId." },
-                        "coverFillId": { "$ref": "#/AttributeId", "description": "The plane's own cover fill (Custom Plane Settings). Read back like topMaterialId." }
-                    },
-                    "additionalProperties": false
+                    "$ref": "#/RoofPivotEdgeLevelUpdate"
                 }
             }
         },
