@@ -1,0 +1,144 @@
+{
+  "title": "ModifyRailings writes the pattern entry of a segment (baluster spacing, panel symbolId), the neighbouring segments keep theirs, and an unknown panel symbol is refused (#2447)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "a railing with three segments",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "floorIndex": 0,
+            "bottomOffset": 0.0,
+            "height": 1.1,
+            "coordinates": [
+              { "x": 960.0, "y": 760.0 },
+              { "x": 964.0, "y": 760.0 },
+              { "x": 964.0, "y": 763.0 },
+              { "x": 960.0, "y": 763.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "rail": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" }
+      ]
+    },
+    {
+      "id": "the pattern entries before any change",
+      "command": "GetRailingSegmentPatterns",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rail}" } } ] },
+      "save": {
+        "seg0Length": "railings[0].segments[0].entry.balusterSet.distribution.length",
+        "seg2Length": "railings[0].segments[2].entry.balusterSet.distribution.length",
+        "panelSymbol": "railings[0].segments[0].entry.panel.symbolId"
+      },
+      "expect": [
+        { "path": "railings[0].segments", "len": 3, "name": "three segments" },
+        { "path": "railings[0].segments[0].entry.panel.symbolId", "exists": true, "name": "the panel entry names its symbol" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: the baluster spacing of segment 1 only",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${rail}" },
+            "segments": [
+              { "index": 1, "pattern": { "balusterSet": { "distribution": { "type": "PatternLength", "length": 0.137 } } } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" }
+      ]
+    },
+    {
+      "id": "segments 0 and 2 keep their baluster spacing",
+      "command": "GetRailingSegmentPatterns",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rail}" } } ] },
+      "expect": [
+        { "path": "railings[0].segments[0].entry.balusterSet.distribution.length", "approx": "${seg0Length}", "name": "segment 0 kept its spacing" },
+        { "path": "railings[0].segments[2].entry.balusterSet.distribution.length", "approx": "${seg2Length}", "name": "segment 2 kept its spacing" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: the baluster spacing and the panel symbol of segment 0",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${rail}" },
+            "segments": [
+              {
+                "index": 0,
+                "pattern": {
+                  "panel": { "symbolId": "${panelSymbol}" },
+                  "balusterSet": { "distribution": { "type": "PatternLength", "length": 0.137 } }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pattern entry of segment 0 written and read back" }
+      ]
+    },
+    {
+      "id": "the entry of segment 0 after the change",
+      "command": "GetRailingSegmentPatterns",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rail}" } } ] },
+      "save": { "balusterSet0": "railings[0].segments[0].instances.balusterSets[0].elementId.guid" },
+      "expect": [
+        { "path": "railings[0].segments[0].entry.balusterSet.distribution.type", "eq": "PatternLength", "name": "segment 0 has the new distribution type" },
+        { "path": "railings[0].segments[0].entry.balusterSet.distribution.length", "approx": 0.137, "name": "segment 0 has the new spacing" },
+        { "path": "railings[0].segments[0].entry.panel.symbolId", "eq": "${panelSymbol}", "name": "segment 0 has the given panel symbol" },
+        { "path": "railings[0].segments[0].instances.balusterSets[0].elementId.guid", "exists": true, "name": "segment 0 has a baluster set" }
+      ]
+    },
+    {
+      "id": "the regenerated baluster set of segment 0 follows the entry",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${balusterSet0}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RailingBalusterSet", "name": "a baluster set" },
+        { "path": "detailsOfElements[0].details.distribution.length", "approx": 0.137, "name": "the baluster set has the new spacing" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: a panel symbol no railing of the project uses",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          {
+            "elementId": { "guid": "${rail}" },
+            "segments": [ { "index": 0, "pattern": { "panel": { "symbolId": "00000000-0000-0000-0000-00000000BEEF" } } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "an unknown panel symbol refused" }
+      ]
+    },
+    {
+      "id": "the refused symbol changed nothing",
+      "command": "GetRailingSegmentPatterns",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${rail}" } } ] },
+      "expect": [
+        { "path": "railings[0].segments[0].entry.panel.symbolId", "eq": "${panelSymbol}", "name": "segment 0 kept its panel symbol" }
+      ]
+    }
+  ]
+}

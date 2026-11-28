@@ -76,6 +76,7 @@ docs/                    Generated docs (archicad-addon command reference),
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
                          expanded-schema dump and compare (expand_schemas.py),
+                         ordered schema merge queue (queue_schema_refinements.py),
                          command scaffolder (new_command.py),
                          one-example-per-command checker (check_examples.py),
                          Grasshopper GUI label table checker (check_tool_settings.py),
@@ -83,6 +84,7 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
                          Grasshopper coverage generator (generate_gh_coverage.py,
                          gh_coverage_rules.json),
+                         element field coverage generator (generate_field_coverage.py),
                          Archicad version list reader and updater (devkits.py),
                          Community page data (generate_community_data.py),
                          marketplace folder checker (check_marketplace.py) and
@@ -257,6 +259,13 @@ python test_examples.py
   labelled `needs-test`: a person sets it on a PR, and the bot PR steward sets it by itself on a
   bot PR with a check once its builds are green, so testers' runners install those bot builds
   without a person looking first (see `claude_bot_pr_steward.yml` under CI).
+- Tests that need no Archicad at all, all standard-library `unittest`:
+  `python -m unittest discover python-client/tests` (the generated Python client),
+  `python -m unittest discover tools/community-test-runner/tests` (the runner) and
+  `python -m unittest discover tools/tests` (the tooling itself: the version rewrite rules the
+  release runs, the schema expander a schema refactor is compared with, and the matching rules
+  of the field coverage). The add-on build
+  check runs the last one on every pull request.
 
 ## Grasshopper plugin
 
@@ -552,8 +561,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   authors that touch no release-critical path. It also merges the issue bot's
   PRs (`claude/` branches) with no human interaction once every build check is
   green and `claude-review` has been a success for `BOT_AUTO_MERGE_DELAY_HOURS`
-  (default 72), with no open thread by a person, no changes requested and no
-  `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
+  (default 72), with no open thread by a person and no changes requested;
+  `BOT_AUTO_MERGE=false` turns that off. A `do-not-merge` or `needs-maintainer`
+  label holds any PR, a person's as well as the bot's.
   This is a deliberate maintainer decision to minimize human maintenance.
   A bot PR that fixes a `release-failure` issue (the Actions bot's open issue with
   that label, whose body starts with `<!-- release-failure: <version> run=<id> -->`
@@ -562,13 +572,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `Fixes #<n>`) skips the waiting time, and its merge starts `weekly_release.yml`;
   `claude_pr_review.yml` starts auto-merge when it records a passing verdict, so the
   merge follows the review at once.
-- `schema_refinement.yml` — keep the PR draft, review it, then run manually from
-  `main` with its PR number and `merge=true`. After validation and existing checks
-  pass, it marks the PR ready and requests a merge. No description marker is needed.
-  The default `merge=false` checks only and leaves draft status unchanged.
-  CLI: `gh workflow run schema_refinement.yml --ref main -f pr=123 -f merge=true`.
-  Results and differences appear in PR comments and the `schema-report` download.
-  The PR head is pinned; a main change after the final check can still race.
+- `schema_refinement.yml` — manually validate a reviewed draft against current main,
+  then mark ready and merge: `gh workflow run schema_refinement.yml --ref main -f pr=123 -f merge=true`.
+  For an approved list, preview `python tools/queue_schema_refinements.py 123 456`;
+  add `--merge` to run sequentially. Use one queue at a time; see `--help` for options.
+  Results appear in PR comments and the `schema-report` download.
 - `delete_merged_branches.yml` — deletes the head branch of every merged pull
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)
@@ -610,7 +618,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   components name every parameter of the command's input schema, cover the
   rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
   same branch, read by `docs/gh-coverage/index.html`; commands that need no
-  component go in `tools/gh_coverage_rules.json`.
+  component go in `tools/gh_coverage_rules.json`. It also writes the field coverage
+  (`tools/generate_field_coverage.py`, #2883): every field of every element struct, from
+  `archicad-addon/Sources/ElementFieldTable.cpp` (the newest version that table has), and
+  whether code outside the generic field commands writes it or reads it by name (so a
+  command most likely has a key of its own for it), or a script reaches it only through
+  `GetElementFields` / `SetElementFields`. It is a static estimate from the code, published
+  as `field-coverage.*` to the same branch.
 - `site_data.yml` — daily, by hand and on pushes to `main` that change
   `marketplace/`, `tools/check_marketplace.py` or `tools/generate_catalogue.py`:
   `tools/generate_community_data.py` counts,
@@ -682,6 +696,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   (data on the `api-coverage` branch, generated by `.github/workflows/api_coverage.yml`)
 - Grasshopper coverage of the Tapir commands: <https://archicad-api.com/gh-coverage/>
   (same branch and workflow)
+- Field coverage of the element types: `field-coverage.md` on the `api-coverage` branch
+  (same workflow)
 - For AI assistants: <https://archicad-api.com/llms.txt> (the index), `llms-full.txt`
   (everything in one file) and `commands.json` (every command, machine-readable: an index,
   with one file per command group under `docs/commands/`)

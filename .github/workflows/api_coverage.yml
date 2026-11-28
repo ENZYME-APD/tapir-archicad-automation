@@ -20,6 +20,12 @@
 # published next to the API checklist as gh-coverage.* (read by
 # docs/gh-coverage/index.html).
 #
+# And the field coverage of the element types (tools/generate_field_coverage.py,
+# #2883): for every field of every Archicad element struct, whether a command
+# has a key of its own for it, or a script reaches it only through
+# GetElementFields / SetElementFields. It is published next to them as
+# field-coverage.* (readable on GitHub as field-coverage.md).
+#
 # It publishes without touching main:
 #   - api-coverage.json, api-coverage.md and api-coverage-summary.md as one
 #     commit on the api-coverage branch (read by docs/api-coverage/index.html
@@ -121,11 +127,23 @@ jobs:
             --rules tools/gh_coverage_rules.json \
             --out-dir out
 
+      - name: Generate the field coverage
+        run: |
+          set -eu
+          args=""
+          for dir in devkits/AC*; do
+            args="$args --devkit ${dir#devkits/AC}=$dir/Support"
+          done
+          python3 tools/generate_field_coverage.py $args \
+            --sources archicad-addon/Sources \
+            --out-dir out
+
       - name: Publish to the api-coverage branch
         run: |
           set -eu
           files="api-coverage.json api-coverage.md api-coverage-summary.md api-coverage-badge.json api-coverage.svg api-coverage-dark.svg
-                 gh-coverage.json gh-coverage.md gh-coverage-summary.md gh-coverage-badge.json gh-coverage.svg gh-coverage-dark.svg"
+                 gh-coverage.json gh-coverage.md gh-coverage-summary.md gh-coverage-badge.json gh-coverage.svg gh-coverage-dark.svg
+                 field-coverage.json field-coverage.md field-coverage-summary.md"
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           if git fetch -q origin api-coverage; then
@@ -144,7 +162,7 @@ jobs:
             exit 0
           fi
           base=$(git rev-parse -q --verify HEAD || true)
-          git commit -q -m "Update the Archicad API and Grasshopper coverage checklists"
+          git commit -q -m "Update the Archicad API, Grasshopper and field coverage checklists"
           if git push -q origin HEAD:api-coverage; then
             exit 0
           fi
@@ -168,6 +186,7 @@ jobs:
             echo
             echo "- **Full list, searchable:** https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/"
             echo "- **As Markdown:** https://github.com/$GITHUB_REPOSITORY/blob/api-coverage/api-coverage.md"
+            echo "- **Settings of each element type** (which have a command key of their own): https://github.com/$GITHUB_REPOSITORY/blob/api-coverage/field-coverage.md"
             echo '- **Start on an open item:** file an "Archicad API request" issue that names its functions; that marks them as claimed here, and the issue bot builds them.'
             echo
             cat out/api-coverage-summary.md
