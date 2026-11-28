@@ -49,7 +49,7 @@
         'Tapir Grasshopper plugin का कोई component <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> के कौन-से JSON कमांड call करता है, और क्या उसके components कमांड के parameters cover करते हैं। हर issue और main पर हर push के कुछ मिनटों में, और हर pull request के एक घंटे के भीतर अपडेट होता है। यह plugin के code की static जाँच है: यह दिखाती है कि components कौन-से parameters लेते हैं, यह नहीं कि हर एक काम करता है। <a href="../archicad-addon/">कमांड संदर्भ</a> और <a href="../api-coverage/">Archicad API कवरेज</a> भी देखें।',
     'Parameters of the used commands': 'इस्तेमाल हुए कमांड के parameters',
 
-    // The field coverage (field-coverage/), and the line linking it from the two other coverage pages
+    // The field coverage (field-coverage/), and its block on the API coverage page
     'Field coverage of the Archicad element types | Tapir':
         'Archicad element types की field कवरेज | Tapir',
     'Which settings of every Archicad element type a Tapir command has a key of its own for, and which a script can reach only through GetElementFields and SetElementFields.':
@@ -64,6 +64,8 @@
         'Archicad API के हर element type का हर field (<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …), और क्या <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> का code उसे नाम से लिखता या पढ़ता है, यानी किसी कमांड में उसकी अपनी key होने की पूरी संभावना है। बाकी fields तक script सिर्फ़ <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> और <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a> से पहुँचती है, Archicad 29 और 30 में। यह code से किया गया static अनुमान है, main पर हर push के साथ अपडेट होता है: "written" यह साबित नहीं करता कि कोई कमांड उस field को input के रूप में लेता है। <a href="../archicad-addon/">कमांड reference</a> और <a href="../api-coverage/">Archicad API कवरेज</a> भी देखें।',
     'By element type':
         'Element type के अनुसार',
-    'Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.':
-        'हर Archicad element type की किन settings के लिए कमांड में अपनी key है, यह <a href="../field-coverage/">field कवरेज</a> में है।'
+    'Element settings':
+        'Element की settings',
+    'A call such as <code>ACAPI_Element_Change</code> counts as one used item above, though a command may write only some of an element\'s settings with it. The <a href="../field-coverage/">field coverage</a> lists every setting of every element type, and whether a command has a key of its own for it.':
+        '<code>ACAPI_Element_Change</code> जैसी call ऊपर एक used item गिनी जाती है, हालाँकि कोई कमांड इससे element की कुछ ही settings लिख सकता है। <a href="../field-coverage/">Field कवरेज</a> में हर element type की हर setting है, और यह कि किसी कमांड में उसकी अपनी key है या नहीं।'
 });
