@@ -21907,6 +21907,11 @@ static GSErrCode WriteShellEdgeMaterials (const API_Guid& guid, const ShellEdgeM
         edges[i]->sideMaterial = given.materials[i];
         maskBytes[reinterpret_cast<const char*> (edges[i]) - elementBytes] = -1;
         maskBytes[reinterpret_cast<const char*> (&edges[i]->sideMaterial) - elementBytes] = -1;
+        if (i == 3) {
+            // The last side edge is item 1 of the side edge array member (extrudedEdgeDatas, ...),
+            // whose first byte is that of item 0: set it too. Item 0 is written back as read.
+            maskBytes[reinterpret_cast<const char*> (edges[2]) - elementBytes] = -1;
+        }
     }
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
