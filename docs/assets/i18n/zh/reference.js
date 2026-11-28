@@ -49,7 +49,7 @@
         'Tapir Grasshopper 插件的运算器调用了 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir 插件</a>的哪些 JSON 命令，以及这些运算器是否覆盖了命令的参数。每个 issue 和对 main 的 push 后几分钟内更新，每个 pull request 后一小时内更新。这是对插件代码的静态检查：它显示运算器写出了哪些参数，而不保证每个参数都能正常工作。另请参阅<a href="../archicad-addon/">命令参考</a>和 <a href="../api-coverage/">Archicad API 覆盖率</a>。',
     'Parameters of the used commands': '已使用命令的参数',
 
-    // The field coverage (field-coverage/), and the line linking it from the two other coverage pages
+    // The field coverage (field-coverage/), and its block on the API coverage page
     'Field coverage of the Archicad element types | Tapir':
         'Archicad 元素类型的字段覆盖率 | Tapir',
     'Which settings of every Archicad element type a Tapir command has a key of its own for, and which a script can reach only through GetElementFields and SetElementFields.':
@@ -64,6 +64,8 @@
         'Archicad API 每种元素类型的每个字段（<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …），以及 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> 的代码是否按名称写入或读取它，即某个命令很可能有专门的键。其余字段只能由脚本通过 <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> 和 <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a> 访问，适用于 Archicad 29 和 30。这是根据代码做的静态估计，每次推送到 main 时更新：“写入”并不证明某个命令接受该字段作为输入。另见<a href="../archicad-addon/">命令参考</a>和 <a href="../api-coverage/">Archicad API 覆盖率</a>。',
     'By element type':
         '按元素类型',
-    'Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.':
-        '每种 Archicad 元素类型的哪些设置在命令中有专门的键，请见<a href="../field-coverage/">字段覆盖率</a>。'
+    'Element settings':
+        '元素设置',
+    'A call such as <code>ACAPI_Element_Change</code> counts as one used item above, though a command may write only some of an element\'s settings with it. The <a href="../field-coverage/">field coverage</a> lists every setting of every element type, and whether a command has a key of its own for it.':
+        '像 <code>ACAPI_Element_Change</code> 这样的调用在上面算作一个已使用的项目，但命令可能只用它写入元素的部分设置。<a href="../field-coverage/">字段覆盖率</a>列出了每种元素类型的每项设置，以及命令是否有专门的键。'
 });

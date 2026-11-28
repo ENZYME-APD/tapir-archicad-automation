@@ -49,7 +49,7 @@
         'Les commandes JSON de l\'<a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Add-On Tapir</a> qu\'appelle un composant du plugin Grasshopper de Tapir, et si ses composants couvrent les paramètres de la commande, mises à jour quelques minutes après chaque issue et push sur main, et dans l\'heure après chaque pull request. C\'est une vérification statique du code du plugin : elle montre les paramètres que les composants nomment, pas que chacun fonctionne. Voir aussi la <a href="../archicad-addon/">référence des commandes</a> et la <a href="../api-coverage/">couverture de l\'API Archicad</a>.',
     'Parameters of the used commands': 'Paramètres des commandes utilisées',
 
-    // The field coverage (field-coverage/), and the line linking it from the two other coverage pages
+    // The field coverage (field-coverage/), and its block on the API coverage page
     'Field coverage of the Archicad element types | Tapir':
         'Couverture des champs des types d\'éléments Archicad | Tapir',
     'Which settings of every Archicad element type a Tapir command has a key of its own for, and which a script can reach only through GetElementFields and SetElementFields.':
@@ -64,6 +64,8 @@
         'Chaque champ de chaque type d\'élément de l\'API Archicad (<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …), et si le code de l\'<a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Add-On Tapir</a> l\'écrit ou le lit par son nom, de sorte qu\'une commande a très probablement une clé propre pour lui. Un script n\'atteint les autres que par <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> et <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a>, dans Archicad 29 et 30. C\'est une estimation statique tirée du code, mise à jour à chaque push sur main : « écrit » ne prouve pas qu\'une commande accepte le champ en entrée. Voir aussi la <a href="../archicad-addon/">référence des commandes</a> et la <a href="../api-coverage/">couverture de l\'API Archicad</a>.',
     'By element type':
         'Par type d\'élément',
-    'Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.':
-        'Les réglages de chaque type d\'élément Archicad pour lesquels une commande a une clé propre sont dans la <a href="../field-coverage/">couverture des champs</a>.'
+    'Element settings':
+        'Réglages des éléments',
+    'A call such as <code>ACAPI_Element_Change</code> counts as one used item above, though a command may write only some of an element\'s settings with it. The <a href="../field-coverage/">field coverage</a> lists every setting of every element type, and whether a command has a key of its own for it.':
+        'Un appel comme <code>ACAPI_Element_Change</code> compte ci-dessus comme un élément utilisé, alors qu\'une commande peut n\'écrire avec lui que certains réglages d\'un élément. La <a href="../field-coverage/">couverture des champs</a> liste chaque réglage de chaque type d\'élément, et si une commande a une clé propre pour lui.'
 });

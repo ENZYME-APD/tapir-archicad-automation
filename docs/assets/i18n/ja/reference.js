@@ -49,7 +49,7 @@
         'Tapir Grasshopper プラグインのコンポーネントが <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir アドオン</a>のどの JSON コマンドを呼び出し、そのコンポーネントがコマンドのパラメーターをカバーしているか。issue と main への push のたびに数分以内、pull request のたびに 1 時間以内に更新されます。これはプラグインのコードの静的チェックです。コンポーネントがどのパラメーターを指定しているかを示すもので、それぞれが動作することを示すものではありません。<a href="../archicad-addon/">コマンドリファレンス</a>と <a href="../api-coverage/">Archicad API カバレッジ</a>もご覧ください。',
     'Parameters of the used commands': '使用中のコマンドのパラメーター',
 
-    // The field coverage (field-coverage/), and the line linking it from the two other coverage pages
+    // The field coverage (field-coverage/), and its block on the API coverage page
     'Field coverage of the Archicad element types | Tapir':
         'Archicad 要素タイプのフィールドカバレッジ | Tapir',
     'Which settings of every Archicad element type a Tapir command has a key of its own for, and which a script can reach only through GetElementFields and SetElementFields.':
@@ -64,6 +64,8 @@
         'Archicad API の各要素タイプのすべてのフィールド（<code>API_WallType.thickness</code>, <code>API_RoofType.shellBase.topMat</code>, …）と、<a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir アドオン</a>のコードがそれを名前で書き込むか読み取るか。そうであれば、コマンドに専用のキーがある可能性が高いということです。それ以外のフィールドには、Archicad 29 と 30 で、スクリプトが <a href="../archicad-addon/#GetElementFields"><code>GetElementFields</code></a> と <a href="../archicad-addon/#SetElementFields"><code>SetElementFields</code></a> からしか届きません。これはコードからの静的な推定で、main への push のたびに更新されます。「書き込み」は、コマンドがそのフィールドを入力として受け取ることを証明するものではありません。<a href="../archicad-addon/">コマンドリファレンス</a>と <a href="../api-coverage/">Archicad API カバレッジ</a>もご覧ください。',
     'By element type':
         '要素タイプ別',
-    'Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.':
-        '各 Archicad 要素タイプのどの設定にコマンドの専用キーがあるかは、<a href="../field-coverage/">フィールドカバレッジ</a>にあります。'
+    'Element settings':
+        '要素の設定',
+    'A call such as <code>ACAPI_Element_Change</code> counts as one used item above, though a command may write only some of an element\'s settings with it. The <a href="../field-coverage/">field coverage</a> lists every setting of every element type, and whether a command has a key of its own for it.':
+        '<code>ACAPI_Element_Change</code> のような呼び出しは上では使用済みの 1 項目として数えられますが、コマンドはそれで要素の設定の一部しか書き込まないことがあります。<a href="../field-coverage/">フィールドカバレッジ</a>には、各要素タイプのすべての設定と、コマンドに専用のキーがあるかどうかが載っています。'
 });

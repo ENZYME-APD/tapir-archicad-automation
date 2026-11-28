@@ -405,6 +405,19 @@ function render () {
     }));
 }
 
+// The three coverage pages, as the first part of each one's sidebar; the same list on all three.
+const COVERAGE_PAGES = [['../api-coverage/', 'Archicad API'], ['../gh-coverage/', 'Grasshopper'], ['../field-coverage/', 'Element settings']];
+
+function coverageSwitcher (current) {
+    const list = el ('ul');
+    for (const [href, label] of COVERAGE_PAGES) {
+        const link = el ('a', { class: 'sidebar-link', href, text: label });
+        if (href === current) link.setAttribute ('aria-current', 'page');
+        list.append (el ('li', {}, link));
+    }
+    return [el ('div', { class: 'sidebar-title', text: 'Coverage' }), list];
+}
+
 function renderSidebar () {
     const sidebar = document.getElementById ('sidebar');
     const sections = el ('ul');
@@ -418,7 +431,7 @@ function renderSidebar () {
         link.addEventListener ('click', () => showType (t.type.struct));
         types.append (el ('li', {}, link));
     }
-    sidebar.replaceChildren (el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
+    sidebar.replaceChildren (...coverageSwitcher ('../field-coverage/'), el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
         el ('div', { class: 'sidebar-title', text: 'Element types · generic only' }), types);
     // Close the drawer after choosing a section or an element type on narrow screens.
     sidebar.addEventListener ('click', event => {
@@ -503,7 +516,9 @@ async function main () {
     renderSidebar ();
     document.getElementById ('types-more').addEventListener ('click', () => { showAllTypes = !showAllTypes; renderTypeTable (); });
     renderOverview ();
-    render ();
+    // A link from ../api-coverage/ names an element type (#API_RailingType): open the list on it.
+    const linked = decodeURIComponent (location.hash.slice (1));
+    if (data.types.some (t => t.struct === linked)) { typeFilter = linked; render (); scrollToList (); } else render ();
     updateToolbarHeight ();
     window.addEventListener ('resize', updateToolbarHeight);
 }

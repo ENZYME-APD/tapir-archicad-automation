@@ -75,7 +75,6 @@
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main id="main">
     <p class="muted" data-i18n>Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
-    <p class="muted" data-i18n>Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.</p>
 
     <section aria-labelledby="overview-title" id="overview">
         <div class="sec-head ref">
@@ -93,6 +92,10 @@
 
         <h3 class="ref-sub" id="by-part" data-i18n>By part of the API</h3>
         <div class="scroll"><table id="parts"></table></div>
+
+        <h3 class="ref-sub" id="element-settings" data-i18n>Element settings</h3>
+        <p class="muted" data-i18n>A call such as <code>ACAPI_Element_Change</code> counts as one used item above, though a command may write only some of an element's settings with it. The <a href="../field-coverage/">field coverage</a> lists every setting of every element type, and whether a command has a key of its own for it.</p>
+        <div id="element-settings-summary"><p class="muted">Loading the field coverage…</p></div>
 
         <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
         <div class="table-actions">
@@ -392,6 +395,10 @@ function itemRow (item) {
     for (const issue of item.issues) li.append (' ', el ('a', { href: `${REPO}/issues/${issue.number}`, title: issue.title, text: '#' + issue.number }));
     if (item.reason) li.append (' ', el ('em', { class: 'muted', text: '(' + item.reason + ')' }));
     if (item.status === 'open') li.append (' · ', claimLink (item));
+    if (ELEMENT_SETTINGS_CALLS.test (item.id)) {
+        li.append (el ('span', { class: 'detail' }, 'Which element settings the commands write or read through it: ',
+            el ('a', { href: '../field-coverage/', text: 'field coverage' })));
+    }
     return li;
 }
 
@@ -467,10 +474,91 @@ function setPart (key) {
     }
 }
 
+// The three coverage pages, as the first part of each one's sidebar; the same list on all three.
+const COVERAGE_PAGES = [['../api-coverage/', 'Archicad API'], ['../gh-coverage/', 'Grasshopper'], ['../field-coverage/', 'Element settings']];
+
+function coverageSwitcher (current) {
+    const list = el ('ul');
+    for (const [href, label] of COVERAGE_PAGES) {
+        const link = el ('a', { class: 'sidebar-link', href, text: label });
+        if (href === current) link.setAttribute ('aria-current', 'page');
+        list.append (el ('li', {}, link));
+    }
+    return [el ('div', { class: 'sidebar-title', text: 'Coverage' }), list];
+}
+
+// The element calls whose coverage is per setting: one used item here, but a command may write only some
+// of the element's fields with it (#2883). Their rows link to the field coverage.
+const ELEMENT_SETTINGS_CALLS = /^ACAPI_Element_(Create|Change|ChangeMore|ChangeDefaults|ChangeDefaultsExt|Get|GetDefaults|GetDefaultsExt)$/;
+const FIELD_DATA_URL = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/field-coverage.json';
+const FIELD_TYPES_SHOWN = 5;
+
+// The "Element settings" block of the overview: the share of the settings that have a command key of their
+// own, counted as on ../field-coverage/ (read-only fields left out), and the element types with the most
+// settings a script reaches only through GetElementFields / SetElementFields.
+function fieldTally (fields) {
+    const c = { written: 0, read: 0, generic: 0, readOnly: 0 };
+    for (const f of fields) {
+        if (f.status === 'key, written') c.written++; else if (f.status === 'key, read') c.read++;
+        else if (f.status === 'generic only') c.generic++; else c.readOnly++;
+    }
+    c.applicable = fields.length - c.readOnly;
+    c.keyed = c.written + c.read;
+    c.percent = c.applicable ? Math.floor (100 * c.keyed / c.applicable) : 0;
+    return c;
+}
+
+function fieldBar (c, large) {
+    const node = el ('div', { class: 'bar' + (large ? ' large' : ''), role: 'img',
+        'aria-label': `${c.written} written by a command, ${c.read} read by a command, ${c.generic} only through GetElementFields and SetElementFields` });
+    for (const [count, cls] of [[c.written, 'done'], [c.read, 'merged']]) {
+        if (!count) continue;
+        const segment = el ('span', { class: cls });
+        segment.style.width = (100 * count / c.applicable) + '%';
+        node.append (segment);
+    }
+    if (c.generic) node.append (el ('span', { class: 'open' }));
+    return node;
+}
+
+async function renderElementSettings () {
+    const box = document.getElementById ('element-settings-summary');
+    let fields = null;
+    try {
+        const response = await fetch (FIELD_DATA_URL, { cache: 'no-cache' });
+        if (response.ok) fields = await response.json ();
+    } catch (error) { /* shown below */ }
+    if (!fields) {
+        box.replaceChildren (el ('p', { class: 'muted' }, 'The field coverage could not be loaded here; see the ', el ('a', { href: '../field-coverage/', text: 'field coverage' }), '.'));
+        return;
+    }
+    const total = fieldTally (fields.types.flatMap (t => t.fields));
+    const types = fields.types.map (t => ({ struct: t.struct, counts: fieldTally (t.fields) }))
+        .sort ((a, b) => b.counts.generic - a.counts.generic || a.struct.localeCompare (b.struct)).slice (0, FIELD_TYPES_SHOWN);
+    const table = el ('table');
+    table.append (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Most settings without a key' }), el ('th', { class: 'num', text: 'With a key' }),
+        el ('th', { text: 'Progress' }), el ('th', { class: 'num', text: 'Generic only' }))));
+    const body = el ('tbody');
+    for (const t of types) {
+        body.append (el ('tr', {}, el ('td', {}, el ('a', { href: '../field-coverage/#' + t.struct, text: t.struct.replace (/^API_/, '').replace (/Type$/, ''), title: t.struct })),
+            el ('td', { class: 'num' }, `${t.counts.percent} %`, el ('span', { class: 'sub', text: `${t.counts.keyed} of ${t.counts.applicable}` })),
+            el ('td', { class: 'barcell' }, fieldBar (t.counts)), el ('td', { class: 'num', text: String (t.counts.generic) })));
+    }
+    table.append (body);
+    box.replaceChildren (
+        el ('p', {}, el ('strong', { text: `${total.percent} %` }),
+            ` of the ${total.applicable.toLocaleString ()} element settings a command can write or read have a key of their own (${total.keyed.toLocaleString ()}); `,
+            `${total.generic.toLocaleString ()} are reached only through `, el ('code', { text: 'GetElementFields' }), ' and ', el ('code', { text: 'SetElementFields' }),
+            ` (Archicad ${fields.devkit} DevKit, updated ${fields.generatedAt}).`),
+        fieldBar (total, true),
+        el ('div', { class: 'scroll' }, table),
+        el ('div', { class: 'table-actions' }, el ('a', { href: '../field-coverage/', text: `See all ${fields.types.length} element types` })));
+}
+
 function renderSidebar () {
     const sidebar = document.getElementById ('sidebar');
     const sections = el ('ul');
-    for (const [id, label] of [['overview', 'Overview'], ['by-part', 'By part of the API'], ['by-group', 'By group'], ['checklist', 'Checklist']]) {
+    for (const [id, label] of [['overview', 'Overview'], ['by-part', 'By part of the API'], ['element-settings', 'Element settings'], ['by-group', 'By group'], ['checklist', 'Checklist']]) {
         sections.append (el ('li', {}, el ('a', { class: 'sidebar-link', href: '#' + id, text: label })));
     }
     const parts = el ('div', { class: 'options', id: 'sidebar-parts', role: 'group', 'aria-label': 'Part of the API' });
@@ -484,7 +572,7 @@ function renderSidebar () {
         link.addEventListener ('click', () => showGroup (group.name));
         groups.append (el ('li', {}, link));
     }
-    sidebar.replaceChildren (el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
+    sidebar.replaceChildren (...coverageSwitcher ('../api-coverage/'), el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
         el ('div', { class: 'sidebar-title', text: 'Part of the API' }), parts,
         el ('div', { class: 'sidebar-title', text: 'Archicad version' }), versions,
         el ('div', { class: 'sidebar-title', text: 'Groups · open items' }), groups);
@@ -584,6 +672,7 @@ async function main () {
     renderSidebar ();
     document.getElementById ('groups-more').addEventListener ('click', () => { showAllGroups = !showAllGroups; renderGroupTable (); });
     renderOverview ();
+    renderElementSettings ();
     render ();
     updateToolbarHeight ();
     window.addEventListener ('resize', updateToolbarHeight);

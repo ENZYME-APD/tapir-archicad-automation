@@ -76,7 +76,6 @@
 <main id="main">
     <p class="muted" data-i18n>Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command's parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin's code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.</p>
     <p class="muted">The inputs and outputs of every component are in the <a href="../grasshopper-components/">Grasshopper components</a> reference.</p>
-    <p class="muted" data-i18n>Which settings of each Archicad element type a command has a key of its own for is in the <a href="../field-coverage/">field coverage</a>.</p>
 
     <section aria-labelledby="overview-title" id="overview">
         <div class="sec-head ref">
@@ -473,6 +472,19 @@ function setParams (key) {
     }
 }
 
+// The three coverage pages, as the first part of each one's sidebar; the same list on all three.
+const COVERAGE_PAGES = [['../api-coverage/', 'Archicad API'], ['../gh-coverage/', 'Grasshopper'], ['../field-coverage/', 'Element settings']];
+
+function coverageSwitcher (current) {
+    const list = el ('ul');
+    for (const [href, label] of COVERAGE_PAGES) {
+        const link = el ('a', { class: 'sidebar-link', href, text: label });
+        if (href === current) link.setAttribute ('aria-current', 'page');
+        list.append (el ('li', {}, link));
+    }
+    return [el ('div', { class: 'sidebar-title', text: 'Coverage' }), list];
+}
+
 function renderSidebar () {
     const sidebar = document.getElementById ('sidebar');
     const sections = el ('ul');
@@ -488,7 +500,7 @@ function renderSidebar () {
         link.addEventListener ('click', () => showGroup (group.name));
         groups.append (el ('li', {}, link));
     }
-    sidebar.replaceChildren (el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
+    sidebar.replaceChildren (...coverageSwitcher ('../gh-coverage/'), el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
         el ('div', { class: 'sidebar-title', text: 'Parameters' }), params,
         el ('div', { class: 'sidebar-title', text: 'Groups · open commands' }), groups);
     // Close the drawer after choosing a section or group on narrow screens.
