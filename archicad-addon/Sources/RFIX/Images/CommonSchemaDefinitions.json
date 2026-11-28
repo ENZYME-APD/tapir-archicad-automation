@@ -25485,7 +25485,7 @@
     },
     "CreatedLibraryPart": {
         "type": "object",
-        "description": "A newly created library part, in the form returned by GetAvailableLibraryParts.",
+        "description": "The new library part, in the same form as in GetAvailableLibraryParts.",
         "properties": {
             "guid": {
                 "type": "string"
@@ -26029,56 +26029,6 @@
         ],
         "description": "A stored default GDL parameter of a library part."
     },
-    "GDLUserGlobal": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the parameter."
-            },
-            "type": {
-                "$ref": "#/GDLUserGlobalType"
-            },
-            "dimension1": {
-                "type": "integer",
-                "description": "The 1st dimension of an array parameter."
-            },
-            "dimension2": {
-                "type": "integer",
-                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
-            },
-            "value": {
-                "description": "The value of the parameter as the parameter list holds it: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name",
-            "type",
-            "value"
-        ]
-    },
-    "GDLUserGlobalType": {
-        "type": "string",
-        "enum": [
-            "Integer",
-            "Length",
-            "Angle",
-            "RealNumber",
-            "LightSwitch",
-            "RGBColor",
-            "Intensity",
-            "LineType",
-            "Material",
-            "FillPattern",
-            "PenColor",
-            "String",
-            "Boolean",
-            "BuildingMaterial",
-            "Profile"
-        ],
-        "description": "The type of the parameter."
-    },
     "LibraryPart2DPrimitive": {
         "type": "object",
         "properties": {
@@ -26418,7 +26368,7 @@
             "Window",
             "Door"
         ],
-        "description": "The element tool whose library part settings dialog is opened."
+        "description": "Whose settings dialog to open: the Object, Lamp, Window or Door tool's."
     },
     "LibraryPartSaveLocationType": {
         "type": "string",
@@ -26427,66 +26377,7 @@
             "Door",
             "Window"
         ],
-        "description": "The kind of library part whose save dialog is opened."
-    },
-    "LibraryPartParametersUpdate": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. When Archicad does not let the loaded part be modified, as in a saved project, a part of a local library folder is changed in its file, and a part of the embedded library in a temporary copy that then replaces it, keeping its main GUID; the libraries are reloaded after the call. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
-            },
-            "parameters": {
-                "type": "array",
-                "description": "The GDL parameters to change, by name, in the format SetGDLParametersOfElements uses. The parameters left out are not changed.",
-                "items": {
-                    "$ref": "#/LibraryPartParameterUpdate"
-                }
-            },
-            "descriptions": {
-                "type": "array",
-                "description": "The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.",
-                "items": {
-                    "type": "string"
-                }
-            },
-            "merge": {
-                "type": "boolean",
-                "description": "When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name",
-            "parameters"
-        ],
-        "description": "Parameter changes for one library part."
-    },
-    "LibraryPartParameterUpdate": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the parameter."
-            },
-            "index1": {
-                "type": "integer",
-                "description": "The 1-based first index of the one item of an array parameter to change. Only with a single value."
-            },
-            "index2": {
-                "type": "integer",
-                "description": "The 1-based second index of the item to change, only together with index1. Defaults to 1."
-            },
-            "value": {
-                "description": "The new value, in the format the parameter list was read in. For an array parameter without index1, a list of all of its items, flat (the first index outer) or as a list of rows; resizing an array is not supported."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name",
-            "value"
-        ],
-        "description": "A parameter value to change in a library part."
+        "description": "Which Save Library Part dialog to open."
     },
     "LibraryPartSectionUpdate": {
         "type": "object",

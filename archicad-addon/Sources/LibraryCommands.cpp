@@ -4781,14 +4781,37 @@ GS::String SetLibraryPartParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "libraryParts": {
                 "type": "array",
                 "description": "The library parts to modify and the parameter values to set in each.",
                 "items": {
-                    "$ref": "#/LibraryPartParametersUpdate"
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. When Archicad does not let the loaded part be modified, as in a saved project, a part of a local library folder is changed in its file, and a part of the embedded library in a temporary copy that then replaces it, keeping its main GUID; the libraries are reloaded after the call. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
+                        },
+                        "parameters": )") + SetGDLParameterValuesSchema + R"(,
+                        "descriptions": {
+                            "type": "array",
+                            "description": "The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "merge": {
+                            "type": "boolean",
+                            "description": "When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name",
+                        "parameters"
+                    ]
                 }
             }
         },
