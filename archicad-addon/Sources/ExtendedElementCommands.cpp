@@ -7817,8 +7817,12 @@ GS::UniString SkylightDetailSchemaFields ()
 {
     return R"(
         "anchorPosition": { "$ref": "#/Coordinate2D", "description": "Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified." },
-        "anchorPoint": { "type": "string", "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"], "description": "Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint)." },
-        "fixMode": { "type": "string", "enum": ["Horizontal", "Vertical"], "description": "What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode)." },
+        "anchorPoint": {
+            "$ref": "#/SkylightAnchorPoint"
+        },
+        "fixMode": {
+            "$ref": "#/SkylightFixMode"
+        },
         "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true },
         "azimuthAngle": { "type": "number", "description": "Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle)." },
@@ -10513,156 +10517,41 @@ CreateSkylightsCommand::CreateSkylightsCommand () :
 
 GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "skylightsData": {
-                "type": "array",
-                "description": "Array of data to create Skylights.",
-                "items": {
-                    "type": "object",
-                    "description": "The parameters of the new Skylight. The settings not given are the Skylight tool defaults' or the favorite's.",
-                    "properties": {
-                        "favoriteName": {
-                            "type": "string",
-                            "description": "Optional name of a Skylight favorite to base the new element on."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool."
-                        },
-                        "ownerId": {
-                            "$ref": "#/ElementId",
-                            "description": "The roof (single- or multi-plane) or shell the skylight is placed in."
-                        },
-                        "libraryPartName": {
-                            "type": "string",
-                            "description": "Optional localized name of a skylight library part to place instead of the tool default's."
-                        },
-                        "anchorPosition": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified."
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/SkylightAnchorPoint"
-                        },
-                        "fixMode": {
-                            "$ref": "#/SkylightFixMode"
-                        },
-                        "width": {
-                            "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true
-                        },
-                        "height": {
-                            "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true
-                        },
-                        "azimuthAngle": {
-                            "type": "number",
-                            "description": "Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle)."
-                        },
-                        "elevationAngle": {
-                            "type": "number",
-                            "description": "Elevation angle of the owner's surface at the skylight, in radians (API_SkylightType::elevationAngle). Archicad may set it again from the owner roof or shell."
-                        },
-                        "reflected": {
-                            "type": "boolean",
-                            "description": "Mirror the skylight (API_OpeningBaseType::reflected)."
-                        },
-                        "displayOption": {
-                            "$ref": "#/DisplayOption"
-                        },
-                        "pen": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 255,
-                            "description": "Pen of the skylight's floor plan symbol; used unless useObjectPens is true."
-                        },
-                        "lineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true."
-                        },
-                        "cutLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the cut lines of the skylight."
-                        },
-                        "sectionFillId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Fill of the section of the skylight; used unless useObjectSectionAttributes is true."
-                        },
-                        "sectionFillPen": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 255,
-                            "description": "Foreground pen of the fill of the section of the skylight."
-                        },
-                        "sectionFillBackgroundPen": {
-                            "type": "integer",
-                            "minimum": -1,
-                            "maximum": 255,
-                            "description": "Background pen of the fill of the section of the skylight; 0 makes the background transparent and -1 gives it the window background color."
-                        },
-                        "sectionContourPen": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 255
-                        },
-                        "aboveViewLinePen": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 255,
-                            "description": "Pen of the overhead lines."
-                        },
-                        "aboveViewLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the overhead lines."
-                        },
-                        "belowViewLinePen": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 255,
-                            "description": "Pen of the uncut lines of the skylight."
-                        },
-                        "belowViewLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the uncut lines."
-                        },
-                        "surfaceId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Surface of the skylight (API_OpeningBaseType::mat); used unless useObjectMaterials is true."
-                        },
-                        "useObjectPens": {
-                            "type": "boolean",
-                            "description": "Use the pens defined in the library part instead of 'pen'."
-                        },
-                        "useObjectLineTypes": {
-                            "type": "boolean",
-                            "description": "Use the line types defined in the library part instead of 'lineTypeId'."
-                        },
-                        "useObjectMaterials": {
-                            "type": "boolean",
-                            "description": "Use the surfaces defined in the library part instead of 'surfaceId'."
-                        },
-                        "useObjectSectionAttributes": {
-                            "type": "boolean",
-                            "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens."
-                        }
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "skylightsData": {
+            "type": "array",
+            "description": "Array of data to create Skylights.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Skylight. The settings not given are the Skylight tool defaults' or the favorite's.",
+                "properties": {
+                    "favoriteName": {
+                        "type": "string",
+                        "description": "Optional name of a Skylight favorite to base the new element on."
                     },
-                    "additionalProperties": false,
-                    "required": [
-                        "ownerId",
-                        "anchorPosition"
-                    ]
-                }
+                    "id": {
+                        "type": "string",
+                        "description": "Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool."
+                    },
+                    "ownerId": {
+                        "$ref": "#/ElementId",
+                        "description": "The roof (single- or multi-plane) or shell the skylight is placed in."
+                    },
+                    "libraryPartName": {
+                        "type": "string",
+                        "description": "Optional localized name of a skylight library part to place instead of the tool default's."
+                    },)") + SkylightDetailSchemaFields () + R"(
+                },
+                "additionalProperties": false,
+                "required": ["ownerId", "anchorPosition"]
             }
-        },
-        "additionalProperties": false,
-        "required": [
-            "skylightsData"
-        ]
-    })";
+        }
+    },
+    "additionalProperties": false,
+    "required": ["skylightsData"]
+})";
 }
 
 GS::Optional<GS::ObjectState> CreateSkylightsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
@@ -21183,7 +21072,7 @@ GS::String ModifyRoofsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "roofsWithDetails": {
@@ -21191,9 +21080,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
+                        "elementId": { "$ref": "#/ElementId" },
                         "level": {
                             "type": "number",
                             "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. For a single-plane roof it is the elevation of the roof's underside at the pivot line, as in CreateRoofs. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level."
@@ -21204,8 +21091,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "thickness": {
                             "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
                         },
                         "eavesOverhang": {
@@ -21243,52 +21129,27 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "structureType": {
                             "$ref": "#/RoofStructureType"
                         },
-                        "buildingMaterialId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "compositeId": {
-                            "$ref": "#/AttributeId"
-                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
                             "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. A multi-plane roof's contour follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline), or is written on its own with contourPolygon. The coordinates are plan (x, y) coordinates; the elevation is set with level. The roof gets the given 'holes', or none without them.",
-                            "items": {
-                                "$ref": "#/Coordinate2D"
-                            },
+                            "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
                         "polygonArcs": {
                             "type": "array",
-                            "items": {
-                                "$ref": "#/PolyArc"
-                            }
+                            "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": {
-                            "$ref": "#/Holes2D",
-                            "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline."
-                        },
-                        "topMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of the top of the roof; overridden false clears the override."
-                        },
-                        "sideMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs."
-                        },
-                        "bottomMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of the bottom of the roof; overridden false clears the override."
-                        },
-                        "materialsChained": {
-                            "type": "boolean",
-                            "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it."
-                        },
+                        "holes": { "$ref": "#/Holes2D", "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline." },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the top of the roof; overridden false clears the override." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs." },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the roof; overridden false clears the override." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
                             "description": "The custom surface of each edge of the roof's polygon (single-plane roofs) or contour (multi-plane roofs, the polygonOutline and holes of GetDetailsOfElements, not the pivot polygon), one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. The roof is read back after writing, and the item fails when an edge does not have the surface given for it. Cannot be combined with polygonOutline, holes or contourPolygon, nor, on a multi-plane roof, with eavesOverhang, pivotEdges, segmentType, segmentsByArc or segmentsByCircle, which make the contour again.",
-                            "items": {
-                                "$ref": "#/OverriddenMaterial"
-                            }
+                            "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "cutBodyType": {
                             "$ref": "#/RoofCutBodyTypeUpdate"
@@ -21307,7 +21168,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "type": "object",
                                 "properties": {
                                     "trimType": {
-                                        "$ref": "#/RoofEdgeTrimTypeUpdate"
+                                        "$ref": "#/EdgeTrimTypeUpdate"
                                     },
                                     "angle": {
                                         "type": "number",
@@ -21324,82 +21185,19 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "$ref": "#/RoofEdgeType"
                             }
                         },
-)"
-        R"(                        "pivotEdges": {
+                        "pivotEdges": {
                             "type": "array",
                             "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline or holes.",
-                            "items": {
-                                "$ref": "#/RoofPivotEdgeChange"
-                            }
-                        },
-                        "displayOption": {
-                            "$ref": "#/DisplayOption",
-                            "description": "Floor Plan Display of the element."
-                        },
-                        "viewDepthLimitation": {
-                            "$ref": "#/ViewDepthLimitation",
-                            "description": "Show Projection: how far the element is shown on the floor plan."
-                        },
-                        "isAutoOnStoryVisibility": {
-                            "type": "boolean",
-                            "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off."
-                        },
-                        "visibility": {
-                            "$ref": "#/StoryVisibility",
-                            "description": "The stories the element's contour is shown on. Only the given fields change. Archicad always shows the contour on the element's home story, so 'showOnHome' false is not applied; the item's result then fails and names it, the other details given are applied. A field Archicad does not apply is named in the result in the same way."
-                        },
-                        "fillVisibility": {
-                            "$ref": "#/StoryVisibility",
-                            "description": "The stories the element's cover fill is shown on. Only the given fields change. A field Archicad does not apply makes the item's result fail and is named in it."
-                        },
-                        "cutFillPen": {
-                            "$ref": "#/OverriddenPen",
-                            "description": "Overrides the pen of the cut fill."
-                        },
-                        "cutFillBackgroundPen": {
-                            "$ref": "#/OverriddenPen",
-                            "description": "Overrides the background pen of the cut fill."
-                        },
-                        "sectionContourPen": {
-                            "type": "integer",
-                            "description": "Pen of the element's contour where it is cut."
-                        },
-                        "sectionContourLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the element's contour where it is cut."
-                        },
-                        "contourPen": {
-                            "type": "integer",
-                            "description": "Pen of the element's uncut contour."
-                        },
-                        "contourLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the element's uncut contour."
-                        },
-                        "aboveViewLinePen": {
-                            "type": "integer",
-                            "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
-                        },
-                        "aboveViewLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
-                        },
-                        "floorFill": {
-                            "$ref": "#/ShellBaseFloorFill",
-                            "description": "The cover fill of the element in the floor plan. Only the given fields change; read the orientation back with GetDetailsOfElements, Archicad may not apply all of it."
-                        }
+                            "items": { "$ref": "#/RoofPivotEdgeChange" }
+                        },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "required": ["elementId"]
                 }
             }
         },
         "additionalProperties": false,
-        "required": [
-            "roofsWithDetails"
-        ]
+        "required": ["roofsWithDetails"]
     })";
 }
 
@@ -22043,7 +21841,7 @@ GS::String ModifyShellsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "shellsWithDetails": {
@@ -22051,22 +21849,15 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                 "items": {
                     "type": "object",
                     "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
+                        "elementId": { "$ref": "#/ElementId" },
                         "structureType": {
                             "$ref": "#/ShellStructureType"
                         },
-                        "buildingMaterialId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "compositeId": {
-                            "$ref": "#/AttributeId"
-                        },
+                        "buildingMaterialId": { "$ref": "#/AttributeId" },
+                        "compositeId": { "$ref": "#/AttributeId" },
                         "thickness": {
                             "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "The new thickness of a Basic shell, in meters (or of a shell this item makes Basic with 'structureType'). The shell's reference surface (the surface its profile and base plane define) stays in place and the thickness is measured from it to the side 'isFlipped' selects, so only the opposite face moves. A Composite shell takes its thickness from its composite: the item fails, and nothing of it is written; change the skins of the composite attribute, or make the shell Basic in the same item."
                         },
                         "isFlipped": {
@@ -22084,38 +21875,20 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "holes": {
                             "type": "array",
                             "description": "Replaces all holes of the shell, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane; an empty array removes every hole. To change one hole, send all holes as GetDetailsOfElements returns them with that one changed. The contour and the profile are kept.",
-                            "items": {
-                                "$ref": "#/ShellCutPolygon"
-                            }
+                            "items": { "$ref": "#/ShellCutPolygon" }
                         },
-                        "topMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override."
-                        },
-                        "sideMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of the edges of the shell; overridden false clears the override."
-                        },
-                        "bottomMaterial": {
-                            "$ref": "#/OverriddenMaterial",
-                            "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override."
-                        },
-                        "materialsChained": {
-                            "type": "boolean",
-                            "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it."
-                        },
-                        "edgeMaterials": {
-                            "$ref": "#/ShellEdgeMaterials",
-                            "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface."
-                        },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
+                        "edgeMaterials": { "$ref": "#/ShellEdgeMaterials", "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface." },
                         "extrusionVector": {
                             "$ref": "#/Coordinate3D",
                             "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
                         },
                         "extrusionLength": {
                             "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "description": "Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector."
                         },
                         "profile": {
@@ -22144,8 +21917,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "revolutionAngle": {
                             "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true,
+                            "minimum": 0.0, "exclusiveMinimum": true,
                             "maximum": 6.283185307179587,
                             "description": "Revolved shells only: the new angle the profile is turned through, in radians, at most 2*pi (a full turn)."
                         },
@@ -22159,10 +21931,8 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "distortionAngle": {
                             "type": "number",
-                            "minimum": 0.0,
-                            "exclusiveMinimum": true,
-                            "maximum": 3.141592653589793,
-                            "exclusiveMaximum": true,
+                            "minimum": 0.0, "exclusiveMinimum": true,
+                            "maximum": 3.141592653589793, "exclusiveMaximum": true,
                             "description": "Revolved shells only: the new shear of the revolution, in radians, between 0 and pi; pi/2 is no shear."
                         },
                         "segmentType": {
@@ -22185,75 +21955,15 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "cutBodyType": {
                             "$ref": "#/ShellCutBodyTypeUpdate"
-                        },
-                        "displayOption": {
-                            "$ref": "#/DisplayOption",
-                            "description": "Floor Plan Display of the element."
-                        },
-                        "viewDepthLimitation": {
-                            "$ref": "#/ViewDepthLimitation",
-                            "description": "Show Projection: how far the element is shown on the floor plan."
-                        },
-                        "isAutoOnStoryVisibility": {
-                            "type": "boolean",
-                            "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off."
-                        },
-                        "visibility": {
-                            "$ref": "#/StoryVisibility",
-                            "description": "The stories the element's contour is shown on. Only the given fields change. Archicad always shows the contour on the element's home story, so 'showOnHome' false is not applied; the item's result then fails and names it, the other details given are applied. A field Archicad does not apply is named in the result in the same way."
-                        },
-                        "fillVisibility": {
-                            "$ref": "#/StoryVisibility",
-                            "description": "The stories the element's cover fill is shown on. Only the given fields change. A field Archicad does not apply makes the item's result fail and is named in it."
-                        },
-                        "cutFillPen": {
-                            "$ref": "#/OverriddenPen",
-                            "description": "Overrides the pen of the cut fill."
-                        },
-                        "cutFillBackgroundPen": {
-                            "$ref": "#/OverriddenPen",
-                            "description": "Overrides the background pen of the cut fill."
-                        },
-                        "sectionContourPen": {
-                            "type": "integer",
-                            "description": "Pen of the element's contour where it is cut."
-                        },
-                        "sectionContourLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the element's contour where it is cut."
-                        },
-                        "contourPen": {
-                            "type": "integer",
-                            "description": "Pen of the element's uncut contour."
-                        },
-                        "contourLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type of the element's uncut contour."
-                        },
-                        "aboveViewLinePen": {
-                            "type": "integer",
-                            "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
-                        },
-                        "aboveViewLineTypeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup."
-                        },
-                        "floorFill": {
-                            "$ref": "#/ShellBaseFloorFill",
-                            "description": "The cover fill of the element in the floor plan. Only the given fields change; read the orientation back with GetDetailsOfElements, Archicad may not apply all of it."
-                        }
+                        },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "required": ["elementId"]
                 }
             }
         },
         "additionalProperties": false,
-        "required": [
-            "shellsWithDetails"
-        ]
+        "required": ["shellsWithDetails"]
     })";
 }
 

@@ -4103,7 +4103,7 @@
         "description": "How a shell edge is cut.",
         "properties": {
             "trimType": {
-                "$ref": "#/RoofEdgeTrimTypeUpdate",
+                "$ref": "#/EdgeTrimTypeUpdate",
                 "description": "Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle)."
             },
             "angle": {
@@ -10946,7 +10946,7 @@
         ],
         "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof."
     },
-    "RoofEdgeTrimTypeUpdate": {
+    "EdgeTrimTypeUpdate": {
         "type": "string",
         "enum": [
             "Vertical",
@@ -10954,7 +10954,7 @@
             "Horizontal",
             "CustomAngle"
         ],
-        "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle)."
+        "description": "The trim direction of a roof or shell edge: Vertical, Perpendicular to its plane, Horizontal, or at angle (CustomAngle)."
     },
     "ShellCutBodyType": {
         "type": "string",
