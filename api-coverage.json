@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 17:07 UTC",
+ "generatedAt": "2026-11-28 18:02 UTC",
  "versions": [
   25,
   26,
@@ -4842,7 +4842,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    }
+   ],
    "issues": []
   },
   {
@@ -4957,7 +4962,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    }
+   ],
    "issues": []
   },
   {
@@ -7869,6 +7879,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
     {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
@@ -13393,7 +13407,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    }
+   ],
    "issues": []
   },
   {
@@ -13434,7 +13453,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    }
+   ],
    "issues": []
   },
   {
@@ -20046,7 +20070,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    }
+   ],
    "issues": []
   },
   {
@@ -25271,6 +25300,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
+    {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
@@ -26733,6 +26766,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
     {
      "number": 3127,
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
@@ -30901,6 +30938,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
     {
      "number": 3127,
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
@@ -37356,6 +37397,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
     {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
@@ -44025,6 +44070,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
+    {
      "number": 3127,
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     },
@@ -47148,6 +47197,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3129,
+     "title": "Sample surface elevations at XY points in one call"
+    },
     {
      "number": 3127,
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
