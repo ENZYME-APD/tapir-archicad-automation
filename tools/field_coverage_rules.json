@@ -50,6 +50,22 @@
             ],
             "reason": "the frame one placed accessory is joined to (API_CWAccessoryType), a link, not a setting",
             "note": "the frame one placed accessory is joined to (API_CWAccessoryType: \"Accessory is always joins to a frame. This is the reference frame.\"), a link to another element, not a setting."
+        },
+        {
+            "struct": "API_AngleDimensionType",
+            "paths": [
+                "base.base.*"
+            ],
+            "reason": "what a reference point is attached to (API_Base), which Archicad fills from the attached element",
+            "note": "API_AngleDimensionType.base is the reference points (APIdefs_Elements.h: \"Reference points.\"), each an API_DimBase whose base is an API_Base, \"the base of a non-static linear, angle or radial dimension element\": the type of the base element, line and special (set from the element's neig type), inIndex, node_id (\"Polygon vertex id\"), and node_status and node_typ (\"For internal use (reserved for section dim)\"). They describe the element a point is attached to, not a setting. loc3D is left open: it places a dimension drawn in 3D."
+        },
+        {
+            "struct": "API_DimensionType",
+            "paths": [
+                "arcBase.base.*"
+            ],
+            "reason": "what an arc dimension chain is attached to (API_Base), which Archicad fills from the attached element",
+            "note": "API_DimensionType.arcBase is the \"Neig unique ID of the base element for an arc dimension chain\" (APIdefs_Elements.h); its base is an API_Base (the type of the base element, line, special, inIndex, node_id, and node_status and node_typ \"For internal use\"). arcBase.loc and loc3D, and refC3D, direction3D and normVect3D (\"used only in 3D\"), are left open: they place a dimension, they are not attachment data."
         }
     ]
 }

@@ -193,9 +193,12 @@ A pull request adds a JSON file to `archicad-addon/Test/checks/`. Example:
 
 - `command`: a Tapir command, or an official one with the `API.` prefix.
 - `params` may use `${name}` for values saved by earlier steps.
-- `save`: name → path into the answer (`a.b[0].c`, `elements[*].elementId.guid`).
+- `save`: name → path into the answer (`a.b[0].c`, `elements[*].elementId.guid`). A key with dots in it is
+  found too: `elementFields[0].fields.defSegment.zOffset` reads the value `GetElementFields` returns
+  under the key `defSegment.zOffset`.
 - `expect`: `path` (or `expr`, arithmetic over saved values) with one of `eq`, `ne`,
-  `approx` (+ `tol`), `lt`, `gt`, `len`, `contains`, `exists`; `name` labels the row. The
+  `approx` (+ `tol`), `lt`, `gt`, `len`, `contains` (a text in a string, or a value among the
+  items a `[*]` path gives), `exists`; `name` labels the row. The
   expected value may use `${name}` too (`"eq": "${surface}"`).
 - Every element a step creates is deleted at the end; set `"creates": false` on steps that
   don't create anything. `teardown` steps run last.

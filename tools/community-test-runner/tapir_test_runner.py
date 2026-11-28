@@ -24,6 +24,7 @@ import ast
 import base64
 import glob
 import io
+import itertools
 import json
 import operator
 import os
@@ -100,15 +101,34 @@ _PATH_TOKEN = re.compile(r"([^.\[\]]+)|\[(\d+|\*)\]")
 
 
 def resolve(data: Any, path: str) -> Any:
-    """'a.b[0].c' or 'elements[*].elementId.guid' (a list); raises KeyError when a part is missing."""
+    """'a.b[0].c' or 'elements[*].elementId.guid' (a list); raises KeyError when a part is missing.
+    A key that has dots in it is found too: GetElementFields returns each field under its whole path
+    ("fields": {"defSegment.zOffset": ...}), so 'fields.defSegment.zOffset' reads it. When a part is not
+    a key of the object, the part joined with the following names by '.' is tried, longest first."""
+    tokens = _PATH_TOKEN.findall(path)
     values = [data]
-    for name, index in _PATH_TOKEN.findall(path):
+    i = 0
+    while i < len(tokens):
+        name, index = tokens[i]
         nxt = []
+        step = 1
         for value in values:
             if name:
-                if not isinstance(value, dict) or name not in value:
+                if not isinstance(value, dict):
                     raise KeyError(path)
-                nxt.append(value[name])
+                if name in value:
+                    nxt.append(value[name])
+                    continue
+                # The longest run of following names that is one dotted key of this object.
+                run = [n for n, _ in itertools.takewhile(lambda tok: tok[0], tokens[i:])]
+                for size in range(len(run), 1, -1):
+                    key = ".".join(run[:size])
+                    if key in value:
+                        nxt.append(value[key])
+                        step = size
+                        break
+                else:
+                    raise KeyError(path)
             elif index == "*":
                 if not isinstance(value, list):
                     raise KeyError(path)
@@ -118,6 +138,7 @@ def resolve(data: Any, path: str) -> Any:
                     raise KeyError(path)
                 nxt.append(value[int(index)])
         values = nxt
+        i += step
     return values if "[*]" in path else values[0]
 
 
@@ -186,7 +207,10 @@ def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     if "len" in rule:
         return isinstance(actual, list) and len(actual) == rule["len"], f"has {rule['len']} items"
     if "contains" in rule:
-        return isinstance(actual, str) and rule["contains"] in actual, f"contains {json.dumps(rule['contains'])}"
+        # A text inside a string, or a value among the items of a list (a path with [*]).
+        ok = (isinstance(actual, str) and isinstance(rule["contains"], str) and rule["contains"] in actual) or \
+            (isinstance(actual, list) and rule["contains"] in actual)
+        return ok, f"contains {json.dumps(rule['contains'])}"
     if "exists" in rule:
         return (actual is not None) == bool(rule["exists"]), "exists" if rule["exists"] else "missing"
     raise ValueError(f"unknown expectation: {rule}")

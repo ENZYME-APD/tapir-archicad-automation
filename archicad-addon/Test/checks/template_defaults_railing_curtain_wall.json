@@ -1,0 +1,180 @@
+{
+  "title": "Template defaults of railings and curtain walls (#3136): a measurement, not a regression test. Rows named 'Measure:' answer whether a default written on an element reaches its placed or newly generated sub-elements; a failing Measure row is an answer, not a bug. The other rows must pass.",
+  "minTapir": "2.0.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "a straight railing with one segment and two nodes",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          { "coordinates": [ { "x": 1500.0, "y": 1500.0 }, { "x": 1504.0, "y": 1500.0 } ], "floorIndex": 0, "height": 1.1 }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" } ]
+    },
+    {
+      "id": "its defaults before writing",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ], "fields": [ "defSegment.zOffset", "defNode.postOffset" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.defSegment.zOffset", "exists": true, "name": "the segment default is read" },
+        { "path": "elementFields[0].fields.defSegment.zOffset", "ne": 0.037, "name": "the segment default differs from the value to write" },
+        { "path": "elementFields[0].fields.defNode.postOffset", "exists": true, "name": "the node default is read" },
+        { "path": "elementFields[0].fields.defNode.postOffset", "ne": 0.043, "name": "the node default differs from the value to write" }
+      ]
+    },
+    {
+      "id": "write the segment and node defaults",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${r}" }, "fields": { "defSegment.zOffset": 0.037, "defNode.postOffset": 0.043 } } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "Archicad keeps the written defaults on the railing" } ]
+    },
+    {
+      "id": "the railing's placed segment and node",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "save": { "seg1": "detailsOfElements[0].details.segments[0].elementId.guid", "node1": "detailsOfElements[0].details.nodes[0].elementId.guid" },
+      "expect": [ { "path": "detailsOfElements[0].details.segments", "len": 1, "name": "one placed segment" } ]
+    },
+    {
+      "id": "do the placed segment and node follow the written defaults?",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${seg1}" } }, { "elementId": { "guid": "${node1}" } } ], "fields": [ "zOffset", "postOffset" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.zOffset", "approx": 0.037, "tol": 0.0001, "name": "Measure: the existing segment follows defSegment.zOffset (a pass: the default reaches placed segments)" },
+        { "path": "elementFields[1].fields.postOffset", "approx": 0.043, "tol": 0.0001, "name": "Measure: the existing node follows defNode.postOffset (a pass: the default reaches placed nodes)" }
+      ]
+    },
+    {
+      "id": "recreate the railing on three points, so Archicad generates a new segment and node",
+      "command": "RecreateRailings",
+      "params": {
+        "railings": [
+          { "elementId": { "guid": "${r}" }, "coordinates": [ { "x": 1500.0, "y": 1500.0 }, { "x": 1504.0, "y": 1500.0 }, { "x": 1504.0, "y": 1503.0 } ] }
+        ]
+      },
+      "save": { "n": "results[0].elementId.guid" },
+      "expect": [ { "path": "results[0].elementId.guid", "exists": true, "name": "new railing created" } ]
+    },
+    {
+      "id": "the new railing's own defaults",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${n}" } } ], "fields": [ "defSegment.zOffset", "defNode.postOffset" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.defSegment.zOffset", "approx": 0.037, "tol": 0.0001, "name": "Measure: RecreateRailings carries defSegment.zOffset over" },
+        { "path": "elementFields[0].fields.defNode.postOffset", "approx": 0.043, "tol": 0.0001, "name": "Measure: RecreateRailings carries defNode.postOffset over" }
+      ]
+    },
+    {
+      "id": "the new railing's generated segment and node",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${n}" } } ] },
+      "save": { "seg2": "detailsOfElements[0].details.segments[1].elementId.guid", "node3": "detailsOfElements[0].details.nodes[2].elementId.guid" },
+      "expect": [ { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "two segments" } ]
+    },
+    {
+      "id": "do the newly generated segment and node take the written defaults?",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${seg2}" } }, { "elementId": { "guid": "${node3}" } } ], "fields": [ "zOffset", "postOffset" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.zOffset", "approx": 0.037, "tol": 0.0001, "name": "Measure: the new segment takes defSegment.zOffset (a pass: the default is a setting on creation)" },
+        { "path": "elementFields[1].fields.postOffset", "approx": 0.043, "tol": 0.0001, "name": "Measure: the new node takes defNode.postOffset (a pass: the default is a setting on creation)" }
+      ]
+    },
+    {
+      "id": "a straight curtain wall",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          { "coordinates": [ { "x": 1600.0, "y": 1600.0 }, { "x": 1606.0, "y": 1600.0 } ], "zCoordinate": 0.0, "floorIndex": 0, "height": 3.0 }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" } ]
+    },
+    {
+      "id": "its frame defaults before writing",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ], "fields": [ "cornerFrameData.pen", "boundaryFrameData.pen" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.cornerFrameData.pen", "exists": true, "name": "the corner frame default pen is read" },
+        { "path": "elementFields[0].fields.cornerFrameData.pen", "ne": 37, "name": "the corner frame default pen is not 37 yet" },
+        { "path": "elementFields[0].fields.boundaryFrameData.pen", "exists": true, "name": "the boundary frame default pen is read" },
+        { "path": "elementFields[0].fields.boundaryFrameData.pen", "ne": 38, "name": "the boundary frame default pen is not 38 yet" }
+      ]
+    },
+    {
+      "id": "write the corner and boundary frame defaults",
+      "command": "SetElementFields",
+      "creates": false,
+      "params": { "elementsWithFields": [ { "elementId": { "guid": "${cw}" }, "fields": { "cornerFrameData.pen": 37, "boundaryFrameData.pen": 38 } } ] },
+      "expect": [ { "path": "executionResults[0].success", "eq": true, "name": "Archicad keeps the written frame defaults on the curtain wall" } ]
+    },
+    {
+      "id": "the curtain wall's placed frames",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": { "frames": "subelements[0].cWallFrames" },
+      "expect": [ { "path": "subelements[0].cWallFrames[0].elementId.guid", "exists": true, "name": "the curtain wall has frames" } ]
+    },
+    {
+      "id": "does an existing boundary frame follow the written default?",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": "${frames}", "fields": [ "pen" ] },
+      "expect": [
+        { "path": "elementFields[*].fields.pen", "contains": 38, "name": "Measure: an existing frame took boundaryFrameData.pen (a pass: the default reaches placed frames)" }
+      ]
+    },
+    {
+      "id": "recreate the curtain wall with a corner, so Archicad generates a corner frame",
+      "command": "RecreateCurtainWalls",
+      "params": {
+        "curtainWalls": [
+          { "elementId": { "guid": "${cw}" }, "coordinates": [ { "x": 1600.0, "y": 1600.0 }, { "x": 1606.0, "y": 1600.0 }, { "x": 1606.0, "y": 1604.5 } ] }
+        ]
+      },
+      "save": { "ncw": "results[0].elementId.guid" },
+      "expect": [ { "path": "results[0].elementId.guid", "exists": true, "name": "new curtain wall created" } ]
+    },
+    {
+      "id": "the new curtain wall's own frame defaults",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ncw}" } } ], "fields": [ "cornerFrameData.pen", "boundaryFrameData.pen" ] },
+      "expect": [
+        { "path": "elementFields[0].fields.cornerFrameData.pen", "eq": 37, "name": "Measure: RecreateCurtainWalls carries cornerFrameData.pen over" },
+        { "path": "elementFields[0].fields.boundaryFrameData.pen", "eq": 38, "name": "Measure: RecreateCurtainWalls carries boundaryFrameData.pen over" }
+      ]
+    },
+    {
+      "id": "the new curtain wall's frames",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${ncw}" } } ] },
+      "save": { "nframes": "subelements[0].cWallFrames" },
+      "expect": [ { "path": "subelements[0].cWallFrames[0].elementId.guid", "exists": true, "name": "the new curtain wall has frames" } ]
+    },
+    {
+      "id": "do the generated corner and boundary frames take the written defaults?",
+      "command": "GetElementFields",
+      "creates": false,
+      "params": { "elements": "${nframes}", "fields": [ "pen" ] },
+      "expect": [
+        { "path": "elementFields[*].fields.pen", "contains": 37, "name": "Measure: a generated frame took cornerFrameData.pen (a pass: the default is a setting on creation)" },
+        { "path": "elementFields[*].fields.pen", "contains": 38, "name": "Measure: a generated frame took boundaryFrameData.pen (a pass: the default is a setting on creation)" }
+      ]
+    }
+  ]
+}
