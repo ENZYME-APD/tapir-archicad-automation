@@ -21803,16 +21803,10 @@ static GS::Optional<GS::UniString> ApplyShellSurfaces (API_Element& element, API
     return {};
 }
 
-// The given "edgeMaterials" of a Shell (ShellEdgeMaterials, as GetDetailsOfElements reports them):
-// the custom surface of its begin and end profile edges and of the two edges along its surface
-// (#2433). Only the given edges are written; an item that is not overridden clears the edge's
-// custom surface. Changes nothing on an error.
-static GS::Optional<GS::UniString> ApplyShellEdgeMaterials (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+// The edges of a Shell that carry a custom surface (#2433), in the order of ShellEdgeMaterials: its
+// begin and end profile edges and the two edges along its surface. False for an unknown shell class.
+static bool GetShellContourEdgeDatas (API_Element& element, API_ContourEdgeData* edges[4])
 {
-    GS::ObjectState edgeMaterialsOs;
-    if (!details.Get ("edgeMaterials", edgeMaterialsOs)) {
-        return {};
-    }
     API_ContourEdgeData* begEdge = nullptr;
     API_ContourEdgeData* endEdge = nullptr;
     API_ContourEdgeData* sideEdges = nullptr;
@@ -21833,38 +21827,93 @@ static GS::Optional<GS::UniString> ApplyShellEdgeMaterials (API_Element& element
             sideEdges = element.shell.u.ruledShell.ruledEdgeDatas;
             break;
         default:
-            return GS::UniString ("The shell class is not known, so its edges cannot be written.");
+            return false;
+    }
+    edges[0] = begEdge;
+    edges[1] = endEdge;
+    edges[2] = &sideEdges[0];
+    edges[3] = &sideEdges[1];
+    return true;
+}
+
+// The edge surfaces an item of ModifyShells gives in "edgeMaterials".
+struct ShellEdgeMaterialsGiven {
+    API_OverriddenAttribute materials[4];
+    bool                    given[4] = { false, false, false, false };
+    bool                    any = false;
+};
+
+// Reads the given "edgeMaterials" of a Shell (ShellEdgeMaterials, as GetDetailsOfElements reports
+// them): the custom surface of its begin and end profile edges and of the two edges along its
+// surface (#2433). An item that is not overridden clears the edge's custom surface. Writes nothing;
+// WriteShellEdgeMaterials does.
+static GS::Optional<GS::UniString> GetShellEdgeMaterials (API_Element& element, const GS::ObjectState& details, ShellEdgeMaterialsGiven& result)
+{
+    GS::ObjectState edgeMaterialsOs;
+    if (!details.Get ("edgeMaterials", edgeMaterialsOs)) {
+        return {};
+    }
+    API_ContourEdgeData* edges[4] = {};
+    if (!GetShellContourEdgeDatas (element, edges)) {
+        return GS::UniString ("The shell class is not known, so its edges cannot be written.");
     }
 
     const char* names[4] = { "begShapeEdge", "endShapeEdge", "begSideEdge", "endSideEdge" };
-    API_ContourEdgeData* edges[4] = { begEdge, endEdge, &sideEdges[0], &sideEdges[1] };
-    API_OverriddenAttribute materials[4];
-    bool given[4] = { false, false, false, false };
     for (UIndex i = 0; i < 4; ++i) {
-        materials[i] = edges[i]->sideMaterial;
+        result.materials[i] = edges[i]->sideMaterial;
         GS::ObjectState materialOs;
         if (!edgeMaterialsOs.Get (names[i], materialOs)) {
             continue;
         }
-        auto error = GetOverriddenMaterialChecked (materialOs, GS::UniString ("edgeMaterials.") + GS::UniString (names[i]), materials[i]);
+        auto error = GetOverriddenMaterialChecked (materialOs, GS::UniString ("edgeMaterials.") + GS::UniString (names[i]), result.materials[i]);
         if (error.HasValue ()) {
             return error;
         }
-        given[i] = true;
-    }
-
-    for (UIndex i = 0; i < 4; ++i) {
-        if (!given[i]) {
-            continue;
-        }
-        edges[i]->sideMaterial = materials[i];
-        // ACAPI_ELEMENT_MASK_SET of the same member, whichever shell class's data it is in: the
-        // mask byte at the member's offset in the element.
-        const size_t offset = (size_t) (reinterpret_cast<const char*> (&edges[i]->sideMaterial) - reinterpret_cast<const char*> (&element));
-        *(reinterpret_cast<char*> (&mask) + offset) = -1;
-        changed = true;
+        result.given[i] = true;
+        result.any = true;
     }
     return {};
+}
+
+// Writes the given edge surfaces of a Shell with their own ACAPI_Element_Change, after the rest of
+// the item, so that a side surface written in the same item cannot overwrite them. Archicad reads
+// the mask of a member on the first byte of each member it is in (see ElementFieldTable.hpp): the
+// sideMaterial of an edge is only taken when the first byte of its API_ContourEdgeData is set too.
+// Setting only the byte of sideMaterial was ignored (#2433). The members of the shell class's data
+// (u.extrudedShell.extrusionVector, ...) are taken without the union's byte, which is not set: it is
+// the first byte of a ruled shell's shellShape1, which needs the memo. The edge's trim and type,
+// read with ACAPI_Element_Get, are written back unchanged.
+static GSErrCode WriteShellEdgeMaterials (const API_Guid& guid, const ShellEdgeMaterialsGiven& given)
+{
+    API_Element element = {};
+    element.header.guid = guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    API_ContourEdgeData* edges[4] = {};
+    if (!GetShellContourEdgeDatas (element, edges)) {
+        return APIERR_BADPARS;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    char* maskBytes = reinterpret_cast<char*> (&mask);
+    const char* elementBytes = reinterpret_cast<const char*> (&element);
+    for (UIndex i = 0; i < 4; ++i) {
+        if (!given.given[i]) {
+            continue;
+        }
+        edges[i]->sideMaterial = given.materials[i];
+        maskBytes[reinterpret_cast<const char*> (edges[i]) - elementBytes] = -1;
+        maskBytes[reinterpret_cast<const char*> (&edges[i]->sideMaterial) - elementBytes] = -1;
+        if (i == 3) {
+            // The last side edge is item 1 of the side edge array member (extrudedEdgeDatas, ...),
+            // whose first byte is that of item 0: set it too. Item 0 is written back as read.
+            maskBytes[reinterpret_cast<const char*> (edges[2]) - elementBytes] = -1;
+        }
+    }
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
 ModifyShellsCommand::ModifyShellsCommand () :
@@ -22072,7 +22121,8 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
                 continue;
             }
-            auto edgeError = ApplyShellEdgeMaterials (element, mask, item, changed);
+            ShellEdgeMaterialsGiven edgeMaterials;
+            auto edgeError = GetShellEdgeMaterials (element, item, edgeMaterials);
             if (edgeError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
                 continue;
@@ -22118,20 +22168,29 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 changed = true;
             }
 
-            if (!changed) {
+            if (!changed && !edgeMaterials.any) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No shell fields to modify."));
                 continue;
             }
 
-            // As the DevKit's Do_Shell_Edit2, which adds a hole: the polygons with their edge data.
-            UInt64 memoMask = 0;
-            if (memoLoaded) {
-                memoMask = cutPolygonsChanged ? (APIMemoMask_Polygon | APIMemoMask_EdgeTrims) : APIMemoMask_Polygon;
+            if (changed) {
+                // As the DevKit's Do_Shell_Edit2, which adds a hole: the polygons with their edge data.
+                UInt64 memoMask = 0;
+                if (memoLoaded) {
+                    memoMask = cutPolygonsChanged ? (APIMemoMask_Polygon | APIMemoMask_EdgeTrims) : APIMemoMask_Polygon;
+                }
+                err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoMask, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify shell."));
+                    continue;
+                }
             }
-            err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoMask, true);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to modify shell."));
-                continue;
+            if (edgeMaterials.any) {
+                err = WriteShellEdgeMaterials (element.header.guid, edgeMaterials);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, changed ? "Modified the shell, but failed to write its edge surfaces." : "Failed to write the shell's edge surfaces."));
+                    continue;
+                }
             }
             // The story visibilities Archicad did not apply, e.g. the contour's showOnHome (#3091).
             const auto visibilityError = GetUnappliedShellBaseVisibility (element.header.guid, item, "Shell");
