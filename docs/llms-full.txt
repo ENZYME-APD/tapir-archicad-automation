@@ -1,7 +1,7 @@
 # Tapir
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
-> ENZYME-APD and its community. It adds 832 JSON commands to Archicad's own JSON API, a palette
+> ENZYME-APD and its community. It adds 831 JSON commands to Archicad's own JSON API, a palette
 > that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
 > Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
 > every Monday.
@@ -2312,7 +2312,6 @@ Parameters and results of each are in the file of its group, listed in https://a
 - **RegularizePolylines** (since 1.7.3): Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points. The result is in the format of CreatePolylines and may be empty, optionally with the input point and segment each result point and segment came from. Changes nothing in the project. Parameters: polylines, withAncestry.
 - **GetSplineMaxDistances** (since 2.0.0): Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project. Parameters: splines.
 - **GetProfileValuesOfElements** (since 2.0.1): Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch. Parameters: elements.
-- **GetSurfaceElevationsAtPoints** (since 2.0.2): Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies. Returns all distinct elevations above project zero with their element IDs, including several levels of one element, without sending the body geometry. Hole interiors and points outside the surfaces have no hits. Reports unreadable elements separately. Pass subelement IDs for a hierarchy whose bodies belong to its parts. Parameters: elements, points.
 
 ## Element grouping Commands
 

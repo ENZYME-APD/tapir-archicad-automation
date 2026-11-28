@@ -19531,67 +19531,6 @@ var gCommands = [{
             "profileValuesOfElements"
         ]
     }
-            },{
-                "name": "GetSurfaceElevationsAtPoints",
-                "version": "2.0.2",
-                "description": "Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies. Returns all distinct elevations above project zero with their element IDs, including several levels of one element, without sending the body geometry. Hole interiors and points outside the surfaces have no hits. Reports unreadable elements separately. Pass subelement IDs for a hierarchy whose bodies belong to its parts.",
-                "inputScheme": {
-        "type": "object",
-        "properties": {
-            "elements": {
-                "$ref": "#/Elements",
-                "description": "Between 1 and 256 element IDs. Duplicate IDs are sampled once."
-            },
-            "points": {
-                "type": "array",
-                "description": "Between 1 and 4096 XY points in project metres; results retain input order.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elements",
-            "points"
-        ]
-    },
-                "outputScheme": {
-        "type": "object",
-        "properties": {
-            "samples": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/SurfaceElevationSample"
-                }
-            },
-            "elementErrors": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/SurfaceElevationElementError"
-                }
-            },
-            "unit": {
-                "type": "string",
-                "enum": [
-                    "m"
-                ]
-            },
-            "zReference": {
-                "type": "string",
-                "enum": [
-                    "projectZero"
-                ]
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "samples",
-            "elementErrors",
-            "unit",
-            "zReference"
-        ]
-    }
             }]
         },{
             "name": "Element grouping Commands",

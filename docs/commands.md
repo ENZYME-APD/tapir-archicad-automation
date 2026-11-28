@@ -2,7 +2,7 @@
 
 # Tapir commands
 
-All 832 commands Tapir adds to Archicad, by group, one line each. The file of each group has their parameters, results, Grasshopper components and examples; its JSON copy has the full schemas and the example code.
+All 831 commands Tapir adds to Archicad, by group, one line each. The file of each group has their parameters, results, Grasshopper components and examples; its JSON copy has the full schemas and the example code.
 
 ## How a Tapir command is sent
 
@@ -26,7 +26,7 @@ plugin send the same JSON. Every command is listed in [commands.md](https://arch
 - [Application Commands](https://archicad-api.com/commands/application.md) ([JSON](https://archicad-api.com/commands/application.json)): 42 commands
 - [Project Commands](https://archicad-api.com/commands/project.md) ([JSON](https://archicad-api.com/commands/project.json)): 70 commands
 - [Custom Data Commands](https://archicad-api.com/commands/custom-data.md) ([JSON](https://archicad-api.com/commands/custom-data.json)): 2 commands
-- [Element Commands](https://archicad-api.com/commands/element.md) ([JSON](https://archicad-api.com/commands/element.json)): 199 commands
+- [Element Commands](https://archicad-api.com/commands/element.md) ([JSON](https://archicad-api.com/commands/element.json)): 198 commands
 - [Element grouping Commands](https://archicad-api.com/commands/element-grouping.md) ([JSON](https://archicad-api.com/commands/element-grouping.json)): 15 commands
 - [Favorites Commands](https://archicad-api.com/commands/favorites.md) ([JSON](https://archicad-api.com/commands/favorites.json)): 27 commands
 - [Property Commands](https://archicad-api.com/commands/property.md) ([JSON](https://archicad-api.com/commands/property.json)): 32 commands
@@ -379,7 +379,6 @@ Parameters, results and examples: [commands/element.md](https://archicad-api.com
 - **RegularizePolylines** (since 1.7.3): Regularizes polylines with Archicad's own polyline regularization: removes repeated consecutive points.
 - **GetSplineMaxDistances** (since 2.0.0): Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline.
 - **GetProfileValuesOfElements** (since 2.0.1): Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element (one per Profile wall, one per Profile segment of a beam or column).
-- **GetSurfaceElevationsAtPoints** (since 2.0.2): Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies.
 
 ## Element grouping Commands
 

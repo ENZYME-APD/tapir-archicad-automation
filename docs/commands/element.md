@@ -2,7 +2,7 @@
 
 # Tapir commands: Element Commands
 
-The 199 commands of this group, with their parameters, results and examples. Every group and how a command is sent: [commands.md](https://archicad-api.com/commands.md).
+The 198 commands of this group, with their parameters, results and examples. Every group and how a command is sent: [commands.md](https://archicad-api.com/commands.md).
 
 ## Element Commands
 
@@ -5288,26 +5288,6 @@ Returns:
 
 Example: [archicad-addon/Examples/Element/GetProfileValuesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetProfileValuesOfElements.py): Reads the profile values of every wall, beam and column with a custom profile: the size of the stretched profile and the value of each profile modifier on that element. The values are measured on the stretched profile each element uses, so a profile stretched by the element, or a modifier the element changed, reads with the element's own value. Writing them is not possible: the Archicad API has no function for an element's modifier values or stretch.
 
-### GetSurfaceElevationsAtPoints
-
-Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies. Returns all distinct elevations above project zero with their element IDs, including several levels of one element, without sending the body geometry. Hole interiors and points outside the surfaces have no hits. Reports unreadable elements separately. Pass subelement IDs for a hierarchy whose bodies belong to its parts.
-
-Group: Element Commands. Added in Tapir 2.0.2. Docs: https://archicad-api.com/archicad-addon/#GetSurfaceElevationsAtPoints
-
-Parameters:
-
-- `elements` (Elements, required): Between 1 and 256 element IDs. Duplicate IDs are sampled once.
-- `points` (array of Coordinate2D, required): Between 1 and 4096 XY points in project metres; results retain input order.
-
-Returns:
-
-- `samples` (array of SurfaceElevationSample, required)
-- `elementErrors` (array of SurfaceElevationElementError, required)
-- `unit` (string ("m"), required)
-- `zReference` (string ("projectZero"), required)
-
-Example: [archicad-addon/Examples/Element/GetSurfaceElevationsAtPoints.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSurfaceElevationsAtPoints.py): Reads the terrain elevations at two boundary points of the first mesh in the project. Each reported elevation is in metres relative to project zero and identifies the element that provides it.
-
 ## Shared schema definitions
 
 Types that parameters and results refer to by name.
@@ -5315,24 +5295,6 @@ Types that parameters and results refer to by name.
 ### Elements
 
 array of ElementIdArrayItem: A list of elements.
-
-### SurfaceElevationHit
-
-object: One upward-facing surface at the requested point, attributed to its element.
-- `elementId` (ElementId, required)
-- `z` (number, required): Elevation in metres relative to project zero.
-
-### SurfaceElevationSample
-
-object: Elevations for one input project coordinate.
-- `point` (Coordinate2D, required)
-- `hits` (array of SurfaceElevationHit, required): All distinct upward-facing elevations at this point, ordered by elevation then element GUID. A point outside the surfaces or inside a hole has no hits.
-
-### SurfaceElevationElementError
-
-object: An input element whose own model faces could not be read. No partial elevations from this element are returned.
-- `elementId` (ElementId, required)
-- `error` (Error, required)
 
 ### ElementIdArrayItem
 
