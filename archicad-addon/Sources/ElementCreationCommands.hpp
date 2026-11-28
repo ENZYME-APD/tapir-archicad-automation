@@ -290,7 +290,14 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
     virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
+    virtual GS::UniString GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const override;
 };
+
+// Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): the settings of an angle dimension
+// that CreateAngleDimensions and ModifyAngleDimensions take beside smallArc, pen, textHeight and
+// textPen (onlyDimensionText, textPosition, textDirection, witnessForm, witnessValue, marker and
+// textBox), with the same keys (#3133).
+void AddAngleDimensionSettingsDetails (const API_AngleDimensionType& angleDimension, GS::ObjectState& details);
 
 class ModifyAngleDimensionsCommand : public CommandBase
 {

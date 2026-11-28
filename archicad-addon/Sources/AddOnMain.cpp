@@ -1358,7 +1358,9 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateAngleDimensionsCommand> (
             elementCommands, "2.0.1",
-            "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. GetDetailsOfElements returns their lines, arc and measured angle."
+            "Creates Angle Dimension elements (the Angle Dimension tool) measuring the angle between two lines, each given by two points, with the dimension arc through the given arcPosition, optionally based on an Angle Dimension favorite. The dimensions are static (not associated with elements) and are created in the current database - the floor plan, or the section, elevation, interior elevation, worksheet or detail whose window is active - or in the one given by databaseId. "
+            "The settings are those ModifyAngleDimensions takes (pens, text height, text position and direction, witness lines, marker and the text box with its leader line style); each new dimension is read back, and one that did not keep a given setting fails with the settings named and is deleted again. "
+            "GetDetailsOfElements returns their lines, arc, measured angle and settings."
         );
         err |= RegisterCommand<CreateRadialDimensionsCommand> (
             elementCommands, "2.0.1",
@@ -1371,7 +1373,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyAngleDimensionsCommand> (
             elementCommands, "2.0.1",
-            "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, and the text height and pen. Only the given settings are changed. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure."
+            "Changes the settings of existing Angle Dimension elements with the keys CreateAngleDimensions takes and GetDetailsOfElements returns: smallArc, the pen, the text height and pen, onlyDimensionText, the text position and direction, the witness line form and value, the marker (DimensionMarker) and the text box of the dimension text with the style of its leader line (DimensionNote). Only the given settings are changed, also inside marker and textBox. The lines and the arc position cannot be changed, as Archicad keeps them: delete the dimension and create it again with CreateAngleDimensions. The element is read back, so a value Archicad did not take is reported as a failure."
         );
         err |= RegisterCommand<ModifyLevelDimensionsCommand> (
             elementCommands, "2.0.0",

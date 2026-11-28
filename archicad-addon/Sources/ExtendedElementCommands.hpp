@@ -34,6 +34,15 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed);
 
+// The names of the witness line forms (API_WitnessID) and of the dimension markers (API_MarkerID,
+// #/DimensionMarker) of the dimension commands, shared by the linear dimension commands and the
+// angle dimension commands (ElementCreationCommands.cpp). The Parse functions return false for an
+// unknown name.
+GS::UniString WitnessFormToString (API_WitnessID witnessForm);
+bool ParseWitnessFormString (const GS::UniString& witnessForm, API_WitnessID& result);
+GS::UniString DimensionMarkerName (API_MarkerID markerType);
+bool ParseDimensionMarkerName (const GS::UniString& markerName, API_MarkerID& result);
+
 // The settings of an Interior Elevation and of each of its segments (#/InteriorElevationDetails),
 // read by GetDetailsOfElements (#2851).
 void AddInteriorElevationDetails (const API_Element& elem, GS::ObjectState& os);
