@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 20:52 UTC",
+ "generatedAt": "2026-11-28 21:17 UTC",
  "versions": [
   25,
   26,
@@ -5792,10 +5792,6 @@
      "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
     },
     {
-     "number": 3128,
-     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -7328,14 +7324,6 @@
      "title": "[2/5] Level dimensions: text box keys for both texts (textBox, secondTextBox)"
     },
     {
-     "number": 3135,
-     "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
-    },
-    {
-     "number": 3128,
-     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -7895,10 +7883,6 @@
     {
      "number": 3140,
      "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
-    },
-    {
-     "number": 3128,
-     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
     {
      "number": 2712,
@@ -25273,10 +25257,6 @@
      "title": "Sample surface elevations at XY points in one call"
     },
     {
-     "number": 3128,
-     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37367,16 +37347,8 @@
      "title": "[2/5] Level dimensions: text box keys for both texts (textBox, secondTextBox)"
     },
     {
-     "number": 3135,
-     "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
-    },
-    {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
-    },
-    {
-     "number": 3128,
-     "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
     {
      "number": 2880,

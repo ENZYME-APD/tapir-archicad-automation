@@ -1,4 +1,4 @@
-**2704 of 3746** fields of the Archicad element types that a command can write or read have a command key of their own (72 %; 3906 fields in all): ✏️ 1785 key, written, 👁️ 919 key, read, 🔧 1042 generic only, ➖ 48 not needed, 🔒 112 read only. On Archicad 29 and 30, GetElementFields and SetElementFields reach every field by its path.
+**2807 of 3746** fields of the Archicad element types that a command can write or read have a command key of their own (75 %; 3906 fields in all): ✏️ 1817 key, written, 👁️ 990 key, read, 🔧 939 generic only, ➖ 48 not needed, 🔒 112 read only. On Archicad 29 and 30, GetElementFields and SetElementFields reach every field by its path.
 
 | Element type | With a key | Fields | ✏️ | 👁️ | 🔧 | ➖ | 🔒 |
 |---|---|---|---|---|---|---|---|
@@ -7,18 +7,18 @@
 | [`API_ShellType`](#api_shelltype) | 94 % | 189 | 107 | 71 | 11 |  |  |
 | [`API_CurtainWallType`](#api_curtainwalltype) | 37 % | 187 | 42 | 6 | 81 | 48 | 10 |
 | [`API_RailingNodeType`](#api_railingnodetype) | 8 % | 133 | 8 | 1 | 108 |  | 16 |
-| [`API_AngleDimensionType`](#api_angledimensiontype) | 33 % | 113 | 35 | 1 | 73 |  | 4 |
+| [`API_AngleDimensionType`](#api_angledimensiontype) | 55 % | 113 | 47 | 13 | 49 |  | 4 |
 | [`API_RoofType`](#api_rooftype) | 94 % | 108 | 78 | 24 | 6 |  |  |
 | [`API_LabelType`](#api_labeltype) | 45 % | 107 | 47 |  | 58 |  | 2 |
 | [`API_InteriorElevationType`](#api_interiorelevationtype) | 88 % | 102 | 20 | 65 | 12 |  | 5 |
-| [`API_DimensionType`](#api_dimensiontype) | 44 % | 101 | 43 | 1 | 56 |  | 1 |
+| [`API_DimensionType`](#api_dimensiontype) | 59 % | 101 | 47 | 12 | 41 |  | 1 |
 | [`API_CutPlaneType`](#api_cutplanetype) | 81 % | 99 | 67 | 12 | 19 |  | 1 |
 | [`API_ElevationType`](#api_elevationtype) | 81 % | 99 | 67 | 12 | 19 |  | 1 |
-| [`API_LevelDimensionType`](#api_leveldimensiontype) | 46 % | 89 | 41 |  | 48 |  |  |
+| [`API_LevelDimensionType`](#api_leveldimensiontype) | 82 % | 89 | 49 | 24 | 16 |  |  |
 | [`API_RailingSegmentType`](#api_railingsegmenttype) | 18 % | 81 | 9 | 3 | 54 |  | 15 |
 | [`API_MorphType`](#api_morphtype) | 99 % | 72 | 55 | 16 | 1 |  |  |
-| [`API_HatchType`](#api_hatchtype) | 60 % | 70 | 36 | 6 | 28 |  |  |
-| [`API_RadialDimensionType`](#api_radialdimensiontype) | 60 % | 65 | 33 | 6 | 26 |  |  |
+| [`API_HatchType`](#api_hatchtype) | 83 % | 70 | 40 | 18 | 12 |  |  |
+| [`API_RadialDimensionType`](#api_radialdimensiontype) | 85 % | 65 | 37 | 18 | 10 |  |  |
 | [`API_WallType`](#api_walltype) | 90 % | 65 | 51 | 5 | 6 |  | 3 |
 | [`API_BeamType`](#api_beamtype) | 87 % | 63 | 50 | 4 | 8 |  | 1 |
 | [`API_ColumnType`](#api_columntype) | 94 % | 57 | 47 | 4 | 3 |  | 3 |
@@ -70,4 +70,4 @@
 | [`API_RailingFinishType`](#api_railingfinishtype) | 100 % | 2 |  | 2 |  |  |  |
 | [`API_ExternalElemType`](#api_externalelemtype) | 0 % | 1 |  |  | 1 |  |  |
 
-Fields of the Archicad 30 DevKit; an estimate read from the code, updated 2026-11-28 21:03 UTC.
+Fields of the Archicad 30 DevKit; an estimate read from the code, updated 2026-11-28 21:29 UTC.

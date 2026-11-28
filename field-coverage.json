@@ -1,10 +1,10 @@
 {
- "generatedAt": "2026-11-28 21:03 UTC",
+ "generatedAt": "2026-11-28 21:29 UTC",
  "devkit": 30,
  "counts": {
-  "key, written": 1785,
-  "generic only": 1042,
-  "key, read": 919,
+  "key, written": 1817,
+  "generic only": 939,
+  "key, read": 990,
   "read only": 112,
   "not needed": 48
  },
@@ -34,56 +34,56 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "textPos",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "textWay",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "witnessForm",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "witnessVal",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "markerData.markerType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "markerData.markerPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "markerData.markerSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.notePen",
@@ -118,7 +118,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.pos.x",
@@ -174,28 +174,28 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.frame",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.backgroundPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.useLeaderLine",
@@ -209,7 +209,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.begC.x",
@@ -258,63 +258,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.widthFactor",
@@ -335,7 +335,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.effectBits",
@@ -808,9 +808,9 @@
     }
    ],
    "counts": {
-    "key, written": 35,
-    "generic only": 73,
-    "key, read": 1,
+    "key, written": 47,
+    "generic only": 49,
+    "key, read": 13,
     "read only": 4
    }
   },
@@ -5973,7 +5973,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.pos.x",
@@ -6029,7 +6029,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.frame",
@@ -6043,14 +6043,14 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.useLeaderLine",
@@ -6064,7 +6064,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.begC.x",
@@ -6113,63 +6113,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "defNote.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "defNote.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "defNote.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "defNote.widthFactor",
@@ -6190,7 +6190,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "defNote.effectBits",
@@ -6544,9 +6544,9 @@
     }
    ],
    "counts": {
-    "key, written": 43,
-    "generic only": 56,
-    "key, read": 1,
+    "key, written": 47,
+    "generic only": 41,
+    "key, read": 12,
     "read only": 1
    }
   },
@@ -8158,7 +8158,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.pos.x",
@@ -8214,28 +8214,28 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.frame",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.backgroundPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.useLeaderLine",
@@ -8249,7 +8249,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.begC.x",
@@ -8298,63 +8298,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.widthFactor",
@@ -8375,7 +8375,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.effectBits",
@@ -8519,9 +8519,9 @@
     }
    ],
    "counts": {
-    "key, written": 36,
-    "generic only": 28,
-    "key, read": 6
+    "key, written": 40,
+    "generic only": 12,
+    "key, read": 18
    }
   },
   {
@@ -10593,7 +10593,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.pos.x",
@@ -10649,28 +10649,28 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.frame",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.backgroundPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.useLeaderLine",
@@ -10684,7 +10684,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.begC.x",
@@ -10733,63 +10733,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note1.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note1.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note1.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note1.widthFactor",
@@ -10810,7 +10810,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note1.effectBits",
@@ -10852,7 +10852,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.pos.x",
@@ -10908,28 +10908,28 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.frame",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.backgroundPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.useLeaderLine",
@@ -10943,7 +10943,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.begC.x",
@@ -10992,63 +10992,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note2.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note2.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note2.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note2.widthFactor",
@@ -11069,7 +11069,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note2.effectBits",
@@ -11143,8 +11143,9 @@
     }
    ],
    "counts": {
-    "key, written": 41,
-    "generic only": 48
+    "key, written": 49,
+    "generic only": 16,
+    "key, read": 24
    }
   },
   {
@@ -12823,7 +12824,7 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.pos.x",
@@ -12879,28 +12880,28 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.frame",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.backgroundPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.framePen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.useLeaderLine",
@@ -12914,7 +12915,7 @@
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.begC.x",
@@ -12963,63 +12964,63 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderLineType",
      "kind": "AttributeIndex",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.leaderShape",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowType",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowVisibility",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.arrowData.arrowPen",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.arrowData.arrowSize",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.anchorPoint",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.just",
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, read"
     },
     {
      "path": "note.widthFactor",
@@ -13040,7 +13041,7 @@
      "kind": "SignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "key, written"
     },
     {
      "path": "note.effectBits",
@@ -13177,9 +13178,9 @@
     }
    ],
    "counts": {
-    "key, written": 33,
-    "key, read": 6,
-    "generic only": 26
+    "key, written": 37,
+    "key, read": 18,
+    "generic only": 10
    }
   },
   {
