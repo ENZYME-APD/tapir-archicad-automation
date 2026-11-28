@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1447 | 1441 | 6 |  |  |  | 11 | 369 |
 
-Archicad 25–30 DevKits; updated 2026-11-28 10:02 UTC.
+Archicad 25–30 DevKits; updated 2026-11-28 11:31 UTC.
 
 | | Status |
 |---|---|
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -173,7 +173,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings")
 - ✅ `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
-- ✅ `ACAPI_Element_GetMemo` — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetMemo` — [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -390,7 +390,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_Get3DWindowSets` – Retrieves the 3D Window settings. <sub>(was `APIEnv_Get3DWindowSetsID`)</sub>
 - ✅ `ACAPI_View_GetCurrentImage` <sub>AC30</sub> – Gets an image of the current view (3D, or rendering).
 - ✅ `ACAPI_View_GetDocumentFrom3DDefaults` – Returns the 3D document setting default values. <sub>(was `APIEnv_GetDocumentFrom3DDefaultsID`)</sub>
-- ✅ `ACAPI_View_GetDocumentFrom3DSettings` – Returns the 3D document settings of the specified database. <sub>(was `APIEnv_GetDocumentFrom3DSettingsID`)</sub> — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning")
+- ✅ `ACAPI_View_GetDocumentFrom3DSettings` – Returns the 3D document settings of the specified database. <sub>(was `APIEnv_GetDocumentFrom3DSettingsID`)</sub>
 - ✅ `ACAPI_View_GetGhostRecord` – Retrieve a Trace record from the database. <sub>(was `APIEnv_GetGhostRecordID`)</sub>
 - ✅ `ACAPI_View_GetGhostStorySettings` – Retrieves the current ghost story settings. <sub>(was `APIEnv_GetGhostStorySettingsID`)</sub>
 - ✅ `ACAPI_View_GetShowHideState` – Returns the visibility of application. <sub>(was `APIEnv_GetShowHideStateID`)</sub>
@@ -513,7 +513,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -587,7 +587,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Database_DeleteDatabase` – Deletes an independent detail, worksheet, layout, or master layout database. <sub>(was `APIDb_DeleteDatabaseID`)</sub>
 - ➖ `ACAPI_Database_DoClip` – Clips the elements created during a clipping session. <sub>(was `APIDb_DoClipID`)</sub> *(clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see)*
 - ✅ `ACAPI_Database_GetContainingDatabase` – Obtains the unique ID of database contains the given element. <sub>(was `APIDb_GetContainingDatabaseID`)</sub>
-- ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub> — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning")
+- ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub>
 - ➖ `ACAPI_Database_GetDBUnIdFromGuid` – Returns the old database identifiers from the database GUID. <sub>(was `APIDb_GetDBUnIdFromGuidID`)</sub> *(converts to the old userId/databaseId pair, which no JSON command or official command takes)*
 - ⛔ `ACAPI_Database_GetDatabasesForType` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given type. *(returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return)*
 - ⛔ `ACAPI_Database_GetDatabasesForTypes` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given types. *(returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs)*
@@ -871,7 +871,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub>
 - ➖ `ACAPI_Window_DestroyWindowValidator` – Destroys an already registered validator for the given guid. <sub>(was `APIDb_DestroyWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
 - ✅ `ACAPI_Window_GetCurrentWindow` – Returns the identifier of the current (active) window. <sub>(was `APIDb_GetCurrentWindowID`)</sub>
-- ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub> — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning")
+- ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub>
 - ✅ `ACAPI_Window_GetGridSettings` – Returns the grid setting parameters of the current database. <sub>(was `APIDb_GetGridSettingsID`)</sub>
 - ➖ `ACAPI_Window_GetOwnWindows` – Returns the ids of the opened windows in an array. <sub>(was `APIDb_GetOwnWindowsID`)</sub> *(the add-on's own windows (user interface))*
 - ➖ `ACAPI_Window_NewWindow` – Opens a new window. <sub>(was `APIDb_NewWindowID`)</sub> *(the add-on's own windows (user interface))*
@@ -1233,7 +1233,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Renovation
 
-- ✅ `ACAPI_Renovation_GetActualRenovationFilter` – Returns the current renovation filter. <sub>(was `APIDb_GetActualRenovationFilterID`)</sub> — [#3110](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3110 "SetActiveRenovationFilter: refuse a non auto-rebuild viewpoint instead of hanging on Archicad's warning")
+- ✅ `ACAPI_Renovation_GetActualRenovationFilter` – Returns the current renovation filter. <sub>(was `APIDb_GetActualRenovationFilterID`)</sub>
 - ✅ `ACAPI_Renovation_GetRenovationFilterName` – Returns the name of the renovation filter. <sub>(was `APIAny_GetRenovationFilterNameID`)</sub>
 - ✅ `ACAPI_Renovation_GetRenovationFilters` – Returns the array of renovation filters. <sub>(was `APIDb_GetRenovationFiltersID`)</sub>
 - ✅ `ACAPI_Renovation_GetRenovationStatusName` – Returns the name of the renovation status. <sub>(was `APIAny_GetRenovationStatusNameID`)</sub>
