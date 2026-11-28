@@ -39,7 +39,23 @@ jobs:
     - name: Create yak package
       run: grasshopper-plugin/create_package_win.bat
     - name: Get yak
-      run: curl -o yak.exe http://files.mcneel.com/yak/tools/latest/yak.exe
+      # Over HTTPS, and failing at once on an HTTP error: over plain HTTP anything on the
+      # network between the runner and McNeel's CDN could replace the executable this job
+      # then runs, in the .yak of this check's artifact. (The release builds its own .yak in
+      # grasshopper_plugin.yml, which gets yak from paramdigma/setup-yak.) --fail also keeps
+      # curl from saving an error page as yak.exe.
+      #
+      # It is still 'latest', which McNeel rotates: a pinned digest would break this build the
+      # day they publish a new one, and files.mcneel.com has no versioned path. The digest and
+      # the signature of what was downloaded go to the log, so a rotation is visible in the run
+      # that picked it up.
+      shell: pwsh
+      run: |
+        curl.exe --fail --silent --show-error --location --retry 3 --retry-delay 2 --output yak.exe https://files.mcneel.com/yak/tools/latest/yak.exe
+        Write-Host "yak.exe SHA256 $((Get-FileHash -Algorithm SHA256 yak.exe).Hash)"
+        # Not a gate: a missing signature is reported, not failed on, because only the digest
+        # above can tell a replaced file from a rotated one.
+        Get-AuthenticodeSignature yak.exe | Format-List Status, StatusMessage, SignerCertificate
     - name: Build yak package
       run: ..\..\yak.exe build
       working-directory: grasshopper-plugin/YakPackage
