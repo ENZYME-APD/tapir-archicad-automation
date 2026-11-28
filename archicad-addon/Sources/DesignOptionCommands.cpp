@@ -1276,20 +1276,7 @@ GS::Optional<GS::UniString> ActivateDesignOptionsInCombinationsCommand::GetInput
             "designOptionsToActivate": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/DesignOptionCombinationId"
-                        },
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionActivation"
                 },
                 "description": "The design options to activate, each in the given combination."
             }
@@ -1666,24 +1653,7 @@ GS::Optional<GS::UniString> RenameDesignOptionsCommand::GetInputParametersSchema
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option. The name is kept when it is not given."
-                        },
-                        "id": {
-                            "type": "string",
-                            "description": "The new string id of the design option. The id is kept when it is not given."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionRename"
                 },
                 "description": "The design options to rename, each with the new name and/or id. At least one of them must be given."
             }
@@ -1770,21 +1740,7 @@ GS::Optional<GS::UniString> RenameDesignOptionSetsCommand::GetInputParametersSch
             "designOptionSets": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionSetId": {
-                            "$ref": "#/DesignOptionSetId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionSetId",
-                        "name"
-                    ]
+                    "$ref": "#/DesignOptionSetRename"
                 },
                 "description": "The design option sets to rename, each with the new name."
             }
@@ -1857,21 +1813,7 @@ GS::Optional<GS::UniString> RenameDesignOptionCombinationsCommand::GetInputParam
             "designOptionCombinations": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionCombinationId": {
-                            "$ref": "#/DesignOptionCombinationId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the design option combination."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionCombinationId",
-                        "name"
-                    ]
+                    "$ref": "#/DesignOptionCombinationRename"
                 },
                 "description": "The design option combinations to rename, each with the new name."
             }
@@ -2186,36 +2128,7 @@ GS::Optional<GS::UniString> GetDesignOptionCombinationOfViewsCommand::GetRawResp
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "navigatorItemId": {
-                                    "$ref": "#/NavigatorItemId"
-                                },
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "MainModelOnly",
-                                        "Standard",
-                                        "Custom",
-                                        "Missing"
-                                    ],
-                                    "description": "MainModelOnly: the view shows only the main model, no design option. Standard: the view shows a design option combination. Custom: the view shows a set of design options modified by the user, without a name. Missing: the combination of the view was deleted."
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the design option combination settings of the view, as Archicad reports it."
-                                },
-                                "designOptionCombinationId": {
-                                    "$ref": "#/DesignOptionCombinationId",
-                                    "description": "The design option combination the view shows. Given for the Standard status and, on Archicad 27 and 28, also for the Custom status (the combination the custom set was made from). On Archicad 29 and newer it is given only when exactly one combination has the name of the view's settings."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "navigatorItemId",
-                                "status",
-                                "name"
-                            ]
+                            "$ref": "#/ViewDesignOptionCombination"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2587,26 +2500,10 @@ GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetInputParamet
                     "type": "object",
                     "oneOf": [
                         {
-                            "properties": {
-                                "hotlinkNodeId": {
-                                    "$ref": "#/HotlinkNodeId"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "hotlinkNodeId"
-                            ]
+                            "$ref": "#/HotlinkDesignOptionsByNode"
                         },
                         {
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/HotlinkDesignOptionsByElement"
                         }
                     ]
                 }
@@ -2630,69 +2527,7 @@ GS::Optional<GS::UniString> GetHotlinkDesignOptionTablesCommand::GetRawResponseS
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "hotlinkNodeId": {
-                                    "$ref": "#/HotlinkNodeId",
-                                    "description": "The hotlink node the table belongs to; for an instance, the node it is placed from."
-                                },
-                                "filterMode": {
-                                    "type": "string",
-                                    "enum": [
-                                        "MainModelOnly",
-                                        "FilterByOptions",
-                                        "FilterByCombination",
-                                        "Unknown"
-                                    ],
-                                    "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
-                                },
-                                "designOptionCombinations": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    },
-                                    "description": "The names of the design option combinations of the hotlinked module."
-                                },
-                                "activeDesignOptionCombination": {
-                                    "type": "string",
-                                    "description": "The name of the active combination. Missing when no combination is active."
-                                },
-                                "designOptionSets": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {
-                                                "type": "string"
-                                            },
-                                            "designOptions": {
-                                                "type": "array",
-                                                "items": {
-                                                    "type": "string"
-                                                },
-                                                "description": "The names of the design options in the set."
-                                            },
-                                            "activeDesignOption": {
-                                                "type": "string",
-                                                "description": "The name of the active design option of the set. Missing when no option of the set is active."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "name",
-                                            "designOptions"
-                                        ]
-                                    },
-                                    "description": "The design option sets of the hotlinked module."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "hotlinkNodeId",
-                                "filterMode",
-                                "designOptionCombinations",
-                                "designOptionSets"
-                            ]
+                            "$ref": "#/HotlinkDesignOptionTable"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2785,50 +2620,7 @@ GS::Optional<GS::UniString> SetHotlinkDesignOptionTablesCommand::GetInputParamet
                 "type": "array",
                 "description": "The placed hotlink instances to change the design option table of. Every field but elementId is optional; what is omitted keeps its current value. The changes are applied in the order filterMode, activeDesignOptionCombination, activeDesignOptions.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "filterMode": {
-                            "type": "string",
-                            "enum": [
-                                "MainModelOnly",
-                                "FilterByOptions",
-                                "FilterByCombination"
-                            ],
-                            "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
-                        },
-                        "activeDesignOptionCombination": {
-                            "type": "string",
-                            "description": "The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination."
-                        },
-                        "activeDesignOptions": {
-                            "type": "array",
-                            "description": "The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "setName": {
-                                        "type": "string"
-                                    },
-                                    "designOptionName": {
-                                        "type": "string",
-                                        "description": "The name of the option to activate in the set. An empty string deactivates every option of the set."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "setName",
-                                    "designOptionName"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/HotlinkDesignOptionTableUpdate"
                 }
             }
         },
@@ -3014,16 +2806,7 @@ GS::Optional<GS::UniString> GetHotlinkDesignOptionTableDetailsCommand::GetInputP
                 "type": "array",
                 "description": "The hotlink nodes, from GetHotlinks or CreateHotlinkNodes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId"
-                    ]
+                    "$ref": "#/HotlinkNodeReference"
                 }
             }
         },
@@ -3046,69 +2829,7 @@ GS::Optional<GS::UniString> GetHotlinkDesignOptionTableDetailsCommand::GetRawRes
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "nodeGuid": {
-                                    "$ref": "#/GuidId",
-                                    "description": "The node guid the design option table belongs to."
-                                },
-                                "filterMode": {
-                                    "type": "string",
-                                    "enum": [
-                                        "MainModelOnly",
-                                        "FilterByOptions",
-                                        "FilterByCombination"
-                                    ],
-                                    "description": "What the node shows: only the main model of the source, the active option of each set, or the active combination."
-                                },
-                                "sets": {
-                                    "type": "array",
-                                    "description": "The design option sets of the source file.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the set."
-                                            },
-                                            "options": {
-                                                "type": "array",
-                                                "description": "The names of the design options in the set.",
-                                                "items": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "activeOption": {
-                                                "type": "string",
-                                                "description": "The name of the option the node shows from this set. Left out when none is active."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "name",
-                                            "options"
-                                        ]
-                                    }
-                                },
-                                "combinations": {
-                                    "type": "array",
-                                    "description": "The names of the design option combinations of the source file.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "activeCombination": {
-                                    "type": "string",
-                                    "description": "The name of the combination the node shows. Left out when none is active."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "nodeGuid",
-                                "filterMode",
-                                "sets",
-                                "combinations"
-                            ]
+                            "$ref": "#/HotlinkDesignOptionTableDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3505,21 +3226,7 @@ GS::Optional<GS::UniString> ReorderDesignOptionSetsCommand::GetInputParametersSc
             "designOptionSets": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionSetId": {
-                            "$ref": "#/DesignOptionSetId",
-                            "description": "The design option set to move."
-                        },
-                        "beforeDesignOptionSetId": {
-                            "$ref": "#/DesignOptionSetId",
-                            "description": "The design option set to move it before. When it is not given, the set is moved to the end."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionSetId"
-                    ]
+                    "$ref": "#/DesignOptionSetMove"
                 },
                 "description": "The design option sets to move, in the order the moves are done."
             }
@@ -3601,21 +3308,7 @@ GS::Optional<GS::UniString> ReorderDesignOptionsInSetCommand::GetInputParameters
             "designOptions": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "designOptionId": {
-                            "$ref": "#/DesignOptionId",
-                            "description": "The design option to move within its set."
-                        },
-                        "beforeDesignOptionId": {
-                            "$ref": "#/DesignOptionId",
-                            "description": "The design option of the same set to move it before. When it is not given, the design option is moved to the end of its set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "designOptionId"
-                    ]
+                    "$ref": "#/DesignOptionMove"
                 },
                 "description": "The design options to move, in the order the moves are done."
             }
@@ -3713,25 +3406,7 @@ GS::Optional<GS::UniString> CanMoveElementsToDesignOptionsCommand::GetRawRespons
             "canMoveElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "canMove": {
-                            "type": "boolean",
-                            "description": "Whether the element can be moved to another design option or to the main model."
-                        },
-                        "error": {
-                            "$ref": "#/Error",
-                            "description": "The reason why the element cannot be moved. Only present when canMove is false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "canMove"
-                    ]
+                    "$ref": "#/DesignOptionMoveCapability"
                 },
                 "description": "The result for each given element, in the order of the input."
             }

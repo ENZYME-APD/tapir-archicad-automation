@@ -681,22 +681,7 @@ GS::Optional<GS::UniString> ResolveNamesCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "The words or phrases to look up in the open project, for example taken from a user's question.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The word or phrase.",
-                            "minLength": 1
-                        },
-                        "kind": {
-                            "$ref": "#/NameKind",
-                            "description": "The kind of item the word names. When it is left out, every kind is searched."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/NameToResolve"
                 },
                 "minItems": 1
             },
@@ -723,43 +708,7 @@ GS::Optional<GS::UniString> ResolveNamesCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "One result for each of the given names, in the same order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The given word or phrase."
-                        },
-                        "status": {
-                            "type": "string",
-                            "description": "found: an item of the project has exactly this name (see found). closeMatches: no item has exactly this name, but some are close (see closeMatches). notFound: nothing in the project is close to it; the project has no such item, so it must not be guessed.",
-                            "enum": [
-                                "found",
-                                "closeMatches",
-                                "notFound"
-                            ]
-                        },
-                        "found": {
-                            "type": "array",
-                            "description": "The items named exactly so (the same characters), with match 'exact'. More than one when items of different kinds, or several stories, have the name.",
-                            "items": {
-                                "$ref": "#/NameMatch"
-                            }
-                        },
-                        "closeMatches": {
-                            "type": "array",
-                            "description": "When nothing is named exactly so: the nearest items, best first. Empty when the status is found or notFound.",
-                            "items": {
-                                "$ref": "#/NameMatch"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "status",
-                        "found",
-                        "closeMatches"
-                    ]
+                    "$ref": "#/ResolvedName"
                 }
             }
         },

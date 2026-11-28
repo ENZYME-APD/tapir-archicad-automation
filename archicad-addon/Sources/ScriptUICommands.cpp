@@ -115,22 +115,7 @@ GS::Optional<GS::UniString> ShowScriptUICommand::GetRawResponseSchema () const
     return R"({
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "success": {
-                        "type": "boolean",
-                        "enum": [ true ]
-                    },
-                    "uiId": {
-                        "type": "integer",
-                        "description": "The window the page is shown in (1 to 8). Pass it to GetScriptUIResult, or to a later ShowScriptUI to replace the page."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "success",
-                    "uiId"
-                ]
+                "$ref": "#/ScriptUIShown"
             },
             {
                 "$ref": "#/FailedExecutionResult"
