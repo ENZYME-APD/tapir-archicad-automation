@@ -9535,72 +9535,6 @@
         ],
         "description": "The quantities of an element component."
     },
-    "Hole2DWithOutline": {
-        "type": "object",
-        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
-        "properties": {
-            "polygonOutline": {
-                "type": "array",
-                "description": "The 2D coordinates of the edge of the hole.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonCoordinates": {
-                "type": "array",
-                "description": "Legacy alias of polygonOutline.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonArcs": {
-                "type": "array",
-                "description": "Polygon outline arcs of the hole.",
-                "items": {
-                    "$ref": "#/PolyArc"
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "polygonOutline"
-        ]
-    },
-    "Hole2DWithLegacyCoordinates": {
-        "type": "object",
-        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
-        "properties": {
-            "polygonOutline": {
-                "type": "array",
-                "description": "The 2D coordinates of the edge of the hole.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonCoordinates": {
-                "type": "array",
-                "description": "Legacy alias of polygonOutline.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonArcs": {
-                "type": "array",
-                "description": "Polygon outline arcs of the hole.",
-                "items": {
-                    "$ref": "#/PolyArc"
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "polygonCoordinates"
-        ]
-    },
     "ConvertedAnalyticalLink": {
         "type": "object",
         "properties": {
@@ -10004,7 +9938,7 @@
             "elementId2",
             "polygons"
         ],
-        "description": "The connection information returned for one element."
+        "description": "The connection between a pair of elements."
     },
     "ElementConnectionPolygon": {
         "type": "object",
@@ -10214,93 +10148,6 @@
         "additionalProperties": false,
         "required": [
             "vertices"
-        ]
-    },
-    "ElementFromCurveMemberData": {
-        "type": "object",
-        "properties": {
-            "curveMember": {
-                "$ref": "#/AnalyticalCurveMember",
-                "description": "A curve member, creating a beam or a column."
-            },
-            "surfaceMember": {
-                "$ref": "#/AnalyticalSurfaceMember",
-                "description": "A surface member, creating a wall, a slab or a roof."
-            },
-            "segmentedSurfaceMembers": {
-                "type": "array",
-                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
-                "items": {
-                    "$ref": "#/AnalyticalSurfaceMember"
-                },
-                "minItems": 1
-            },
-            "favoriteName": {
-                "type": "string",
-                "description": "The name of the favorite whose settings the new element gets."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "curveMember"
-        ]
-    },
-    "ElementFromSurfaceMemberData": {
-        "type": "object",
-        "properties": {
-            "curveMember": {
-                "$ref": "#/AnalyticalCurveMember",
-                "description": "A curve member, creating a beam or a column."
-            },
-            "surfaceMember": {
-                "$ref": "#/AnalyticalSurfaceMember",
-                "description": "A surface member, creating a wall, a slab or a roof."
-            },
-            "segmentedSurfaceMembers": {
-                "type": "array",
-                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
-                "items": {
-                    "$ref": "#/AnalyticalSurfaceMember"
-                },
-                "minItems": 1
-            },
-            "favoriteName": {
-                "type": "string",
-                "description": "The name of the favorite whose settings the new element gets."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "surfaceMember"
-        ]
-    },
-    "ElementFromSegmentedSurfaceMembersData": {
-        "type": "object",
-        "properties": {
-            "curveMember": {
-                "$ref": "#/AnalyticalCurveMember",
-                "description": "A curve member, creating a beam or a column."
-            },
-            "surfaceMember": {
-                "$ref": "#/AnalyticalSurfaceMember",
-                "description": "A surface member, creating a wall, a slab or a roof."
-            },
-            "segmentedSurfaceMembers": {
-                "type": "array",
-                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
-                "items": {
-                    "$ref": "#/AnalyticalSurfaceMember"
-                },
-                "minItems": 1
-            },
-            "favoriteName": {
-                "type": "string",
-                "description": "The name of the favorite whose settings the new element gets."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "segmentedSurfaceMembers"
         ]
     },
     "CollisionCheckSettings": {
@@ -11265,12 +11112,44 @@
         ]
     },
     "Hole2D": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/Hole2DWithOutline"
+                "required": [
+                    "polygonOutline"
+                ]
             },
             {
-                "$ref": "#/Hole2DWithLegacyCoordinates"
+                "required": [
+                    "polygonCoordinates"
+                ]
             }
         ]
     },
@@ -25800,15 +25679,45 @@
         ]
     },
     "ElementFromAnalyticalMemberData": {
+        "type": "object",
+        "properties": {
+            "curveMember": {
+                "$ref": "#/AnalyticalCurveMember",
+                "description": "A curve member, creating a beam or a column."
+            },
+            "surfaceMember": {
+                "$ref": "#/AnalyticalSurfaceMember",
+                "description": "A surface member, creating a wall, a slab or a roof."
+            },
+            "segmentedSurfaceMembers": {
+                "type": "array",
+                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+                "items": {
+                    "$ref": "#/AnalyticalSurfaceMember"
+                },
+                "minItems": 1
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the favorite whose settings the new element gets."
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/ElementFromCurveMemberData"
+                "required": [
+                    "curveMember"
+                ]
             },
             {
-                "$ref": "#/ElementFromSurfaceMemberData"
+                "required": [
+                    "surfaceMember"
+                ]
             },
             {
-                "$ref": "#/ElementFromSegmentedSurfaceMembersData"
+                "required": [
+                    "segmentedSurfaceMembers"
+                ]
             }
         ]
     },
