@@ -126,6 +126,19 @@ class EngineTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             r.resolve(data, "x.z")
 
+    def test_resolve_finds_a_key_with_dots(self):
+        # GetElementFields returns every field under its whole path as one key.
+        data = {"elementFields": [{"fields": {"defSegment.zOffset": 0.5, "pen": 3, "cutFillPen": {"value": 7},
+                                              "a.b": {"c": 1}, "a.b.c": 2}},
+                                  {"fields": {"defSegment.zOffset": 0.25}}]}
+        self.assertEqual(r.resolve(data, "elementFields[0].fields.defSegment.zOffset"), 0.5)
+        self.assertEqual(r.resolve(data, "elementFields[0].fields.pen"), 3)
+        self.assertEqual(r.resolve(data, "elementFields[0].fields.cutFillPen.value"), 7)
+        self.assertEqual(r.resolve(data, "elementFields[*].fields.defSegment.zOffset"), [0.5, 0.25])
+        self.assertEqual(r.resolve(data, "elementFields[0].fields.a.b.c"), 2)  # the longest dotted key first
+        with self.assertRaises(KeyError):
+            r.resolve(data, "elementFields[0].fields.defSegment.yOffset")
+
     def test_substitute_keeps_types(self):
         v = {"n": 3, "g": "G-1"}
         self.assertEqual(r.substitute({"a": "${n}", "b": "id ${g}", "c": ["${g}"]}, v), {"a": 3, "b": "id G-1", "c": ["G-1"]})
