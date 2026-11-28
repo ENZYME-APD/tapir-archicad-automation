@@ -1551,25 +1551,7 @@
                 "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
             },
             "preference": {
-                "type": "string",
-                "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
-                "enum": [
-                    "WorkModel",
-                    "WorkLayout",
-                    "WorkAngle",
-                    "DimLinear",
-                    "DimAngle",
-                    "DimRadial",
-                    "DimLevel",
-                    "DimElevation",
-                    "DimDoorWindow",
-                    "DimParapet",
-                    "DimArea",
-                    "CalcLength",
-                    "CalcArea",
-                    "CalcVolume",
-                    "CalcAngle"
-                ]
+                "$ref": "#/UnitValuePreference"
             }
         },
         "additionalProperties": false,
@@ -4528,14 +4510,7 @@
                 "type": "integer"
             },
             "color": {
-                "type": "object",
-                "properties": {
-                    "red": { "type": "number" },
-                    "green": { "type": "number" },
-                    "blue": { "type": "number" }
-                },
-                "additionalProperties": false,
-                "required": [ "red", "green", "blue" ]
+                "$ref": "#/ColorRGB"
             }
         },
         "additionalProperties": false,
@@ -9477,6 +9452,1012 @@
             "$ref": "#/BoundingBox2DOrError"
         }
     },
+    "Body3DPolygon": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "description": "The outer contour of the face: 0-based indices into vertices.",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            },
+            "holes": {
+                "type": "array",
+                "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
+                "items": {
+                    "$ref": "#/Body3DPolygonHole"
+                }
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ],
+        "description": "A polygon of a three-dimensional body."
+    },
+    "Body3DPolygonHole": {
+        "type": "object",
+        "properties": {
+            "vertexIds": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertexIds"
+        ],
+        "description": "A hole contour within a body polygon."
+    },
+    "ElementComponentQuantities": {
+        "type": "object",
+        "properties": {
+            "buildingMaterialId": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "volume": {
+                "type": "number",
+                "description": "Net volume of the skin."
+            },
+            "projectedArea": {
+                "type": "number",
+                "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
+            },
+            "isCore": {
+                "type": "boolean",
+                "description": "The skin is marked as core."
+            },
+            "isFinish": {
+                "type": "boolean",
+                "description": "The skin is marked as finish."
+            },
+            "subElementId": {
+                "$ref": "#/ElementId",
+                "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "buildingMaterialId",
+            "volume",
+            "projectedArea",
+            "isCore",
+            "isFinish"
+        ],
+        "description": "The quantities of an element component."
+    },
+    "Hole2DWithOutline": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline"
+        ]
+    },
+    "Hole2DWithLegacyCoordinates": {
+        "type": "object",
+        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the edge of the hole.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonCoordinates": {
+                "type": "array",
+                "description": "Legacy alias of polygonOutline.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "polygonArcs": {
+                "type": "array",
+                "description": "Polygon outline arcs of the hole.",
+                "items": {
+                    "$ref": "#/PolyArc"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonCoordinates"
+        ]
+    },
+    "ConvertedAnalyticalLink": {
+        "type": "object",
+        "properties": {
+            "link": {
+                "$ref": "#/AnalyticalLink"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "link"
+        ]
+    },
+    "UnitValuePreference": {
+        "type": "string",
+        "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
+        "enum": [
+            "WorkModel",
+            "WorkLayout",
+            "WorkAngle",
+            "DimLinear",
+            "DimAngle",
+            "DimRadial",
+            "DimLevel",
+            "DimElevation",
+            "DimDoorWindow",
+            "DimParapet",
+            "DimArea",
+            "CalcLength",
+            "CalcArea",
+            "CalcVolume",
+            "CalcAngle"
+        ]
+    },
+    "AnalyticalPointLoadData": {
+        "type": "object",
+        "properties": {
+            "pointLoad": {
+                "$ref": "#/AnalyticalPointLoad"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pointLoad"
+        ]
+    },
+    "AnalyticalEdgeLoadData": {
+        "type": "object",
+        "properties": {
+            "edgeLoad": {
+                "$ref": "#/AnalyticalEdgeLoad"
+            },
+            "customData": {
+                "$ref": "#/AnalyticalEdgeLoadCustomData"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "edgeLoad",
+            "customData"
+        ]
+    },
+    "AnalyticalSurfaceLoadData": {
+        "type": "object",
+        "properties": {
+            "surfaceLoad": {
+                "$ref": "#/AnalyticalSurfaceLoad"
+            },
+            "customData": {
+                "$ref": "#/AnalyticalSurfaceLoadCustomData"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceLoad",
+            "customData"
+        ]
+    },
+    "SolidOperationResult": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The morphs created by the operation."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+    "Model3DComponentType": {
+        "type": "string",
+        "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
+        "enum": [
+            "Body",
+            "Pgon",
+            "Pedg",
+            "Edge",
+            "Vert",
+            "Vect",
+            "Umat",
+            "Lght"
+        ]
+    },
+    "AnalyticalMemberPartNode": {
+        "type": "object",
+        "properties": {
+            "node": {
+                "$ref": "#/AnalyticalNode"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "node"
+        ]
+    },
+    "AnalyticalMemberPartCurve": {
+        "type": "object",
+        "properties": {
+            "curve": {
+                "$ref": "#/AnalyticalCurve"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curve"
+        ]
+    },
+    "AnalyticalMemberTypeResult": {
+        "type": "object",
+        "properties": {
+            "memberType": {
+                "$ref": "#/AnalyticalMemberType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "memberType"
+        ]
+    },
+    "AnalyticalReleaseResult": {
+        "type": "object",
+        "properties": {
+            "release": {
+                "$ref": "#/AnalyticalRelease"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "release"
+        ]
+    },
+    "ElementBodyMaterials": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
+                "items": {
+                    "$ref": "#/BodyMaterialDetails"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ],
+        "description": "The body materials returned for one element."
+    },
+    "BodyMaterialDetails": {
+        "type": "object",
+        "properties": {
+            "bodyIndex": {
+                "type": "integer",
+                "description": "The index of the body in the element, starting from 0."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
+            },
+            "buildingMaterialName": {
+                "type": "string",
+                "description": "The name of the building material. Left out together with buildingMaterialId."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodyIndex"
+        ],
+        "description": "The materials of one body of an element."
+    },
+    "ElementCutPlane": {
+        "type": "object",
+        "description": "The cutting plane. axisX, axisY and axisZ should be unit vectors perpendicular to each other; axisZ is the normal of the plane.",
+        "properties": {
+            "basePoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "A point of the plane, the origin of the returned 2D coordinates."
+            },
+            "axisX": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction of the x axis of the returned 2D coordinates."
+            },
+            "axisY": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction of the y axis of the returned 2D coordinates."
+            },
+            "axisZ": {
+                "$ref": "#/Coordinate3D",
+                "description": "The normal of the plane."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "basePoint",
+            "axisX",
+            "axisY",
+            "axisZ"
+        ]
+    },
+    "ElementCutPolygons": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The bodies of the element's 3D model generated with separate components: a composite structure has one body per skin. Empty when the element has no 3D model.",
+                "items": {
+                    "$ref": "#/BodyCutPolygons"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ],
+        "description": "The cutting-plane intersections returned for one element."
+    },
+    "BodyCutPolygons": {
+        "type": "object",
+        "properties": {
+            "bodyIndex": {
+                "type": "integer",
+                "description": "The index of the body in the element, starting from 0."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the body. Left out when it cannot be found among the attributes of the project."
+            },
+            "buildingMaterialName": {
+                "type": "string",
+                "description": "The name of the building material. Left out together with buildingMaterialId."
+            },
+            "area": {
+                "type": "number",
+                "description": "The area of the cut surface of the body. 0 when the plane does not cut the body."
+            },
+            "polygons": {
+                "type": "array",
+                "description": "The polygons of the cut surface of the body, in 2D coordinates of the plane (basePoint, axisX, axisY). Curved edges are given by their end points. Empty when the plane does not cut the body.",
+                "items": {
+                    "$ref": "#/CutPolygon"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodyIndex",
+            "area",
+            "polygons"
+        ],
+        "description": "The cutting-plane intersection polygons of one body."
+    },
+    "CutPolygon": {
+        "type": "object",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline",
+            "holes"
+        ],
+        "description": "A polygon produced by intersecting a body with a cutting plane."
+    },
+    "DrawingPrimitiveType": {
+        "type": "string",
+        "description": "The API_PrimTypeID name without its API_Prim prefix and ID suffix.",
+        "enum": [
+            "Point",
+            "Line",
+            "Arc",
+            "Text",
+            "PLine",
+            "Tri",
+            "Poly",
+            "Pict",
+            "Ctrl_Beg",
+            "Ctrl_HatchBorderBeg",
+            "Ctrl_HatchBorderEnd",
+            "Ctrl_HatchLinesBeg",
+            "Ctrl_HatchLinesEnd",
+            "Ctrl_HoledimLinesBeg",
+            "Ctrl_HoledimLinesEnd",
+            "Ctrl_ArrowBeg",
+            "Ctrl_ArrowEnd",
+            "Ctrl_ElementRef",
+            "Ctrl_End",
+            "Ctrl_PlacedBorderBeg",
+            "Ctrl_PlacedBorderEnd",
+            "Ctrl_TextBeg",
+            "Ctrl_TextEnd",
+            "Ctrl_CWallPanelBeg",
+            "Ctrl_CWallPanelEnd",
+            "Ctrl_BackgroundFillBeg",
+            "Ctrl_BackgroundFillEnd",
+            "Ctrl_FrameBeg",
+            "Ctrl_FrameEnd",
+            "Unknown"
+        ]
+    },
+    "DrawingPrimitiveRenovationStatus": {
+        "type": "string",
+        "enum": [
+            "Undefined",
+            "Existing",
+            "New",
+            "Demolished"
+        ]
+    },
+    "DrawingPrimitivePolygon": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ]
+    },
+    "DrawingPrimitiveHatchBorder": {
+        "type": "object",
+        "description": "Ctrl_HatchBorderBeg: the fill that follows.",
+        "properties": {
+            "doFrame": {
+                "type": "boolean"
+            },
+            "fill": {
+                "$ref": "#/AttributeIdArrayItem"
+            },
+            "fillPen": {
+                "type": "integer"
+            },
+            "fillbkgPen": {
+                "type": "integer"
+            },
+            "determination": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "doFrame",
+            "fillPen",
+            "fillbkgPen",
+            "determination"
+        ]
+    },
+    "ElementConnection": {
+        "type": "object",
+        "properties": {
+            "elementId1": {
+                "$ref": "#/ElementId"
+            },
+            "elementId2": {
+                "$ref": "#/ElementId"
+            },
+            "polygons": {
+                "type": "array",
+                "description": "The polygons of the surface where the two elements touch, in world coordinates. The last point of a polygon repeats its first.",
+                "items": {
+                    "$ref": "#/ElementConnectionPolygon"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId1",
+            "elementId2",
+            "polygons"
+        ],
+        "description": "The connection information returned for one element."
+    },
+    "ElementConnectionPolygon": {
+        "type": "object",
+        "properties": {
+            "coordinates": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinates"
+        ],
+        "description": "A polygon of an element connection."
+    },
+    "ElementHotspots": {
+        "type": "object",
+        "properties": {
+            "hotspots": {
+                "type": "array",
+                "description": "The 2D hotspots of the placed library part instance, as Archicad returns them: in the library part's own coordinate system (scaled when the instance is resized), not in project coordinates, so they do not change when the element or its wall is moved. GetSnapPointsOfElements returns the points of an element in project coordinates.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotspots"
+        ]
+    },
+    "AnalyticalMemberCoordinateSystem": {
+        "type": "object",
+        "properties": {
+            "localCoordinateSystem": {
+                "$ref": "#/AnalyticalCoordinateSystem"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "localCoordinateSystem"
+        ]
+    },
+    "ElementSurfaceTypes": {
+        "type": "object",
+        "properties": {
+            "polygons": {
+                "type": "array",
+                "description": "Every polygon of every body of the element's 3D model, generated with separate components. Empty when the element has no 3D model.",
+                "items": {
+                    "$ref": "#/ElementSurfaceType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygons"
+        ],
+        "description": "The surface assignments returned for one element."
+    },
+    "ElementSurfaceType": {
+        "type": "object",
+        "properties": {
+            "bodyIndex": {
+                "type": "integer",
+                "description": "The index of the body in the element, starting from 0."
+            },
+            "polygonIndex": {
+                "type": "integer",
+                "description": "The index of the polygon in the body, starting from 0."
+            },
+            "polygonId": {
+                "type": "integer",
+                "description": "The identifier of the polygon in the 3D model (ModelerAPI::Polygon::GetPolygonId)."
+            },
+            "surfaceType": {
+                "type": "integer",
+                "description": "The surface type of the polygon: the numeric value of API_SurfaceTypeID as ACAPI_Polygon_PolygonId2SurfaceType returns it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodyIndex",
+            "polygonIndex",
+            "polygonId",
+            "surfaceType"
+        ],
+        "description": "A surface assignment on an element polygon."
+    },
+    "BodyTextureCoordinates": {
+        "type": "object",
+        "properties": {
+            "polygons": {
+                "type": "array",
+                "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/TextureCoordinate"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygons"
+        ]
+    },
+    "TextureCoordinate": {
+        "type": "object",
+        "properties": {
+            "point": {
+                "$ref": "#/Coordinate3D",
+                "description": "The first vertex of the face, in world coordinates."
+            },
+            "u": {
+                "type": "number",
+                "description": "The u texture coordinate at the point."
+            },
+            "v": {
+                "type": "number",
+                "description": "The v texture coordinate at the point."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "point",
+            "u",
+            "v"
+        ]
+    },
+    "ElementURLReference": {
+        "type": "object",
+        "title": "URLReference",
+        "description": "The web link of an element.",
+        "properties": {
+            "url": {
+                "type": "string",
+                "description": "The URL of the link, e.g. https://www.graphisoft.com."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the link, e.g. GRAPHISOFT Home Page."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "url",
+            "description"
+        ]
+    },
+    "ElementURLReferenceUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "url": {
+                "type": "string",
+                "description": "The URL of the link, e.g. https://www.graphisoft.com. At most 511 bytes in UTF-8."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the link, e.g. GRAPHISOFT Home Page. At most 255 bytes in UTF-8. When omitted or empty, the URL is used as the description (then the URL must fit in 255 bytes), because Archicad does not take a link with an empty description."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "url"
+        ]
+    },
+    "ElementUnmergePair": {
+        "type": "object",
+        "properties": {
+            "elementId1": {
+                "$ref": "#/ElementId"
+            },
+            "elementId2": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId1",
+            "elementId2"
+        ]
+    },
+    "ConvexPolygon": {
+        "type": "object",
+        "properties": {
+            "vertices": {
+                "type": "array",
+                "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 3
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "vertices"
+        ]
+    },
+    "ElementFromCurveMemberData": {
+        "type": "object",
+        "properties": {
+            "curveMember": {
+                "$ref": "#/AnalyticalCurveMember",
+                "description": "A curve member, creating a beam or a column."
+            },
+            "surfaceMember": {
+                "$ref": "#/AnalyticalSurfaceMember",
+                "description": "A surface member, creating a wall, a slab or a roof."
+            },
+            "segmentedSurfaceMembers": {
+                "type": "array",
+                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+                "items": {
+                    "$ref": "#/AnalyticalSurfaceMember"
+                },
+                "minItems": 1
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the favorite whose settings the new element gets."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curveMember"
+        ]
+    },
+    "ElementFromSurfaceMemberData": {
+        "type": "object",
+        "properties": {
+            "curveMember": {
+                "$ref": "#/AnalyticalCurveMember",
+                "description": "A curve member, creating a beam or a column."
+            },
+            "surfaceMember": {
+                "$ref": "#/AnalyticalSurfaceMember",
+                "description": "A surface member, creating a wall, a slab or a roof."
+            },
+            "segmentedSurfaceMembers": {
+                "type": "array",
+                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+                "items": {
+                    "$ref": "#/AnalyticalSurfaceMember"
+                },
+                "minItems": 1
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the favorite whose settings the new element gets."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "surfaceMember"
+        ]
+    },
+    "ElementFromSegmentedSurfaceMembersData": {
+        "type": "object",
+        "properties": {
+            "curveMember": {
+                "$ref": "#/AnalyticalCurveMember",
+                "description": "A curve member, creating a beam or a column."
+            },
+            "surfaceMember": {
+                "$ref": "#/AnalyticalSurfaceMember",
+                "description": "A surface member, creating a wall, a slab or a roof."
+            },
+            "segmentedSurfaceMembers": {
+                "type": "array",
+                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
+                "items": {
+                    "$ref": "#/AnalyticalSurfaceMember"
+                },
+                "minItems": 1
+            },
+            "favoriteName": {
+                "type": "string",
+                "description": "The name of the favorite whose settings the new element gets."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "segmentedSurfaceMembers"
+        ]
+    },
+    "CollisionCheckSettings": {
+        "type": "object",
+        "properties": {
+            "volumeTolerance": {
+                "type": "number",
+                "description": "Intersection body volume greater then this value will be considered as a collision. Default value is 0.001."
+            },
+            "performSurfaceCheck": {
+                "type": "boolean",
+                "description": "Enables surface collision check. If disabled the surfaceTolerance value will be ignored. By default it's false."
+            },
+            "surfaceTolerance": {
+                "type": "number",
+                "description": "Intersection body surface area greater then this value will be considered as a collision. Default value is 0.001."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "volumeTolerance",
+            "performSurfaceCheck",
+            "surfaceTolerance"
+        ]
+    },
+    "MarqueeType": {
+        "type": "string",
+        "description": "The shape of the marquee in the current window, or 'none' when there is no marquee.",
+        "enum": [
+            "none",
+            "rectangle",
+            "rotatedRectangle",
+            "polygon"
+        ]
+    },
+    "SplineMaxDistance": {
+        "type": "object",
+        "properties": {
+            "maxDistance": {
+                "type": "number",
+                "description": "The largest distance of the given coordinates from the spline segment."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "maxDistance"
+        ],
+        "description": "The maximum-distance result for a spline input."
+    },
+    "SectionOrElevationDetailsUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "details": {
+                "$ref": "#/SectionElevationSettableDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "details"
+        ]
+    },
+    "SplitElementParts": {
+        "type": "object",
+        "description": "The element was split.",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The parts, first the original element, then the new ones (copies of it). A wall, beam or line gives two parts: the original keeps the part from its begin point to the split line. A slab, mesh or fill gives one part per piece of its polygon on each side of the line (more than two when the line crosses a concave polygon more than twice); the original keeps the largest. A polyline is cut at every crossing; the original keeps the part with its begin point."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+    "ElementNotSplit": {
+        "type": "object",
+        "description": "The split line does not cross the element (or only touches one of its ends), so the element was left as it was.",
+        "properties": {
+            "notCut": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "notCut"
+        ]
+    },
+    "SplineDistanceInput": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "A Spline element."
+            },
+            "segmentIndex": {
+                "type": "integer",
+                "description": "The segment of the spline between its fit points segmentIndex and segmentIndex + 1, from 0 to the number of fit points - 2 (the fit points are the coordinates GetDetailsOfElements returns for the spline).",
+                "minimum": 0
+            },
+            "coordinates": {
+                "type": "array",
+                "description": "The 2D coordinates to measure from the segment.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "segmentIndex",
+            "coordinates"
+        ],
+        "description": "A spline input for a maximum-distance calculation."
+    },
+    "InteriorElevationWithDetails": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "details": {
+                "$ref": "#/InteriorElevationSettableDetails"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "details"
+        ]
+    },
+    "RecreatedElementLostRelation": {
+        "type": "string",
+        "enum": [
+            "Label",
+            "Dimension",
+            "LevelDimension",
+            "Group"
+        ],
+        "description": "Label: an associative label of the old element; it is deleted with it. Dimension, LevelDimension: a dimension of the current database (the active window) that measured the old element; it loses those witness points or is deleted. Group: the old element was in a group; the new one is not."
+    },
+    "InteriorElevationStoryVisibility": {
+        "type": "string",
+        "enum": [
+            "All",
+            "OneStory",
+            "InRange",
+            "PartRange"
+        ],
+        "description": "Which stories the interior elevation is shown on."
+    },
     "Body3D": {
         "type": "object",
         "description": "One solid body of an element's 3D model: a flat vertex list in world coordinates and the planar faces referencing it. The faces are not triangulated: a face is a closed loop of vertex indices (counterclockwise seen from outside the body) plus the loops of its holes.",
@@ -9492,45 +10473,7 @@
                 "type": "array",
                 "description": "The faces of the body.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "vertexIds": {
-                            "type": "array",
-                            "description": "The outer contour of the face: 0-based indices into vertices.",
-                            "items": {
-                                "type": "integer"
-                            },
-                            "minItems": 3
-                        },
-                        "holes": {
-                            "type": "array",
-                            "description": "The holes in the face, each a closed loop of 0-based indices into vertices.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "vertexIds": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "integer"
-                                        },
-                                        "minItems": 3
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "vertexIds"
-                                ]
-                            }
-                        },
-                        "surfaceId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The surface attribute of the face. Left out when the face's material is not a project attribute (for example one defined by a GDL script)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "vertexIds"
-                    ]
+                    "$ref": "#/Body3DPolygon"
                 }
             }
         },
@@ -10322,44 +11265,12 @@
         ]
     },
     "Hole2D": {
-        "type": "object",
-        "description": "A 2D hole in an element defined by closed polylines. The outline is given in 'polygonOutline'; 'polygonCoordinates' is accepted as a legacy alias.",
-        "properties": {
-            "polygonOutline": {
-                "type": "array",
-                "description": "The 2D coordinates of the edge of the hole.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonCoordinates": {
-                "type": "array",
-                "description": "Legacy alias of polygonOutline.",
-                "items": {
-                    "$ref": "#/Coordinate2D"
-                },
-                "minItems": 3
-            },
-            "polygonArcs": {
-                "type": "array",
-                "description": "Polygon outline arcs of the hole.",
-                "items": {
-                    "$ref": "#/PolyArc"
-                }
-            }
-        },
-        "additionalProperties": false,
         "oneOf": [
             {
-                "required": [
-                    "polygonOutline"
-                ]
+                "$ref": "#/Hole2DWithOutline"
             },
             {
-                "required": [
-                    "polygonCoordinates"
-                ]
+                "$ref": "#/Hole2DWithLegacyCoordinates"
             }
         ]
     },
@@ -17529,9 +18440,7 @@
         "description": "The settings of an Interior Elevation element and its segments. Each segment is one viewpoint of the Project Map, with its own name, reference ID, lines and settings.",
         "properties": {
             "showOnStories": {
-                "type": "string",
-                "enum": ["All", "OneStory", "InRange", "PartRange"],
-                "description": "Which stories the interior elevation is shown on."
+                "$ref": "#/InteriorElevationStoryVisibility"
             },
             "storyToShowOn": {
                 "type": "integer",
@@ -17663,9 +18572,7 @@
         "description": "The settings of an Interior Elevation element and of its segments that SetInteriorElevationsDetails changes, with the keys of InteriorElevationDetails. Only the fields given are changed.",
         "properties": {
             "showOnStories": {
-                "type": "string",
-                "enum": ["All", "OneStory", "InRange", "PartRange"],
-                "description": "Which stories the interior elevation is shown on."
+                "$ref": "#/InteriorElevationStoryVisibility"
             },
             "storyToShowOn": {
                 "type": "integer",
@@ -24893,45 +25800,15 @@
         ]
     },
     "ElementFromAnalyticalMemberData": {
-        "type": "object",
-        "properties": {
-            "curveMember": {
-                "$ref": "#/AnalyticalCurveMember",
-                "description": "A curve member, creating a beam or a column."
-            },
-            "surfaceMember": {
-                "$ref": "#/AnalyticalSurfaceMember",
-                "description": "A surface member, creating a wall, a slab or a roof."
-            },
-            "segmentedSurfaceMembers": {
-                "type": "array",
-                "description": "The segments of a segmented surface member (a curved wall), creating one element.",
-                "items": {
-                    "$ref": "#/AnalyticalSurfaceMember"
-                },
-                "minItems": 1
-            },
-            "favoriteName": {
-                "type": "string",
-                "description": "The name of the favorite whose settings the new element gets."
-            }
-        },
-        "additionalProperties": false,
         "oneOf": [
             {
-                "required": [
-                    "curveMember"
-                ]
+                "$ref": "#/ElementFromCurveMemberData"
             },
             {
-                "required": [
-                    "surfaceMember"
-                ]
+                "$ref": "#/ElementFromSurfaceMemberData"
             },
             {
-                "required": [
-                    "segmentedSurfaceMembers"
-                ]
+                "$ref": "#/ElementFromSegmentedSurfaceMembersData"
             }
         ]
     },
@@ -31073,40 +31950,7 @@
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "The API_PrimTypeID name without its API_Prim prefix and ID suffix.",
-                "enum": [
-                    "Point",
-                    "Line",
-                    "Arc",
-                    "Text",
-                    "PLine",
-                    "Tri",
-                    "Poly",
-                    "Pict",
-                    "Ctrl_Beg",
-                    "Ctrl_HatchBorderBeg",
-                    "Ctrl_HatchBorderEnd",
-                    "Ctrl_HatchLinesBeg",
-                    "Ctrl_HatchLinesEnd",
-                    "Ctrl_HoledimLinesBeg",
-                    "Ctrl_HoledimLinesEnd",
-                    "Ctrl_ArrowBeg",
-                    "Ctrl_ArrowEnd",
-                    "Ctrl_ElementRef",
-                    "Ctrl_End",
-                    "Ctrl_PlacedBorderBeg",
-                    "Ctrl_PlacedBorderEnd",
-                    "Ctrl_TextBeg",
-                    "Ctrl_TextEnd",
-                    "Ctrl_CWallPanelBeg",
-                    "Ctrl_CWallPanelEnd",
-                    "Ctrl_BackgroundFillBeg",
-                    "Ctrl_BackgroundFillEnd",
-                    "Ctrl_FrameBeg",
-                    "Ctrl_FrameEnd",
-                    "Unknown"
-                ]
+                "$ref": "#/DrawingPrimitiveType"
             },
             "layer": {
                 "$ref": "#/AttributeIdArrayItem",
@@ -31120,13 +31964,7 @@
                 "type": "integer"
             },
             "renovationStatus": {
-                "type": "string",
-                "enum": [
-                    "Undefined",
-                    "Existing",
-                    "New",
-                    "Demolished"
-                ]
+                "$ref": "#/DrawingPrimitiveRenovationStatus"
             },
             "lineType": {
                 "$ref": "#/AttributeIdArrayItem",
@@ -31228,24 +32066,7 @@
                 "type": "integer"
             },
             "rgbColor": {
-                "type": "object",
-                "properties": {
-                    "red": {
-                        "type": "number"
-                    },
-                    "green": {
-                        "type": "number"
-                    },
-                    "blue": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "red",
-                    "green",
-                    "blue"
-                ]
+                "$ref": "#/ColorRGB"
             },
             "coordinates": {
                 "type": "array",
@@ -31258,76 +32079,18 @@
                 "type": "array",
                 "description": "Poly: the sub polygons, the first one is the outline, the others are holes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "coordinates": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/Coordinate2D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "coordinates"
-                    ]
+                    "$ref": "#/DrawingPrimitivePolygon"
                 }
             },
             "rotAngle": {
                 "type": "number"
             },
             "destBox": {
-                "type": "object",
-                "description": "Pict: the bounding box of the picture.",
-                "properties": {
-                    "xMin": {
-                        "type": "number"
-                    },
-                    "yMin": {
-                        "type": "number"
-                    },
-                    "xMax": {
-                        "type": "number"
-                    },
-                    "yMax": {
-                        "type": "number"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "xMin",
-                    "yMin",
-                    "xMax",
-                    "yMax"
-                ]
+                "$ref": "#/BoundingBox2D",
+                "description": "Pict: the bounding box of the picture."
             },
             "hatchBorder": {
-                "type": "object",
-                "description": "Ctrl_HatchBorderBeg: the fill that follows.",
-                "properties": {
-                    "doFrame": {
-                        "type": "boolean"
-                    },
-                    "fill": {
-                        "$ref": "#/AttributeIdArrayItem"
-                    },
-                    "fillPen": {
-                        "type": "integer"
-                    },
-                    "fillbkgPen": {
-                        "type": "integer"
-                    },
-                    "determination": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "doFrame",
-                    "fillPen",
-                    "fillbkgPen",
-                    "determination"
-                ]
+                "$ref": "#/DrawingPrimitiveHatchBorder"
             },
             "referencedElement": {
                 "type": "object",
@@ -33420,21 +34183,7 @@
                 "type": "array",
                 "description": "With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "vertices": {
-                            "type": "array",
-                            "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 3
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "vertices"
-                    ]
+                    "$ref": "#/ConvexPolygon"
                 }
             }
         },
@@ -33447,18 +34196,7 @@
         "type": "object",
         "properties": {
             "componentType": {
-                "type": "string",
-                "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
-                "enum": [
-                    "Body",
-                    "Pgon",
-                    "Pedg",
-                    "Edge",
-                    "Vert",
-                    "Vect",
-                    "Umat",
-                    "Lght"
-                ]
+                "$ref": "#/Model3DComponentType"
             },
             "count": {
                 "type": "integer",
@@ -33480,47 +34218,7 @@
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "polygons": {
-                                    "type": "array",
-                                    "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "point": {
-                                                        "$ref": "#/Coordinate3D",
-                                                        "description": "The first vertex of the face, in world coordinates."
-                                                    },
-                                                    "u": {
-                                                        "type": "number",
-                                                        "description": "The u texture coordinate at the point."
-                                                    },
-                                                    "v": {
-                                                        "type": "number",
-                                                        "description": "The v texture coordinate at the point."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "point",
-                                                    "u",
-                                                    "v"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "polygons"
-                            ]
+                            "$ref": "#/BodyTextureCoordinates"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -33547,40 +34245,7 @@
                 "type": "array",
                 "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "buildingMaterialId": {
-                            "$ref": "#/AttributeIdArrayItem"
-                        },
-                        "volume": {
-                            "type": "number",
-                            "description": "Net volume of the skin."
-                        },
-                        "projectedArea": {
-                            "type": "number",
-                            "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
-                        },
-                        "isCore": {
-                            "type": "boolean",
-                            "description": "The skin is marked as core."
-                        },
-                        "isFinish": {
-                            "type": "boolean",
-                            "description": "The skin is marked as finish."
-                        },
-                        "subElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "buildingMaterialId",
-                        "volume",
-                        "projectedArea",
-                        "isCore",
-                        "isFinish"
-                    ]
+                    "$ref": "#/ElementComponentQuantities"
                 }
             }
         },
@@ -34125,14 +34790,7 @@
         "description": "Something that was linked to the old element of a Recreate command and could not be moved to the new one.",
         "properties": {
             "relation": {
-                "type": "string",
-                "enum": [
-                    "Label",
-                    "Dimension",
-                    "LevelDimension",
-                    "Group"
-                ],
-                "description": "Label: an associative label of the old element; it is deleted with it. Dimension, LevelDimension: a dimension of the current database (the active window) that measured the old element; it loses those witness points or is deleted. Group: the old element was in a group; the new one is not."
+                "$ref": "#/RecreatedElementLostRelation"
             },
             "elementId": {
                 "$ref": "#/ElementId",

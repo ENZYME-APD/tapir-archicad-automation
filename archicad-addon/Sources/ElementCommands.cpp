@@ -6744,9 +6744,7 @@ GS::Optional<GS::UniString> GetMarqueeCommand::GetRawResponseSchema () const
         "type": "object",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "The shape of the marquee in the current window, or 'none' when there is no marquee.",
-                "enum": ["none", "rectangle", "rotatedRectangle", "polygon"]
+                "$ref": "#/MarqueeType"
             },
             "multiStory": {
                 "type": "boolean",
@@ -9063,27 +9061,7 @@ GS::Optional<GS::UniString> GetCollisionsCommand::GetInputParametersSchema () co
                 "$ref": "#/Elements"
             },
             "settings": {
-                "type": "object",
-                "properties": {
-                    "volumeTolerance": {
-                        "type": "number",
-                        "description": "Intersection body volume greater then this value will be considered as a collision. Default value is 0.001."
-                    },
-                    "performSurfaceCheck": {
-                        "type": "boolean",
-                        "description": "Enables surface collision check. If disabled the surfaceTolerance value will be ignored. By default it's false."
-                    },
-                    "surfaceTolerance": {
-                        "type": "number",
-                        "description": "Intersection body surface area greater then this value will be considered as a collision. Default value is 0.001."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "volumeTolerance",
-                    "performSurfaceCheck",
-                    "surfaceTolerance"
-                ]
+                "$ref": "#/CollisionCheckSettings"
             }
         },
         "additionalProperties": false,
@@ -10194,27 +10172,10 @@ GS::Optional<GS::UniString> SplitElementsCommand::GetRawResponseSchema () const
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "description": "The element was split.",
-                            "properties": {
-                                "elements": {
-                                    "$ref": "#/Elements",
-                                    "description": "The parts, first the original element, then the new ones (copies of it). A wall, beam or line gives two parts: the original keeps the part from its begin point to the split line. A slab, mesh or fill gives one part per piece of its polygon on each side of the line (more than two when the line crosses a concave polygon more than twice); the original keeps the largest. A polyline is cut at every crossing; the original keeps the part with its begin point."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["elements"]
+                            "$ref": "#/SplitElementParts"
                         },
                         {
-                            "type": "object",
-                            "description": "The split line does not cross the element (or only touches one of its ends), so the element was left as it was.",
-                            "properties": {
-                                "notCut": {
-                                    "type": "boolean"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["notCut"]
+                            "$ref": "#/ElementNotSplit"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -13546,9 +13507,8 @@ GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetInputParametersSchem
                 "$ref": "#/Elements"
             },
             "structureDisplay": {
-                "type": "string",
-                "description": "The Partial Structure Display mode to check the elements in. The current window is not changed.",
-                "enum": ["EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"]
+                "$ref": "#/PartialStructureDisplay",
+                "description": "The Partial Structure Display mode to check the elements in. The current window is not changed."
             }
         },
         "additionalProperties": false,
