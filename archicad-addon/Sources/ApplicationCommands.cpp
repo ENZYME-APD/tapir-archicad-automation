@@ -4508,27 +4508,7 @@ GS::Optional<GS::UniString> ConvertImagesCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "The images to convert.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "image": {
-                            "type": "string",
-                            "description": "The base64 encoded image, for example a previewImage returned by GetElementPreviewImage."
-                        },
-                        "inputFormat": {
-                            "type": "string",
-                            "description": "The format of the image: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can read (for example image/x-targa)."
-                        },
-                        "outputFormat": {
-                            "type": "string",
-                            "description": "The format to convert the image to: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can write."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "image",
-                        "inputFormat",
-                        "outputFormat"
-                    ]
+                    "$ref": "#/ImageConversionInput"
                 }
             }
         },
@@ -4550,17 +4530,7 @@ GS::Optional<GS::UniString> ConvertImagesCommand::GetRawResponseSchema () const
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "image": {
-                                    "type": "string",
-                                    "description": "The base64 encoded converted image."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "image"
-                            ]
+                            "$ref": "#/ConvertedImage"
                         },
                         {
                             "$ref": "#/ErrorItem"

@@ -200,11 +200,84 @@ GS::Optional<GS::UniString> GetGridElementDefaultsCommand::GetInputParametersSch
 
 GS::Optional<GS::UniString> GetGridElementDefaultsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
-        "properties": {)") + GridElementDetailsSchema + R"(
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The grid element. The zero GUID for the tool defaults."
+            },
+            "variation": {
+                "type": "string",
+                "description": "Four-character variation of the object: 'GREL' for a grid element."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Home story index."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Layer attribute index."
+            },
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Insertion point: the start of the grid line."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Direction of the grid line in radians."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the grid line: the GDL parameter AC_Length of the Grid Tool's grid marker, or the object's A size for a library part without it."
+            },
+            "xRatio": {
+                "type": "number",
+                "description": "The object's xRatio as stored: its A size with useXYFixSize on, otherwise the A size divided by the library part's own A."
+            },
+            "yRatio": {
+                "type": "number",
+                "description": "The object's yRatio as stored, like xRatio for the B size."
+            },
+            "useXYFixSize": {
+                "type": "boolean",
+                "description": "Whether xRatio and yRatio hold the sizes themselves."
+            },
+            "level": {
+                "type": "number",
+                "description": "Elevation of the object from its home story."
+            },
+            "libInd": {
+                "type": "integer",
+                "description": "Library part index."
+            },
+            "libraryPartName": {
+                "type": "string",
+                "description": "Localized name of the library part."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "GDL parameters, separators left out. Only when requested.",
+                "items": {
+                    "$ref": "#/GridParameterDetails"
+                }
+            }
         },
-        "required": ["variation", "floorIndex", "layerIndex", "pos", "angle", "length", "xRatio", "yRatio", "useXYFixSize", "level", "libInd", "libraryPartName", "parameters"]
+        "required": [
+            "variation",
+            "floorIndex",
+            "layerIndex",
+            "pos",
+            "angle",
+            "length",
+            "xRatio",
+            "yRatio",
+            "useXYFixSize",
+            "level",
+            "libInd",
+            "libraryPartName",
+            "parameters"
+        ]
     })";
 }
 
@@ -255,21 +328,20 @@ GS::Optional<GS::UniString> GetGridElementsCommand::GetInputParametersSchema () 
 
 GS::Optional<GS::UniString> GetGridElementsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "gridElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {)") + GridElementDetailsSchema + R"(
-                    },
-                    "required": ["elementId", "variation", "floorIndex", "layerIndex", "pos", "angle", "length", "xRatio", "yRatio", "useXYFixSize", "level", "libInd", "libraryPartName"]
+                    "$ref": "#/GridElementDetails"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["gridElements"]
+        "required": [
+            "gridElements"
+        ]
     })";
 }
 
@@ -340,20 +412,16 @@ GS::Optional<GS::UniString> CreateGridElementsCommand::GetInputParametersSchema 
                     "properties": {
                         "begCoordinate": { "$ref": "#/Coordinate2D", "description": "Start point of the grid line (the object's insertion point)." },
                         "endCoordinate": { "$ref": "#/Coordinate2D", "description": "End point of the grid line. Sets the direction and, unless lengthMode is 'none', the length." },
-                        "lengthMode": { "type": "string", "enum": ["length", "none"], "description": "How the line length is applied. length (default): to the GDL parameter AC_Length when the library part has it, as the Grid Tool's grid marker does; otherwise to the object's A size, converted to xRatio as CreateObjects does. none: the length is left to 'parameters'." },
+                        "lengthMode": {
+                            "$ref": "#/GridElementLengthMode"
+                        },
                         "floorIndex": { "type": "integer", "description": "Home story index. Default: the tool default." },
                         "layerIndex": { "type": "integer", "description": "Layer attribute index. Only a positive index takes effect. Default: the tool default." },
                         "parameters": {
                             "type": "array",
                             "description": "GDL parameters to set by name (read the names with GetGridElementDefaults). The value is a number, a boolean or a string. Unknown names and wrong value types are reported in warnings and skipped. The tool defaults can look different from a grid drawn with the Grid Tool (for example a short line with a leader to the bubble); to get the same look, copy the parameters of such a grid (GetGridElements with includeParameters).",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": { "type": "string" },
-                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["name", "value"]
+                                "$ref": "#/GridParameter"
                             }
                         }
                     },

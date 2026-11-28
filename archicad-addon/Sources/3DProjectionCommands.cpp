@@ -175,37 +175,8 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
             "description": "The perspective parameters. Present only when isPersp is true."
         },
         "axonometric": {
-            "type": "object",
-            "description": "The parameters of an axonometric projection. Present only when isPersp is false.",
-            "properties": {
-                "projectionType": {
-                    "$ref": "#/AxonometryProjectionType"
-                },
-                "azimuth": {
-                    "type": "number",
-                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
-                },
-                "transformationMatrix": {
-                    "type": "array",
-                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
-                    "items": {
-                        "type": "number"
-                    },
-                    "minItems": 12,
-                    "maxItems": 12
-                },
-                "sun": {
-                    "$ref": "#/ProjectionSunSettings",
-                    "description": "The sun position of the axonometry."
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "projectionType",
-                "azimuth",
-                "transformationMatrix",
-                "sun"
-            ]
+            "$ref": "#/AxonometricProjectionParameters",
+            "description": "Present only when isPersp is false."
         }
     },
     "additionalProperties": false,
@@ -1174,51 +1145,12 @@ GS::String Set3DProjectionSettingsCommand::GetName () const
 GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSchema () const
 {
     return R"({
-    "type": "object",
-    "properties": {
-        "perspective": {
-            "$ref": "#/PerspectiveProjectionParameters"
-        },
-        "axonometry": {
-            "type": "object",
-            "description": "Makes the projection axonometric. Only the given values change, in sun too; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
-            "properties": {
-                "projectionType": {
-                    "$ref": "#/AxonometryProjectionType"
-                },
-                "azimuth": {
-                    "type": "number",
-                    "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
-                },
-                "transformationMatrix": {
-                    "type": "array",
-                    "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.",
-                    "items": {
-                        "type": "number"
-                    },
-                    "minItems": 12,
-                    "maxItems": 12
-                },
-                "sun": {
-                    "$ref": "#/ProjectionSunSettings",
-                    "description": "The sun position of the axonometry. Only the values given change."
-                }
-            },
-            "additionalProperties": false,
-            "minProperties": 1
-        }
-    },
-    "additionalProperties": false,
     "oneOf": [
         {
-            "required": [
-                "perspective"
-            ]
+            "$ref": "#/PerspectiveProjectionSettings"
         },
         {
-            "required": [
-                "axonometry"
-            ]
+            "$ref": "#/AxonometricProjectionSettings"
         }
     ]
 })";

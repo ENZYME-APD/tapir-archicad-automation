@@ -93,15 +93,8 @@ GS::Optional<GS::UniString> CreateGraphicalOverrideRuleCommand::GetInputParamete
                 "description": "Optional criterion XML. Archicad only takes XML in its own format: read it from a rule made in the GUI with GetGraphicalOverrideRules and change the values. XML written from scratch is dropped without an error, and so is an empty one: the rule then applies to all elements."
             },
             "surfaceRGB": {
-                "type": "object",
-                "description": "Optional color override of the cut and uncut surfaces. Components are in the 0..1 range.",
-                "properties": {
-                    "red": { "type": "number" },
-                    "green": { "type": "number" },
-                    "blue": { "type": "number" }
-                },
-                "required": ["red", "green", "blue"],
-                "additionalProperties": false
+                "$ref": "#/ColorRGB",
+                "description": "Optional color override of the cut and uncut surfaces. Components are in the 0..1 range."
             },
             "linePenIndex": {
                 "type": "integer",
@@ -222,15 +215,7 @@ GS::Optional<GS::UniString> GetGraphicalOverrideRulesCommand::GetRawResponseSche
             "rules": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "ruleId": { "$ref": "#/GuidId" },
-                        "name": { "type": "string" },
-                        "ruleGroupName": { "type": "string", "description": "Name of the rule group the rule belongs to." },
-                        "criterionXML": { "type": "string", "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules." }
-                    },
-                    "required": ["ruleId", "name", "ruleGroupName", "criterionXML"],
-                    "additionalProperties": false
+                    "$ref": "#/GraphicalOverrideRuleDetails"
                 }
             }
         },
@@ -485,30 +470,7 @@ GS::Optional<GS::UniString> GetGraphicalOverrideStyleOfElementsCommand::GetRawRe
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "lineType": { "$ref": "#/OverriddenValue" },
-                                "lineMarkerTextPen": { "$ref": "#/OverriddenValue" },
-                                "overrideLinePenThickness": { "type": "boolean" },
-                                "cutFillType": { "$ref": "#/OverriddenValue" },
-                                "cutFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "cutFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideCutFillForegroundThickness": { "type": "boolean" },
-                                "coverFillType": { "$ref": "#/OverriddenValue" },
-                                "coverFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "coverFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideCoverFillForegroundThickness": { "type": "boolean" },
-                                "draftFillType": { "$ref": "#/OverriddenValue" },
-                                "draftFillForegroundPen": { "$ref": "#/OverriddenValue" },
-                                "draftFillBackgroundPen": { "$ref": "#/OverriddenValue" },
-                                "overrideDraftFillForegroundThickness": { "type": "boolean" },
-                                "cutSurface": { "$ref": "#/OverriddenValue" },
-                                "uncutSurface": { "$ref": "#/OverriddenValue" },
-                                "showSkinSeparators": { "type": "boolean" },
-                                "hideCutContours": { "type": "boolean" },
-                                "hideUncutContours": { "type": "boolean" }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/GraphicalOverrideStyle"
                         },
                         {
                             "$ref": "#/ErrorItem"

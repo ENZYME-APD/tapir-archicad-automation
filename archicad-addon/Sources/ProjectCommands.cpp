@@ -609,8 +609,7 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/AutoTextExpression"
                 },
                 "minItems": 1
             },
@@ -637,17 +636,7 @@ GS::Optional<GS::UniString> InterpretAutoTextsCommand::GetRawResponseSchema () c
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "value": {
-                                    "type": "string",
-                                    "description": "The resolved value of the autotext."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "value"
-                            ]
+                            "$ref": "#/InterpretedAutoText"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -902,8 +891,7 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetInputParametersSchema ()
                 "description": "The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'."
             },
             "dimensionAppearance": {
-                "type": "string",
-                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "$ref": "#/DimensionAppearance",
                 "description": "Optional dimension type, as in the Dimension Settings, whose note autotexts are listed when noteOwnerType is 'Dimension'. Defaults to Linear. Not allowed with other owner types."
             }
         },
@@ -4355,14 +4343,12 @@ GS::Optional<GS::UniString> SaveCurrentWindowAsImageCommand::GetInputParametersS
                 "description": "Optional, true by default. false refuses to save when a file already exists at imageFilePath, and writes nothing."
             },
             "format": {
-                "type": "string",
-                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
-                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+                "$ref": "#/ImageFormat",
+                "description": "Optional. When omitted, inferred from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif)."
             },
             "colorDepth": {
-                "type": "string",
-                "description": "Optional, trueColor by default. The color depth of the image, as in the Save as picture dialog.",
-                "enum": ["blackAndWhite", "16Colors", "256Colors", "16Grays", "256Grays", "trueColor", "trueColorWithAlpha"]
+                "$ref": "#/ImageColorDepth",
+                "description": "Optional, trueColor by default, as in the Save as picture dialog."
             },
             "dithered": {
                 "type": "boolean",
@@ -5330,31 +5316,8 @@ GS::Optional<GS::UniString> GetSunSettingsCommand::GetRawResponseSchema () const
                 "description": "The sun position for the project's date, time and location."
             },
             "sunLight": {
-                "type": "object",
-                "description": "The sun and ambient light settings of the project. Missing when Archicad cannot report them.",
-                "properties": {
-                    "sunColor": {
-                        "$ref": "#/ColorRGB"
-                    },
-                    "sunIntensity": {
-                        "type": "integer",
-                        "description": "The intensity of the sun light in percent."
-                    },
-                    "ambientColor": {
-                        "$ref": "#/ColorRGB"
-                    },
-                    "ambientIntensity": {
-                        "type": "integer",
-                        "description": "The intensity of the ambient light in percent."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "sunColor",
-                    "sunIntensity",
-                    "ambientColor",
-                    "ambientIntensity"
-                ]
+                "$ref": "#/SunLightSettings",
+                "description": "Missing when Archicad cannot report them."
             }
         },
         "additionalProperties": false,

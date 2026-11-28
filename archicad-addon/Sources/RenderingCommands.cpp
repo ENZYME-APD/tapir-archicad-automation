@@ -196,9 +196,8 @@ GS::Optional<GS::UniString> PhotoRenderCommand::GetInputParametersSchema () cons
                 "description": "Optional, true by default. false refuses to render when a file already exists at imageFilePath, and writes nothing."
             },
             "format": {
-                "type": "string",
-                "description": "Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).",
-                "enum": ["png", "jpg", "bmp", "tiff", "gif"]
+                "$ref": "#/PhotoRenderFormat",
+                "description": "Optional. When omitted, inferred from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif)."
             },
             "sceneName": {
                 "type": "string",

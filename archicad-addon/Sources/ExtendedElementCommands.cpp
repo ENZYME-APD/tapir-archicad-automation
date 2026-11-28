@@ -878,83 +878,7 @@ static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Elemen
 // CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions and
 // ModifyAssociativeDimensions all take, written by ApplyDimensionSettings (#2220). The names are
 // the ones GetDimensionData and GetDetailsOfElements return.
-static const char* DimensionSettingsSchemaProperties = R"(
-                        "textHeight": {
-                            "type": "number",
-                            "minimum": 0, "exclusiveMinimum": true,
-                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
-                        },
-                        "textPen": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 255,
-                            "description": "Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName)."
-                        },
-                        "textFrame": {
-                            "type": "boolean",
-                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
-                        },
-                        "textStyle": {
-                            "$ref": "#/DimensionTextStyle",
-                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
-                        },
-                        "appearance": {
-                            "type": "string",
-                            "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
-                            "description": "Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
-                        },
-                        "elevationOrigin": {
-                            "$ref": "#/DimensionOrigin",
-                            "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
-                        },
-                        "elevationMarker": {
-                            "$ref": "#/DimensionElevationMarker",
-                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
-                        },
-                        "linePen": {
-                            "type": "integer",
-                            "minimum": 1,
-                            "maximum": 255,
-                            "description": "Optional pen of the dimension and witness lines."
-                        },
-                        "marker": {
-                            "$ref": "#/DimensionMarker",
-                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
-                        },
-                        "textPlacement": {
-                            "$ref": "#/DimensionTextPlacement",
-                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
-                        },
-                        "defaultWitnessForm": {
-                            "type": "string",
-                            "enum": ["None", "Small", "Large", "Fix"],
-                            "description": "Optional witness line form, as in the Dimension Settings, applied to every witness point."
-                        },
-                        "defaultWitnessVal": {
-                            "type": "number",
-                            "minimum": 0,
-                            "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
-                        },
-                        "staticDimension": {
-                            "type": "boolean",
-                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
-                        },
-                        "onlyDimensionText": {
-                            "type": "boolean",
-                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
-                        },
-                        "openingHeightsInChain": {
-                            "type": "boolean",
-                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
-                        },
-                        "openingHeightsNominal": {
-                            "type": "boolean",
-                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
-                        },
-                        "layeredElementDimensions": {
-                            "$ref": "#/LayeredElementDimensions",
-                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
-                        })";
+
 
 static const unsigned short DimensionTextFaceBits = APIFace_Bold | APIFace_Italic | APIFace_Underline;
 
@@ -1938,14 +1862,12 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                         "description": "Optional. The pen of the dimension text."
                     },
                     "textPosition": {
-                        "type": "string",
-                        "enum": ["Above", "In", "Below"],
-                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
+                        "$ref": "#/RadialDimensionTextPosition",
+                        "description": "Optional."
                     },
                     "textDirection": {
-                        "type": "string",
-                        "enum": ["Horizontal", "Vertical", "Radial"],
-                        "description": "Optional. The direction of the text (textWay)."
+                        "$ref": "#/RadialDimensionTextDirection",
+                        "description": "Optional."
                     },
                     "customText": {
                         "type": "string",
@@ -17316,7 +17238,7 @@ GS::String CreateAssociativeDimensionsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionsData": {
@@ -17332,10 +17254,90 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                             "type": "integer",
                             "minimum": 1,
                             "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
-                        },)") + DimensionSettingsSchemaProperties + R"(,
-                        "referencePoint": { "$ref": "#/Coordinate2D" },
-                        "direction": { "$ref": "#/Coordinate2D" },
-                        "floorIndex": { "type": "number" },
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
+                        },
+                        "textStyle": {
+                            "$ref": "#/DimensionTextStyle",
+                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
+                        },
+                        "appearance": {
+                            "$ref": "#/DimensionAppearance"
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "linePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen of the dimension and witness lines."
+                        },
+                        "marker": {
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "defaultWitnessForm": {
+                            "$ref": "#/DimensionWitnessForm",
+                            "description": "Optional. Applied to every witness point, as in the Dimension Settings."
+                        },
+                        "defaultWitnessVal": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
+                        },
+                        "staticDimension": {
+                            "type": "boolean",
+                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
+                        },
+                        "onlyDimensionText": {
+                            "type": "boolean",
+                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsInChain": {
+                            "type": "boolean",
+                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsNominal": {
+                            "type": "boolean",
+                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "layeredElementDimensions": {
+                            "$ref": "#/LayeredElementDimensions",
+                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "referencePoint": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "direction": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "floorIndex": {
+                            "type": "number"
+                        },
                         "witnessPoints": {
                             "type": "array",
                             "items": {
@@ -17345,12 +17347,18 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["referencePoint", "direction", "witnessPoints"]
+                    "required": [
+                        "referencePoint",
+                        "direction",
+                        "witnessPoints"
+                    ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["dimensionsData"]
+        "required": [
+            "dimensionsData"
+        ]
     })";
 }
 
@@ -17498,7 +17506,7 @@ GS::String CreateAssociativeDimensionsOnSectionCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionsData": {
@@ -17514,18 +17522,102 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                             "type": "integer",
                             "minimum": 1,
                             "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
-                        },)") + DimensionSettingsSchemaProperties + R"(,
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
+                        },
+                        "textStyle": {
+                            "$ref": "#/DimensionTextStyle",
+                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
+                        },
+                        "appearance": {
+                            "$ref": "#/DimensionAppearance"
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "linePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen of the dimension and witness lines."
+                        },
+                        "marker": {
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "defaultWitnessForm": {
+                            "type": "string",
+                            "enum": [
+                                "None",
+                                "Small",
+                                "Large",
+                                "Fix"
+                            ],
+                            "description": "Optional witness line form, as in the Dimension Settings, applied to every witness point."
+                        },
+                        "defaultWitnessVal": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
+                        },
+                        "staticDimension": {
+                            "type": "boolean",
+                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
+                        },
+                        "onlyDimensionText": {
+                            "type": "boolean",
+                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsInChain": {
+                            "type": "boolean",
+                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsNominal": {
+                            "type": "boolean",
+                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "layeredElementDimensions": {
+                            "$ref": "#/LayeredElementDimensions",
+                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
                         "sectionElementId": {
                             "$ref": "#/ElementId",
                             "description": "The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given."
                         },
                         "sectionElementIds": {
                             "type": "array",
-                            "items": { "$ref": "#/ElementId" },
+                            "items": {
+                                "$ref": "#/ElementId"
+                            },
                             "minItems": 1,
                             "description": "A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given."
                         },
-                        "referencePoint": { "$ref": "#/Coordinate2D" },
+                        "referencePoint": {
+                            "$ref": "#/Coordinate2D"
+                        },
                         "preset": {
                             "type": "string",
                             "enum": [
@@ -17541,23 +17633,38 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                             ],
                             "description": "OpeningEdges puts fixed points, not associated ones, at the edges of an Opening tool element as the section draws it: left and right for a horizontal direction, bottom and top for a vertical one. Archicad does not associate dimensions with openings in sections."
                         },
-                        "direction": { "$ref": "#/Coordinate2D" },
+                        "direction": {
+                            "$ref": "#/Coordinate2D"
+                        },
                         "skinBorderIndices": {
                             "type": "array",
-                            "items": { "type": "integer" },
+                            "items": {
+                                "type": "integer"
+                            },
                             "minItems": 1
                         },
-                        "beginPlane": { "type": "boolean" },
-                        "totalSizePlane": { "type": "boolean" },
-                        "placeOnTop": { "type": "boolean" }
+                        "beginPlane": {
+                            "type": "boolean"
+                        },
+                        "totalSizePlane": {
+                            "type": "boolean"
+                        },
+                        "placeOnTop": {
+                            "type": "boolean"
+                        }
                     },
                     "additionalProperties": false,
-                    "required": ["referencePoint", "preset"]
+                    "required": [
+                        "referencePoint",
+                        "preset"
+                    ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["dimensionsData"]
+        "required": [
+            "dimensionsData"
+        ]
     })";
 }
 
@@ -17680,7 +17787,7 @@ GS::String CreateWallThicknessDimensionsCommand::GetName () const
 
 GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionsData": {
@@ -17696,18 +17803,110 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                             "type": "integer",
                             "minimum": 1,
                             "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
-                        },)") + DimensionSettingsSchemaProperties + R"(,
-                        "wallId": { "$ref": "#/ElementId" },
-                        "referencePoint": { "$ref": "#/Coordinate2D" },
-                        "direction": { "$ref": "#/Coordinate2D" }
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
+                        },
+                        "textStyle": {
+                            "$ref": "#/DimensionTextStyle",
+                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
+                        },
+                        "appearance": {
+                            "$ref": "#/DimensionAppearance"
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "linePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen of the dimension and witness lines."
+                        },
+                        "marker": {
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "defaultWitnessForm": {
+                            "type": "string",
+                            "enum": [
+                                "None",
+                                "Small",
+                                "Large",
+                                "Fix"
+                            ],
+                            "description": "Optional witness line form, as in the Dimension Settings, applied to every witness point."
+                        },
+                        "defaultWitnessVal": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
+                        },
+                        "staticDimension": {
+                            "type": "boolean",
+                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
+                        },
+                        "onlyDimensionText": {
+                            "type": "boolean",
+                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsInChain": {
+                            "type": "boolean",
+                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsNominal": {
+                            "type": "boolean",
+                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "layeredElementDimensions": {
+                            "$ref": "#/LayeredElementDimensions",
+                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "wallId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "referencePoint": {
+                            "$ref": "#/Coordinate2D"
+                        },
+                        "direction": {
+                            "$ref": "#/Coordinate2D"
+                        }
                     },
                     "additionalProperties": false,
-                    "required": ["wallId", "referencePoint", "direction"]
+                    "required": [
+                        "wallId",
+                        "referencePoint",
+                        "direction"
+                    ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["dimensionsData"]
+        "required": [
+            "dimensionsData"
+        ]
     })";
 }
 
@@ -17847,7 +18046,7 @@ GS::String ModifyAssociativeDimensionsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "dimensionsWithDetails": {
@@ -17866,15 +18065,93 @@ GS::Optional<GS::UniString> ModifyAssociativeDimensionsCommand::GetInputParamete
                             "items": {
                                 "$ref": "#/DimensionWitnessPointText"
                             }
-                        },)") + DimensionSettingsSchemaProperties + R"(
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName)."
+                        },
+                        "textFrame": {
+                            "type": "boolean",
+                            "description": "Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting."
+                        },
+                        "textStyle": {
+                            "$ref": "#/DimensionTextStyle",
+                            "description": "Optional font and style of the dimension texts (font, bold, italic, underline, width factor, spacing factor), applied to every witness point (on creation after favoriteName). Only the fields given are changed."
+                        },
+                        "appearance": {
+                            "$ref": "#/DimensionAppearance"
+                        },
+                        "elevationOrigin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it."
+                        },
+                        "elevationMarker": {
+                            "$ref": "#/DimensionElevationMarker",
+                            "description": "Optional marker of an Elevation dimension (Elevation dimension in the Dimension Settings); give any of its form, arrowAngle, arrowFilled, arrowUp and plusSign. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "linePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Optional pen of the dimension and witness lines."
+                        },
+                        "marker": {
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "defaultWitnessForm": {
+                            "$ref": "#/DimensionWitnessForm",
+                            "description": "Optional. Applied to every witness point, as in the Dimension Settings."
+                        },
+                        "defaultWitnessVal": {
+                            "type": "number",
+                            "minimum": 0,
+                            "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
+                        },
+                        "staticDimension": {
+                            "type": "boolean",
+                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
+                        },
+                        "onlyDimensionText": {
+                            "type": "boolean",
+                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsInChain": {
+                            "type": "boolean",
+                            "description": "Optional opening heights in the dimension chain, from the Dimension Details panel of the Dimension Settings (API detailedHoleDim): the heights of the doors and windows dimensioned are shown with the chain. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "openingHeightsNominal": {
+                            "type": "boolean",
+                            "description": "Optional: the opening heights are the nominal heights, without the oversize (API nominalHoleDim; false: with the oversize). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "layeredElementDimensions": {
+                            "$ref": "#/LayeredElementDimensions",
+                            "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        }
                     },
                     "additionalProperties": false,
-                    "required": ["elementId"]
+                    "required": [
+                        "elementId"
+                    ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["dimensionsWithDetails"]
+        "required": [
+            "dimensionsWithDetails"
+        ]
     })";
 }
 

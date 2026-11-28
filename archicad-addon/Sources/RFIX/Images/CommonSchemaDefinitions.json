@@ -1264,19 +1264,1460 @@
             "guid"
         ]
     },
+    "GraphicOverrideCombinationDetails": {
+        "type": "object",
+        "properties": {
+            "graphicOverrideCombinationId": {
+                "$ref": "#/GraphicOverrideCombinationId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "graphicOverrideRuleIds": {
+                "type": "array",
+                "description": "The rules of the combination, in priority order.",
+                "items": {
+                    "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "graphicOverrideCombinationId",
+            "name",
+            "graphicOverrideRuleIds"
+        ]
+    },
+    "GridElementDetails": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The grid element. The zero GUID for the tool defaults."
+            },
+            "variation": {
+                "type": "string",
+                "description": "Four-character variation of the object: 'GREL' for a grid element."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Home story index."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Layer attribute index."
+            },
+            "pos": {
+                "$ref": "#/Coordinate2D",
+                "description": "Insertion point: the start of the grid line."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Direction of the grid line in radians."
+            },
+            "length": {
+                "type": "number",
+                "description": "Length of the grid line: the GDL parameter AC_Length of the Grid Tool's grid marker, or the object's A size for a library part without it."
+            },
+            "xRatio": {
+                "type": "number",
+                "description": "The object's xRatio as stored: its A size with useXYFixSize on, otherwise the A size divided by the library part's own A."
+            },
+            "yRatio": {
+                "type": "number",
+                "description": "The object's yRatio as stored, like xRatio for the B size."
+            },
+            "useXYFixSize": {
+                "type": "boolean",
+                "description": "Whether xRatio and yRatio hold the sizes themselves."
+            },
+            "level": {
+                "type": "number",
+                "description": "Elevation of the object from its home story."
+            },
+            "libInd": {
+                "type": "integer",
+                "description": "Library part index."
+            },
+            "libraryPartName": {
+                "type": "string",
+                "description": "Localized name of the library part."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "GDL parameters, separators left out. Only when requested.",
+                "items": {
+                    "$ref": "#/GridParameterDetails"
+                }
+            }
+        },
+        "required": [
+            "elementId",
+            "variation",
+            "floorIndex",
+            "layerIndex",
+            "pos",
+            "angle",
+            "length",
+            "xRatio",
+            "yRatio",
+            "useXYFixSize",
+            "level",
+            "libInd",
+            "libraryPartName"
+        ]
+    },
+    "GraphicalOverrideRuleDetails": {
+        "type": "object",
+        "properties": {
+            "ruleId": {
+                "$ref": "#/GuidId"
+            },
+            "name": {
+                "type": "string"
+            },
+            "ruleGroupName": {
+                "type": "string",
+                "description": "Name of the rule group the rule belongs to."
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "The criterion in Archicad's own XML format. Change its values and pass it to CreateGraphicalOverrideRule to make similar rules."
+            }
+        },
+        "required": [
+            "ruleId",
+            "name",
+            "ruleGroupName",
+            "criterionXML"
+        ],
+        "additionalProperties": false
+    },
+    "AxonometricProjectionParameters": {
+        "type": "object",
+        "description": "The parameters of an axonometric projection.",
+        "properties": {
+            "projectionType": {
+                "$ref": "#/AxonometryProjectionType"
+            },
+            "azimuth": {
+                "type": "number",
+                "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
+            },
+            "transformationMatrix": {
+                "type": "array",
+                "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "sun": {
+                "$ref": "#/ProjectionSunSettings",
+                "description": "The sun position of the axonometry."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectionType",
+            "azimuth",
+            "transformationMatrix",
+            "sun"
+        ]
+    },
+    "GridParameter": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "value": {
+                "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ],
+        "description": "A grid library part parameter used when creating a grid element."
+    },
+    "GridParameterDetails": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "displayName": {
+                "type": "string"
+            },
+            "type": {
+                "type": "string",
+                "description": "Integer, Length, Angle, RealNum, LightSwitch, ColorRGB, Intensity, LineType, Material, FillPattern, PenColor, String, Boolean, Title, BuildingMaterial, Profile, Dictionary or Unknown."
+            },
+            "value": {
+                "description": "Number for numeric and boolean types, string for String and Title. Not given for arrays."
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "First dimension of an array parameter."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "Second dimension of an array parameter."
+            }
+        },
+        "required": [
+            "name",
+            "displayName",
+            "type"
+        ],
+        "description": "The details of a grid library part parameter."
+    },
+    "GridElementLengthMode": {
+        "type": "string",
+        "enum": [
+            "length",
+            "none"
+        ],
+        "description": "How the line length is applied. length (default): to the GDL parameter AC_Length when the library part has it, as the Grid Tool's grid marker does; otherwise to the object's A size, converted to xRatio as CreateObjects does. none: the length is left to 'parameters'."
+    },
+    "ImageFormat": {
+        "type": "string",
+        "description": "The format of an image file.",
+        "enum": [
+            "png",
+            "jpg",
+            "bmp",
+            "tiff",
+            "gif"
+        ]
+    },
+    "ImageColorDepth": {
+        "type": "string",
+        "description": "The color depth of an image.",
+        "enum": [
+            "blackAndWhite",
+            "16Colors",
+            "256Colors",
+            "16Grays",
+            "256Grays",
+            "trueColor",
+            "trueColorWithAlpha"
+        ]
+    },
+    "ActiveGraphicalOverrideCombinationById": {
+        "type": "object",
+        "description": "The graphic override combination to apply, given by id or by name.",
+        "properties": {
+            "combinationId": {
+                "$ref": "#/GraphicOverrideCombinationId",
+                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "combinationId"
+        ]
+    },
+    "ActiveGraphicalOverrideCombinationByName": {
+        "type": "object",
+        "description": "The graphic override combination to apply, given by id or by name.",
+        "properties": {
+            "combinationId": {
+                "$ref": "#/GraphicOverrideCombinationId",
+                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "TextFrameShape": {
+        "type": "string",
+        "enum": [
+            "Rectangle",
+            "Circle",
+            "RoundedRectangle",
+            "Pill"
+        ],
+        "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle."
+    },
+    "TextDataWithText": {
+        "type": "object",
+        "description": "The parameters of the new Text element.",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+            },
+            "id": {
+                "type": "string",
+                "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+            },
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+            },
+            "runs": {
+                "type": "array",
+                "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                "items": {
+                    "$ref": "#/TextRunDetails"
+                },
+                "minItems": 1
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Optional pen attribute index. Equivalent to style.penIndex."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Optional rotation angle in radians. Equivalent to style.angle."
+            },
+            "justification": {
+                "$ref": "#/Justification",
+                "description": "Optional; equivalent to style.justification."
+            },
+            "style": {
+                "$ref": "#/TextStyleSettableDetails",
+                "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+            },
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "exclusiveMinimum": true,
+                "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinate",
+            "text"
+        ]
+    },
+    "TextDataWithRuns": {
+        "type": "object",
+        "description": "The parameters of the new Text element.",
+        "properties": {
+            "favoriteName": {
+                "type": "string",
+                "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+            },
+            "id": {
+                "type": "string",
+                "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
+            },
+            "text": {
+                "type": "string",
+                "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
+            },
+            "runs": {
+                "type": "array",
+                "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
+                "items": {
+                    "$ref": "#/TextRunDetails"
+                },
+                "minItems": 1
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Optional pen attribute index. Equivalent to style.penIndex."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Optional rotation angle in radians. Equivalent to style.angle."
+            },
+            "justification": {
+                "$ref": "#/Justification",
+                "description": "Optional; equivalent to style.justification."
+            },
+            "style": {
+                "$ref": "#/TextStyleSettableDetails",
+                "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+            },
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "exclusiveMinimum": true,
+                "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
+            },
+            "floorIndex": {
+                "type": "integer",
+                "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+            },
+            "layerIndex": {
+                "type": "integer",
+                "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "coordinate",
+            "runs"
+        ]
+    },
+    "TextMeasurementData": {
+        "anyOf": [
+            {
+                "$ref": "#/TextMeasurementByFontIndex"
+            },
+            {
+                "$ref": "#/TextMeasurementByFontName"
+            }
+        ]
+    },
+    "GraphicalOverrideStyle": {
+        "type": "object",
+        "properties": {
+            "lineType": {
+                "$ref": "#/OverriddenValue"
+            },
+            "lineMarkerTextPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "overrideLinePenThickness": {
+                "type": "boolean"
+            },
+            "cutFillType": {
+                "$ref": "#/OverriddenValue"
+            },
+            "cutFillForegroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "overrideCutFillForegroundThickness": {
+                "type": "boolean"
+            },
+            "coverFillType": {
+                "$ref": "#/OverriddenValue"
+            },
+            "coverFillForegroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "coverFillBackgroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "overrideCoverFillForegroundThickness": {
+                "type": "boolean"
+            },
+            "draftFillType": {
+                "$ref": "#/OverriddenValue"
+            },
+            "draftFillForegroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "draftFillBackgroundPen": {
+                "$ref": "#/OverriddenValue"
+            },
+            "overrideDraftFillForegroundThickness": {
+                "type": "boolean"
+            },
+            "cutSurface": {
+                "$ref": "#/OverriddenValue"
+            },
+            "uncutSurface": {
+                "$ref": "#/OverriddenValue"
+            },
+            "showSkinSeparators": {
+                "type": "boolean"
+            },
+            "hideCutContours": {
+                "type": "boolean"
+            },
+            "hideUncutContours": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false
+    },
+    "RenovationStatus": {
+        "type": "string",
+        "description": "The renovation status.",
+        "enum": [
+            "Existing",
+            "New",
+            "Demolished"
+        ]
+    },
+    "SunLightSettings": {
+        "type": "object",
+        "description": "The sun and ambient light settings of the project.",
+        "properties": {
+            "sunColor": {
+                "$ref": "#/ColorRGB"
+            },
+            "sunIntensity": {
+                "type": "integer",
+                "description": "The intensity of the sun light in percent."
+            },
+            "ambientColor": {
+                "$ref": "#/ColorRGB"
+            },
+            "ambientIntensity": {
+                "type": "integer",
+                "description": "The intensity of the ambient light in percent."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "sunColor",
+            "sunIntensity",
+            "ambientColor",
+            "ambientIntensity"
+        ]
+    },
+    "PhotoRenderFormat": {
+        "type": "string",
+        "description": "The format of a rendered image file.",
+        "enum": [
+            "png",
+            "jpg",
+            "bmp",
+            "tiff",
+            "gif"
+        ]
+    },
+    "Filter3DSettingsUpdate": {
+        "type": "object",
+        "description": "The settings to change, in the form Get3DFilterAndCutSettings returns. Only the given keys are changed.",
+        "properties": {
+            "firstStory3D": {
+                "type": "integer",
+                "description": "The first story shown."
+            },
+            "lastStory3D": {
+                "type": "integer",
+                "description": "The last story shown."
+            },
+            "allStories": {
+                "type": "boolean",
+                "description": "Whether all stories are shown; if false, firstStory3D to lastStory3D."
+            },
+            "trimToStoryRange": {
+                "type": "boolean"
+            },
+            "filterMode": {
+                "$ref": "#/Filter3DMode"
+            },
+            "elemTypeFilter": {
+                "type": "array",
+                "description": "Whether each element type is shown. On Set only the listed element types are changed.",
+                "items": {
+                    "$ref": "#/ElementTypeVisibility"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
+    "Filter3DMode": {
+        "type": "string",
+        "enum": [
+            "FilterByRules",
+            "FilterBySelection",
+            "FilterByMarqueeAndRules"
+        ]
+    },
+    "ElementTypeVisibility": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "show": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "show"
+        ]
+    },
+    "GraphicOverrideRuleOrder": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the rule group."
+            },
+            "graphicOverrideRuleIds": {
+                "type": "array",
+                "description": "The rules of the group in their new order. Each must be a rule of this group, listed once. The listed rules come first, in this order; the rules of the group that are not listed keep their order after them.",
+                "items": {
+                    "$ref": "#/GraphicOverrideRuleIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "graphicOverrideRuleIds"
+        ]
+    },
+    "GridSettingsUpdate": {
+        "type": "object",
+        "description": "The grid settings to change, in the form GetGridSettings returns. Only the given keys are changed; a color may give only some of its components.",
+        "properties": {
+            "spaceMainX": {
+                "type": "number",
+                "description": "The horizontal spacing of the main grid, in meters."
+            },
+            "spaceMainY": {
+                "type": "number",
+                "description": "The vertical spacing of the main grid, in meters."
+            },
+            "nLineMainX": {
+                "type": "integer",
+                "description": "The number of main horizontal grid lines."
+            },
+            "nLineMainY": {
+                "type": "integer",
+                "description": "The number of main vertical grid lines."
+            },
+            "gridSwitch": {
+                "type": "boolean",
+                "description": "Whether the grid is visible."
+            },
+            "spaceAuxX": {
+                "type": "number",
+                "description": "The horizontal spacing of the auxiliary grid, in meters."
+            },
+            "spaceAuxY": {
+                "type": "number",
+                "description": "The vertical spacing of the auxiliary grid, in meters."
+            },
+            "nLineAuxX": {
+                "type": "integer",
+                "description": "The number of horizontal auxiliary grid lines."
+            },
+            "nLineAuxY": {
+                "type": "integer",
+                "description": "The number of vertical auxiliary grid lines."
+            },
+            "gridMode": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2,
+                "description": "0: none, 1: grid, 2: snap."
+            },
+            "snapOffsX": {
+                "type": "number",
+                "description": "The horizontal offset of the snap grid, in meters."
+            },
+            "snapOffsY": {
+                "type": "number",
+                "description": "The vertical offset of the snap grid, in meters."
+            },
+            "snapStepX": {
+                "type": "number",
+                "description": "The horizontal spacing of the snap grid, in meters."
+            },
+            "snapStepY": {
+                "type": "number",
+                "description": "The vertical spacing of the snap grid, in meters."
+            },
+            "status": {
+                "type": "integer",
+                "description": "The status of the grid, as Archicad stores it."
+            },
+            "gridAngle": {
+                "type": "number",
+                "description": "The rotation angle of the grid."
+            },
+            "gridOffsX": {
+                "type": "number",
+                "description": "The X offset of the grid."
+            },
+            "gridOffsY": {
+                "type": "number",
+                "description": "The Y offset of the grid."
+            },
+            "gridOffsZ": {
+                "type": "number",
+                "description": "The Z offset of the grid."
+            },
+            "backColor": {
+                "$ref": "#/GridColorUpdate"
+            },
+            "gridColor": {
+                "$ref": "#/GridColorUpdate"
+            }
+        },
+        "additionalProperties": false
+    },
+    "GridColorUpdate": {
+        "type": "object",
+        "description": "A color with transparency, each component from 0 to 1. Archicad keeps 8 bits per component, so a value that is set is rounded to the nearest 1/255.",
+        "properties": {
+            "red": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+            },
+            "green": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+            },
+            "blue": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+            },
+            "alpha": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+            }
+        },
+        "additionalProperties": false
+    },
+    "PlaceInfo": {
+        "type": "object",
+        "description": "The place settings read back after the change. sunAngXY and sunAngZ are the sun position Archicad calculated for the place, date and time, in radians.",
+        "properties": {
+            "longitude": {
+                "type": "number"
+            },
+            "latitude": {
+                "type": "number"
+            },
+            "altitude": {
+                "type": "number"
+            },
+            "north": {
+                "type": "number"
+            },
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer"
+            },
+            "day": {
+                "type": "integer"
+            },
+            "hour": {
+                "type": "integer"
+            },
+            "minute": {
+                "type": "integer"
+            },
+            "second": {
+                "type": "integer"
+            },
+            "sumTime": {
+                "type": "boolean"
+            },
+            "timeZoneInMinutes": {
+                "type": "integer"
+            },
+            "timeZoneOffset": {
+                "type": "integer"
+            },
+            "sunAngXY": {
+                "type": "number"
+            },
+            "sunAngZ": {
+                "type": "number"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "longitude",
+            "latitude",
+            "altitude",
+            "north",
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "sumTime",
+            "timeZoneInMinutes",
+            "timeZoneOffset",
+            "sunAngXY",
+            "sunAngZ"
+        ]
+    },
+    "ModelViewOptionById": {
+        "type": "object",
+        "description": "The model view option combination to find, given by id or by name.",
+        "properties": {
+            "modelViewOptionId": {
+                "$ref": "#/ModelViewOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modelViewOptionId"
+        ]
+    },
+    "ModelViewOptionByName": {
+        "type": "object",
+        "description": "The model view option combination to find, given by id or by name.",
+        "properties": {
+            "modelViewOptionId": {
+                "$ref": "#/ModelViewOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "ActiveRenovationFilterById": {
+        "type": "object",
+        "properties": {
+            "renovationFilterId": {
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "renovationFilterId"
+        ]
+    },
+    "ActiveRenovationFilterByName": {
+        "type": "object",
+        "properties": {
+            "renovationFilterId": {
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "TextMeasurementByFontIndex": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF."
+            },
+            "fontIndex": {
+                "type": "integer",
+                "description": "The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive, then Archicad's font search as GetFontsByName does, so a family name such as 'Arial' finds 'Arial Western'); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimetres, as a Text's height."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Bold style. Optional, default false."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Italic style. Optional, default false."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Underline style. Optional, default false."
+            },
+            "slant": {
+                "type": "number",
+                "description": "The slant angle of the characters in radians; pi/2 (the default) is upright text."
+            },
+            "inModelUnits": {
+                "type": "boolean",
+                "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "height",
+            "fontIndex"
+        ]
+    },
+    "TextMeasurementByFontName": {
+        "type": "object",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF."
+            },
+            "fontIndex": {
+                "type": "integer",
+                "description": "The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive, then Archicad's font search as GetFontsByName does, so a family name such as 'Arial' finds 'Arial Western'); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required."
+            },
+            "height": {
+                "type": "number",
+                "description": "The character height in millimetres, as a Text's height."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Bold style. Optional, default false."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Italic style. Optional, default false."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Underline style. Optional, default false."
+            },
+            "slant": {
+                "type": "number",
+                "description": "The slant angle of the characters in radians; pi/2 (the default) is upright text."
+            },
+            "inModelUnits": {
+                "type": "boolean",
+                "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "text",
+            "height",
+            "fontName"
+        ]
+    },
+    "ModelViewOptionDetailsById": {
+        "type": "object",
+        "properties": {
+            "modelViewOptionId": {
+                "$ref": "#/ModelViewOptionId",
+                "description": "The identifier of the model view option combination (see FindModelViewOption)."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modelViewOptionId"
+        ]
+    },
+    "ModelViewOptionDetailsByName": {
+        "type": "object",
+        "properties": {
+            "modelViewOptionId": {
+                "$ref": "#/ModelViewOptionId",
+                "description": "The identifier of the model view option combination (see FindModelViewOption)."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ]
+    },
+    "PerspectiveProjectionSettings": {
+        "type": "object",
+        "properties": {
+            "perspective": {
+                "$ref": "#/PerspectiveProjectionParameters"
+            },
+            "axonometry": {
+                "type": "object",
+                "description": "Makes the projection axonometric. Only the given values change, in sun too; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
+                "properties": {
+                    "projectionType": {
+                        "$ref": "#/AxonometryProjectionType"
+                    },
+                    "azimuth": {
+                        "type": "number",
+                        "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
+                    },
+                    "transformationMatrix": {
+                        "type": "array",
+                        "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 12,
+                        "maxItems": 12
+                    },
+                    "sun": {
+                        "$ref": "#/ProjectionSunSettings",
+                        "description": "The sun position of the axonometry. Only the values given change."
+                    }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "perspective"
+        ]
+    },
+    "AxonometricProjectionSettings": {
+        "type": "object",
+        "properties": {
+            "perspective": {
+                "$ref": "#/PerspectiveProjectionParameters"
+            },
+            "axonometry": {
+                "type": "object",
+                "description": "Makes the projection axonometric. Only the given values change, in sun too; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
+                "properties": {
+                    "projectionType": {
+                        "$ref": "#/AxonometryProjectionType"
+                    },
+                    "azimuth": {
+                        "type": "number",
+                        "description": "The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on."
+                    },
+                    "transformationMatrix": {
+                        "type": "array",
+                        "description": "The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 12,
+                        "maxItems": 12
+                    },
+                    "sun": {
+                        "$ref": "#/ProjectionSunSettings",
+                        "description": "The sun position of the axonometry. Only the values given change."
+                    }
+                },
+                "additionalProperties": false,
+                "minProperties": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "axonometry"
+        ]
+    },
+    "DimensionAppearance": {
+        "type": "string",
+        "enum": [
+            "Linear",
+            "Cumulative",
+            "Baseline",
+            "Elevation"
+        ],
+        "description": "Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section."
+    },
+    "DimensionWitnessForm": {
+        "type": "string",
+        "enum": [
+            "None",
+            "Small",
+            "Large",
+            "Fix"
+        ],
+        "description": "The witness line form of a dimension."
+    },
+    "DimensionWitnessFormOrUnknown": {
+        "type": "string",
+        "description": "The witness line form of the dimension's settings (None, Small, Large or Fix); each witness point has its own witnessForm.",
+        "enum": [
+            "None",
+            "Small",
+            "Large",
+            "Fix",
+            "Unknown"
+        ]
+    },
+    "DimensionMarkerType": {
+        "type": "string",
+        "description": "The marker type, named after API_MarkerID.",
+        "enum": [
+            "CrossLine",
+            "EmptyCircle",
+            "SlashLine60",
+            "OpenArrow30",
+            "ClosedArrow30",
+            "FullArrow30",
+            "SlashLine45",
+            "CrossCircle",
+            "OpenArrow90",
+            "ClosedArrow90",
+            "FullArrow90",
+            "FullCircle",
+            "PepitaCircle",
+            "BandArrow",
+            "OpenArrow60",
+            "ClosedArrow60",
+            "FullArrow60",
+            "SlashLine75"
+        ]
+    },
+    "ModelViewOptionDetails": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the model view option combination, the one SetViewOptions takes as modelViewOptionIndex."
+            },
+            "modelViewOptionId": {
+                "$ref": "#/ModelViewOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the model view option combination."
+            },
+            "modelViewOptions": {
+                "$ref": "#/ModelViewOptions",
+                "description": "The fields of API_ModelViewOptions stored in the combination, with the curtainWall, stair and railing parts as nested objects: the same fields as viewOptions.modelViewOptions of GetViewOptions. Values are the numeric API constants; attribute indices are plain integers."
+            },
+            "gdlOptions": {
+                "type": "array",
+                "description": "The model view options that library parts add to the combination (the library part settings of the Model View Options dialog, e.g. of doors, windows and objects), with their GDL parameter values.",
+                "items": {
+                    "$ref": "#/ModelViewOptionGDLOption"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "modelViewOptionId",
+            "name",
+            "modelViewOptions",
+            "gdlOptions"
+        ]
+    },
+    "ModelViewOptionGDLOption": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the option set, e.g. the name of the library global settings part."
+            },
+            "guid": {
+                "$ref": "#/ModelViewOptionGDLOptionId"
+            },
+            "supersetGuid": {
+                "type": "object",
+                "description": "The id of another option set that has all of the functionality of this one. When it is given, this set is filled but not shown in the Model View Options dialog.",
+                "properties": {
+                    "guid": {
+                        "$ref": "#/Guid"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "guid"
+                ]
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the option set with their values in this combination.",
+                "items": {
+                    "$ref": "#/StoredGDLParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "guid",
+            "parameters"
+        ]
+    },
+    "ModelViewOptionGDLOptionId": {
+        "type": "object",
+        "description": "The unique id of the option set.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "AutoTextExpression": {
+        "type": "string",
+        "minLength": 1
+    },
+    "ImageConversionInput": {
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The base64 encoded image, for example a previewImage returned by GetElementPreviewImage."
+            },
+            "inputFormat": {
+                "type": "string",
+                "description": "The format of the image: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can read (for example image/x-targa)."
+            },
+            "outputFormat": {
+                "type": "string",
+                "description": "The format to convert the image to: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can write."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "image",
+            "inputFormat",
+            "outputFormat"
+        ],
+        "description": "An image and the requested conversion settings."
+    },
+    "ConvertedImage": {
+        "type": "object",
+        "properties": {
+            "image": {
+                "type": "string",
+                "description": "The base64 encoded converted image."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "image"
+        ],
+        "description": "The result of converting one image."
+    },
+    "InterpretedAutoText": {
+        "type": "object",
+        "properties": {
+            "value": {
+                "type": "string",
+                "description": "The resolved value of the autotext."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "value"
+        ]
+    },
+    "ModelViewOptions": {
+        "type": "object",
+        "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+        "properties": {
+            "railing": {
+                "$ref": "#/RailingModelViewOptions"
+            }
+        },
+        "additionalProperties": true
+    },
+    "DimensionWitnessTextContent": {
+        "type": "string",
+        "enum": [
+            "MeasuredValue",
+            "CustomText"
+        ],
+        "description": "Whether dimension text shows the measured value or custom text (API note contentType)."
+    },
+    "DimensionWitnessPointContent": {
+        "type": "string",
+        "enum": [
+            "MeasuredValue",
+            "CustomText"
+        ],
+        "description": "Whether the witness point shows the measured value or its custom text (API note contentType), as ModifyAssociativeDimensions' witnessPointTexts takes it."
+    },
+    "DimensionElevationArrowAngle": {
+        "type": "integer",
+        "enum": [
+            30,
+            45,
+            60
+        ],
+        "description": "The angle of the half arrow in degrees (API ed_arrowAng 0, 1, 2)."
+    },
+    "LevelDimensionTextContent": {
+        "type": "string",
+        "enum": [
+            "Measured",
+            "Custom"
+        ],
+        "description": "Content of the dimension text: 'Measured' shows the level value, 'Custom' shows customText. Optional parameter; giving customText alone also switches to 'Custom'."
+    },
+    "LineArrowheadType": {
+        "type": "string",
+        "description": "The arrowhead type: circles, slash lines, open, closed (outline) and full (filled) arrows of 15, 30, 45, 60 or 90 degrees, the pepita circle, BandArrow (the double line) and the half arrows (harpoons; Ccw: barb up, Cw: barb down).",
+        "enum": [
+            "EmptyCircle",
+            "CrossCircle",
+            "FullCircle",
+            "SlashLine15",
+            "OpenArrow15",
+            "ClosedArrow15",
+            "FullArrow15",
+            "SlashLine30",
+            "OpenArrow30",
+            "ClosedArrow30",
+            "FullArrow30",
+            "SlashLine45",
+            "OpenArrow45",
+            "ClosedArrow45",
+            "FullArrow45",
+            "SlashLine60",
+            "OpenArrow60",
+            "ClosedArrow60",
+            "FullArrow60",
+            "SlashLine90",
+            "PepitaCircle",
+            "BandArrow",
+            "HalfArrowCcw15",
+            "HalfArrowCw15",
+            "HalfArrowCcw30",
+            "HalfArrowCw30",
+            "HalfArrowCcw45",
+            "HalfArrowCw45",
+            "HalfArrowCcw60",
+            "HalfArrowCw60",
+            "SlashLine75"
+        ]
+    },
+    "RadialDimensionTextPosition": {
+        "type": "string",
+        "enum": [
+            "Above",
+            "In",
+            "Below"
+        ],
+        "description": "The position of radial dimension text relative to the dimension line (textPos)."
+    },
+    "RadialDimensionTextDirection": {
+        "type": "string",
+        "enum": [
+            "Horizontal",
+            "Vertical",
+            "Radial"
+        ],
+        "description": "The direction of radial dimension text (textWay)."
+    },
+    "RadialDimensionTextPositionOrUnknown": {
+        "type": "string",
+        "enum": [
+            "Above",
+            "In",
+            "Below",
+            "Unknown"
+        ],
+        "description": "Where the text is, relative to the dimension line."
+    },
+    "RadialDimensionTextDirectionOrUnknown": {
+        "type": "string",
+        "enum": [
+            "Horizontal",
+            "Vertical",
+            "Radial",
+            "Unknown"
+        ],
+        "description": "The direction of the text."
+    },
+    "RadialDimensionTextContent": {
+        "type": "string",
+        "enum": [
+            "Measured",
+            "Custom"
+        ],
+        "description": "Whether the text shows the measured radius or a custom text."
+    },
+    "DimensionTextPlacementMethod": {
+        "type": "string",
+        "enum": [
+            "Classic",
+            "Flexible",
+            "Centered",
+            "Off",
+            "Unknown"
+        ],
+        "description": "Classic (the API's API_Legacy, the placement of Archicad 18 and before), Flexible, Centered, or Off (every text in the middle of its segment, without collision detection). Unknown is only returned, for a value this version of Tapir does not know."
+    },
+    "RadialDimensionMarker": {
+        "type": "object",
+        "description": "The marker at the end of the dimension line.",
+        "properties": {
+            "type": {
+                "$ref": "#/DimensionMarkerType"
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen of the marker."
+            },
+            "size": {
+                "type": "number",
+                "description": "The size of the marker as Archicad stores it, in millimeters."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "pen",
+            "size"
+        ]
+    },
     "ViewOptions": {
         "type": "object",
         "description": "The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.",
         "properties": {
             "modelViewOptions": {
-                "type": "object",
-                "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
-                "properties": {
-                    "railing": {
-                        "$ref": "#/RailingModelViewOptions"
-                    }
-                },
-                "additionalProperties": true
+                "$ref": "#/ModelViewOptions"
             },
             "onScreenViewOptions": {
                 "type": "object",
@@ -1295,14 +2736,7 @@
         "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well. The options are read back, and a given field Archicad did not keep fails the call with the value it kept.",
         "properties": {
             "modelViewOptions": {
-                "type": "object",
-                "properties": {
-                    "railing": {
-                        "$ref": "#/RailingModelViewOptions",
-                        "description": "The railing options to change; the ones left out keep their value. Archicad 29 does not keep the railing2DDisplayComp* fields, which SetViewOptions then reports."
-                    }
-                },
-                "additionalProperties": true
+                "$ref": "#/ModelViewOptions"
             },
             "onScreenViewOptions": {
                 "type": "object",
@@ -1605,13 +3039,7 @@
         "type": "object",
         "properties": {
             "status": {
-                "type": "string",
-                "description": "The renovation status.",
-                "enum": [
-                    "Existing",
-                    "New",
-                    "Demolished"
-                ]
+                "$ref": "#/RenovationStatus"
             },
             "name": {
                 "type": "string",
@@ -6356,9 +7784,7 @@
                 "description": "The font and style of the dimension text."
             },
             "content": {
-                "type": "string",
-                "enum": ["MeasuredValue", "CustomText"],
-                "description": "Whether the witness point shows the measured value or its custom text (API note contentType), as ModifyAssociativeDimensions' witnessPointTexts takes it."
+                "$ref": "#/DimensionWitnessPointContent"
             },
             "customText": {
                 "type": "string",
@@ -12742,41 +14168,7 @@
                 "description": "Is the arrowhead shown? When the object is given without it, the arrowhead is shown."
             },
             "type": {
-                "type": "string",
-                "description": "The arrowhead type: circles, slash lines, open, closed (outline) and full (filled) arrows of 15, 30, 45, 60 or 90 degrees, the pepita circle, BandArrow (the double line) and the half arrows (harpoons; Ccw: barb up, Cw: barb down).",
-                "enum": [
-                    "EmptyCircle",
-                    "CrossCircle",
-                    "FullCircle",
-                    "SlashLine15",
-                    "OpenArrow15",
-                    "ClosedArrow15",
-                    "FullArrow15",
-                    "SlashLine30",
-                    "OpenArrow30",
-                    "ClosedArrow30",
-                    "FullArrow30",
-                    "SlashLine45",
-                    "OpenArrow45",
-                    "ClosedArrow45",
-                    "FullArrow45",
-                    "SlashLine60",
-                    "OpenArrow60",
-                    "ClosedArrow60",
-                    "FullArrow60",
-                    "SlashLine90",
-                    "PepitaCircle",
-                    "BandArrow",
-                    "HalfArrowCcw15",
-                    "HalfArrowCw15",
-                    "HalfArrowCcw30",
-                    "HalfArrowCw30",
-                    "HalfArrowCcw45",
-                    "HalfArrowCw45",
-                    "HalfArrowCcw60",
-                    "HalfArrowCw60",
-                    "SlashLine75"
-                ]
+                "$ref": "#/LineArrowheadType"
             },
             "size": {
                 "type": "number",
@@ -15388,8 +16780,7 @@
                 "description": "Hide the dimension together with its associated element. Read from Archicad 29; absent on earlier versions."
             },
             "textContent": {
-                "type": "string",
-                "enum": ["Measured", "Custom"],
+                "$ref": "#/LevelDimensionTextContent",
                 "description": "Content of the dimension text: 'Measured' (the level value) or 'Custom' (customText)."
             },
             "customText": {
@@ -15397,8 +16788,7 @@
                 "description": "The custom content of the dimension text, with its Autotext keys as keys (read with the autotext flag off), in the form CreateLevelDimensions and ModifyLevelDimensions take. Present when textContent is 'Custom'."
             },
             "secondTextContent": {
-                "type": "string",
-                "enum": ["Measured", "Custom"],
+                "$ref": "#/LevelDimensionTextContent",
                 "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText)."
             },
             "secondCustomText": {
@@ -15507,8 +16897,7 @@
         "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes, and the texts of its witness points. The witness points themselves are read with GetDimensionData.",
         "properties": {
             "appearance": {
-                "type": "string",
-                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "$ref": "#/DimensionAppearance",
                 "description": "The dimension type, as in the Dimension Settings."
             },
             "elevationOrigin": {
@@ -15560,9 +16949,8 @@
                 "description": "The font and style of the texts of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
             },
             "defaultWitnessForm": {
-                "type": "string",
-                "description": "The witness line form of the dimension's settings; each witness point has its own witnessForm.",
-                "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+                "$ref": "#/DimensionWitnessFormOrUnknown",
+                "description": "The witness line form of the dimension's settings; each witness point has its own witnessForm."
             },
             "defaultWitnessVal": {
                 "type": "number",
@@ -15629,9 +17017,8 @@
                 "description": "The witness point whose text is changed, counted from 0 in the order GetDimensionData returns them."
             },
             "content": {
-                "type": "string",
-                "enum": ["MeasuredValue", "CustomText"],
-                "description": "Optional: show the measured value or the custom text (API note contentType)."
+                "$ref": "#/DimensionWitnessTextContent",
+                "description": "Optional."
             },
             "customText": {
                 "type": "string",
@@ -15763,9 +17150,7 @@
         "description": "The marker at the witness points of a linear dimension (API_MarkerData). CreateAssociativeDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "The marker type, named after API_MarkerID.",
-                "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+                "$ref": "#/DimensionMarkerType"
             },
             "pen": {
                 "type": "integer",
@@ -15786,9 +17171,7 @@
         "description": "The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
         "properties": {
             "method": {
-                "type": "string",
-                "enum": ["Classic", "Flexible", "Centered", "Off", "Unknown"],
-                "description": "Classic (the API's API_Legacy, the placement of Archicad 18 and before), Flexible, Centered, or Off (every text in the middle of its segment, without collision detection). Unknown is only returned, for a value this version of Tapir does not know."
+                "$ref": "#/DimensionTextPlacementMethod"
             },
             "placeBelowLine": {
                 "type": "boolean",
@@ -15811,9 +17194,7 @@
                 "description": "The marker form as Archicad stores it (API ed_dimForm; the DevKit does not list the values, the commands take 0 to 19, as for the Level Dimension tool's dimForm): read it back with GetDetailsOfElements from an Elevation dimension that has the wanted marker."
             },
             "arrowAngle": {
-                "type": "integer",
-                "enum": [30, 45, 60],
-                "description": "The angle of the half arrow in degrees (API ed_arrowAng 0, 1, 2)."
+                "$ref": "#/DimensionElevationArrowAngle"
             },
             "arrowFilled": {
                 "type": "boolean",
@@ -15875,25 +17256,7 @@
                 "description": "The pen of the dimension line."
             },
             "marker": {
-                "type": "object",
-                "description": "The marker at the end of the dimension line.",
-                "properties": {
-                    "type": {
-                        "type": "string",
-                        "description": "The marker type, named after API_MarkerID.",
-                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "The pen of the marker."
-                    },
-                    "size": {
-                        "type": "number",
-                        "description": "The size of the marker as Archicad stores it, in millimeters."
-                    }
-                },
-                "additionalProperties": false,
-                "required": ["type", "pen", "size"]
+                "$ref": "#/RadialDimensionMarker"
             },
             "textHeight": {
                 "type": "number",
@@ -15904,19 +17267,13 @@
                 "description": "The pen of the dimension text."
             },
             "textPosition": {
-                "type": "string",
-                "enum": ["Above", "In", "Below", "Unknown"],
-                "description": "Where the text is, relative to the dimension line."
+                "$ref": "#/RadialDimensionTextPositionOrUnknown"
             },
             "textDirection": {
-                "type": "string",
-                "enum": ["Horizontal", "Vertical", "Radial", "Unknown"],
-                "description": "The direction of the text."
+                "$ref": "#/RadialDimensionTextDirectionOrUnknown"
             },
             "textContent": {
-                "type": "string",
-                "enum": ["Measured", "Custom"],
-                "description": "Whether the text shows the measured radius or a custom text."
+                "$ref": "#/RadialDimensionTextContent"
             },
             "showOrigin": {
                 "type": "boolean",
@@ -20497,8 +21854,7 @@
                 "$ref": "#/Coordinate2D"
             },
             "appearance": {
-                "type": "string",
-                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "$ref": "#/DimensionAppearance",
                 "description": "The dimension type, as in the Dimension Settings."
             },
             "elevationOrigin": {
@@ -20529,9 +21885,7 @@
                 "description": "The text placement method of the dimension texts, always with all of its fields."
             },
             "defaultWitnessForm": {
-                "type": "string",
-                "description": "The witness line form of the dimension's settings (None, Small, Large or Fix); each witness point has its own witnessForm.",
-                "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+                "$ref": "#/DimensionWitnessFormOrUnknown"
             },
             "defaultWitnessVal": {
                 "type": "number",
@@ -21182,7 +22536,9 @@
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameShape": {
+                "$ref": "#/TextFrameShape"
+            },
             "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." }
@@ -21218,7 +22574,9 @@
             "fixedAngle": { "type": "boolean", "description": "The rotation angle does not change when the element is rotated." },
             "contourOffset": { "type": "number", "description": "Offset of the frame/background fill from the text bounding box, in mm." },
             "flipEnabled": { "type": "boolean", "description": "The text should always be readable (flips when viewed upside down)." },
-            "textFrameShape": { "type": "string", "enum": ["Rectangle", "Circle", "RoundedRectangle", "Pill"], "description": "Text frame shape. Standalone Text elements only support Rectangle. Available from Archicad 28; earlier versions ignore it and read it back as Rectangle." },
+            "textFrameShape": {
+                "$ref": "#/TextFrameShape"
+            },
             "textFrameSizeFixed": { "type": "boolean", "description": "Use fixedWidth/fixedHeight instead of fitting the frame to the text box. Available from Archicad 28; earlier versions ignore it and read it back as false." },
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },

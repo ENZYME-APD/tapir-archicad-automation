@@ -8950,72 +8950,13 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
             "type": "array",
             "description": "Array of data to create Texts.",
             "items": {
-                "type": "object",
-                "description": "The parameters of the new Text element.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
-                    },
-                    "id": {
-                        "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
-                    },
-                    "coordinate": {
-                        "$ref": "#/Coordinate3D",
-                        "description": "The placement position of the text. The z value is used to determine the floor when floorIndex is omitted."
-                    },
-                    "text": {
-                        "type": "string",
-                        "description": "The text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF. Ignored if 'runs' is also given."
-                    },
-                    "runs": {
-                        "type": "array",
-                        "description": "Multi-style text content: an array of styled runs, concatenated in order. Takes precedence over 'text' if both are given.",
-                        "items": { "$ref": "#/TextRunDetails" },
-                        "minItems": 1
-                    },
-                    "height": {
-                        "type": "number",
-                        "description": "The character height in millimeters. Optional; defaults to the Text tool default. Equivalent to style.height."
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "Optional pen attribute index. Equivalent to style.penIndex."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "Optional rotation angle in radians. Equivalent to style.angle."
-                    },
-                    "justification": {
-                        "$ref": "#/Justification",
-                        "description": "Optional; equivalent to style.justification."
-                    },
-                    "style": {
-                        "$ref": "#/TextStyleSettableDetails",
-                        "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
-                    },
-                    "width": {
-                        "type": "number",
-                        "minimum": 0.0, "exclusiveMinimum": true,
-                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements with the same key (width), and as style.boxWidth with style.nonBreaking false."
-                    },
-                    "floorIndex": {
-                        "type": "integer",
-                        "description": "Optional floor index. If omitted, derived from the coordinate's z value."
-                    },
-                    "layerIndex": {
-                        "type": "integer",
-                        "description": "Optional layer attribute index. If omitted, the Text tool default layer is used."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "coordinate"
-                ],
                 "anyOf": [
-                    { "required": ["text"] },
-                    { "required": ["runs"] }
+                    {
+                        "$ref": "#/TextDataWithText"
+                    },
+                    {
+                        "$ref": "#/TextDataWithRuns"
+                    }
                 ]
             }
         },
@@ -9132,89 +9073,7 @@ bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& r
 
 // The settings of a Level Dimension that CreateLevelDimensions and ModifyLevelDimensions both take,
 // written by ApplyLevelDimensionSettings (#2220).
-static const char* LevelDimensionSettingsSchemaProperties = R"(
-                    "pen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Pen index of the marker. Optional parameter."
-                    },
-                    "textHeight": {
-                        "type": "number",
-                        "minimum": 0, "exclusiveMinimum": true,
-                        "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
-                    },
-                    "textPen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Pen index of the dimension text, applied to both texts of the marker. Optional parameter."
-                    },
-                    "dimForm": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 19,
-                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
-                    },
-                    "needPlus": {
-                        "type": "boolean",
-                        "description": "Show a plus sign for positive values. Optional parameter."
-                    },
-                    "markerSize": {
-                        "type": "number",
-                        "minimum": 0, "exclusiveMinimum": true,
-                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "Rotation angle of the marker in radians. Optional parameter."
-                    },
-                    "origin": {
-                        "$ref": "#/DimensionOrigin",
-                        "description": "The origin the level is measured from. Optional parameter."
-                    },
-                    "fontName": {
-                        "type": "string",
-                        "description": "Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter."
-                    },
-                    "fontIndex": {
-                        "type": "integer",
-                        "description": "Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter."
-                    },
-                    "bold": {
-                        "type": "boolean",
-                        "description": "Bold dimension text. Optional parameter, the other styles are kept."
-                    },
-                    "italic": {
-                        "type": "boolean",
-                        "description": "Italic dimension text. Optional parameter, the other styles are kept."
-                    },
-                    "underline": {
-                        "type": "boolean",
-                        "description": "Underlined dimension text. Optional parameter, the other styles are kept."
-                    },
-                    "hideWithBaseElem": {
-                        "type": "boolean",
-                        "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
-                    },
-                    "textContent": {
-                        "type": "string",
-                        "enum": ["Measured", "Custom"],
-                        "description": "Content of the dimension text: 'Measured' shows the level value, 'Custom' shows customText. Optional parameter; giving customText alone also switches to 'Custom'."
-                    },
-                    "customText": {
-                        "type": "string",
-                        "description": "The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter."
-                    },
-                    "secondTextContent": {
-                        "type": "string",
-                        "enum": ["Measured", "Custom"],
-                        "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'."
-                    },
-                    "secondCustomText": {
-                        "type": "string",
-                        "description": "The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter."
-                    })";
+
 
 GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType)
 {
@@ -9484,57 +9343,138 @@ CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
 
 GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "levelDimensionsData": {
-            "type": "array",
-            "description": "Array of data to create Level Dimensions (the Level Dimension tool of the floor plan).",
-            "items": {
-                "type": "object",
-                "description": "The parameters of the new Level Dimension.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Optional name of a Level Dimension favorite to base the new element on. Its settings (marker, format, text style, layer, pen) are applied first, then the explicitly given fields override them."
+    return R"({
+        "type": "object",
+        "properties": {
+            "levelDimensionsData": {
+                "type": "array",
+                "description": "Array of data to create Level Dimensions (the Level Dimension tool of the floor plan).",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Level Dimension.",
+                    "properties": {
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a Level Dimension favorite to base the new element on. Its settings (marker, format, text style, layer, pen) are applied first, then the explicitly given fields override them."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The location of the marker on the floor plan. With a parentElementId it must lie on that element, the measured level is the parent's height at this point. Outside the parent's outline Archicad still creates the dimension, but without a height (GetDetailsOfElements reads a level of -110000000)."
+                        },
+                        "parentElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "Optional element the level dimension is associated with (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...). The dimension then shows the element's height at the position and follows the element when it changes. Without it the dimension measures the floor level, or the given static level."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "Optional fixed level value in meters (absolute, from the project zero). Only used without parentElementId; the dimension then shows this value instead of the floor level."
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "The index of the floor to place the dimension on. Optional parameter, by default the floor of the parent element, otherwise the current floor is used."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
+                        },
+                        "pen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the marker. Optional parameter."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the dimension text, applied to both texts of the marker. Optional parameter."
+                        },
+                        "dimForm": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 19,
+                            "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                        },
+                        "needPlus": {
+                            "type": "boolean",
+                            "description": "Show a plus sign for positive values. Optional parameter."
+                        },
+                        "markerSize": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Rotation angle of the marker in radians. Optional parameter."
+                        },
+                        "origin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "The origin the level is measured from. Optional parameter."
+                        },
+                        "fontName": {
+                            "type": "string",
+                            "description": "Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter."
+                        },
+                        "fontIndex": {
+                            "type": "integer",
+                            "description": "Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter."
+                        },
+                        "bold": {
+                            "type": "boolean",
+                            "description": "Bold dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "italic": {
+                            "type": "boolean",
+                            "description": "Italic dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "underline": {
+                            "type": "boolean",
+                            "description": "Underlined dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "hideWithBaseElem": {
+                            "type": "boolean",
+                            "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
+                        },
+                        "textContent": {
+                            "$ref": "#/LevelDimensionTextContent"
+                        },
+                        "customText": {
+                            "type": "string",
+                            "description": "The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter."
+                        },
+                        "secondTextContent": {
+                            "$ref": "#/LevelDimensionTextContent",
+                            "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'."
+                        },
+                        "secondCustomText": {
+                            "type": "string",
+                            "description": "The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter."
+                        }
                     },
-                    "id": {
-                        "type": "string",
-                        "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
-                    },
-                    "position": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "The location of the marker on the floor plan. With a parentElementId it must lie on that element, the measured level is the parent's height at this point. Outside the parent's outline Archicad still creates the dimension, but without a height (GetDetailsOfElements reads a level of -110000000)."
-                    },
-                    "parentElementId": {
-                        "$ref": "#/ElementId",
-                        "description": "Optional element the level dimension is associated with (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...). The dimension then shows the element's height at the position and follows the element when it changes. Without it the dimension measures the floor level, or the given static level."
-                    },
-                    "level": {
-                        "type": "number",
-                        "description": "Optional fixed level value in meters (absolute, from the project zero). Only used without parentElementId; the dimension then shows this value instead of the floor level."
-                    },
-                    "floorIndex": {
-                        "type": "integer",
-                        "description": "The index of the floor to place the dimension on. Optional parameter, by default the floor of the parent element, otherwise the current floor is used."
-                    },
-                    "layerIndex": {
-                        "type": "integer",
-                        "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
-                    },)") + LevelDimensionSettingsSchemaProperties + R"(
-                },
-                "additionalProperties": false,
-                "required": [
-                    "position"
-                ]
+                    "additionalProperties": false,
+                    "required": [
+                        "position"
+                    ]
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "levelDimensionsData"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "levelDimensionsData"
+        ]
+    })";
 }
 
 GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& /*memo*/, const Stories&, const GS::ObjectState& parameters) const
@@ -9990,51 +9930,132 @@ GS::String ModifyLevelDimensionsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "levelDimensionsWithDetails": {
-            "type": "array",
-            "description": "The Level Dimensions to change, each with the settings to change. Only the given settings are changed.",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
+    return R"({
+        "type": "object",
+        "properties": {
+            "levelDimensionsWithDetails": {
+                "type": "array",
+                "description": "The Level Dimensions to change, each with the settings to change. Only the given settings are changed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "position": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
+                        },
+                        "level": {
+                            "type": "number",
+                            "description": "New fixed level value in meters (absolute, from the project zero), as CreateLevelDimensions takes it. The dimension becomes static (the Static checkbox on) and shows this value; an owner element is kept, so staticLevel false later shows its height again. Cannot be given with parentElementId or with staticLevel false. Optional parameter."
+                        },
+                        "staticLevel": {
+                            "type": "boolean",
+                            "description": "The Static checkbox. true fixes the value the dimension shows now; false makes it associative again, so it shows the height of its owner element at the position, or the floor level when it has none. Optional parameter."
+                        },
+                        "parentElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
+                        },
+                        "ownerElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but does not change the Static checkbox (staticLevel) itself, so it can be sent back together with the staticLevel read with it. In tests on Archicad 29, staticLevel true failed for a level dimension with an owner, so the round trip is for associative level dimensions. Cannot name another element than a parentElementId given with it. Optional parameter."
+                        },
+                        "pen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the marker. Optional parameter."
+                        },
+                        "textHeight": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
+                        },
+                        "textPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Pen index of the dimension text, applied to both texts of the marker. Optional parameter."
+                        },
+                        "dimForm": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 19,
+                            "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                        },
+                        "needPlus": {
+                            "type": "boolean",
+                            "description": "Show a plus sign for positive values. Optional parameter."
+                        },
+                        "markerSize": {
+                            "type": "number",
+                            "minimum": 0,
+                            "exclusiveMinimum": true,
+                            "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "Rotation angle of the marker in radians. Optional parameter."
+                        },
+                        "origin": {
+                            "$ref": "#/DimensionOrigin",
+                            "description": "The origin the level is measured from. Optional parameter."
+                        },
+                        "fontName": {
+                            "type": "string",
+                            "description": "Font of the dimension text (Text Style of the Level Dimension settings), applied to both texts of the marker: the name of a Font attribute, as GetDetailsOfElements reports it in fontName, e.g. 'Arial'. The command fails when no loaded font has the name. Takes precedence over fontIndex if both are given. Optional parameter."
+                        },
+                        "fontIndex": {
+                            "type": "integer",
+                            "description": "Font of the dimension text given by its Font attribute index, applied to both texts of the marker. Optional parameter."
+                        },
+                        "bold": {
+                            "type": "boolean",
+                            "description": "Bold dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "italic": {
+                            "type": "boolean",
+                            "description": "Italic dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "underline": {
+                            "type": "boolean",
+                            "description": "Underlined dimension text. Optional parameter, the other styles are kept."
+                        },
+                        "hideWithBaseElem": {
+                            "type": "boolean",
+                            "description": "Hide the dimension together with its associated element (the 'Hide with associated element' setting). Available from Archicad 29; on earlier versions the command fails when it is given. Optional parameter."
+                        },
+                        "textContent": {
+                            "$ref": "#/LevelDimensionTextContent"
+                        },
+                        "customText": {
+                            "type": "string",
+                            "description": "The custom content of the dimension text, own text and Autotext keys, e.g. 'FBOK <MEASUREDVALUE>'. Write the Autotext keys as GetDetailsOfElements returns them in customText for a level dimension set up in Archicad with the wanted Autotext (they are read with the autotext flag off). Sets textContent to 'Custom'; fails together with textContent 'Measured'. Optional parameter."
+                        },
+                        "secondTextContent": {
+                            "$ref": "#/LevelDimensionTextContent",
+                            "description": "Content of the second text, shown by the marker types with two texts: 'Measured' or 'Custom' (secondCustomText). Optional parameter; giving secondCustomText alone also switches to 'Custom'."
+                        },
+                        "secondCustomText": {
+                            "type": "string",
+                            "description": "The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter."
+                        }
                     },
-                    "position": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
-                    },
-                    "level": {
-                        "type": "number",
-                        "description": "New fixed level value in meters (absolute, from the project zero), as CreateLevelDimensions takes it. The dimension becomes static (the Static checkbox on) and shows this value; an owner element is kept, so staticLevel false later shows its height again. Cannot be given with parentElementId or with staticLevel false. Optional parameter."
-                    },
-                    "staticLevel": {
-                        "type": "boolean",
-                        "description": "The Static checkbox. true fixes the value the dimension shows now; false makes it associative again, so it shows the height of its owner element at the position, or the floor level when it has none. Optional parameter."
-                    },
-                    "parentElementId": {
-                        "$ref": "#/ElementId",
-                        "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
-                    },
-                    "ownerElementId": {
-                        "$ref": "#/ElementId",
-                        "description": "The owner element as GetDetailsOfElements reads it (ownerElementId, the same Archicad field parentElementId writes), so a level dimension read can be sent back. Sets the owner like parentElementId, but does not change the Static checkbox (staticLevel) itself, so it can be sent back together with the staticLevel read with it. In tests on Archicad 29, staticLevel true failed for a level dimension with an owner, so the round trip is for associative level dimensions. Cannot name another element than a parentElementId given with it. Optional parameter."
-                    },)") + LevelDimensionSettingsSchemaProperties + R"(
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId"
-                ]
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId"
+                    ]
+                }
             }
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "levelDimensionsWithDetails"
-    ]
-})";
+        },
+        "additionalProperties": false,
+        "required": [
+            "levelDimensionsWithDetails"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema () const
@@ -10286,24 +10307,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "The texts to measure, each with the font, style and height it would be placed with. Nothing is created.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "text": { "type": "string", "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF." },
-                        "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required." },
-                        "fontName": { "type": "string", "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive, then Archicad's font search as GetFontsByName does, so a family name such as 'Arial' finds 'Arial Western'); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
-                        "height": { "type": "number", "description": "The character height in millimetres, as a Text's height." },
-                        "bold": { "type": "boolean", "description": "Bold style. Optional, default false." },
-                        "italic": { "type": "boolean", "description": "Italic style. Optional, default false." },
-                        "underline": { "type": "boolean", "description": "Underline style. Optional, default false." },
-                        "slant": { "type": "number", "description": "The slant angle of the characters in radians; pi/2 (the default) is upright text." },
-                        "inModelUnits": { "type": "boolean", "description": "When true, Archicad applies the drawing scale correction and the lengths are model distances at the current drawing scale; when false (the default), they are lengths on paper in millimetres." }
-                    },
-                    "additionalProperties": false,
-                    "required": ["text", "height"],
-                    "anyOf": [
-                        { "required": ["fontIndex"] },
-                        { "required": ["fontName"] }
-                    ]
+                    "$ref": "#/TextMeasurementData"
                 }
             }
         },

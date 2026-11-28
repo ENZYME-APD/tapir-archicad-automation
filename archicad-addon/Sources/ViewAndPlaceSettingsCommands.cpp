@@ -493,16 +493,18 @@ GS::String SetGridSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> SetGridSettingsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "settings": )") + GetGridSettingsSchema ("The grid settings to change, in the form GetGridSettings returns. Only the given keys are changed; a color may give only some of its components.") + R"(
-    },
-    "additionalProperties": false,
-    "required": [
-        "settings"
-    ]
-})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "settings": {
+                "$ref": "#/GridSettingsUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "settings"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> SetGridSettingsCommand::GetRawResponseSchema () const
@@ -646,20 +648,22 @@ GS::String Set3DFilterAndCutSettingsCommand::GetName () const
 
 GS::Optional<GS::UniString> Set3DFilterAndCutSettingsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
-    "type": "object",
-    "properties": {
-        "settings": )") + GetFilterAndCutSettingsSchema ("The settings to change, in the form Get3DFilterAndCutSettings returns. Only the given keys are changed.") + R"(,
-        "rebuild": {
-            "type": "boolean",
-            "description": "If true, Archicad drops the partial conversion data, so the next rebuild of the 3D window is a full one. Default: false."
-        }
-    },
-    "additionalProperties": false,
-    "required": [
-        "settings"
-    ]
-})";
+    return R"({
+        "type": "object",
+        "properties": {
+            "settings": {
+                "$ref": "#/Filter3DSettingsUpdate"
+            },
+            "rebuild": {
+                "type": "boolean",
+                "description": "If true, Archicad drops the partial conversion data, so the next rebuild of the 3D window is a full one. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "settings"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> Set3DFilterAndCutSettingsCommand::GetRawResponseSchema () const
@@ -843,43 +847,7 @@ GS::Optional<GS::UniString> SetPlaceSettingsCommand::GetRawResponseSchema () con
     "type": "object",
     "properties": {
         "placeInfo": {
-            "type": "object",
-            "description": "The place settings read back after the change. sunAngXY and sunAngZ are the sun position Archicad calculated for the place, date and time, in radians.",
-            "properties": {
-                "longitude": { "type": "number" },
-                "latitude": { "type": "number" },
-                "altitude": { "type": "number" },
-                "north": { "type": "number" },
-                "year": { "type": "integer" },
-                "month": { "type": "integer" },
-                "day": { "type": "integer" },
-                "hour": { "type": "integer" },
-                "minute": { "type": "integer" },
-                "second": { "type": "integer" },
-                "sumTime": { "type": "boolean" },
-                "timeZoneInMinutes": { "type": "integer" },
-                "timeZoneOffset": { "type": "integer" },
-                "sunAngXY": { "type": "number" },
-                "sunAngZ": { "type": "number" }
-            },
-            "additionalProperties": false,
-            "required": [
-                "longitude",
-                "latitude",
-                "altitude",
-                "north",
-                "year",
-                "month",
-                "day",
-                "hour",
-                "minute",
-                "second",
-                "sumTime",
-                "timeZoneInMinutes",
-                "timeZoneOffset",
-                "sunAngXY",
-                "sunAngZ"
-            ]
+            "$ref": "#/PlaceInfo"
         }
     },
     "additionalProperties": false,

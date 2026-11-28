@@ -816,31 +816,15 @@ GS::String FindModelViewOptionCommand::GetName () const
 GS::Optional<GS::UniString> FindModelViewOptionCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "description": "The model view option combination to find, given by id or by name.",
-        "properties": {
-            "modelViewOptionId": {
-                "$ref": "#/ModelViewOptionId"
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
-            }
+    "oneOf": [
+        {
+            "$ref": "#/ModelViewOptionById"
         },
-        "additionalProperties": false,
-        "oneOf": [
-            {
-                "required": [
-                    "modelViewOptionId"
-                ]
-            },
-            {
-                "required": [
-                    "name"
-                ]
-            }
-        ]
-    })";
+        {
+            "$ref": "#/ModelViewOptionByName"
+        }
+    ]
+})";
 }
 
 GS::Optional<GS::UniString> FindModelViewOptionCommand::GetRawResponseSchema () const
@@ -1200,37 +1184,12 @@ GS::Optional<GS::UniString> GetModelViewOptionDetailsCommand::GetInputParameters
             "type": "array",
             "description": "The model view option combinations to read, each given by id or by name. When omitted, every combination of the project is returned.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "modelViewOptionId": {
-                        "type": "object",
-                        "description": "The identifier of the model view option combination (see FindModelViewOption).",
-                        "properties": {
-                            "guid": {
-                                "$ref": "#/Guid"
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "guid"
-                        ]
-                    },
-                    "name": {
-                        "type": "string",
-                        "description": "The name of the model view option combination, as shown in Document > Model View > Model View Options."
-                    }
-                },
-                "additionalProperties": false,
                 "oneOf": [
                     {
-                        "required": [
-                            "modelViewOptionId"
-                        ]
+                        "$ref": "#/ModelViewOptionDetailsById"
                     },
                     {
-                        "required": [
-                            "name"
-                        ]
+                        "$ref": "#/ModelViewOptionDetailsByName"
                     }
                 ]
             }
@@ -1251,90 +1210,7 @@ GS::Optional<GS::UniString> GetModelViewOptionDetailsCommand::GetRawResponseSche
             "items": {
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "index": {
-                                "type": "integer",
-                                "description": "The index of the model view option combination, the one SetViewOptions takes as modelViewOptionIndex."
-                            },
-                            "modelViewOptionId": {
-                                "$ref": "#/ModelViewOptionId"
-                            },
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the model view option combination."
-                            },
-                            "modelViewOptions": {
-                                "type": "object",
-                                "description": "The fields of API_ModelViewOptions stored in the combination, with the curtainWall, stair and railing parts as nested objects: the same fields as viewOptions.modelViewOptions of GetViewOptions. Values are the numeric API constants; attribute indices are plain integers.",
-                                "properties": {
-                                    "railing": {
-                                        "$ref": "#/RailingModelViewOptions"
-                                    }
-                                },
-                                "additionalProperties": true
-                            },
-                            "gdlOptions": {
-                                "type": "array",
-                                "description": "The model view options that library parts add to the combination (the library part settings of the Model View Options dialog, e.g. of doors, windows and objects), with their GDL parameter values.",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the option set, e.g. the name of the library global settings part."
-                                        },
-                                        "guid": {
-                                            "type": "object",
-                                            "description": "The unique id of the option set.",
-                                            "properties": {
-                                                "guid": {
-                                                    "$ref": "#/Guid"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "guid"
-                                            ]
-                                        },
-                                        "supersetGuid": {
-                                            "type": "object",
-                                            "description": "The id of another option set that has all of the functionality of this one. When it is given, this set is filled but not shown in the Model View Options dialog.",
-                                            "properties": {
-                                                "guid": {
-                                                    "$ref": "#/Guid"
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "guid"
-                                            ]
-                                        },
-                                        "parameters": {
-                                            "type": "array",
-                                            "description": "The GDL parameters of the option set with their values in this combination.",
-                                            "items": {
-                                                "$ref": "#/StoredGDLParameter"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "guid",
-                                        "parameters"
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "index",
-                            "modelViewOptionId",
-                            "name",
-                            "modelViewOptions",
-                            "gdlOptions"
-                        ]
+                        "$ref": "#/ModelViewOptionDetails"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -2252,17 +2128,8 @@ GS::Optional<GS::UniString> GetActiveGraphicalOverrideCombinationCommand::GetRaw
         "description": "The graphic override combination applied to the current window. Empty when the current window has no combination applied.",
         "properties": {
             "combinationId": {
-                "type": "object",
-                "description": "The identifier of the graphic override combination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
+                "$ref": "#/GraphicOverrideCombinationId",
+                "description": "The identifier of the graphic override combination."
             },
             "name": {
                 "type": "string",
@@ -2313,41 +2180,15 @@ GS::String SetActiveGraphicalOverrideCombinationCommand::GetName () const
 GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "description": "The graphic override combination to apply, given by id or by name.",
-        "properties": {
-            "combinationId": {
-                "type": "object",
-                "description": "The identifier of the graphic override combination, as returned by GetActiveGraphicalOverrideCombination.",
-                "properties": {
-                    "guid": {
-                        "$ref": "#/Guid"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "guid"
-                ]
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the graphic override combination, as shown in Document > Graphic Overrides > Graphic Override Combinations."
-            }
+    "oneOf": [
+        {
+            "$ref": "#/ActiveGraphicalOverrideCombinationById"
         },
-        "additionalProperties": false,
-        "oneOf": [
-            {
-                "required": [
-                    "combinationId"
-                ]
-            },
-            {
-                "required": [
-                    "name"
-                ]
-            }
-        ]
-    })";
+        {
+            "$ref": "#/ActiveGraphicalOverrideCombinationByName"
+        }
+    ]
+})";
 }
 
 GS::Optional<GS::UniString> SetActiveGraphicalOverrideCombinationCommand::GetRawResponseSchema () const
@@ -2556,24 +2397,15 @@ GS::String SetActiveRenovationFilterCommand::GetName () const
 GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetInputParametersSchema () const
 {
     return R"({
-        "type": "object",
-        "properties": {
-            "renovationFilterId": {
-                "$ref": "#/GuidId",
-                "description": "Identifier of the renovation filter, as listed by GetRenovationFilters. Takes precedence over name when both are given."
-            },
-            "name": {
-                "type": "string",
-                "description": "Name of the renovation filter. An exact match wins over a case-insensitive one.",
-                "minLength": 1
-            }
+    "anyOf": [
+        {
+            "$ref": "#/ActiveRenovationFilterById"
         },
-        "additionalProperties": false,
-        "anyOf": [
-            { "required": ["renovationFilterId"] },
-            { "required": ["name"] }
-        ]
-    })";
+        {
+            "$ref": "#/ActiveRenovationFilterByName"
+        }
+    ]
+})";
 }
 
 GS::Optional<GS::UniString> SetActiveRenovationFilterCommand::GetRawResponseSchema () const
