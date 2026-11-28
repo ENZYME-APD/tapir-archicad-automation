@@ -7,6 +7,7 @@ already has. Each test is one rule, on a small made-up DevKit and add-on.
     python -m unittest discover tools/tests
 """
 
+import json
 import pathlib
 import sys
 import tempfile
@@ -66,7 +67,7 @@ ROWS = [
 
 class FieldCoverageTest (unittest.TestCase):
 
-    def run_on (self, source):
+    def run_on (self, source, rules=()):
         with tempfile.TemporaryDirectory () as tmp:
             root = pathlib.Path (tmp)
             (root / 'Support' / 'Inc').mkdir (parents=True)
@@ -75,7 +76,7 @@ class FieldCoverageTest (unittest.TestCase):
             sources.mkdir ()
             (sources / 'ElementFieldTable.cpp').write_text (table (ROWS), encoding='utf-8')
             (sources / 'Commands.cpp').write_text (textwrap.dedent (source), encoding='utf-8')
-            types = fc.build (root / 'Support', sources, 30)
+            types = fc.build (root / 'Support', sources, 30, rules)
         return {(t['struct'], f['path']): f['status'] for t in types for f in t['fields']}
 
     def test_union_access_read_and_write (self):
@@ -214,6 +215,74 @@ class FieldCoverageTest (unittest.TestCase):
         self.assertEqual (sum (total.values ()), len (ROWS))
         self.assertIn ('API_WallType', summary)
 
+
+    def rules (self, *entries):
+        """Rules as read_rules returns them: (struct, paths, reason) each."""
+        return [{'struct': s, 'paths': list (p), 'reason': r, 'matched': 0} for s, p, r in entries]
+
+    def test_a_rule_marks_a_generic_only_field_not_needed (self):
+        rules = self.rules (('API_WallType', ['contPen'], 'a test reason'))
+        status = self.run_on ('void F (API_Element& e) { e.wall.thickness = 1; }', rules)
+        self.assertEqual (status[('API_WallType', 'contPen')], 'not needed')
+        self.assertEqual (status[('API_WallType', 'height')], 'generic only')
+        self.assertEqual (rules[0]['matched'], 1)
+
+    def test_a_prefix_rule_matches_every_field_under_it_and_ignores_indices (self):
+        rules = self.rules (('API_WallType', ['begC.*'], 'r'), ('API_StairType', ['part.pen'], 'r'))
+        status = self.run_on ('void F () {}', rules)
+        self.assertEqual (status[('API_WallType', 'begC.x')], 'not needed')
+        self.assertEqual (status[('API_WallType', 'begC.y')], 'not needed')
+        self.assertEqual (status[('API_StairType', 'part[0].pen')], 'not needed')
+        self.assertEqual (status[('API_StairType', 'part[1].pen')], 'not needed')
+        self.assertEqual (status[('API_StairType', 'part[0].size')], 'generic only')
+
+    def test_a_key_wins_over_a_rule_and_the_rule_is_left_unmatched (self):
+        # A field that gets a key counts as having one; the unmatched rule is what main () warns about.
+        rules = self.rules (('API_WallType', ['thickness'], 'r'))
+        status = self.run_on ('void F (API_Element& e) { e.wall.thickness = 1; }', rules)
+        self.assertEqual (status[('API_WallType', 'thickness')], 'key, written')
+        self.assertEqual (rules[0]['matched'], 0)
+
+    def test_a_rule_leaves_a_read_only_field_read_only (self):
+        rules = self.rules (('API_WallType', ['sequence'], 'r'))
+        status = self.run_on ('void F () {}', rules)
+        self.assertEqual (status[('API_WallType', 'sequence')], 'read only')
+
+    def test_the_share_leaves_out_not_needed_and_read_only_fields (self):
+        rules = self.rules (('API_WallType', ['begC.*'], 'two coordinates'))
+        with tempfile.TemporaryDirectory () as tmp:
+            root = pathlib.Path (tmp)
+            (root / 'Support' / 'Inc').mkdir (parents=True)
+            (root / 'Support' / 'Inc' / 'APIdefs_Elements.h').write_text (HEADER, encoding='utf-8')
+            sources = root / 'Sources'
+            sources.mkdir ()
+            (sources / 'ElementFieldTable.cpp').write_text (table (ROWS), encoding='utf-8')
+            (sources / 'Commands.cpp').write_text ('void F (API_Element& e) { e.wall.thickness = 1; }', encoding='utf-8')
+            types = fc.build (root / 'Support', sources, 30, rules)
+            fc.write_outputs (types, 30, root / 'out', generated_at='now')
+            md = (root / 'out' / 'field-coverage.md').read_text (encoding='utf-8')
+            data = json.loads ((root / 'out' / 'field-coverage.json').read_text (encoding='utf-8'))
+        # The wall's 8 fields: thickness written, begC.x and begC.y not needed, sequence read only, 4 generic only;
+        # the share is 1 of the 8 - 2 - 1 = 5 fields that need a key.
+        self.assertIn ('`API_WallType`', md)
+        self.assertIn ('wall`: 1 of 5 fields have a key (8 in all)', md)
+        self.assertIn ('not needed: two coordinates', md)
+        wall = next (t for t in data['types'] if t['struct'] == 'API_WallType')
+        self.assertEqual ([f['reason'] for f in wall['fields'] if f['status'] == 'not needed'], ['two coordinates'] * 2)
+
+    def test_read_rules_rejects_a_rule_without_a_reason (self):
+        with tempfile.TemporaryDirectory () as tmp:
+            path = pathlib.Path (tmp) / 'rules.json'
+            path.write_text (json.dumps ({'notNeeded': [{'struct': 'API_WallType', 'paths': ['contPen']}]}), encoding='utf-8')
+            with self.assertRaises (SystemExit):
+                fc.read_rules (path)
+            self.assertEqual (fc.read_rules (pathlib.Path (tmp) / 'missing.json'), [])
+
+    def test_the_repository_rules_name_existing_types_and_give_reasons (self):
+        rules = fc.read_rules (fc.RULES)
+        for rule in rules:
+            self.assertTrue (rule['struct'].startswith ('API_') and rule['struct'].endswith ('Type'), rule['struct'])
+            self.assertGreater (len (rule['reason']), 20, rule)
 
 if __name__ == '__main__':
     unittest.main ()

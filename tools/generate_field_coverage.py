@@ -25,7 +25,15 @@ Status of a field:
 - generic only: no code names it; GetElementFields reads it and, unless the
   table marks it read only, SetElementFields writes it;
 - read only: no code names it, and the table marks it read only (owners and
-  counts Archicad computes, and the fields that choose an element's shape).
+  counts Archicad computes, and the fields that choose an element's shape);
+- not needed: no code names it, and tools/field_coverage_rules.json rules it out,
+  with a reason (a field that describes one placed sub-element rather than a
+  setting, for example). A field that code names keeps its key status whatever a
+  rule says, and a rule that matches no generic-only field is reported, so a rule
+  that a new key has made stale is found.
+
+The share of fields with a key leaves out the read only and not needed ones,
+which can have no key or need none.
 
 It is a static estimate, not a test. A field counts as named when the code
 reaches it or one of its members (topMat.hasValue)
@@ -54,6 +62,8 @@ Standard library only. Usage:
         --sources archicad-addon/Sources \
         --out-dir out
 
+--rules gives another rules file than tools/field_coverage_rules.json.
+
 The newest given DevKit that ElementFieldTable.cpp has a table for is used.
 
 Writes out/field-coverage.json, out/field-coverage.md and
@@ -70,8 +80,11 @@ import re
 FIELD_TABLE = 'ElementFieldTable.cpp'
 # The generic field commands use the table, not the names.
 GENERIC_SOURCES = {'ElementFieldTable.cpp', 'ElementFieldTable.hpp', 'ElementFieldCommands.cpp', 'ElementFieldCommands.hpp'}
-STATUS_ORDER = ['key, written', 'key, read', 'generic only', 'read only']
-STATUS_MARK = {'key, written': '✏️', 'key, read': '👁️', 'generic only': '🔧', 'read only': '🔒'}
+STATUS_ORDER = ['key, written', 'key, read', 'generic only', 'not needed', 'read only']
+STATUS_MARK = {'key, written': '✏️', 'key, read': '👁️', 'generic only': '🔧', 'not needed': '➖', 'read only': '🔒'}
+# Left out of the share of fields with a key: they can have no key, or need none.
+NOT_APPLICABLE = ('not needed', 'read only')
+RULES = pathlib.Path (__file__).resolve ().parent / 'field_coverage_rules.json'
 
 IDENT = r'[A-Za-z_][A-Za-z0-9_]*'
 CHAIN = r'((?:\s*(?:\.|->)\s*' + IDENT + r'(?:\s*\[[^\]\n]*\])*)*)'
@@ -324,7 +337,37 @@ def named_kinds (path, named, member_type):
     return kinds
 
 
-def build (support, sources, version):
+def read_rules (path):
+    """The not-needed rules of a rules file: [{'struct', 'paths', 'reason', 'matched': 0}]. A path is a field's
+    path as the table writes it, or a prefix ending in '.*' for every field under it; array indices are
+    ignored, so 'part.pen' matches part[0].pen and part[1].pen."""
+    if path is None or not path.is_file ():
+        return []
+    rules = json.loads (read_text (path)).get ('notNeeded', [])
+    for rule in rules:
+        if not rule.get ('struct') or not rule.get ('paths') or not rule.get ('reason'):
+            raise SystemExit (f'{path}: a notNeeded rule needs struct, paths and reason: {rule}')
+        rule['matched'] = 0
+    return rules
+
+
+def rule_matches (pattern, path):
+    plain = re.sub (r'\[[^\]]*\]', '', path)
+    pattern = re.sub (r'\[[^\]]*\]', '', pattern)
+    if pattern.endswith ('.*'):
+        return plain.startswith (pattern[:-1])
+    return plain == pattern
+
+
+def not_needed_reason (rules, struct, path):
+    for rule in rules:
+        if rule['struct'] == struct and any (rule_matches (p, path) for p in rule['paths']):
+            rule['matched'] += 1
+            return rule['reason']
+    return None
+
+
+def build (support, sources, version, rules=()):
     fields, members = read_field_table (sources / FIELD_TABLE, version)
     nested = nested_member_types (support, set (members) | {t for t in fields})
     found = scan_sources (sources, members, nested)
@@ -353,7 +396,12 @@ def build (support, sources, version):
                 status = 'read only'
             else:
                 status = 'generic only'
-            rows.append (dict (field, status=status))
+            row = dict (field, status=status)
+            if status == 'generic only':
+                reason = not_needed_reason (rules, struct, field['path'])
+                if reason:
+                    row.update (status='not needed', reason=reason)
+            rows.append (row)
         types.append ({'struct': struct, 'members': members.get (struct, []), 'fields': rows})
     return types
 
@@ -378,10 +426,14 @@ def write_outputs (types, version, out_dir, generated_at=None):
     def all_fields (c):
         return sum (c.values ())
 
+    def applicable (c):
+        return all_fields (c) - sum (c[s] for s in NOT_APPLICABLE)
+
     order = sorted (types, key=lambda t: (-all_fields (t['counts']), t['struct']))
     summary = [
-        f'**{keyed (total)} of {all_fields (total)}** fields of the Archicad element types have a command key of their own '
-        f'({percent (keyed (total), all_fields (total))} %): '
+        f'**{keyed (total)} of {applicable (total)}** fields of the Archicad element types that a command can write or read '
+        f'have a command key of their own ({percent (keyed (total), applicable (total))} %; '
+        f'{all_fields (total)} fields in all): '
         + ', '.join (f'{STATUS_MARK[s]} {total[s]} {s}' for s in STATUS_ORDER if total[s]) + '. '
         f'On Archicad 29 and 30, GetElementFields and SetElementFields reach every field by its path.',
         '',
@@ -390,7 +442,7 @@ def write_outputs (types, version, out_dir, generated_at=None):
     ]
     for t in order:
         c = t['counts']
-        summary.append (f'| [`{t["struct"]}`](#{t["struct"].lower ()}) | {percent (keyed (c), all_fields (c))} % | {all_fields (c)} | '
+        summary.append (f'| [`{t["struct"]}`](#{t["struct"].lower ()}) | {percent (keyed (c), applicable (c))} % | {all_fields (c)} | '
                         + ' | '.join (str (c[s] or '') for s in STATUS_ORDER) + ' |')
     summary += ['', f'Fields of the Archicad {version} DevKit; an estimate read from the code, updated {now}.']
     (out_dir / 'field-coverage-summary.md').write_text ('\n'.join (summary) + '\n', encoding='utf-8')
@@ -408,6 +460,7 @@ def write_outputs (types, version, out_dir, generated_at=None):
         f'| {STATUS_MARK["key, written"]} | code writes it by name: a command most likely takes it |',
         f'| {STATUS_MARK["key, read"]} | code reads it by name, none writes it: a command most likely returns it |',
         f'| {STATUS_MARK["generic only"]} | no key of its own: only GetElementFields / SetElementFields (Archicad 29 and 30) |',
+        f'| {STATUS_MARK["not needed"]} | no key of its own, and ruled out in `tools/field_coverage_rules.json`, with the reason given |',
         f'| {STATUS_MARK["read only"]} | no key of its own, and read only: Archicad computes it, or it chooses the element\'s shape |',
         '',
         'How it is read: a field counts as named when the code reaches it, a struct it is in, or one of its members, '
@@ -420,11 +473,13 @@ def write_outputs (types, version, out_dir, generated_at=None):
     for t in order:
         c = t['counts']
         names = ', '.join (f'`{m}`' for m in t['members'])
-        lines += [f'## {t["struct"]}', '', f'{names}: {keyed (c)} of {all_fields (c)} fields have a key.', '']
+        lines += [f'## {t["struct"]}', '', f'{names}: {keyed (c)} of {applicable (c)} fields have a key ({all_fields (c)} in all).', '']
         for f in t['fields']:
             text = f'- {STATUS_MARK[f["status"]]} `{f["path"]}`'
             if f['variant']:
                 text += f' <sub>only when the element uses `{f["variant"]}`</sub>'
+            if f.get ('reason'):
+                text += f' – not needed: {f["reason"]}'
             lines.append (text)
         lines.append ('')
     (out_dir / 'field-coverage.md').write_text ('\n'.join (lines), encoding='utf-8')
@@ -442,16 +497,23 @@ def main ():
                          help='a DevKit; the newest one that ElementFieldTable.cpp has a table for is used')
     parser.add_argument ('--sources', required=True, type=pathlib.Path)
     parser.add_argument ('--out-dir', required=True, type=pathlib.Path)
+    parser.add_argument ('--rules', type=pathlib.Path, default=RULES,
+                         help='the not-needed rules (default: tools/field_coverage_rules.json)')
     args = parser.parse_args ()
     devkits = {int (v): pathlib.Path (p) for v, p in (d.split ('=', 1) for d in args.devkit)}
     usable = sorted (set (devkits) & set (table_versions (args.sources / FIELD_TABLE)))
     if not usable:
         parser.error (f'{FIELD_TABLE} has a table for none of the given DevKits')
     version = usable[-1]
-    types = build (devkits[version], args.sources, version)
+    rules = read_rules (args.rules)
+    types = build (devkits[version], args.sources, version, rules)
     total = write_outputs (types, version, args.out_dir)
     print (f'Archicad {version}: {len (types)} element types, {sum (total.values ())} fields: '
            + ', '.join (f'{total[s]} {s}' for s in STATUS_ORDER if total[s]))
+    # A rule that matches nothing names a field that has a key now, or that the table no longer has.
+    for rule in rules:
+        if not rule['matched']:
+            print (f'warning: the notNeeded rule for {rule["struct"]} {rule["paths"]} matches no generic-only field')
 
 
 if __name__ == '__main__':
