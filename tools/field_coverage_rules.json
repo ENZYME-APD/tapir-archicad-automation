@@ -1,0 +1,55 @@
+{
+    "_comment": "Fields of the element field coverage (tools/generate_field_coverage.py, #2883) that need no command key of their own, each with the reason. The share of fields with a key leaves them out. A path is a field's path as archicad-addon/Sources/ElementFieldTable.cpp writes it, or a prefix ending in '.*'; array indices are ignored. A rule only applies to a field no code names: a field that gets a key counts as having one, and the generator warns about a rule that then matches nothing. Add a rule only for a field that is not a setting a user makes (a computed count, the position of one placed sub-element, a link to another element), with a short reason (shown on every row of the field coverage) and, in note, the DevKit header comment it rests on; never to make the number look better.",
+    "notNeeded": [
+        {
+            "struct": "API_CurtainWallType",
+            "paths": [
+                "segmentData.begC.*",
+                "segmentData.endC.*",
+                "segmentData.gridOrigin.*",
+                "segmentData.arcOrigin.*",
+                "segmentData.extrusion.*",
+                "segmentData.negArc",
+                "segmentData.contourNum",
+                "segmentData.patternCellNum"
+            ],
+            "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements",
+            "note": "the geometry of one placed segment (APIdefs_Elements.h, API_CWSegmentType: begining and end coordinate, grid and arc origin, extrusion, the size of the segment contour, the amount of cells in the pattern). segmentData is the curtain wall's default segment data, so these describe no setting; the curtain wall's own geometry is written through its reference line, and each placed segment is a CurtainWallSegment element."
+        },
+        {
+            "struct": "API_CurtainWallType",
+            "paths": [
+                "cornerFrameData.begC.*",
+                "cornerFrameData.endC.*",
+                "cornerFrameData.begRel.*",
+                "cornerFrameData.endRel.*",
+                "cornerFrameData.orientation.*",
+                "boundaryFrameData.begC.*",
+                "boundaryFrameData.endC.*",
+                "boundaryFrameData.begRel.*",
+                "boundaryFrameData.endRel.*",
+                "boundaryFrameData.orientation.*"
+            ],
+            "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements",
+            "note": "the position of one placed frame (API_CWFrameType: first and second point of the frame's reference line, relative points in the cell, the orientation perpendicular to them). cornerFrameData and boundaryFrameData are the parameters new corner and boundary frames get, so these describe no setting; each placed frame is a CurtainWallFrame element."
+        },
+        {
+            "struct": "API_CurtainWallType",
+            "paths": [
+                "junctionData.clampFramesNum",
+                "junctionData.clampFrameOrientsNum",
+                "junctionData.clampPanelsNum"
+            ],
+            "reason": "counts Archicad sets on a placed junction (API_CWJunctionType)",
+            "note": "counts of one placed junction (API_CWJunctionType: number of clamping frames, of their orientations and of clamping panels), which Archicad sets from what the junction clamps."
+        },
+        {
+            "struct": "API_CurtainWallType",
+            "paths": [
+                "accessoryData.refFrame"
+            ],
+            "reason": "the frame one placed accessory is joined to (API_CWAccessoryType), a link, not a setting",
+            "note": "the frame one placed accessory is joined to (API_CWAccessoryType: \"Accessory is always joins to a frame. This is the reference frame.\"), a link to another element, not a setting."
+        }
+    ]
+}

@@ -85,7 +85,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
                          Grasshopper coverage generator (generate_gh_coverage.py,
                          gh_coverage_rules.json),
-                         element field coverage generator (generate_field_coverage.py),
+                         element field coverage generator (generate_field_coverage.py,
+                         field_coverage_rules.json),
                          Archicad version list reader and updater (devkits.py),
                          Community page data (generate_community_data.py),
                          marketplace folder checker (check_marketplace.py) and
@@ -626,6 +627,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   command most likely has a key of its own for it), or a script reaches it only through
   `GetElementFields` / `SetElementFields`. It is a static estimate from the code, published
   as `field-coverage.*` to the same branch, read by `docs/field-coverage/index.html`.
+  Fields that need no key of their own (the position of one placed sub-element, a count
+  Archicad computes, a link to another element) are ruled out, each with a reason and its
+  DevKit evidence, in `tools/field_coverage_rules.json`; the share of fields with a key
+  leaves them and the read-only fields out. A rule never outranks a key: a field code names
+  counts as having one, and the generator warns about a rule that matches nothing. Never add
+  a rule for a setting a user makes, only to raise the number.
 - `site_data.yml` — daily, by hand and on pushes to `main` that change
   `marketplace/`, `tools/check_marketplace.py` or `tools/generate_catalogue.py`:
   `tools/generate_community_data.py` counts,

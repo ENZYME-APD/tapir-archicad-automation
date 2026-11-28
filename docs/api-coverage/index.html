@@ -494,15 +494,15 @@ const FIELD_DATA_URL = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archi
 const FIELD_TYPES_SHOWN = 5;
 
 // The "Element settings" block of the overview: the share of the settings that have a command key of their
-// own, counted as on ../field-coverage/ (read-only fields left out), and the element types with the most
+// own, counted as on ../field-coverage/ (read-only and not-needed fields left out), and the element types with the most
 // settings a script reaches only through GetElementFields / SetElementFields.
 function fieldTally (fields) {
-    const c = { written: 0, read: 0, generic: 0, readOnly: 0 };
+    const c = { written: 0, read: 0, generic: 0, excluded: 0 };
     for (const f of fields) {
         if (f.status === 'key, written') c.written++; else if (f.status === 'key, read') c.read++;
-        else if (f.status === 'generic only') c.generic++; else c.readOnly++;
+        else if (f.status === 'generic only') c.generic++; else c.excluded++;   // read only, or ruled out as not needed
     }
-    c.applicable = fields.length - c.readOnly;
+    c.applicable = fields.length - c.excluded;
     c.keyed = c.written + c.read;
     c.percent = c.applicable ? Math.floor (100 * c.keyed / c.applicable) : 0;
     return c;

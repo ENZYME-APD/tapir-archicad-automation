@@ -183,11 +183,13 @@ const DATA_URL = new URLSearchParams (location.search).get ('data') ||
 const REPO = 'https://github.com/ENZYME-APD/tapir-archicad-automation';
 // status (as in the data, tools/generate_field_coverage.py), short name on its pill, label, swatch and bar
 // class, counted as applicable. The swatches are those of ../api-coverage/ and ../gh-coverage/ (coverage.css):
-// written is the ramp's strongest step, read the next one, generic only the open track, read only N/A.
+// written is the ramp's strongest step, read the next one, generic only the open track, not needed (a rule in
+// tools/field_coverage_rules.json) skipped, read only N/A.
 const STATUSES = [
     ['key, written', 'Written', 'a command writes it', 'done', true],
     ['key, read', 'Read', 'a command reads it, none writes it', 'merged', true],
     ['generic only', 'Generic', 'only through GetElementFields and SetElementFields', 'open', true],
+    ['not needed', 'Not needed', 'needs no key: ruled out by a maintainer, with the reason', 'skipped', false],
     ['read only', 'Read only', 'read only: Archicad computes it', 'na', false],
 ];
 const STATUS = Object.fromEntries (STATUSES.map (s => [s[0], s]));
@@ -215,12 +217,12 @@ function statusPill (status) {
     return el ('span', { class: 'pill status', title: label }, swatch (cls), short);
 }
 
-// The coverage of a set of fields: a field that is read only and that no code names can have no key, so it
-// is left out of the share, as the N/A items are on the other coverage pages.
+// The coverage of a set of fields: a field that is read only can have no key, and one ruled out as not needed
+// needs none, so they are left out of the share, as the N/A and skipped items are on the other coverage pages.
 function tally (fields) {
     const counts = Object.fromEntries (STATUSES.map (s => [s[0], 0]));
     for (const field of fields) counts[field.status] = (counts[field.status] || 0) + 1;
-    counts.applicable = fields.length - counts['read only'];
+    counts.applicable = fields.length - counts['read only'] - counts['not needed'];
     counts.keyed = counts['key, written'] + counts['key, read'];
     counts.percent = counts.applicable ? Math.floor (100 * counts.keyed / counts.applicable) : 0;
     return counts;
@@ -270,7 +272,8 @@ function renderOverview () {
     document.getElementById ('hero-percent').textContent = counts.percent + ' %';
     document.getElementById ('hero-caption').replaceChildren (
         `of the ${counts.applicable.toLocaleString ()} writable or readable fields of ${data.types.length} element types have a command key of their own (${counts.keyed.toLocaleString ()}). `,
-        `${counts['read only'].toLocaleString ()} more are read only. Fields of the Archicad ${data.devkit} DevKit, updated ${data.generatedAt}.`);
+        `${counts['read only'].toLocaleString ()} more are read only` + (counts['not needed'] ? ` and ${counts['not needed'].toLocaleString ()} need no key` : '') +
+        `. Fields of the Archicad ${data.devkit} DevKit, updated ${data.generatedAt}.`);
     const tiles = document.getElementById ('tiles');
     tiles.replaceChildren (...STATUSES.map (([status, , label, cls]) => {
         const tile = el ('button', { type: 'button', class: 'tile', 'data-status': status, 'aria-pressed': 'false', title: 'Show only: ' + label },
@@ -345,6 +348,7 @@ function fieldRow (type, field) {
     const li = el ('li', {}, statusPill (field.status), ' ', el ('code', { text: field.path }));
     li.append (' ', el ('span', { class: 'tag', text: field.kind }));
     if (field.variant) li.append (' – only when the element uses ', el ('code', { text: field.variant }));
+    if (field.reason) li.append (' ', el ('em', { class: 'muted', text: '(not needed: ' + field.reason + ')' }));
     if (field.status === 'generic only') li.append (' · ', requestLink (type, field));
     return li;
 }
