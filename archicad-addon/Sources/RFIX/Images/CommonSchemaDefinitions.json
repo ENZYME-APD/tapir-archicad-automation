@@ -23908,7 +23908,7 @@
         "properties": {
             "preferenceTableId": {
                 "$ref": "#/Guid",
-                "description": "A transition preference table, as returned by GetMEPPreferenceTables."
+                "description": "A transition preference table of the routing domain, as returned by GetMEPPreferenceTables with includeFittingTables."
             }
         },
         "additionalProperties": false,
