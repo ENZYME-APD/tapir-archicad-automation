@@ -8773,34 +8773,7 @@ enum class HotlinkNodeRemoval {
     Delete
 };
 
-static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniString& description)
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "hotlinkNodes": {
-                "type": "array",
-                "description": ")" + description + R"(",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "hotlinkNodes"
-        ]
-    })";
-}
+
 
 static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, HotlinkNodeRemoval removal)
 {

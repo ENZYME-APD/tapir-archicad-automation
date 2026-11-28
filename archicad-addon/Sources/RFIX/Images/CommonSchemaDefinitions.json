@@ -1663,7 +1663,7 @@
         "properties": {
             "viewpointId": {
                 "$ref": "#/AddOnViewpointId",
-                "description": "The identifier of the created add-on viewpoint item."
+                "description": "The identifier of an add-on viewpoint item."
             }
         },
         "additionalProperties": false,
