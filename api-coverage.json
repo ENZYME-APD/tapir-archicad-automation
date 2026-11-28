@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 14:47 UTC",
+ "generatedAt": "2026-11-28 15:58 UTC",
  "versions": [
   25,
   26,
@@ -6732,6 +6732,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3119,
+     "title": "Refine API schemas following Tapir 2.0.1: Properties, IFC and element data"
+    },
+    {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
@@ -6797,6 +6801,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3119,
+     "title": "Refine API schemas following Tapir 2.0.1: Properties, IFC and element data"
+    },
     {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
@@ -7914,7 +7922,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3121,
+     "title": "Refine API schemas following Tapir 2.0.1: Openings and marker parameters"
+    }
+   ],
    "issues": []
   },
   {
@@ -15001,7 +15014,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3126,
+     "title": "Refine API schemas following Tapir 2.0.1: Geometry and analytical operations"
+    }
+   ],
    "issues": []
   },
   {
