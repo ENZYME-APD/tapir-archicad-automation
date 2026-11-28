@@ -3735,7 +3735,7 @@ GSErrCode Initialize (void)
         CommandGroup solidElementOperationCommands ("Solid Element Operation Commands");
         err |= RegisterCommand<CreateSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
-            "Creates solid element operation links between target and operator elements. An MEP route is linked by its routing element (the whole route, with its elbows, is the operator) or by one of its rigid segments; a routing segment has no 3D body of its own and is refused."
+            "Creates solid element operation links between target and operator elements. An MEP route is linked by its routing element (the whole route, with its elbows, is the operator) or by one of its rigid segments; a routing segment has no 3D body of its own and is refused. The cut is in the target's 3D model (Get3DGeometryOfElements); the floor plan symbol of a Slab does not show it, unlike a hole of its polygon."
         );
         err |= RegisterCommand<RemoveSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
