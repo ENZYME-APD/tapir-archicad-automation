@@ -1,0 +1,285 @@
+{
+  "title": "ModifyColumns and ModifyBeams report a value Archicad did not apply as a warning of a successful result, and give none for a value it applied (#3054)",
+  "minTapir": "2.0.2",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Column", "Beam" ],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "BuildingMaterial" },
+      "save": { "bm": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a 0.12 x 0.24 profile for beams",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 3054",
+            "wallType": false,
+            "beamType": true,
+            "coluType": true,
+            "handrailType": false,
+            "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [ { "polygonCoordinates": [ { "x": 0.0, "y": 0.0 }, { "x": 0.12, "y": 0.0 }, { "x": 0.12, "y": 0.24 }, { "x": 0.0, "y": 0.24 } ] } ],
+                "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+                "isCore": true,
+                "isFinish": false
+              }
+            ]
+          }
+        ]
+      },
+      "save": { "p1": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": false, "name": "profile created" }
+      ]
+    },
+    {
+      "id": "a basic 0.30 x 0.30 column",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 950.0, "y": 950.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "axisRotationAngle": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "depth": 0.3,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "column isFlipped is never applied",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "isFlipped": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "still a success" },
+        { "path": "executionResults[0].warnings", "len": 1, "name": "one warning" },
+        { "path": "executionResults[0].warnings[0]", "contains": "isFlipped", "name": "names the field" },
+        { "path": "executionResults[0].warnings[0]", "contains": "does not apply isFlipped to a column", "name": "gives the reason" }
+      ]
+    },
+    {
+      "id": "column slantAngle above pi/2 is clamped",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "isSlanted": true, "slantAngle": 1.6708 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "still a success" },
+        { "path": "executionResults[0].warnings", "len": 1, "name": "one warning" },
+        { "path": "executionResults[0].warnings[0]", "contains": "slantAngle", "name": "names the field" },
+        { "path": "executionResults[0].warnings[0]", "contains": "pi/2", "name": "says it is limited to pi/2" }
+      ]
+    },
+    {
+      "id": "the clamped slant angle",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.slantAngle", "approx": 1.5708, "tol": 0.0001, "name": "stored as pi/2" }
+      ]
+    },
+    {
+      "id": "column slantAngle and slantDirectionAngle that apply give no warning",
+      "command": "ModifyColumns",
+      "creates": false,
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "isSlanted": true, "slantAngle": 1.2, "slantDirectionAngle": 0.5 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" },
+        { "path": "executionResults[0].warnings", "exists": false, "name": "no warning" }
+      ]
+    },
+    {
+      "id": "the applied slant angle",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.slantAngle", "approx": 1.2, "name": "slant angle applied" }
+      ]
+    },
+    {
+      "id": "a straight basic beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 970.0 },
+            "endCoordinate": { "x": 956.0, "y": 970.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "height": 0.5,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "verticalCurveHeight on a straight beam",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "verticalCurveHeight": 0.5 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "still a success" },
+        { "path": "executionResults[0].warnings", "len": 1, "name": "one warning" },
+        { "path": "executionResults[0].warnings[0]", "contains": "verticalCurveHeight", "name": "names the field" },
+        { "path": "executionResults[0].warnings[0]", "contains": "VerticallyCurved", "name": "names the condition" }
+      ]
+    },
+    {
+      "id": "beamShape HorizontallyCurved without an arcAngle",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "beamShape": "HorizontallyCurved" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "still a success" },
+        { "path": "executionResults[0].warnings", "len": 1, "name": "one warning" },
+        { "path": "executionResults[0].warnings[0]", "contains": "beamShape", "name": "names the field" },
+        { "path": "executionResults[0].warnings[0]", "contains": "arcAngle", "name": "names the condition" }
+      ]
+    },
+    {
+      "id": "verticalCurveHeight with beamShape VerticallyCurved gives no warning",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "beamShape": "VerticallyCurved", "verticalCurveHeight": 0.5 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" },
+        { "path": "executionResults[0].warnings", "exists": false, "name": "no warning" }
+      ]
+    },
+    {
+      "id": "the vertically curved beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.beamShape", "eq": "VerticallyCurved" },
+        { "path": "detailsOfElements[0].details.verticalCurveHeight", "approx": 0.5 }
+      ]
+    },
+    {
+      "id": "a second straight basic beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 975.0 },
+            "endCoordinate": { "x": 956.0, "y": 975.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "height": 0.5,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "b2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "HorizontallyCurved with a non-zero arcAngle and linked size on a basic beam give no warning",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b2}" }, "beamShape": "HorizontallyCurved", "arcAngle": 0.5, "isWidthAndHeightLinked": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" },
+        { "path": "executionResults[0].warnings", "exists": false, "name": "no warning" }
+      ]
+    },
+    {
+      "id": "the horizontally curved beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.beamShape", "eq": "HorizontallyCurved" },
+        { "path": "detailsOfElements[0].details.arcAngle", "approx": 0.5 },
+        { "path": "detailsOfElements[0].details.isWidthAndHeightLinked", "eq": true }
+      ]
+    },
+    {
+      "id": "a third beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 980.0 },
+            "endCoordinate": { "x": 956.0, "y": 980.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "offset": 0.0,
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "height": 0.5,
+            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+          }
+        ]
+      },
+      "save": { "b3": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "switch the third beam to the profile",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b3}" }, "profileId": { "attributeId": { "guid": "${p1}" } } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
+      ]
+    },
+    {
+      "id": "isWidthAndHeightLinked and circleBased on the profiled beam",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b3}" }, "isWidthAndHeightLinked": true, "circleBased": true } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "still a success" },
+        { "path": "executionResults[0].warnings", "len": 2, "name": "two warnings" },
+        { "path": "executionResults[0].warnings[0]", "contains": "isWidthAndHeightLinked", "name": "names the first field" },
+        { "path": "executionResults[0].warnings[0]", "contains": "TapirCheck Profile 3054", "name": "names the profile" },
+        { "path": "executionResults[0].warnings[1]", "contains": "circleBased", "name": "names the second field" },
+        { "path": "executionResults[0].warnings[1]", "contains": "custom profile", "name": "names the condition" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${p1}" } } } ] }
+    }
+  ]
+}
