@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads and ModifyShells sets and clears the custom surface of individual shell edges, and keeps the other edges and faces (#2433)",
-  "minTapir": "2.0.1",
+  "minTapir": "2.0.2",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
@@ -25,6 +25,7 @@
             "shellClass": "Extruded",
             "floorIndex": 0,
             "thickness": 0.2,
+            "structureType": "Basic",
             "basePlane": { "origin": { "x": 1050.0, "y": 900.0, "z": 0.0 } },
             "profile": {
               "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
@@ -40,35 +41,30 @@
       ]
     },
     {
-      "id": "the new shell's edge surfaces are read back",
+      "id": "the new shell's edges have no custom surface",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.overridden", "exists": true, "name": "begin profile edges read back" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "exists": true, "name": "end profile edges read back" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.overridden", "exists": true, "name": "first side edge read back" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "exists": true, "name": "last side edge read back" }
+        { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.overridden", "eq": false, "name": "begin profile edges not overridden" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "eq": false, "name": "end profile edges not overridden" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.overridden", "eq": false, "name": "first side edge not overridden" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "eq": false, "name": "last side edge not overridden" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness created" }
       ]
     },
     {
-      "id": "set the faces and every edge; refused items",
+      "id": "set two edges, nothing else; refused items",
       "command": "ModifyShells",
       "creates": false,
       "params": {
         "shellsWithDetails": [
           {
             "elementId": { "guid": "${s1}" },
-            "materialsChained": false,
-            "topMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
-            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
-            "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
             "edgeMaterials": {
               "begShapeEdge": { "overridden": true, "attributeId": { "guid": "${surfB}" } },
-              "endShapeEdge": { "overridden": false },
-              "begSideEdge": { "overridden": true, "attributeId": { "guid": "${surfB}" } },
-              "endSideEdge": { "overridden": false }
+              "begSideEdge": { "overridden": true, "attributeId": { "guid": "${surfB}" } }
             }
           },
           {
@@ -83,65 +79,96 @@
       },
       "expect": [
         { "path": "executionResults", "len": 3, "name": "one result per item" },
-        { "path": "executionResults[0].success", "eq": true, "name": "surfaces written" },
+        { "path": "executionResults[0].success", "eq": true, "name": "edges written" },
         { "path": "executionResults[1].success", "eq": false, "name": "overridden edge without attributeId refused" },
         { "path": "executionResults[2].success", "eq": false, "name": "unknown edge surface refused" }
       ]
     },
     {
-      "id": "read the edges",
+      "id": "the two edges are set, the others are not",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
       "expect": [
         { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.overridden", "eq": true, "name": "begin profile edges overridden" },
         { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.attributeId.guid", "eq": "${surfB}", "name": "begin profile edges surface" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "eq": false, "name": "end profile edges not overridden (refused item changed nothing)" },
         { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.overridden", "eq": true, "name": "first side edge overridden" },
         { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.attributeId.guid", "eq": "${surfB}", "name": "first side edge surface" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "eq": false, "name": "end profile edges not overridden (refused item changed nothing)" },
         { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "eq": false, "name": "last side edge not overridden (refused item changed nothing)" },
-        { "path": "detailsOfElements[0].details.topMaterial.attributeId.guid", "eq": "${surfA}", "name": "top surface written" },
-        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "side surface written" },
-        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfA}", "name": "bottom surface written" }
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": false, "name": "top surface not touched" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": false, "name": "side surface not touched" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "eq": false, "name": "bottom surface not touched" }
       ]
     },
     {
-      "id": "clear one edge and set another, nothing else",
+      "id": "clear one edge, nothing else",
       "command": "ModifyShells",
       "creates": false,
       "params": {
         "shellsWithDetails": [
           {
             "elementId": { "guid": "${s1}" },
+            "edgeMaterials": { "begShapeEdge": { "overridden": false } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "edge cleared" }
+      ]
+    },
+    {
+      "id": "the cleared edge, and the other edges kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.overridden", "eq": false, "name": "begin profile edges cleared" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.overridden", "eq": true, "name": "first side edge kept overridden" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.attributeId.guid", "eq": "${surfB}", "name": "first side edge kept" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "eq": false, "name": "end profile edges kept" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "eq": false, "name": "last side edge kept" }
+      ]
+    },
+    {
+      "id": "set the faces and one more edge in one item",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "materialsChained": false,
+            "topMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+            "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
             "edgeMaterials": {
-              "begShapeEdge": { "overridden": false },
               "endSideEdge": { "overridden": true, "attributeId": { "guid": "${surfB}" } }
             }
           }
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "edges written" }
+        { "path": "executionResults[0].success", "eq": true, "name": "faces and edge written" }
       ]
     },
     {
-      "id": "the changed edges, and the other edges and faces kept",
+      "id": "the faces, the new edge, and the custom edge kept",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.edgeMaterials.begShapeEdge.overridden", "eq": false, "name": "begin profile edges cleared" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "eq": true, "name": "last side edge overridden" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.overridden", "eq": true, "name": "last side edge overridden (written after the side surface)" },
         { "path": "detailsOfElements[0].details.edgeMaterials.endSideEdge.attributeId.guid", "eq": "${surfB}", "name": "last side edge surface" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.endShapeEdge.overridden", "eq": false, "name": "end profile edges kept" },
         { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.overridden", "eq": true, "name": "first side edge kept overridden" },
-        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.attributeId.guid", "eq": "${surfB}", "name": "first side edge kept" },
-        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": true, "name": "top surface kept overridden" },
-        { "path": "detailsOfElements[0].details.topMaterial.attributeId.guid", "eq": "${surfA}", "name": "top surface kept" },
-        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "side surface kept" },
-        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "eq": true, "name": "bottom surface kept overridden" },
-        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfA}", "name": "bottom surface kept" },
-        { "path": "detailsOfElements[0].details.materialsChained", "eq": false, "name": "chaining kept" },
+        { "path": "detailsOfElements[0].details.edgeMaterials.begSideEdge.attributeId.guid", "eq": "${surfB}", "name": "first side edge kept (the side surface did not replace it)" },
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": true, "name": "top surface overridden" },
+        { "path": "detailsOfElements[0].details.topMaterial.attributeId.guid", "eq": "${surfA}", "name": "top surface written" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": true, "name": "side surface overridden" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfA}", "name": "side surface written" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "eq": true, "name": "bottom surface overridden" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfA}", "name": "bottom surface written" },
+        { "path": "detailsOfElements[0].details.materialsChained", "eq": false, "name": "chaining written" },
         { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" }
       ]
     }
