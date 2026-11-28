@@ -1,11 +1,12 @@
 {
- "generatedAt": "2026-11-28 18:13 UTC",
+ "generatedAt": "2026-11-28 18:25 UTC",
  "devkit": 30,
  "counts": {
   "key, written": 1785,
-  "generic only": 1090,
+  "generic only": 1042,
   "key, read": 919,
-  "read only": 112
+  "read only": 112,
+  "not needed": 48
  },
  "types": [
   {
@@ -3859,91 +3860,104 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.begC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.begC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.endC.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.endC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.endC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.gridOrigin.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.gridOrigin.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.gridOrigin.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.arcOrigin.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.arcOrigin.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.arcOrigin.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.negArc",
      "kind": "Bool",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.segmentType",
@@ -3964,35 +3978,40 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.extrusion.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.extrusion.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.contourNum",
      "kind": "UnsignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "segmentData.patternCellNum",
      "kind": "UnsignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position and size of one placed segment (API_CWSegmentType); placed segments are their own elements"
     },
     {
      "path": "cornerFrameData.pen",
@@ -4160,91 +4179,104 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.begRel.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.endRel.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.endRel.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.begC.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.begC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.begC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.endC.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.endC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.endC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.orientation.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.orientation.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.orientation.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "cornerFrameData.joinedCWFramesBegCNum",
@@ -4461,91 +4493,104 @@
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.begRel.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.endRel.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.endRel.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.begC.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.begC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.begC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.endC.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.endC.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.endC.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.orientation.x",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.orientation.y",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.orientation.z",
      "kind": "Real",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the position of one placed frame (API_CWFrameType); placed frames are their own elements"
     },
     {
      "path": "boundaryFrameData.joinedCWFramesBegCNum",
@@ -4643,21 +4688,24 @@
      "kind": "UnsignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "counts Archicad sets on a placed junction (API_CWJunctionType)"
     },
     {
      "path": "junctionData.clampFrameOrientsNum",
      "kind": "UnsignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "counts Archicad sets on a placed junction (API_CWJunctionType)"
     },
     {
      "path": "junctionData.clampPanelsNum",
      "kind": "UnsignedInt",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "counts Archicad sets on a placed junction (API_CWJunctionType)"
     },
     {
      "path": "junctionData.libInd",
@@ -4720,7 +4768,8 @@
      "kind": "Guid",
      "readOnly": false,
      "variant": null,
-     "status": "generic only"
+     "status": "not needed",
+     "reason": "the frame one placed accessory is joined to (API_CWAccessoryType), a link, not a setting"
     },
     {
      "path": "angle",
@@ -4899,9 +4948,10 @@
     }
    ],
    "counts": {
-    "generic only": 129,
+    "generic only": 81,
     "key, written": 42,
     "key, read": 6,
+    "not needed": 48,
     "read only": 10
    }
   },
