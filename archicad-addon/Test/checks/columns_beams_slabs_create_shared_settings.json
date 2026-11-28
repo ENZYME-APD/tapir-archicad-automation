@@ -39,7 +39,7 @@
               "use": true,
               "useFromSurface": false,
               "orientationComesFrom3D": false,
-              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "fillId": { "guid": "${fill}" },
               "foregroundPen": 3,
               "backgroundPen": 9,
               "transformationType": "Global",
@@ -121,7 +121,7 @@
               "use": true,
               "useFromSurface": false,
               "orientationComesFrom3D": false,
-              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "fillId": { "guid": "${fill}" },
               "foregroundPen": 2,
               "backgroundPen": 6,
               "transformationType": "Global",
@@ -198,7 +198,7 @@
               "use": true,
               "foregroundPen": 3,
               "backgroundPen": 9,
-              "fillId": { "attributeId": { "guid": "${fill}" } }
+              "fillId": { "guid": "${fill}" }
             }
           }
         ]

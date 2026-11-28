@@ -54,7 +54,7 @@
             "isWidthAndHeightLinked": false,
             "width": 0.3,
             "depth": 0.3,
-            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+            "buildingMaterialId": { "guid": "${bm}" }
           }
         ]
       },
@@ -67,7 +67,7 @@
       "id": "switch the column to the profile",
       "command": "ModifyColumns",
       "creates": false,
-      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "attributeId": { "guid": "${p1}" } } } ] },
+      "params": { "columnsWithDetails": [ { "elementId": { "guid": "${c1}" }, "profileId": { "guid": "${p1}" } } ] },
       "expect": [
         { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
       ]
@@ -120,7 +120,7 @@
         "columnsWithDetails": [
           {
             "elementId": { "guid": "${c1}" },
-            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+            "buildingMaterialId": { "guid": "${bm}" },
             "isWidthAndHeightLinked": false,
             "width": 0.45,
             "depth": 0.55
@@ -156,7 +156,7 @@
             "isWidthAndHeightLinked": false,
             "width": 0.3,
             "height": 0.5,
-            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } }
+            "buildingMaterialId": { "guid": "${bm}" }
           }
         ]
       },
@@ -169,7 +169,7 @@
       "id": "switch the beam to the profile",
       "command": "ModifyBeams",
       "creates": false,
-      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "profileId": { "attributeId": { "guid": "${p1}" } } } ] },
+      "params": { "beamsWithDetails": [ { "elementId": { "guid": "${b1}" }, "profileId": { "guid": "${p1}" } } ] },
       "expect": [
         { "path": "executionResults[0].success", "eq": true, "name": "profile set" }
       ]
@@ -224,7 +224,7 @@
         "beamsWithDetails": [
           {
             "elementId": { "guid": "${b1}" },
-            "buildingMaterialId": { "attributeId": { "guid": "${bm}" } },
+            "buildingMaterialId": { "guid": "${bm}" },
             "isWidthAndHeightLinked": false,
             "width": 0.31,
             "height": 0.43
