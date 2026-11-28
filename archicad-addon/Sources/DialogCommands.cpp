@@ -958,9 +958,8 @@ GS::Optional<GS::UniString> PickAttributeCommand::GetInputParametersSchema () co
         "type": "object",
         "properties": {
             "attributeType": {
-                "type": "string",
-                "description": "The type of the attribute to pick. Fill and Line need Archicad 27 or newer. Composite lists the composites only.",
-                "enum": ["Layer", "BuildingMaterial", "Composite", "Profile", "Surface", "Fill", "Line"]
+                "$ref": "#/PickableAttributeType",
+                "description": "The type of the attribute to pick. Fill and Line need Archicad 27 or newer. Composite lists the composites only."
             },
             "attributeId": {
                 "$ref": "#/AttributeId",
@@ -1064,9 +1063,7 @@ GS::Optional<GS::UniString> PickAttributeFolderCommand::GetInputParametersSchema
         "type": "object",
         "properties": {
             "attributeType": {
-                "type": "string",
-                "description": "The type of the attributes whose folders the picker lists. Fill and Line need Archicad 27 or newer.",
-                "enum": ["Layer", "BuildingMaterial", "Composite", "Profile", "Surface", "Fill", "Line"]
+                "$ref": "#/PickableAttributeType"
             },
             "title": {
                 "type": "string",

@@ -524,58 +524,7 @@ GS::Optional<GS::UniString> GetAttributeIndexesCommand::GetRawResponseSchema () 
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "attributeIndexes": {
-                        "type": "array",
-                        "description": "One item per requested attribute type, in the order of attributeTypes.",
-                        "items": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attributeType": {
-                                            "$ref": "#/AttributeType"
-                                        },
-                                        "count": {
-                                            "type": "integer",
-                                            "description": "The number of attributes of the type."
-                                        },
-                                        "firstIndex": {
-                                            "type": "integer",
-                                            "description": "The index of the first valid attribute of the type, as Archicad reports it. Left out when the type has no attribute."
-                                        },
-                                        "lastIndex": {
-                                            "type": "integer",
-                                            "description": "The highest index in use. Left out when the type has no attribute."
-                                        },
-                                        "freeIndexes": {
-                                            "type": "array",
-                                            "description": "The indexes between firstIndex and lastIndex that no attribute uses, for example those of deleted attributes, in ascending order. Archicad 29 gives a new Layer the lowest free index.",
-                                            "items": {
-                                                "type": "integer"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "attributeType",
-                                        "count",
-                                        "freeIndexes"
-                                    ]
-                                },
-                                {
-                                    "$ref": "#/ErrorItem"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "attributeIndexes"
-                ]
+                "$ref": "#/AttributeIndexSummary"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -706,125 +655,7 @@ GS::Optional<GS::UniString> ImportAttributesFromProjectCommand::GetRawResponseSc
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "attributesByType": {
-                        "type": "array",
-                        "description": "One item per requested attribute type, in the order of attributeTypes.",
-                        "items": {
-                            "type": "object",
-                            "oneOf": [
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "attributeType": {
-                                            "$ref": "#/AttributeType"
-                                        },
-                                        "attributes": {
-                                            "type": "array",
-                                            "description": "One item per imported (or, with dryRun, importable) attribute of the source file.",
-                                            "items": {
-                                                "type": "object",
-                                                "properties": {
-                                                    "name": {
-                                                        "type": "string",
-                                                        "description": "The name of the attribute in the source file."
-                                                    },
-                                                    "sourceIndex": {
-                                                        "type": "integer",
-                                                        "description": "The index of the attribute in the source file. Archicad hands out a new guid for the attributes of another file on every read, so they are identified by name and index."
-                                                    },
-                                                    "result": {
-                                                        "type": "string",
-                                                        "enum": [
-                                                            "created",
-                                                            "overwritten",
-                                                            "skipped",
-                                                            "failed"
-                                                        ],
-                                                        "description": "created: new in the open project. overwritten: an attribute of the same name was overwritten. skipped: an attribute of the same name exists and overwriteExisting is false. failed: see error, for example a reference that cannot be mapped. With dryRun the result is what an import would do."
-                                                    },
-                                                    "attributeId": {
-                                                        "$ref": "#/AttributeId",
-                                                        "description": "The attribute in the open project. Missing when it was not created (failed, or created with dryRun)."
-                                                    },
-                                                    "references": {
-                                                        "type": "array",
-                                                        "description": "For a Composite, Profile or LayerCombination that is created or overwritten (or would be, with dryRun): the attributes it refers to, each once, and how they were mapped to the open project.",
-                                                        "items": {
-                                                            "type": "object",
-                                                            "properties": {
-                                                                "attributeType": {
-                                                                    "type": "string",
-                                                                    "enum": [
-                                                                        "Line",
-                                                                        "Fill",
-                                                                        "BuildingMaterial",
-                                                                        "Surface",
-                                                                        "Layer"
-                                                                    ],
-                                                                    "description": "The type of the attribute referred to."
-                                                                },
-                                                                "sourceIndex": {
-                                                                    "type": "integer",
-                                                                    "description": "Its index in the source file."
-                                                                },
-                                                                "sourceName": {
-                                                                    "type": "string",
-                                                                    "description": "Its name in the source file. Only for Line and Fill: Archicad does not read the other types from a closed file."
-                                                                },
-                                                                "mappedBy": {
-                                                                    "type": "string",
-                                                                    "enum": [
-                                                                        "name",
-                                                                        "index",
-                                                                        "none"
-                                                                    ],
-                                                                    "description": "name: an attribute of the open project with the same name. index: the attribute of the open project with the same index (referencesByIndex). none: not mapped, so the attribute was not imported."
-                                                                },
-                                                                "attributeId": {
-                                                                    "$ref": "#/AttributeId",
-                                                                    "description": "The attribute of the open project referred to after the import. Missing when not mapped, or when it is created by the same dry run."
-                                                                }
-                                                            },
-                                                            "additionalProperties": false,
-                                                            "required": [
-                                                                "attributeType",
-                                                                "sourceIndex",
-                                                                "mappedBy"
-                                                            ]
-                                                        }
-                                                    },
-                                                    "error": {
-                                                        "$ref": "#/Error"
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "name",
-                                                    "sourceIndex",
-                                                    "result"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "attributeType",
-                                        "attributes"
-                                    ]
-                                },
-                                {
-                                    "$ref": "#/ErrorItem"
-                                }
-                            ]
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "attributesByType"
-                ]
+                "$ref": "#/ImportedAttributesByType"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -8346,12 +8177,7 @@ GS::Optional<GS::UniString> ModifyPensCommand::GetInputParametersSchema () const
                 }
             },
             "target": {
-                "type": "string",
-                "description": "Which active Pen Table to change: the one in effect for the model views (the default) or the one in effect for the layouts. The two can be the same Pen Table.",
-                "enum": [
-                    "model",
-                    "layout"
-                ]
+                "$ref": "#/PenTarget"
             }
         },
         "additionalProperties": false,
@@ -12313,31 +12139,13 @@ GS::Optional<GS::UniString> ReindexAttributesCommand::GetInputParametersSchema (
         "type": "object",
         "properties": {
             "attributeType": {
-                "type": "string",
-                "enum": ["Fill", "Line", "Surface", "BuildingMaterial", "ZoneCategory"],
-                "description": "The type of the attributes to move. Layers are moved by ReindexLayers; pens and the other attribute types cannot be moved."
+                "$ref": "#/ReindexableAttributeType"
             },
             "attributes": {
                 "type": "array",
                 "description": "The attributes to move to a new index, handled in the given order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The attribute to move."
-                        },
-                        "newIndex": {
-                            "type": "integer",
-                            "description": "The index the attribute gets. It must not be used by another attribute of the type.",
-                            "minimum": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "newIndex"
-                    ]
+                    "$ref": "#/AttributeReindexData"
                 }
             },
             "dryRun": {
@@ -12369,103 +12177,7 @@ GS::Optional<GS::UniString> ReindexAttributesCommand::GetRawResponseSchema () co
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The attribute at its new index. Archicad cannot renumber an attribute in place, so this is a new attribute with a new id; with dryRun it is the attribute's current id."
-                                },
-                                "oldIndex": {
-                                    "type": "integer"
-                                },
-                                "newIndex": {
-                                    "type": "integer"
-                                },
-                                "placeholders": {
-                                    "type": "integer",
-                                    "description": "The number of temporary attributes needed for the free indices below newIndex."
-                                },
-                                "elements": {
-                                    "$ref": "#/Elements",
-                                    "description": "The elements that refer to the attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (side surfaces, roof levels, morph faces, cutting planes). Rewritten to the new index unless dryRun is true."
-                                },
-                                "hotlinkElements": {
-                                    "$ref": "#/Elements",
-                                    "description": "Elements from hotlinked modules that refer to the attribute. They cannot be changed and keep the old index until their module file is reindexed."
-                                },
-                                "toolDefaults": {
-                                    "type": "array",
-                                    "description": "The element types whose tool default refers to the attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "$ref": "#/ElementType"
-                                    }
-                                },
-                                "favorites": {
-                                    "type": "array",
-                                    "description": "The names of the Favorites that refer to the attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "attributes": {
-                                    "type": "array",
-                                    "description": "The other attributes that refer to the attribute: composites (skins and separators), building materials (cut fill, cut surface), surfaces (hatching fill), MEP systems (fill) and profiles (skins and edges). Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "attributeType": {
-                                                "type": "string"
-                                            },
-                                            "attributeId": {
-                                                "$ref": "#/AttributeId"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "attributeType",
-                                            "attributeId",
-                                            "name"
-                                        ]
-                                    }
-                                },
-                                "overrideRules": {
-                                    "type": "array",
-                                    "description": "The names of the graphic override rules that refer to the attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "layersShown": {
-                                    "type": "array",
-                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the move and put back afterwards. Not present with dryRun.",
-                                    "items": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    }
-                                },
-                                "warnings": {
-                                    "type": "array",
-                                    "description": "What keeps the old index or did not work after the attribute was moved: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written, the name or the attribute folder.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "attributeId",
-                                "oldIndex",
-                                "newIndex",
-                                "placeholders",
-                                "elements",
-                                "hotlinkElements",
-                                "toolDefaults",
-                                "favorites",
-                                "attributes",
-                                "overrideRules"
-                            ]
+                            "$ref": "#/AttributeReindexResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -12997,30 +12709,13 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParameter
         "type": "object",
         "properties": {
             "attributeType": {
-                "type": "string",
-                "enum": ["Fill", "Line", "Surface", "BuildingMaterial", "Profile", "ZoneCategory", "Layer"],
-                "description": "The type of the attributes to delete and of their replacements."
+                "$ref": "#/ReplaceableAttributeType"
             },
             "attributes": {
                 "type": "array",
                 "description": "The attributes to delete, each with the attribute that takes its place, handled in the given order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The attribute to delete."
-                        },
-                        "replacementAttributeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The attribute of the same type that replaces it wherever it is used. It must be another attribute than the one to delete."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "replacementAttributeId"
-                    ]
+                    "$ref": "#/DeleteAndReplaceAttributeData"
                 }
             },
             "dryRun": {
@@ -13049,104 +12744,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "attributeId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The deleted attribute (with dryRun, the attribute that would be deleted)."
-                                },
-                                "replacementAttributeId": {
-                                    "$ref": "#/AttributeId",
-                                    "description": "The attribute that took its place."
-                                },
-                                "wouldDelete": {
-                                    "type": "boolean",
-                                    "enum": [ true ],
-                                    "description": "Only on a dry run: the attribute and its replacement passed the checks, and a real run would delete the attribute and rewrite the references listed here to the replacement."
-                                },
-                                "elements": {
-                                    "$ref": "#/Elements",
-                                    "description": "The elements that referred to the deleted attribute, in the floor plan and in every section, elevation, interior elevation, detail, worksheet, 3D document, layout and master layout: in their own fields, their library part parameters or their memo data (column and beam segments, side surfaces, roof levels, morph faces, cutting planes). They refer to the replacement now, unless dryRun is true."
-                                },
-                                "hotlinkElements": {
-                                    "$ref": "#/Elements",
-                                    "description": "Elements from hotlinked modules that refer to the deleted attribute. They cannot be changed; replace the attribute in their module file."
-                                },
-                                "toolDefaults": {
-                                    "type": "array",
-                                    "description": "The element types whose tool default referred to the deleted attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "$ref": "#/ElementType"
-                                    }
-                                },
-                                "favorites": {
-                                    "type": "array",
-                                    "description": "The names of the Favorites that referred to the deleted attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "attributes": {
-                                    "type": "array",
-                                    "description": "The other attributes that referred to the deleted attribute: composites (skins and separators), building materials (cut fill, cut surface), surfaces (hatching fill), MEP systems (fill) and profiles (skins and edges). Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "attributeType": {
-                                                "type": "string"
-                                            },
-                                            "attributeId": {
-                                                "$ref": "#/AttributeId"
-                                            },
-                                            "name": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "attributeType",
-                                            "attributeId",
-                                            "name"
-                                        ]
-                                    }
-                                },
-                                "overrideRules": {
-                                    "type": "array",
-                                    "description": "The names of the graphic override rules that referred to the deleted attribute. Rewritten unless dryRun is true.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "layersShown": {
-                                    "type": "array",
-                                    "description": "The hidden or locked layers of the elements that were shown and unlocked for the change and put back afterwards. Not present with dryRun, nor for Layer.",
-                                    "items": {
-                                        "$ref": "#/AttributeIdArrayItem"
-                                    }
-                                },
-                                "viewsToRebuild": {
-                                    "$ref": "#/Databases",
-                                    "description": "Only for Layer: the sections, elevations, interior elevations and 3D documents that show elements of the deleted layer. The model elements they show are deleted with the layer and come back on the replacement layer when the view is rebuilt: Archicad does that when the view is opened, unless it is set to be rebuilt manually. To rebuild one at once, call ChangeWindow with its databaseId and then RebuildCurrentDatabase."
-                                },
-                                "warnings": {
-                                    "type": "array",
-                                    "description": "What still refers to the deleted attribute: elements from hotlinked modules, a tool default, Favorite, attribute or rule that could not be written. What could not be rewritten to the replacement keeps a copy of the deleted attribute, whose attribute id the last warning names. For Layer: a tool default or Favorite that is still on the deleted layer.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "attributeId",
-                                "replacementAttributeId",
-                                "elements",
-                                "hotlinkElements",
-                                "toolDefaults",
-                                "favorites",
-                                "attributes",
-                                "overrideRules"
-                            ]
+                            "$ref": "#/AttributeReplacementResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -13456,8 +13054,7 @@ GS::Optional<GS::UniString> GetUnusedAttributesCommand::GetInputParametersSchema
                 "type": "array",
                 "description": "The attribute types to check. All of them when omitted.",
                 "items": {
-                    "type": "string",
-                    "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
+                    "$ref": "#/AttributeUsageType"
                 },
                 "minItems": 1
             }
@@ -13475,47 +13072,7 @@ GS::Optional<GS::UniString> GetUnusedAttributesCommand::GetRawResponseSchema () 
                 "type": "array",
                 "description": "One item per checked attribute type, in the order layer, fill, surface, buildingMaterial, composite, profile, lineType, penTable, zoneCategory.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string",
-                            "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
-                        },
-                        "unusedAttributes": {
-                            "type": "array",
-                            "description": "The attributes of this type that no reference found by the command points at.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "attributeId": {
-                                        "$ref": "#/AttributeId"
-                                    },
-                                    "index": {
-                                        "type": "integer"
-                                    },
-                                    "name": {
-                                        "type": "string"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": ["attributeId", "index", "name"]
-                            }
-                        },
-                        "attributeCount": {
-                            "type": "integer",
-                            "description": "The number of attributes of this type in the project."
-                        },
-                        "usedCount": {
-                            "type": "integer",
-                            "description": "attributeCount minus the unused ones."
-                        },
-                        "archicadUsedCount": {
-                            "type": "integer",
-                            "description": "The number of attributes of this type in use as Archicad itself counts them, from the usedAttributes JSON query (see GetUsedAttributes). When it differs from usedCount, Archicad counts references this command does not see, or the other way round, so check the list before deleting. Missing when Archicad's report does not name the type."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["type", "unusedAttributes", "attributeCount", "usedCount"]
+                    "$ref": "#/UnusedAttributeTypeSummary"
                 }
             },
             "archicadReport": {
@@ -14149,8 +13706,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "The attribute types to check. All of them when omitted.",
                 "items": {
-                    "type": "string",
-                    "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
+                    "$ref": "#/AttributeUsageType"
                 },
                 "minItems": 1
             },
@@ -14158,8 +13714,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
                 "type": "array",
                 "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite), the graphic override rules (overrideRule), the Model View Options combinations (modelViewOption) and the attributes that refer to other attributes (attribute: composites, building materials, surfaces, MEP systems and profiles). All of them when omitted.",
                 "items": {
-                    "type": "string",
-                    "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute"]
+                    "$ref": "#/MissingAttributeSource"
                 },
                 "minItems": 1
             }
@@ -14177,130 +13732,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                 "type": "array",
                 "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules, then the Model View Options combinations, then the attributes that refer to other attributes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "source": {
-                            "type": "string",
-                            "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute"],
-                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, a graphic override rule, a Model View Options combination, or another attribute."
-                        },
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The placed element. Only for source element."
-                        },
-                        "elementType": {
-                            "type": "string",
-                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule, a Model View Options combination and an attribute."
-                        },
-                        "overrideRuleId": {
-                            "type": "object",
-                            "description": "The graphic override rule. Only for source overrideRule.",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
-                        },
-                        "overrideRuleName": {
-                            "type": "string",
-                            "description": "The name of the graphic override rule. Only for source overrideRule."
-                        },
-                        "modelViewOptionId": {
-                            "type": "object",
-                            "description": "The Model View Options combination, the id GetModelViewOptionDetails returns. Only for source modelViewOption.",
-                            "properties": {
-                                "guid": {
-                                    "$ref": "#/Guid"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
-                        },
-                        "modelViewOptionName": {
-                            "type": "string",
-                            "description": "The name of the Model View Options combination. Only for source modelViewOption."
-                        },
-                        "gdlOptionsName": {
-                            "type": "string",
-                            "description": "When the reference is a GDL parameter of the library part settings of a Model View Options combination, the name of that option set (the gdlOptions name GetModelViewOptionDetails returns). Missing otherwise."
-                        },
-                        "ownerAttributeType": {
-                            "type": "string",
-                            "enum": ["composite", "buildingMaterial", "surface", "mepSystem", "profile"],
-                            "description": "The type of the attribute that refers to the missing one. Only for source attribute."
-                        },
-                        "ownerAttributeId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The attribute that refers to the missing one. Only for source attribute."
-                        },
-                        "ownerAttributeName": {
-                            "type": "string",
-                            "description": "The name of that attribute. Only for source attribute."
-                        },
-                        "favoriteName": {
-                            "type": "string",
-                            "description": "The name of the Favorite. Only for source favorite."
-                        },
-                        "subElementType": {
-                            "type": "string",
-                            "description": "When the reference is in a sub-element the Favorite keeps apart (e.g. a stair's structure), the type of that sub-element. Missing otherwise."
-                        },
-                        "parentElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The element this one is part of (the curtain wall of a frame, the column of a segment, ...). Missing for an element that is not part of another one."
-                        },
-                        "parentElementType": {
-                            "type": "string"
-                        },
-                        "databaseId": {
-                            "$ref": "#/DatabaseId",
-                            "description": "The database the element is in, the same id GetDatabases returns. Only for source element."
-                        },
-                        "databaseType": {
-                            "type": "string",
-                            "description": "The type of that database, e.g. FloorPlan, Worksheet, Details, Section, Layout. Only for source element."
-                        },
-                        "storyIndex": {
-                            "type": "integer",
-                            "description": "The element's home story. Only for elements of the floor plan."
-                        },
-                        "storyName": {
-                            "type": "string",
-                            "description": "The name of that story. Only for elements of the floor plan."
-                        },
-                        "databaseName": {
-                            "type": "string",
-                            "description": "The name of the view or layout (e.g. the worksheet) the element is in. Missing for the floor plan."
-                        },
-                        "databaseReference": {
-                            "type": "string",
-                            "description": "The reference id of that view or layout. Missing when it has none."
-                        },
-                        "inHotlinkedModule": {
-                            "type": "boolean",
-                            "description": "True when the element comes from a hotlinked module: it has to be fixed in the module's file. Missing otherwise."
-                        },
-                        "attributeType": {
-                            "type": "string",
-                            "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
-                        },
-                        "index": {
-                            "type": "integer",
-                            "description": "The attribute index the element, tool default, Favorite, graphic override rule, Model View Options combination or attribute refers to, which no attribute of attributeType has."
-                        },
-                        "field": {
-                            "type": "string",
-                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride; for a Model View Options combination the field as GetModelViewOptionDetails names it (e.g. stair.stairSchemeSurfaceIndex); for an attribute the field as GetComposites, GetBuildingMaterials, GetSurfaces, GetMEPSystems or GetProfiles names it (e.g. skins[0].buildingMaterialId, cutFillIndex). Missing when gdlParameter is given."
-                        },
-                        "gdlParameter": {
-                            "type": "string",
-                            "description": "The library part parameter that holds the index, with the cell for an array parameter (e.g. gs_frame_mat, matArray[2][1]). Missing when field is given."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["source", "attributeType", "index"]
+                    "$ref": "#/MissingAttribute"
                 }
             },
             "checkedElementCount": {
@@ -14835,21 +14267,7 @@ GS::Optional<GS::UniString> RenameAttributesCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "The attributes to rename, of any type.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "newName": {
-                            "type": "string",
-                            "description": "The new name of the attribute. It must not be empty or the name of another attribute of the same type."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "newName"
-                    ]
+                    "$ref": "#/AttributeRename"
                 }
             }
         },

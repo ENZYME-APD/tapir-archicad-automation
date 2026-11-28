@@ -1995,11 +1995,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Apply only these panels of the Favorite's settings dialog, and nothing else of it - a positive list instead of keepFields. 'FloorPlanAndSection' applies the Floor Plan and Section settings: story visibility (Show on Stories), floor plan display and projection, the pens and line types of the cut, uncut, overhead and hidden lines (a Beam's reference axis too), the cut fill pens and the cover fill; geometry, size, cross section, building material, profile, layer and the other panels stay the target's. It is supported for Column and Beam elements; another element type gets a failed execution result and is left unchanged. 'ClassificationAndProperties' applies the Favorite's classifications, element categories (e.g. structural function) and property values, each still only when its own apply flag is not false; without it in the list none of them is applied. applySettings false turns 'FloorPlanAndSection' off. keepFields still applies. Default: the whole Favorite is applied as described for applySettings.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "FloorPlanAndSection",
-                        "ClassificationAndProperties"
-                    ]
+                    "$ref": "#/FavoriteSettingGroup"
                 },
                 "minItems": 1
             }
@@ -3954,20 +3950,8 @@ GS::Optional<GS::UniString> ChangeFavoriteCommand::GetInputParametersSchema () c
                 "description": "The name of the Favorite to change."
             },
             "source": {
-                "type": "object",
-                "description": "Where the new settings of the Favorite come from: exactly one of favoriteName and toolDefault.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Take the settings of this Favorite."
-                    },
-                    "toolDefault": {
-                        "type": "string",
-                        "enum": ["Opening"],
-                        "description": "Take the current settings of this tool."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/FavoriteSettingsSource",
+                "description": "Where the new settings of the Favorite come from: exactly one of favoriteName and toolDefault."
             }
         },
         "additionalProperties": false,
