@@ -7501,66 +7501,6 @@
             "propertyType"
         ]
     },
-    "ElementPropertyValueWithValue": {
-        "type": "object",
-        "description": "A property value with the identifiers of the property and its owner element.",
-        "properties": {
-            "elementId": {
-                "$ref": "#/ElementId"
-            },
-            "propertyId": {
-                "$ref": "#/PropertyId"
-            },
-            "propertyValue": {
-                "$ref": "#/PropertyValue"
-            },
-            "valueStatus": {
-                "type": "string",
-                "enum": [
-                    "Value",
-                    "Default",
-                    "UserUndefined"
-                ],
-                "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementId",
-            "propertyId",
-            "propertyValue"
-        ]
-    },
-    "ElementPropertyValueWithStatus": {
-        "type": "object",
-        "description": "A property value with the identifiers of the property and its owner element.",
-        "properties": {
-            "elementId": {
-                "$ref": "#/ElementId"
-            },
-            "propertyId": {
-                "$ref": "#/PropertyId"
-            },
-            "propertyValue": {
-                "$ref": "#/PropertyValue"
-            },
-            "valueStatus": {
-                "type": "string",
-                "enum": [
-                    "Value",
-                    "Default",
-                    "UserUndefined"
-                ],
-                "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementId",
-            "propertyId",
-            "valueStatus"
-        ]
-    },
     "ElementPropertyEditabilityResult": {
         "type": "object",
         "properties": {
@@ -8159,12 +8099,43 @@
         }
     },
     "ElementPropertyValue": {
+        "type": "object",
+        "description": "A property value with the identifiers of the property and its owner element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            },
+            "valueStatus": {
+                "type": "string",
+                "enum": [
+                    "Value",
+                    "Default",
+                    "UserUndefined"
+                ],
+                "description": "Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "propertyId"
+        ],
         "anyOf": [
             {
-                "$ref": "#/ElementPropertyValueWithValue"
+                "required": [
+                    "propertyValue"
+                ]
             },
             {
-                "$ref": "#/ElementPropertyValueWithStatus"
+                "required": [
+                    "valueStatus"
+                ]
             }
         ]
     },
