@@ -3,7 +3,8 @@
 The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the
 given ones are changed. The text height, pen, font and style apply to both texts of the marker.
 customText replaces the measured value by own text (with Autotext keys, as GetDetailsOfElements
-reads them in customText); textContent 'Measured' shows the value again. level gives a static
+reads them in customText); textContent 'Measured' shows the value again. textBox and secondTextBox
+give each text an angle, a background and a frame with their pens. level gives a static
 dimension a new value; staticLevel switches the Static checkbox and parentElementId sets a new
 owner element.
 """
@@ -24,7 +25,8 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyLevelDimensions', {'levelDimensio
     'needPlus': True,
     'bold': True,
     'italic': False,
-    'customText': 'FBOK'
+    'customText': 'FBOK',
+    'textBox': {'opaque': True, 'backgroundPen': 19, 'frame': True, 'framePen': 4}
 }]}))
 
 aclib.PrintJson (aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [levelDimension]}))

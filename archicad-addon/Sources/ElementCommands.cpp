@@ -4227,6 +4227,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         typeSpecificDetails.Add ("secondCustomText", texts.text2);
                     }
                 }
+                AddLevelDimensionTextBoxDetails (elem.levelDimension, typeSpecificDetails);
                 break;
             }
 

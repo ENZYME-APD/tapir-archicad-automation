@@ -9214,6 +9214,14 @@ static const char* LevelDimensionSettingsSchemaProperties = R"(
                     "secondCustomText": {
                         "type": "string",
                         "description": "The custom content of the second text, own text and Autotext keys as for customText. Sets secondTextContent to 'Custom'; fails together with secondTextContent 'Measured'. Optional parameter."
+                    },
+                    "textBox": {
+                        "$ref": "#/DimensionNote",
+                        "description": "The text box of the dimension text: its angle, background and frame (textAngle, opaque, frame, backgroundPen, framePen). Only the fields given change. A level dimension text has no leader line and no multiline alignment, so any other DimensionNote field is refused (#3059). The level dimension is read back, and an item fails, naming the field, when Archicad did not keep one. Optional parameter."
+                    },
+                    "secondTextBox": {
+                        "$ref": "#/DimensionNote",
+                        "description": "The text box of the second text, shown by the marker types with two texts, with the fields textBox takes. Optional parameter."
                     })";
 
 GS::UniString LevelDimensionContentTypeToString (API_NoteContentType contentType)
@@ -9259,6 +9267,59 @@ static GS::Optional<GS::ObjectState> ApplyLevelDimensionNoteContent (
         textChanged = true;
     }
     return {};
+}
+
+// The text box of a dimension text (#/DimensionNote), defined with the angle dimension commands below.
+static GS::ObjectState CreateDimensionTextBoxObjectState (const API_NoteType& note);
+static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, const GS::UniString& path, API_NoteType& note, API_NoteType* noteMask);
+static GS::UniString GetDimensionNoteNotKept (const GS::ObjectState& noteOS, const API_NoteType& wanted, const API_NoteType& got, const GS::UniString& path);
+
+// The #/DimensionNote fields the #/DimensionNote of a level dimension text does not take (#3133):
+// the alignment of a multiline text and the leader line, which the DevKit gives only to angle
+// dimensions, floor plan dimensions and hatches (API_NoteType) and Archicad refuses on level
+// dimensions (#3059). A level dimension text takes textAngle, opaque, frame, backgroundPen and framePen.
+static const char* const LevelDimensionTextBoxRefusedKeys[] = {
+    "justification", "anchorRow", "anchorPoint", "anchorAtTextEnd", "leaderPen", "leaderLineTypeId",
+    "leaderShape", "arrowType", "arrowVisible", "arrowPen", "arrowSize"
+};
+
+// Writes the text box given under key (textBox for the main text, note1; secondTextBox for the
+// second text, note2) to note, and marks it in noteMask when it is not nullptr.
+static GS::Optional<GS::ObjectState> ApplyLevelDimensionTextBox (const GS::ObjectState& parameters, const char* key, API_NoteType& note, API_NoteType* noteMask)
+{
+    const GS::ObjectState* textBox = parameters.Get (key);
+    if (textBox == nullptr) {
+        return {};
+    }
+    for (const char* refusedKey : LevelDimensionTextBoxRefusedKeys) {
+        if (textBox->Contains (refusedKey)) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("'") + key + "." + refusedKey +
+                "' cannot be set on a level dimension: its texts take only textAngle, opaque, frame, backgroundPen and framePen (no leader line, #3059).");
+        }
+    }
+    return ApplyDimensionNote (*textBox, key, note, noteMask);
+}
+
+void AddLevelDimensionTextBoxDetails (const API_LevelDimensionType& levelDimension, GS::ObjectState& details)
+{
+    details.Add ("textBox", CreateDimensionTextBoxObjectState (levelDimension.note1));
+    details.Add ("secondTextBox", CreateDimensionTextBoxObjectState (levelDimension.note2));
+}
+
+// Names (each with a leading space) the fields of textBox and secondTextBox in parameters that
+// Archicad did not keep: got is the level dimension read back, wanted the one written.
+static GS::UniString GetLevelDimensionTextBoxesNotKept (const GS::ObjectState& parameters, const API_LevelDimensionType& wanted, const API_LevelDimensionType& got)
+{
+    GS::UniString notKept;
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        notKept += GetDimensionNoteNotKept (*textBox, wanted.note1, got.note1, "textBox");
+    }
+    const GS::ObjectState* secondTextBox = parameters.Get ("secondTextBox");
+    if (secondTextBox != nullptr) {
+        notKept += GetDimensionNoteNotKept (*secondTextBox, wanted.note2, got.note2, "secondTextBox");
+    }
+    return notKept;
 }
 
 GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, LevelDimensionTexts& texts)
@@ -9417,6 +9478,16 @@ GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState
     if (mask != nullptr && textChanged) {
         ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.content);
         ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.contentUStr);
+    }
+
+    // The text box (angle, background and frame) of each text (#3133).
+    auto textBoxErr = ApplyLevelDimensionTextBox (parameters, "textBox", element.levelDimension.note1, mask != nullptr ? &mask->levelDimension.note1 : nullptr);
+    if (textBoxErr.HasValue ()) {
+        return textBoxErr;
+    }
+    textBoxErr = ApplyLevelDimensionTextBox (parameters, "secondTextBox", element.levelDimension.note2, mask != nullptr ? &mask->levelDimension.note2 : nullptr);
+    if (textBoxErr.HasValue ()) {
+        return textBoxErr;
     }
 
     return {};
@@ -9587,6 +9658,21 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
     // ACAPI_Element_Create reads the custom texts after this returns, so they are kept in the command.
     customTexts = {};
     return ApplyLevelDimensionSettings (parameters, element, nullptr, customTexts);
+}
+
+// The new level dimension is read back, so a text box setting Archicad did not keep fails the item
+// (#3133).
+GS::UniString CreateLevelDimensionsCommand::GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    if (!parameters.Contains ("textBox") && !parameters.Contains ("secondTextBox")) {
+        return {};
+    }
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    if (ACAPI_Element_Get (&created) != NoError) {
+        return " (the new level dimension could not be read back)";
+    }
+    return GetLevelDimensionTextBoxesNotKept (parameters, requestedElement.levelDimension, created.levelDimension);
 }
 
 CreateAngleDimensionsCommand::CreateAngleDimensionsCommand () :
@@ -9850,8 +9936,9 @@ static bool GetNoteArrowVisible (const API_NoteType& note)
 #endif
 }
 
-// The text box of a dimension text as #/DimensionNote returns it, with all of its fields.
-static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
+// The fields of a #/DimensionNote every dimension text has, also the texts of a level dimension:
+// its angle, background and frame (LevelDimensionTextBoxKeys).
+static GS::ObjectState CreateDimensionTextBoxObjectState (const API_NoteType& note)
 {
     GS::ObjectState os;
     os.Add ("textAngle", note.noteAngle);
@@ -9859,6 +9946,13 @@ static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
     os.Add ("frame", note.frame);
     os.Add ("backgroundPen", static_cast<Int32> (note.backgroundPen));
     os.Add ("framePen", static_cast<Int32> (note.framePen));
+    return os;
+}
+
+// The text box of a dimension text as #/DimensionNote returns it, with all of its fields.
+static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
+{
+    GS::ObjectState os = CreateDimensionTextBoxObjectState (note);
     os.Add ("justification", JustificationToString (note.just));
     os.Add ("anchorRow", note.rowAnchor == 1 ? "Last" : "First");
     os.Add ("anchorPoint", LabelAnchorPointToString (note.anchorPoint));
@@ -9873,7 +9967,7 @@ static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
     return os;
 }
 
-static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState& os, const char* name, const char* path, Int32 minimum, short& pen, bool& given)
+static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState& os, const char* name, const GS::UniString& path, Int32 minimum, short& pen, bool& given)
 {
     Int32 value = 0;
     given = os.Get (name, value);
@@ -9888,10 +9982,11 @@ static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState&
 }
 
 // Writes the fields of a #/DimensionNote given in noteOS to note (a dimension's API_NoteType), and
-// marks them in noteMask, the same note in the element mask, when it is not nullptr. The arrowhead
-// is written as a whole, as ApplyLabelLeaderLineSettableDetails does: Archicad drops a change of
-// one arrowData field unless all of them are masked. Returns the error response of an invalid value.
-static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, API_NoteType& note, API_NoteType* noteMask)
+// marks them in noteMask, the same note in the element mask, when it is not nullptr. path is the key
+// of noteOS (textBox, secondTextBox), named in the error messages. The arrowhead is written as a
+// whole, as ApplyLabelLeaderLineSettableDetails does: Archicad drops a change of one arrowData field
+// unless all of them are masked. Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, const GS::UniString& path, API_NoteType& note, API_NoteType* noteMask)
 {
     if (noteOS.Get ("textAngle", note.noteAngle) && noteMask != nullptr) {
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, noteAngle);
@@ -9904,14 +9999,14 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     }
 
     bool given = false;
-    auto penError = GetPenOfObjectState (noteOS, "backgroundPen", "textBox.backgroundPen", -1, note.backgroundPen, given);
+    auto penError = GetPenOfObjectState (noteOS, "backgroundPen", path + ".backgroundPen", -1, note.backgroundPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
     if (given && noteMask != nullptr) {
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, backgroundPen);
     }
-    penError = GetPenOfObjectState (noteOS, "framePen", "textBox.framePen", 1, note.framePen, given);
+    penError = GetPenOfObjectState (noteOS, "framePen", path + ".framePen", 1, note.framePen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -9922,7 +10017,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     GS::UniString name;
     if (noteOS.Get ("justification", name)) {
         if (!ParseNoteJustification (name, note.just)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.justification' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".justification' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, just);
@@ -9934,7 +10029,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         } else if (name == "Last") {
             note.rowAnchor = 1;
         } else {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorRow' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".anchorRow' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, rowAnchor);
@@ -9942,7 +10037,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     }
     if (noteOS.Get ("anchorPoint", name)) {
         if (!ParseNoteAnchorPoint (name, note.anchorPoint)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorPoint' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".anchorPoint' value: " + name);
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorPoint);
@@ -9952,7 +10047,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorAtTextEnd);
     }
 
-    penError = GetPenOfObjectState (noteOS, "leaderPen", "textBox.leaderPen", 1, note.leaderPen, given);
+    penError = GetPenOfObjectState (noteOS, "leaderPen", path + ".leaderPen", 1, note.leaderPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -9962,7 +10057,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     const GS::ObjectState* lineTypeId = noteOS.Get ("leaderLineTypeId");
     if (lineTypeId != nullptr) {
         if (!ResolveAttributeIndex (*lineTypeId, API_LinetypeID, note.leaderLineType)) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textBox.leaderLineTypeId' is not an existing line type.");
+            return CreateErrorResponse (APIERR_BADPARS, "'" + path + ".leaderLineTypeId' is not an existing line type.");
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderLineType);
@@ -9974,7 +10069,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
         } else if (name == "Splinear") {
             note.leaderShape = API_Splinear;
         } else {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.leaderShape' value: " + name + " (a dimension text takes Segmented or Splinear).");
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".leaderShape' value: " + name + " (a dimension text takes Segmented or Splinear).");
         }
         if (noteMask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderShape);
@@ -9984,7 +10079,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     bool arrowTouched = false;
     if (noteOS.Get ("arrowType", name)) {
         if (!ParseArrowTypeName (name, note.arrowData.arrowType)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.arrowType' value: " + name);
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown '" + path + ".arrowType' value: " + name);
         }
         arrowTouched = true;
     }
@@ -9997,7 +10092,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
 #endif
         arrowTouched = true;
     }
-    penError = GetPenOfObjectState (noteOS, "arrowPen", "textBox.arrowPen", 1, note.arrowData.arrowPen, given);
+    penError = GetPenOfObjectState (noteOS, "arrowPen", path + ".arrowPen", 1, note.arrowData.arrowPen, given);
     if (penError.HasValue ()) {
         return penError;
     }
@@ -10005,7 +10100,7 @@ static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& 
     double arrowSize = 0.0;
     if (noteOS.Get ("arrowSize", arrowSize)) {
         if (arrowSize <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textBox.arrowSize' must be greater than 0.");
+            return CreateErrorResponse (APIERR_BADPARS, "'" + path + ".arrowSize' must be greater than 0.");
         }
         note.arrowData.arrowSize = arrowSize;
         arrowTouched = true;
@@ -10229,7 +10324,7 @@ static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::Obje
 
     const GS::ObjectState* textBox = parameters.Get ("textBox");
     if (textBox != nullptr) {
-        auto noteError = ApplyDimensionNote (*textBox, angleDimension.note, mask != nullptr ? &mask->angleDimension.note : nullptr);
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", angleDimension.note, mask != nullptr ? &mask->angleDimension.note : nullptr);
         if (noteError.HasValue ()) {
             return noteError;
         }
@@ -10719,6 +10814,7 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             if ((item.Contains ("secondTextContent") || item.Contains ("secondCustomText")) && changed.levelDimension.note2.contentType != element.levelDimension.note2.contentType) {
                 notApplied += " secondTextContent";
             }
+            notApplied += GetLevelDimensionTextBoxesNotKept (item, element.levelDimension, changed.levelDimension);
             // The custom text itself is not compared: Archicad may write an Autotext key differently
             // from how it was given. GetDetailsOfElements reads it back in customText.
             if (!notApplied.IsEmpty ()) {
