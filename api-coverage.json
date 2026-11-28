@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 11:31 UTC",
+ "generatedAt": "2026-11-28 13:06 UTC",
  "versions": [
   25,
   26,
@@ -16157,12 +16157,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 3036,
-     "title": "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectSetting_GetProjectNotes",
@@ -16274,12 +16269,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 3036,
-     "title": "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectSettings_GetSpecFolder",

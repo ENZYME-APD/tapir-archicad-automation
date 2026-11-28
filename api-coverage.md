@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1447 | 1441 | 6 |  |  |  | 11 | 369 |
 
-Archicad 25–30 DevKits; updated 2026-11-28 11:31 UTC.
+Archicad 25–30 DevKits; updated 2026-11-28 13:06 UTC.
 
 | | Status |
 |---|---|
@@ -1005,12 +1005,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectSetting_GetExportTolerance` – Returns information on curve tracing parameters. <sub>(was `APIEnv_GetExportToleranceID`)</sub>
 - ✅ `ACAPI_ProjectSetting_GetLast3DDefLevels` – Retrieves the 3D default levels for the construction elems. <sub>(was `ACAPI_Database_GetLast3DDefLevels`, `APIDb_GetLast3DDefLevelsID`)</sub>
 - ✅ `ACAPI_ProjectSetting_GetOffset` – Returns the offset of the origin of the virtual coordinate system. <sub>(was `APIDb_GetOffsetID`)</sub>
-- ✅ `ACAPI_ProjectSetting_GetPreferences` <sub>AC27–30</sub> – Returns the preferences data. — [#3036](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3036 "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages")
+- ✅ `ACAPI_ProjectSetting_GetPreferences` <sub>AC27–30</sub> – Returns the preferences data.
 - ✅ `ACAPI_ProjectSetting_GetProjectNotes` – Returns information about the 'Project Info' dialog. <sub>(was `APIEnv_GetProjectNotesID`)</sub>
 - ✅ `ACAPI_ProjectSetting_GetSplineMaxDist` – Returns the maximal distance of a spline segment and a set of coordinates. <sub>(was `APIAny_GetSplineMaxDistID`)</sub>
 - ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub>
 - ✅ `ACAPI_ProjectSetting_SetLast3DDefLevels` – Sets the 3D default levels for the passed construction element types. <sub>(was `ACAPI_Database_SetLast3DDefLevels`, `APIDb_SetLast3DDefLevelsID`)</sub>
-- ✅ `ACAPI_ProjectSetting_SetPreferences` <sub>AC27–30</sub> – Adjusts the preferences. — [#3036](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/3036 "GetProjectPreferences / SetProjectPreferences: add the five missing preferences pages")
+- ✅ `ACAPI_ProjectSetting_SetPreferences` <sub>AC27–30</sub> – Adjusts the preferences.
 
 ## Dialog
 
