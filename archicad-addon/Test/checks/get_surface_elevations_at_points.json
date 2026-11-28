@@ -1,0 +1,228 @@
+{
+  "title": "Surface elevations at XY points preserve slopes, holes, overlapping elements and the levels of one element",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [
+    "Mesh",
+    "Slab",
+    "Morph"
+  ],
+  "steps": [
+    {
+      "id": "Create an eight metre mesh rising one metre per metre along X with an interior hole",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "level": 0,
+            "skirtType": "SolidBodyWithSkirt",
+            "skirtLevel": 8,
+            "polygonCoordinates": [
+              { "x": 400, "y": 400, "z": -3 },
+              { "x": 408, "y": 400, "z": 5 },
+              { "x": 408, "y": 408, "z": 5 },
+              { "x": 400, "y": 408, "z": -3 }
+            ],
+            "holes": [
+              {
+                "polygonCoordinates": [
+                  { "x": 405, "y": 405, "z": 2 },
+                  { "x": 407, "y": 405, "z": 4 },
+                  { "x": 407, "y": 407, "z": 4 },
+                  { "x": 405, "y": 407, "z": 2 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "mesh": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "Create two partially overlapping slabs with the top reference plane at 4 m",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "floorIndex": 0,
+            "level": 4,
+            "thickness": 0.35,
+            "referencePlaneLocation": "Top",
+            "structureType": "Basic",
+            "polygonCoordinates": [
+              { "x": 400, "y": 400 },
+              { "x": 403, "y": 400 },
+              { "x": 403, "y": 403 },
+              { "x": 400, "y": 403 }
+            ]
+          },
+          {
+            "floorIndex": 0,
+            "level": 4,
+            "thickness": 0.35,
+            "referencePlaneLocation": "Top",
+            "structureType": "Basic",
+            "polygonCoordinates": [
+              { "x": 401, "y": 401 },
+              { "x": 404, "y": 401 },
+              { "x": 404, "y": 404 },
+              { "x": 401, "y": 404 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "slabA": "elements[0].elementId.guid",
+        "slabB": "elements[1].elementId.guid"
+      }
+    },
+    {
+      "id": "Create one C-shaped solid with two upward-facing shelves",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 412, "y": 400, "z": 0 },
+            "body": {
+              "bodyType": "Solid",
+              "vertices": [
+                { "x": 0, "y": 0, "z": 0 },
+                { "x": 3, "y": 0, "z": 0 },
+                { "x": 3, "y": 0, "z": 1 },
+                { "x": 1, "y": 0, "z": 1 },
+                { "x": 1, "y": 0, "z": 2 },
+                { "x": 3, "y": 0, "z": 2 },
+                { "x": 3, "y": 0, "z": 3 },
+                { "x": 0, "y": 0, "z": 3 },
+                { "x": 0, "y": 1, "z": 0 },
+                { "x": 3, "y": 1, "z": 0 },
+                { "x": 3, "y": 1, "z": 1 },
+                { "x": 1, "y": 1, "z": 1 },
+                { "x": 1, "y": 1, "z": 2 },
+                { "x": 3, "y": 1, "z": 2 },
+                { "x": 3, "y": 1, "z": 3 },
+                { "x": 0, "y": 1, "z": 3 }
+              ],
+              "polygons": [
+                {
+                  "vertexIds": [ 0, 1, 2, 3, 4, 5, 6, 7 ]
+                },
+                {
+                  "vertexIds": [ 15, 14, 13, 12, 11, 10, 9, 8 ]
+                },
+                {
+                  "vertexIds": [ 0, 8, 9, 1 ]
+                },
+                {
+                  "vertexIds": [ 1, 9, 10, 2 ]
+                },
+                {
+                  "vertexIds": [ 2, 10, 11, 3 ]
+                },
+                {
+                  "vertexIds": [ 3, 11, 12, 4 ]
+                },
+                {
+                  "vertexIds": [ 4, 12, 13, 5 ]
+                },
+                {
+                  "vertexIds": [ 5, 13, 14, 6 ]
+                },
+                {
+                  "vertexIds": [ 6, 14, 15, 7 ]
+                },
+                {
+                  "vertexIds": [ 7, 15, 8, 0 ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "save": {
+        "shelves": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "Sample the selected elements together",
+      "command": "GetSurfaceElevationsAtPoints",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${slabB}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${mesh}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${shelves}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${slabA}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${mesh}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "00000000-0000-0000-0000-00000000BEEF"
+            }
+          }
+        ],
+        "points": [
+          { "x": 402, "y": 402 },
+          { "x": 406, "y": 406 },
+          { "x": 409, "y": 409 },
+          { "x": 414, "y": 400.5 },
+          { "x": 414, "y": 400.5 },
+          { "x": 408, "y": 404 },
+          { "x": 400.5, "y": 400.5 },
+          { "x": 403.5, "y": 403.5 },
+          { "x": 408.00000005, "y": 404 }
+        ]
+      },
+      "expect": [
+        { "path": "unit", "eq": "m" },
+        { "path": "zReference", "eq": "projectZero" },
+        { "path": "samples", "len": 9 },
+        { "path": "samples[0].hits", "len": 3, "name": "One mesh top and two distinct slab tops at the same elevation" },
+        { "path": "samples[0].hits[0].elementId.guid", "eq": "${mesh}" },
+        { "path": "samples[0].hits[0].z", "approx": -1, "tol": 1e-06, "name": "Interpolate the sloping surface across the diagonal" },
+        { "path": "samples[0].hits[1].z", "approx": 4, "tol": 1e-06, "name": "First slab top, without the soffit" },
+        { "path": "samples[0].hits[2].z", "approx": 4, "tol": 1e-06, "name": "Second slab top at the same level" },
+        {"path": "samples[6].hits[1].elementId.guid", "eq": "${slabA}", "name": "Identify the slab at a point on its side of the overlap"},
+        {"path": "samples[7].hits[1].elementId.guid", "eq": "${slabB}", "name": "Identify the slab at a point on its side of the overlap"},
+        { "path": "samples[1].hits", "len": 0, "name": "Through-hole has no surface" },
+        { "path": "samples[2].hits", "len": 0, "name": "Point outside all elements" },
+        { "path": "samples[3].hits", "len": 2, "name": "Both top faces of one source, without downward or vertical faces" },
+        { "path": "samples[3].hits[0].z", "approx": 1, "tol": 1e-06, "name": "Top of lower shelf" },
+        { "path": "samples[3].hits[1].z", "approx": 3, "tol": 1e-06, "name": "Top of upper shelf" },
+        { "path": "samples[3].hits[0].elementId.guid", "eq": "${shelves}" },
+        { "path": "samples[3].hits[1].elementId.guid", "eq": "${shelves}" },
+        { "path": "samples[4].hits", "len": 2, "name": "Duplicate XY retains its place in the profile" },
+        { "path": "samples[4].hits[1].z", "approx": 3, "tol": 1e-06, "name": "Repeated point reads the upper shelf again" },
+        { "path": "samples[5].point.x", "approx": 408, "tol": 1e-06, "name": "Input order is kept" },
+        { "path": "samples[5].hits", "len": 1, "name": "An outer edge still belongs to its top face" },
+        { "path": "samples[5].hits[0].z", "approx": 5, "tol": 1e-06, "name": "Mesh elevation on its outside edge" },
+        { "path": "samples[8].hits", "len": 0, "name": "Even just outside the mesh, the sloping plane is not extrapolated" },
+        { "path": "elementErrors", "len": 1 },
+        { "path": "elementErrors[0].elementId.guid", "eq": "00000000-0000-0000-0000-00000000BEEF" },
+        { "path": "elementErrors[0].error.code", "exists": true }
+      ]
+    }
+  ]
+}

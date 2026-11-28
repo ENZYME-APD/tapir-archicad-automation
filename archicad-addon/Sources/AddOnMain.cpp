@@ -1588,6 +1588,10 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.1",
             "Returns the custom profiles walls, beams and columns use, with the values the element gives them: the width and height of the stretched profile and the value of each profile modifier, measured on the stretched profile of the element, or on its original profile when Archicad returns the stretched one without modifiers (one per Profile wall, one per Profile segment of a beam or column). Read only: the Archicad API has no function that writes an element's modifier values or stretch."
         );
+        err |= RegisterCommand<GetSurfaceElevationsAtPointsCommand> (
+            elementCommands, "2.0.2",
+            "Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies. Returns all distinct elevations above project zero with their element IDs, including several levels of one element, without sending the body geometry. Hole interiors and points outside the surfaces have no hits. Reports unreadable elements separately. Pass subelement IDs for a hierarchy whose bodies belong to its parts."
+        );
         AddCommandGroup (elementCommands);
     }
 
