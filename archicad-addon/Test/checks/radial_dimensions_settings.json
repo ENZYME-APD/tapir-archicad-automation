@@ -1,0 +1,183 @@
+{
+  "title": "CreateRadialDimensions and the new ModifyRadialDimensions write the prefix, text content, onlyDimensionText, marker and text box of a radial dimension, read them back and refuse bad values (#3133)",
+  "minTapir": "2.0.2",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a circle with a 2 m radius (centre x 990, y 900)",
+      "command": "CreateCircles",
+      "params": { "circlesData": [ { "origin": { "x": 990.0, "y": 900.0 }, "radius": 2.0, "floorInd": 0 } ] },
+      "save": { "c": "elements[0].elementId.guid" },
+      "expect": [ { "path": "elements[0].elementId.guid", "exists": true, "name": "circle created" } ]
+    },
+    {
+      "id": "dimension the circle with a prefix, a marker and a framed, opaque text box",
+      "command": "CreateRadialDimensions",
+      "params": {
+        "radialDimensionsData": [
+          {
+            "elementId": { "guid": "${c}" },
+            "dimensionLineEnd": { "x": 993.0, "y": 900.0 },
+            "linePen": 2,
+            "textPen": 2,
+            "textHeight": 2.0,
+            "onlyDimensionText": false,
+            "prefix": "R=",
+            "marker": { "type": "FullArrow30", "pen": 2, "size": 2.0 },
+            "textBox": { "frame": true, "framePen": 2, "opaque": true, "backgroundPen": 1 }
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "created, and the command read every setting back (else the error names the ones Archicad did not keep)" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "RadialDimension", "name": "a radial dimension" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 2.0, "name": "measures the 2 m radius" },
+        { "path": "detailsOfElements[0].details.prefix", "eq": "R=", "name": "prefix kept" },
+        { "path": "detailsOfElements[0].details.onlyDimensionText", "eq": false, "name": "dimension line shown" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "FullArrow30", "name": "marker type" },
+        { "path": "detailsOfElements[0].details.marker.pen", "eq": 2, "name": "marker pen" },
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": true, "name": "text framed" },
+        { "path": "detailsOfElements[0].details.textBox.framePen", "eq": 2, "name": "frame pen" },
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": true, "name": "text opaque" },
+        { "path": "detailsOfElements[0].details.textBox.backgroundPen", "eq": 1, "name": "background pen" },
+        { "path": "detailsOfElements[0].details.textBox.leaderLineTypeId.guid", "exists": true, "name": "leader line type read" },
+        { "path": "detailsOfElements[0].details.textBox.textAngle", "exists": true, "name": "text angle read" }
+      ]
+    },
+    {
+      "id": "change the settings with ModifyRadialDimensions",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "params": {
+        "radialDimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "linePen": 3,
+            "textPen": 4,
+            "textDirection": "Horizontal",
+            "showOrigin": true,
+            "prefix": "Rad",
+            "customText": "two metres",
+            "marker": { "type": "SlashLine45", "size": 3.0 },
+            "textBox": { "frame": false, "justification": "Right" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the change: the given settings changed, the others kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePen", "eq": 3, "name": "line pen changed" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 4, "name": "text pen changed" },
+        { "path": "detailsOfElements[0].details.textDirection", "eq": "Horizontal", "name": "text horizontal" },
+        { "path": "detailsOfElements[0].details.showOrigin", "eq": true, "name": "centre mark on" },
+        { "path": "detailsOfElements[0].details.prefix", "eq": "Rad", "name": "prefix changed" },
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Custom", "name": "custom text" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "SlashLine45", "name": "marker type changed" },
+        { "path": "detailsOfElements[0].details.marker.size", "approx": 3.0, "name": "marker size changed" },
+        { "path": "detailsOfElements[0].details.marker.pen", "eq": 2, "name": "marker pen kept" },
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": false, "name": "frame off" },
+        { "path": "detailsOfElements[0].details.textBox.framePen", "eq": 2, "name": "frame pen kept" },
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": true, "name": "background kept" },
+        { "path": "detailsOfElements[0].details.textBox.justification", "eq": "Right", "name": "text right aligned" },
+        { "path": "detailsOfElements[0].details.radius", "approx": 2.0, "name": "still measures 2 m" },
+        { "path": "detailsOfElements[0].details.ownerElementId.guid", "eq": "${c}", "name": "still linked to the circle" }
+      ]
+    },
+    {
+      "id": "back to the measured radius, only the dimension text",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "params": {
+        "radialDimensionsWithDetails": [ { "elementId": { "guid": "${d}" }, "textContent": "Measured", "onlyDimensionText": true } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "textContent Measured and onlyDimensionText accepted" }
+      ]
+    },
+    {
+      "id": "read the measured, text-only dimension",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Measured", "name": "measured radius shown" },
+        { "path": "detailsOfElements[0].details.onlyDimensionText", "eq": true, "name": "only the text shown" },
+        { "path": "detailsOfElements[0].details.prefix", "eq": "Rad", "name": "prefix kept" }
+      ]
+    },
+    {
+      "id": "a custom text with textContent Measured is refused",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "params": {
+        "radialDimensionsWithDetails": [ { "elementId": { "guid": "${d}" }, "textContent": "Measured", "customText": "x" } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "contradicting text settings refused" }
+      ]
+    },
+    {
+      "id": "a line type that does not exist is refused",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "params": {
+        "radialDimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textBox": { "leaderLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown leader line type refused" }
+      ]
+    },
+    {
+      "id": "the circle is not a radial dimension",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "params": {
+        "radialDimensionsWithDetails": [ { "elementId": { "guid": "${c}" }, "linePen": 5 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "another element type refused" }
+      ]
+    },
+    {
+      "id": "an angle dimension's text direction is refused",
+      "command": "ModifyRadialDimensions",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "radialDimensionsWithDetails": [ { "elementId": { "guid": "${d}" }, "textDirection": "Parallel" } ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "textDirection Parallel refused by the schema" }
+      ]
+    },
+    {
+      "id": "the refused changes changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textContent", "eq": "Measured", "name": "still the measured radius" },
+        { "path": "detailsOfElements[0].details.textDirection", "eq": "Horizontal", "name": "text direction still Horizontal" },
+        { "path": "detailsOfElements[0].details.linePen", "eq": 3, "name": "line pen still 3" }
+      ]
+    }
+  ]
+}

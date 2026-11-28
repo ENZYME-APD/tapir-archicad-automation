@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <initializer_list>
 #include <limits>
 #include <map>
@@ -1709,6 +1710,31 @@ static GS::UniString RadialDimensionTextDirectionName (API_DirID textWay)
     }
 }
 
+// The prefix of a radial dimension (the R of R 7.55, #3133). Archicad fills a GS::UniString through
+// prefixUStr only when the caller points it to one before ACAPI_Element_Get, as with the content of
+// dimension notes (contentUStr), so the dimension is read again with it; the char prefix (at most 8
+// bytes, not always terminated) is used when that gives nothing.
+static GS::UniString GetRadialDimensionPrefix (const API_Element& element)
+{
+    GS::UniString prefix;
+    API_Element reread = {};
+    reread.header.guid = element.header.guid;
+    reread.radialDimension.prefixUStr = &prefix;
+    const bool read = ACAPI_Element_Get (&reread) == NoError;
+    if (read && reread.radialDimension.prefixUStr == &prefix && !prefix.IsEmpty ()) {
+        return prefix;
+    }
+    if (read && reread.radialDimension.prefixUStr != nullptr && reread.radialDimension.prefixUStr != &prefix) {
+        return *reread.radialDimension.prefixUStr;
+    }
+    const API_RadialDimensionType& radial = read ? reread.radialDimension : element.radialDimension;
+    USize length = 0;
+    while (length < sizeof (radial.prefix) && radial.prefix[length] != '\0') {
+        ++length;
+    }
+    return GS::UniString (radial.prefix, length, CC_UTF8);
+}
+
 // Defined OUTSIDE the anonymous namespace, like AddDimensionDetails (#2660).
 // The DevKit does not document how a radial dimension stores what it measures: API_RadialDimensionType
 // has no centre field, and the meaning of base.loc and base.base.inIndex is only shown in an image
@@ -1759,6 +1785,8 @@ void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& ele
     details.Add ("textContent", radial.note.contentType == API_NoteContent_Custom ? "Custom" : "Measured");
     details.Add ("showOrigin", radial.showOrigo);
     details.Add ("onlyDimensionText", radial.onlyDimensionText);
+    details.Add ("prefix", GetRadialDimensionPrefix (element));
+    details.Add ("textBox", CreateDimensionNoteObjectState (radial.note));
 }
 
 // ============================================================================
@@ -1867,6 +1895,281 @@ static bool RadialDimensionTextDirectionFromName (const GS::UniString& name, API
     return false;
 }
 
+// The settings CreateRadialDimensions and ModifyRadialDimensions both take, with the keys
+// GetDetailsOfElements returns, written by ApplyRadialDimensionSettings (#3133).
+static const char* RadialDimensionSettingsSchemaProperties = R"(
+                    "linePen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension line."
+                    },
+                    "marker": {
+                        "$ref": "#/DimensionMarker",
+                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "minimum": 0, "exclusiveMinimum": true,
+                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension text."
+                    },
+                    "textPosition": {
+                        "type": "string",
+                        "enum": ["Above", "In", "Below"],
+                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
+                    },
+                    "textDirection": {
+                        "type": "string",
+                        "enum": ["Horizontal", "Vertical", "Radial"],
+                        "description": "Optional. The direction of the text (textWay)."
+                    },
+                    "textContent": {
+                        "type": "string",
+                        "enum": ["Measured", "Custom"],
+                        "description": "Optional. Whether the text shows the measured radius or a custom text (note.contentType), as GetDetailsOfElements returns it. Custom without customText keeps the custom text the dimension has; Measured cannot be given with customText."
+                    },
+                    "customText": {
+                        "type": "string",
+                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
+                    },
+                    "showOrigin": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
+                    },
+                    "onlyDimensionText": {
+                        "type": "boolean",
+                        "description": "Optional. Whether only the dimension text is shown, without the dimension line (onlyDimensionText)."
+                    },
+                    "prefix": {
+                        "type": "string",
+                        "description": "Optional. The text shown before the measured radius, e.g. R in R 7.55 (prefix, prefixUStr); an empty string removes it. GetDetailsOfElements returns it as prefix."
+                    },
+                    "textBox": {
+                        "$ref": "#/DimensionNote",
+                        "description": "Optional. The text box of the dimension text: angle, background, frame, alignment and the leader line style. Only the fields given change. The dimension is read back, and the item fails, naming the field, when Archicad did not keep one."
+                    })";
+
+// Writes the settings of RadialDimensionSettingsSchemaProperties given in parameters to
+// element.radialDimension, and sets their bits in mask when it is not nullptr (ModifyRadialDimensions;
+// CreateRadialDimensions passes nullptr). customText and prefix keep the strings note.contentUStr and
+// prefixUStr point to: they must live until ACAPI_Element_Create or ACAPI_Element_Change is called.
+// Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ApplyRadialDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, GS::UniString& customText, GS::UniString& prefix)
+{
+    API_RadialDimensionType& radial = element.radialDimension;
+
+    Int32 linePen = 0;
+    if (parameters.Get ("linePen", linePen)) {
+        if (linePen < 1 || linePen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'linePen' must be between 1 and 255.");
+        }
+        radial.linPen = static_cast<short> (linePen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, linPen);
+        }
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        GS::UniString markerTypeName;
+        if (marker->Get ("type", markerTypeName)) {
+            API_MarkerID markerType = APIMark_CrossLine;
+            if (!ParseDimensionMarkerName (markerTypeName, markerType)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown marker 'type' value: " + markerTypeName);
+            }
+            radial.markerData.markerType = markerType;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerType);
+            }
+        }
+        Int32 markerPen = 0;
+        if (marker->Get ("pen", markerPen)) {
+            if (markerPen < 1 || markerPen > 255) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'pen' must be between 1 and 255.");
+            }
+            radial.markerData.markerPen = static_cast<short> (markerPen);
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerPen);
+            }
+        }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
+            }
+            radial.markerData.markerSize = markerSize;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerSize);
+            }
+        }
+    }
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0.");
+        }
+        radial.note.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.noteSize);
+        }
+    }
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255.");
+        }
+        radial.note.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.notePen);
+        }
+    }
+    GS::UniString textPosition;
+    if (parameters.Get ("textPosition", textPosition)) {
+        if (!RadialDimensionTextPositionFromName (textPosition, radial.textPos)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid textPosition: it must be Above, In or Below.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, textPos);
+        }
+    }
+    GS::UniString textDirection;
+    if (parameters.Get ("textDirection", textDirection)) {
+        if (!RadialDimensionTextDirectionFromName (textDirection, radial.textWay)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid textDirection: it must be Horizontal, Vertical or Radial.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, textWay);
+        }
+    }
+    if (parameters.Get ("showOrigin", radial.showOrigo) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, showOrigo);
+    }
+    if (parameters.Get ("onlyDimensionText", radial.onlyDimensionText) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, onlyDimensionText);
+    }
+
+    // The custom text is passed through contentUStr, as the DevKit's Element_Test does in
+    // Do_RadialDimension_Edit.
+    GS::UniString textContent;
+    const bool hasTextContent = parameters.Get ("textContent", textContent);
+    if (hasTextContent && textContent != "Measured" && textContent != "Custom") {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid textContent: it must be Measured or Custom.");
+    }
+    customText.Clear ();
+    const bool hasCustomText = parameters.Get ("customText", customText);
+    if (hasCustomText && hasTextContent && textContent == "Measured") {
+        return CreateErrorResponse (APIERR_BADPARS, "'customText' cannot be given with textContent Measured.");
+    }
+    if (hasTextContent || hasCustomText) {
+        radial.note.contentType = (hasCustomText || textContent == "Custom") ? API_NoteContent_Custom : API_NoteContent_Measured;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.contentType);
+        }
+    }
+    if (hasCustomText) {
+        radial.note.contentUStr = &customText;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.content);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.contentUStr);
+        }
+    }
+
+    // The prefix is passed through prefixUStr, and as many of its whole characters as fit in the
+    // 8 bytes of the char prefix are written there too.
+    prefix.Clear ();
+    if (parameters.Get ("prefix", prefix)) {
+        GS::UniString shortPrefix = prefix;
+        while (!shortPrefix.IsEmpty () && std::strlen (shortPrefix.ToCStr (CC_UTF8).Get ()) >= sizeof (radial.prefix)) {
+            shortPrefix = GS::UniString (shortPrefix.GetSubstring (0, shortPrefix.GetLength () - 1));
+        }
+        std::memset (radial.prefix, 0, sizeof (radial.prefix));
+        const auto shortPrefixBytes = shortPrefix.ToCStr (CC_UTF8);
+        std::memcpy (radial.prefix, shortPrefixBytes.Get (), std::strlen (shortPrefixBytes.Get ()));
+        radial.prefixUStr = &prefix;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, prefix);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, prefixUStr);
+        }
+    }
+
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", radial.note, mask != nullptr ? &mask->radialDimension.note : nullptr);
+        if (noteError.HasValue ()) {
+            return noteError;
+        }
+    }
+    return {};
+}
+
+// Names the settings of RadialDimensionSettingsSchemaProperties given in parameters that Archicad
+// did not keep, each as a sentence with a leading space and the value it stored: wanted is the
+// dimension as written, got the one read back (with its guid, for the prefix).
+static GS::UniString GetRadialDimensionSettingsNotKept (const GS::ObjectState& parameters, const API_Element& wanted, const API_Element& got)
+{
+    const API_RadialDimensionType& want = wanted.radialDimension;
+    const API_RadialDimensionType& have = got.radialDimension;
+    GS::UniString notKept;
+    if (parameters.Contains ("linePen") && have.linPen != want.linPen) {
+        notKept += GS::UniString::Printf (" linePen is %d.", (int) have.linPen);
+    }
+    if (parameters.Contains ("textPen") && have.note.notePen != want.note.notePen) {
+        notKept += GS::UniString::Printf (" textPen is %d.", (int) have.note.notePen);
+    }
+    if (parameters.Contains ("textHeight") && std::fabs (have.note.noteSize - want.note.noteSize) > 1e-6) {
+        notKept += GS::UniString::Printf (" textHeight is %g.", have.note.noteSize);
+    }
+    if (parameters.Contains ("textPosition") && have.textPos != want.textPos) {
+        notKept += " textPosition is " + RadialDimensionTextPositionName (have.textPos) + ".";
+    }
+    if (parameters.Contains ("textDirection") && have.textWay != want.textWay) {
+        notKept += " textDirection is " + RadialDimensionTextDirectionName (have.textWay) + ".";
+    }
+    if (parameters.Contains ("showOrigin") && have.showOrigo != want.showOrigo) {
+        notKept += have.showOrigo ? GS::UniString (" showOrigin is true.") : GS::UniString (" showOrigin is false.");
+    }
+    if (parameters.Contains ("onlyDimensionText") && have.onlyDimensionText != want.onlyDimensionText) {
+        notKept += have.onlyDimensionText ? GS::UniString (" onlyDimensionText is true.") : GS::UniString (" onlyDimensionText is false.");
+    }
+    if (parameters.Contains ("customText") && have.note.contentType != API_NoteContent_Custom) {
+        notKept += " the text is the measured radius, not customText.";
+    } else if (parameters.Contains ("textContent") && have.note.contentType != want.note.contentType) {
+        notKept += have.note.contentType == API_NoteContent_Custom ? GS::UniString (" textContent is Custom.") : GS::UniString (" textContent is Measured.");
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        if (marker->Contains ("type") && have.markerData.markerType != want.markerData.markerType) {
+            notKept += " marker.type is " + DimensionMarkerName (have.markerData.markerType) + ".";
+        }
+        if (marker->Contains ("pen") && have.markerData.markerPen != want.markerData.markerPen) {
+            notKept += GS::UniString::Printf (" marker.pen is %d.", (int) have.markerData.markerPen);
+        }
+        if (marker->Contains ("size") && std::fabs (have.markerData.markerSize - want.markerData.markerSize) > 1e-6) {
+            notKept += GS::UniString::Printf (" marker.size is %g.", have.markerData.markerSize);
+        }
+    }
+    GS::UniString wantedPrefix;
+    if (parameters.Get ("prefix", wantedPrefix)) {
+        const GS::UniString keptPrefix = GetRadialDimensionPrefix (got);
+        if (keptPrefix != wantedPrefix) {
+            notKept += " prefix is '" + keptPrefix + "'.";
+        }
+    }
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        const GS::UniString textBoxNotKept = GetDimensionNoteNotKept (*textBox, want.note, have.note, "textBox");
+        if (!textBoxNotKept.IsEmpty ()) {
+            notKept += " it did not keep" + textBoxNotKept + ".";
+        }
+    }
+    return notKept;
+}
+
 CreateRadialDimensionsCommand::CreateRadialDimensionsCommand () :
     CreateElementsCommandBase ("CreateRadialDimensions", API_RadialDimensionID, "radialDimensionsData")
 {
@@ -1874,7 +2177,7 @@ CreateRadialDimensionsCommand::CreateRadialDimensionsCommand () :
 
 GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "radialDimensionsData": {
@@ -1915,46 +2218,7 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                     "layerIndex": {
                         "type": "integer",
                         "description": "Optional. Layer attribute index to place the dimension on. By default the layer of the favorite or the Radial Dimension tool default is used."
-                    },
-                    "linePen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Optional. The pen of the dimension line."
-                    },
-                    "marker": {
-                        "$ref": "#/DimensionMarker",
-                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
-                    },
-                    "textHeight": {
-                        "type": "number",
-                        "minimum": 0, "exclusiveMinimum": true,
-                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
-                    },
-                    "textPen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Optional. The pen of the dimension text."
-                    },
-                    "textPosition": {
-                        "type": "string",
-                        "enum": ["Above", "In", "Below"],
-                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
-                    },
-                    "textDirection": {
-                        "type": "string",
-                        "enum": ["Horizontal", "Vertical", "Radial"],
-                        "description": "Optional. The direction of the text (textWay)."
-                    },
-                    "customText": {
-                        "type": "string",
-                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
-                    },
-                    "showOrigin": {
-                        "type": "boolean",
-                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
-                    }
+                    },)") + RadialDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2038,69 +2302,9 @@ GS::Optional<GS::ObjectState> CreateRadialDimensionsCommand::SetTypeSpecificPara
         return layerError;
     }
 
-    Int32 linePen = 0;
-    if (parameters.Get ("linePen", linePen)) {
-        if (linePen < 1 || linePen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'linePen' must be between 1 and 255.");
-        }
-        radial.linPen = static_cast<short> (linePen);
-    }
-    const GS::ObjectState* marker = parameters.Get ("marker");
-    if (marker != nullptr) {
-        GS::UniString markerTypeName;
-        if (marker->Get ("type", markerTypeName)) {
-            API_MarkerID markerType = APIMark_CrossLine;
-            if (!ParseDimensionMarkerName (markerTypeName, markerType)) {
-                return CreateErrorResponse (APIERR_BADPARS, "Unknown marker 'type' value: " + markerTypeName);
-            }
-            radial.markerData.markerType = markerType;
-        }
-        Int32 markerPen = 0;
-        if (marker->Get ("pen", markerPen)) {
-            if (markerPen < 1 || markerPen > 255) {
-                return CreateErrorResponse (APIERR_BADPARS, "The marker 'pen' must be between 1 and 255.");
-            }
-            radial.markerData.markerPen = static_cast<short> (markerPen);
-        }
-        double markerSize = 0.0;
-        if (marker->Get ("size", markerSize)) {
-            if (markerSize <= 0.0) {
-                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
-            }
-            radial.markerData.markerSize = markerSize;
-        }
-    }
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight)) {
-        if (textHeight <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0.");
-        }
-        radial.note.noteSize = textHeight;
-    }
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen)) {
-        if (textPen < 1 || textPen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255.");
-        }
-        radial.note.notePen = static_cast<short> (textPen);
-    }
-    GS::UniString textPosition;
-    if (parameters.Get ("textPosition", textPosition) && !RadialDimensionTextPositionFromName (textPosition, radial.textPos)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid textPosition: it must be Above, In or Below.");
-    }
-    GS::UniString textDirection;
-    if (parameters.Get ("textDirection", textDirection) && !RadialDimensionTextDirectionFromName (textDirection, radial.textWay)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid textDirection: it must be Horizontal, Vertical or Radial.");
-    }
-    parameters.Get ("showOrigin", radial.showOrigo);
-
-    // ACAPI_Element_Create reads the custom text after this returns, so it is kept in the command.
-    customText.Clear ();
-    if (parameters.Get ("customText", customText)) {
-        radial.note.contentType = API_NoteContent_Custom;
-        radial.note.contentUStr = &customText;
-    }
-    return {};
+    // ACAPI_Element_Create reads the custom text and the prefix after this returns, so they are
+    // kept in the command.
+    return ApplyRadialDimensionSettings (parameters, element, nullptr, customText, prefix);
 }
 
 GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& failureReason) const
@@ -2143,39 +2347,7 @@ GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Elemen
             notKept += GS::UniString::Printf (" dimensionLineEnd is (%g, %g), off the direction of the given one from the centre.", got.endC.x, got.endC.y);
         }
     }
-    if (parameters.Contains ("linePen") && got.linPen != want.linPen) {
-        notKept += GS::UniString::Printf (" linePen is %d.", (int) got.linPen);
-    }
-    if (parameters.Contains ("textPen") && got.note.notePen != want.note.notePen) {
-        notKept += GS::UniString::Printf (" textPen is %d.", (int) got.note.notePen);
-    }
-    if (parameters.Contains ("textHeight") && std::fabs (got.note.noteSize - want.note.noteSize) > 1e-6) {
-        notKept += GS::UniString::Printf (" textHeight is %g.", got.note.noteSize);
-    }
-    if (parameters.Contains ("textPosition") && got.textPos != want.textPos) {
-        notKept += " textPosition is " + RadialDimensionTextPositionName (got.textPos) + ".";
-    }
-    if (parameters.Contains ("textDirection") && got.textWay != want.textWay) {
-        notKept += " textDirection is " + RadialDimensionTextDirectionName (got.textWay) + ".";
-    }
-    if (parameters.Contains ("showOrigin") && got.showOrigo != want.showOrigo) {
-        notKept += got.showOrigo ? GS::UniString (" showOrigin is true.") : GS::UniString (" showOrigin is false.");
-    }
-    if (parameters.Contains ("customText") && got.note.contentType != API_NoteContent_Custom) {
-        notKept += " the text is the measured radius, not customText.";
-    }
-    const GS::ObjectState* marker = parameters.Get ("marker");
-    if (marker != nullptr) {
-        if (marker->Contains ("type") && got.markerData.markerType != want.markerData.markerType) {
-            notKept += " marker.type is " + DimensionMarkerName (got.markerData.markerType) + ".";
-        }
-        if (marker->Contains ("pen") && got.markerData.markerPen != want.markerData.markerPen) {
-            notKept += GS::UniString::Printf (" marker.pen is %d.", (int) got.markerData.markerPen);
-        }
-        if (marker->Contains ("size") && std::fabs (got.markerData.markerSize - want.markerData.markerSize) > 1e-6) {
-            notKept += GS::UniString::Printf (" marker.size is %g.", got.markerData.markerSize);
-        }
-    }
+    notKept += GetRadialDimensionSettingsNotKept (parameters, requestedElement, created);
     if (notKept.IsEmpty ()) {
         return NoError;
     }
@@ -2189,6 +2361,141 @@ GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Elemen
             (int) got.base.base.inIndex, got.base.base.line ? "true" : "false", got.base.loc.x, got.base.loc.y) +
         GetElementTypeNonLocalizedName (storedTypeId);
     return APIERR_GENERAL;
+}
+
+// ============================================================================
+// ModifyRadialDimensions (#3133)
+// Changes the settings of existing radial dimensions through ApplyRadialDimensionSettings, the
+// function CreateRadialDimensions uses, so both take the same keys. The measured element and the
+// dimension line are not taken: delete the dimension and create it again for a new geometry. The
+// element is read back, so a value Archicad did not take is reported as a failure.
+// ============================================================================
+
+ModifyRadialDimensionsCommand::ModifyRadialDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyRadialDimensionsCommand::GetName () const
+{
+    return "ModifyRadialDimensions";
+}
+
+GS::Optional<GS::UniString> ModifyRadialDimensionsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "radialDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Radial Dimensions to change, each with the settings to change. Only the given settings are changed, also inside marker and textBox; the keys are those CreateRadialDimensions takes and GetDetailsOfElements returns. The measured element and the dimension line cannot be changed here: delete the dimension and create it again with CreateRadialDimensions.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The Radial Dimension to change."
+                    },)") + RadialDimensionSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "radialDimensionsWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyRadialDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyRadialDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("radialDimensionsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyRadialDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_RadialDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Radial Dimension."));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No radial dimension settings to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            // Pointed to by note.contentUStr and prefixUStr until ACAPI_Element_Change has run.
+            GS::UniString customText;
+            GS::UniString prefix;
+            const auto settingsError = ApplyRadialDimensionSettings (item, element, &mask, customText, prefix);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the radial dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the radial dimension back after the change."));
+                continue;
+            }
+            const GS::UniString notApplied = GetRadialDimensionSettingsNotKept (item, element, changed);
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply all settings:" + notApplied));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 namespace {

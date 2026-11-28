@@ -299,6 +299,16 @@ public:
 // textBox), with the same keys (#3133).
 void AddAngleDimensionSettingsDetails (const API_AngleDimensionType& angleDimension, GS::ObjectState& details);
 
+// The text box of a dimension text (#/DimensionNote, API_NoteType), shared by the angle dimension
+// commands and the radial dimension commands (ExtendedElementCommands.cpp, #3133).
+// CreateDimensionNoteObjectState returns all of its fields. ApplyDimensionNote writes the fields
+// given in noteOS, and marks them in noteMask when it is not nullptr; path is the key of noteOS,
+// named in its error messages. GetDimensionNoteNotKept names (each with a leading space, prefixed
+// with path) the fields given in noteOS that got, the note read back, does not have as wanted.
+GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note);
+GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, const GS::UniString& path, API_NoteType& note, API_NoteType* noteMask);
+GS::UniString GetDimensionNoteNotKept (const GS::ObjectState& noteOS, const API_NoteType& wanted, const API_NoteType& got, const GS::UniString& path);
+
 class ModifyAngleDimensionsCommand : public CommandBase
 {
 public:
