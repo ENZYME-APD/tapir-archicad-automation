@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstring>
 #include <initializer_list>
 #include <limits>
 #include <map>
@@ -828,6 +829,118 @@ static bool ParseDimensionTextPlacementMethod (const GS::UniString& methodName, 
     return false;
 }
 
+// The circle style marker fill of an Elevation dimension (API_CircleLevelDimensionFillID), as
+// DimensionElevationMarker's circleFill names it (#3133).
+static GS::UniString CircleLevelDimensionFillName (API_CircleLevelDimensionFillID fill)
+{
+    switch (fill) {
+        case API_EmptyFill:      return "Empty";
+        case API_NorthwestBlack: return "NorthwestBlack";
+        case API_NortheastBlack: return "NortheastBlack";
+        default:                 return "Unknown";
+    }
+}
+
+static bool ParseCircleLevelDimensionFill (const GS::UniString& name, API_CircleLevelDimensionFillID& result)
+{
+    const API_CircleLevelDimensionFillID fills[] = { API_EmptyFill, API_NorthwestBlack, API_NortheastBlack };
+    for (API_CircleLevelDimensionFillID fill : fills) {
+        if (CircleLevelDimensionFillName (fill) == name) {
+            result = fill;
+            return true;
+        }
+    }
+    return false;
+}
+
+#ifdef ServerMainVers_2700
+// The drawing order of the texts' fill and contour relative to the dimension line
+// (API_DimTextFillOrderID, in the DevKit's API_DimensionType from Archicad 27), as textFillOrder
+// names it (#3133).
+static GS::UniString DimensionTextFillOrderName (API_DimTextFillOrderID order)
+{
+    switch (order) {
+        case API_DimTextFillOrderID::FillAndContourUnderDimLine: return "UnderDimensionLine";
+        case API_DimTextFillOrderID::FillAndContourAboveDimLine: return "AboveDimensionLine";
+        default:                                                 return "Unknown";
+    }
+}
+
+static bool ParseDimensionTextFillOrder (const GS::UniString& name, API_DimTextFillOrderID& result)
+{
+    const API_DimTextFillOrderID orders[] = { API_DimTextFillOrderID::FillAndContourUnderDimLine, API_DimTextFillOrderID::FillAndContourAboveDimLine };
+    for (API_DimTextFillOrderID order : orders) {
+        if (DimensionTextFillOrderName (order) == name) {
+            result = order;
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef ServerMainVers_3000
+// The witness extension line of a linear dimension's settings (#/DimensionWitnessExtensionLine,
+// API_DimensionType defWitnessExtension* and defWitnessOverrideExtension, from Archicad 30), as
+// GetDetailsOfElements returns it (#3133).
+static GS::ObjectState CreateDimensionWitnessExtensionLineObjectState (const API_DimensionType& dimension)
+{
+    GS::ObjectState os;
+    os.Add ("overridePenAndLineType", dimension.defWitnessOverrideExtension);
+    os.Add ("pen", static_cast<Int32> (dimension.defWitnessExtensionLinePen));
+    os.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, dimension.defWitnessExtensionLineType)));
+    os.Add ("gap", dimension.defWitnessExtensionGap);
+    os.Add ("gapSize", dimension.defWitnessExtensionGapSize);
+    return os;
+}
+#endif
+
+// Copies the fields of a #/DimensionNote given in noteOS from one note to another: from the
+// dimension's defNote, as ApplyDimensionNote wrote it, into the note of a witness point (#3133).
+// The arrowhead is copied as a whole, as ApplyDimensionNote writes it.
+static void CopyDimensionNoteFields (const GS::ObjectState& noteOS, const API_NoteType& from, API_NoteType& to)
+{
+    if (noteOS.Contains ("textAngle")) {
+        to.noteAngle = from.noteAngle;
+    }
+    if (noteOS.Contains ("opaque")) {
+        to.opaque = from.opaque;
+    }
+    if (noteOS.Contains ("frame")) {
+        to.frame = from.frame;
+    }
+    if (noteOS.Contains ("backgroundPen")) {
+        to.backgroundPen = from.backgroundPen;
+    }
+    if (noteOS.Contains ("framePen")) {
+        to.framePen = from.framePen;
+    }
+    if (noteOS.Contains ("justification")) {
+        to.just = from.just;
+    }
+    if (noteOS.Contains ("anchorRow")) {
+        to.rowAnchor = from.rowAnchor;
+    }
+    if (noteOS.Contains ("anchorPoint")) {
+        to.anchorPoint = from.anchorPoint;
+    }
+    if (noteOS.Contains ("anchorAtTextEnd")) {
+        to.anchorAtTextEnd = from.anchorAtTextEnd;
+    }
+    if (noteOS.Contains ("leaderPen")) {
+        to.leaderPen = from.leaderPen;
+    }
+    if (noteOS.Contains ("leaderLineTypeId")) {
+        to.leaderLineType = from.leaderLineType;
+    }
+    if (noteOS.Contains ("leaderShape")) {
+        to.leaderShape = from.leaderShape;
+    }
+    if (noteOS.Contains ("arrowType") || noteOS.Contains ("arrowVisible") || noteOS.Contains ("arrowPen") || noteOS.Contains ("arrowSize")) {
+        to.arrowData = from.arrowData;
+    }
+}
+
 // The marker and the text placement of a linear dimension as GetDetailsOfElements and
 // GetDimensionData return them (DimensionMarker, DimensionTextPlacement).
 static GS::ObjectState CreateDimensionMarkerObjectState (const API_Element& element)
@@ -869,6 +982,7 @@ static GS::ObjectState CreateDimensionElevationMarkerObjectState (const API_Elem
     marker.Add ("arrowFilled", element.dimension.ed_arrowFill);
     marker.Add ("arrowUp", element.dimension.ed_arrowUp);
     marker.Add ("plusSign", element.dimension.ed_needPlus);
+    marker.Add ("circleFill", CircleLevelDimensionFillName (element.dimension.ed_circleLevelDimensionFill));
     return marker;
 }
 
@@ -877,7 +991,8 @@ static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Elemen
     return GS::ObjectState (
         "method", DimensionTextPlacementMethodName (element.dimension.dimLayout),
         "placeBelowLine", element.dimension.placeUnderEnabled,
-        "pushNeighbors", element.dimension.pushNeighborEnabled);
+        "pushNeighbors", element.dimension.pushNeighborEnabled,
+        "advanced", element.dimension.advanced);
 }
 
 // The settings of a linear dimension that CreateAssociativeDimensions,
@@ -960,6 +1075,27 @@ static const char* DimensionSettingsSchemaProperties = R"(
                         "layeredElementDimensions": {
                             "$ref": "#/LayeredElementDimensions",
                             "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "textBox": {
+                            "$ref": "#/DimensionNote",
+                            "description": "Optional text box of the dimension texts (API defNote): angle, background, frame, alignment and the leader line style, applied to every witness point (on creation after favoriteName). Only the fields given change. textBox.frame is the same setting as textFrame; giving both with different values is an error. The dimension is read back, and a field Archicad did not keep fails the item."
+                        },
+                        "textFillOrder": {
+                            "type": "string",
+                            "enum": ["UnderDimensionLine", "AboveDimensionLine"],
+                            "description": "Optional drawing order of the texts' fill and contour: under or above the dimension line (API textFillOrder). Available from Archicad 27; older versions refuse it."
+                        },
+                        "clipDimensionLine": {
+                            "type": "boolean",
+                            "description": "Optional: no dimension line part on the other side, opposite to the base point (API clipDimensionLine). Available from Archicad 30; older versions refuse it."
+                        },
+                        "clipWitnessLine": {
+                            "type": "boolean",
+                            "description": "Optional: no witness line part on the other side (API clipWitnessLine). Available from Archicad 30; older versions refuse it."
+                        },
+                        "witnessExtensionLine": {
+                            "$ref": "#/DimensionWitnessExtensionLine",
+                            "description": "Optional witness extension line, applied to every witness point (on creation after favoriteName). Give any of its fields; the others stay as they are. Available from Archicad 30; older versions refuse it."
                         })";
 
 static const unsigned short DimensionTextFaceBits = APIFace_Bold | APIFace_Italic | APIFace_Underline;
@@ -1132,6 +1268,15 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         if (elevationMarker->Get ("plusSign", element.dimension.ed_needPlus) && mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_needPlus);
         }
+        GS::UniString circleFill;
+        if (elevationMarker->Get ("circleFill", circleFill)) {
+            if (!ParseCircleLevelDimensionFill (circleFill, element.dimension.ed_circleLevelDimensionFill)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown 'elevationMarker.circleFill' value: " + circleFill);
+            }
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_circleLevelDimensionFill);
+            }
+        }
     }
 
     double textHeight = 0.0;
@@ -1247,6 +1392,9 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
                 ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, pushNeighborEnabled);
             }
         }
+        if (textPlacement->Get ("advanced", element.dimension.advanced) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, advanced);
+        }
     }
 
     GS::UniString witnessFormName;
@@ -1321,6 +1469,91 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         }
     }
 
+    // The text box of the dimension texts (#3133), in defNote like the other text settings.
+    const GS::ObjectState* textBox = data.Get ("textBox");
+    if (textBox != nullptr) {
+        bool textBoxFrame = false;
+        bool givenTextFrame = false;
+        if (textBox->Get ("frame", textBoxFrame) && data.Get ("textFrame", givenTextFrame) && textBoxFrame != givenTextFrame) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textFrame' and 'textBox.frame' are the same setting and are given with different values.");
+        }
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", element.dimension.defNote, mask != nullptr ? &mask->dimension.defNote : nullptr);
+        if (noteError.HasValue ()) {
+            return noteError;
+        }
+    }
+
+    GS::UniString textFillOrder;
+    if (data.Get ("textFillOrder", textFillOrder)) {
+#ifdef ServerMainVers_2700
+        if (!ParseDimensionTextFillOrder (textFillOrder, element.dimension.textFillOrder)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textFillOrder' value: " + textFillOrder);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, textFillOrder);
+        }
+#else
+        return CreateErrorResponse (APIERR_BADPARS, "'textFillOrder' is available from Archicad 27: the Archicad API of this version has no such setting.");
+#endif
+    }
+
+    const bool hasArchicad30Setting = data.Contains ("clipDimensionLine") || data.Contains ("clipWitnessLine") || data.Contains ("witnessExtensionLine");
+#ifdef ServerMainVers_3000
+    if (hasArchicad30Setting) {
+        API_DimensionType& dimension = element.dimension;
+        if (data.Get ("clipDimensionLine", dimension.clipDimensionLine) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, clipDimensionLine);
+        }
+        if (data.Get ("clipWitnessLine", dimension.clipWitnessLine) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, clipWitnessLine);
+        }
+        const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+        if (extension != nullptr) {
+            if (extension->Get ("overridePenAndLineType", dimension.defWitnessOverrideExtension) && mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessOverrideExtension);
+            }
+            Int32 pen = 0;
+            if (extension->Get ("pen", pen)) {
+                if (pen < 1 || pen > 255) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.pen' must be between 1 and 255.");
+                }
+                dimension.defWitnessExtensionLinePen = static_cast<short> (pen);
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionLinePen);
+                }
+            }
+            const GS::ObjectState* lineTypeId = extension->Get ("lineTypeId");
+            if (lineTypeId != nullptr) {
+                const API_AttributeIndex lineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
+                if (lineType == ACAPI_CreateAttributeIndex (-1)) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.lineTypeId' is not an existing line type.");
+                }
+                dimension.defWitnessExtensionLineType = lineType;
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionLineType);
+                }
+            }
+            if (extension->Get ("gap", dimension.defWitnessExtensionGap) && mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionGap);
+            }
+            double gapSize = 0.0;
+            if (extension->Get ("gapSize", gapSize)) {
+                if (gapSize < 0.0) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.gapSize' must not be negative.");
+                }
+                dimension.defWitnessExtensionGapSize = gapSize;
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionGapSize);
+                }
+            }
+        }
+    }
+#else
+    if (hasArchicad30Setting) {
+        return CreateErrorResponse (APIERR_BADPARS, "'clipDimensionLine', 'clipWitnessLine' and 'witnessExtensionLine' are available from Archicad 30: the Archicad API of this version has no such settings.");
+    }
+#endif
+
     return {};
 }
 
@@ -1341,7 +1574,13 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     const bool hasTextStyle = hasFont || hasFace || hasWidthFactor || hasSpacingFactor;
     const bool hasWitnessForm = data.Contains ("defaultWitnessForm");
     const bool hasWitnessVal = data.Contains ("defaultWitnessVal");
-    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasTextStyle && !hasWitnessForm && !hasWitnessVal) {
+    const GS::ObjectState* textBox = data.Get ("textBox");
+#ifdef ServerMainVers_3000
+    const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+#else
+    const GS::ObjectState* extension = nullptr;
+#endif
+    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasTextStyle && !hasWitnessForm && !hasWitnessVal && textBox == nullptr && extension == nullptr) {
         return false;
     }
     if (memo.dimElems == nullptr || *memo.dimElems == nullptr) {
@@ -1379,8 +1618,130 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
         if (hasWitnessVal) {
             dimElem.witnessVal = element.dimension.defWitnessVal;
         }
+        if (textBox != nullptr) {
+            CopyDimensionNoteFields (*textBox, element.dimension.defNote, dimElem.note);
+        }
+#ifdef ServerMainVers_3000
+        if (extension != nullptr) {
+            const API_DimensionType& dimension = element.dimension;
+            if (extension->Contains ("overridePenAndLineType")) {
+                dimElem.witnessOverrideExtension = dimension.defWitnessOverrideExtension;
+            }
+            if (extension->Contains ("pen")) {
+                dimElem.witnessExtensionLinePen = dimension.defWitnessExtensionLinePen;
+            }
+            if (extension->Contains ("lineTypeId")) {
+                dimElem.witnessExtensionLineType = dimension.defWitnessExtensionLineType;
+            }
+            if (extension->Contains ("gap")) {
+                dimElem.witnessExtensionGap = dimension.defWitnessExtensionGap;
+            }
+            if (extension->Contains ("gapSize")) {
+                dimElem.witnessExtensionGapSize = dimension.defWitnessExtensionGapSize;
+            }
+        }
+#endif
     }
     return true;
+}
+
+// Names (each with a leading space) the settings of #3133 given in data that Archicad did not keep:
+// wanted is the dimension as written, got the one read back, gotMemo its witness points (or nullptr).
+// The text box and the witness extension line are also checked on the first witness point, which
+// carries them for its text and its witness line, as ModifyAssociativeDimensions checks the text
+// height there. Used by ModifyAssociativeDimensions and the dimension creation commands.
+static GS::UniString GetDimensionSettingsNotKept (const GS::ObjectState& data, const API_Element& wanted, const API_Element& got, const API_ElementMemo* gotMemo)
+{
+    const API_DimensionType& want = wanted.dimension;
+    const API_DimensionType& have = got.dimension;
+    GS::UniString notKept;
+
+    const GS::ObjectState* elevationMarker = data.Get ("elevationMarker");
+    if (elevationMarker != nullptr && elevationMarker->Contains ("circleFill") && have.ed_circleLevelDimensionFill != want.ed_circleLevelDimensionFill) {
+        notKept += " elevationMarker.circleFill";
+    }
+    const GS::ObjectState* textPlacement = data.Get ("textPlacement");
+    if (textPlacement != nullptr && textPlacement->Contains ("advanced") && have.advanced != want.advanced) {
+        notKept += " textPlacement.advanced";
+    }
+#ifdef ServerMainVers_2700
+    if (data.Contains ("textFillOrder") && have.textFillOrder != want.textFillOrder) {
+        notKept += " textFillOrder";
+    }
+#endif
+
+    const API_DimElem* firstPoint = nullptr;
+    if (gotMemo != nullptr && gotMemo->dimElems != nullptr && *gotMemo->dimElems != nullptr && have.nDimElem > 0) {
+        firstPoint = &(*gotMemo->dimElems)[0];
+    }
+
+#ifdef ServerMainVers_3000
+    const double tolerance = 1e-6;
+    if (data.Contains ("clipDimensionLine") && have.clipDimensionLine != want.clipDimensionLine) {
+        notKept += " clipDimensionLine";
+    }
+    if (data.Contains ("clipWitnessLine") && have.clipWitnessLine != want.clipWitnessLine) {
+        notKept += " clipWitnessLine";
+    }
+    const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+    if (extension != nullptr) {
+        auto check = [&] (const char* name, bool dimensionDiffers, bool pointDiffers) {
+            if (!extension->Contains (name)) {
+                return;
+            }
+            if (dimensionDiffers) {
+                notKept += GS::UniString (" witnessExtensionLine.") + name;
+            }
+            if (pointDiffers) {
+                notKept += GS::UniString (" witnessPoints[0].witnessExtensionLine.") + name;
+            }
+        };
+        check ("overridePenAndLineType", have.defWitnessOverrideExtension != want.defWitnessOverrideExtension,
+            firstPoint != nullptr && firstPoint->witnessOverrideExtension != want.defWitnessOverrideExtension);
+        check ("pen", have.defWitnessExtensionLinePen != want.defWitnessExtensionLinePen,
+            firstPoint != nullptr && firstPoint->witnessExtensionLinePen != want.defWitnessExtensionLinePen);
+        check ("lineTypeId", have.defWitnessExtensionLineType != want.defWitnessExtensionLineType,
+            firstPoint != nullptr && firstPoint->witnessExtensionLineType != want.defWitnessExtensionLineType);
+        check ("gap", have.defWitnessExtensionGap != want.defWitnessExtensionGap,
+            firstPoint != nullptr && firstPoint->witnessExtensionGap != want.defWitnessExtensionGap);
+        check ("gapSize", std::abs (have.defWitnessExtensionGapSize - want.defWitnessExtensionGapSize) > tolerance,
+            firstPoint != nullptr && std::abs (firstPoint->witnessExtensionGapSize - want.defWitnessExtensionGapSize) > tolerance);
+    }
+#endif
+
+    const GS::ObjectState* textBox = data.Get ("textBox");
+    if (textBox != nullptr) {
+        notKept += GetDimensionNoteNotKept (*textBox, want.defNote, have.defNote, "textBox");
+        if (firstPoint != nullptr) {
+            notKept += GetDimensionNoteNotKept (*textBox, want.defNote, firstPoint->note, "witnessPoints[0].textBox");
+        }
+    }
+    return notKept;
+}
+
+// Reads a new linear dimension back and names (each with a leading space) the settings of #3133
+// given in data that Archicad did not keep (GetDimensionSettingsNotKept); requested is the
+// dimension as it was created.
+static GS::UniString GetCreatedDimensionSettingsNotKept (const GS::ObjectState& data, const API_Element& requested)
+{
+    API_Element created = {};
+    created.header.guid = requested.header.guid;
+    if (ACAPI_Element_Get (&created) != NoError) {
+        return " (the new dimension could not be read back)";
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const bool hasMemo = created.header.hasMemo && ACAPI_Element_GetMemo (created.header.guid, &memo) == NoError;
+    return GetDimensionSettingsNotKept (data, requested, created, hasMemo ? &memo : nullptr);
+}
+
+// Deletes a new linear dimension whose settings Archicad did not keep (notKept, as
+// GetCreatedDimensionSettingsNotKept names them) and returns the error response for its item.
+static GS::ObjectState DeleteDimensionWithSettingsNotKept (const API_Guid& guid, const GS::UniString& notKept)
+{
+    GS::Array<API_Guid> createdDimension = { guid };
+    ACAPI_Element_Delete (createdDimension);
+    return CreateErrorResponse (APIERR_REFUSEDPAR, "Archicad did not keep:" + notKept + ". The new dimension was deleted again.");
 }
 
 // The placeholder that stands for the measured value in a custom witness point text (#2663). The
@@ -1666,6 +2027,15 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("openingHeightsInChain", element.dimension.detailedHoleDim);
     details.Add ("openingHeightsNominal", element.dimension.nominalHoleDim != 0);
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
+    details.Add ("textBox", CreateDimensionNoteObjectState (element.dimension.defNote));
+#ifdef ServerMainVers_2700
+    details.Add ("textFillOrder", DimensionTextFillOrderName (element.dimension.textFillOrder));
+#endif
+#ifdef ServerMainVers_3000
+    details.Add ("clipDimensionLine", element.dimension.clipDimensionLine);
+    details.Add ("clipWitnessLine", element.dimension.clipWitnessLine);
+    details.Add ("witnessExtensionLine", CreateDimensionWitnessExtensionLineObjectState (element.dimension));
+#endif
 
     // The texts of the witness points with the keys ModifyAssociativeDimensions' witnessPointTexts
     // writes, so the list read can be sent back. The custom text only while it is shown, and the
@@ -1713,6 +2083,31 @@ static GS::UniString RadialDimensionTextDirectionName (API_DirID textWay)
         case APIDir_Radial:     return "Radial";
         default:                return "Unknown";
     }
+}
+
+// The prefix of a radial dimension (the R of R 7.55, #3133). Archicad fills a GS::UniString through
+// prefixUStr only when the caller points it to one before ACAPI_Element_Get, as with the content of
+// dimension notes (contentUStr), so the dimension is read again with it; the char prefix (at most 8
+// bytes, not always terminated) is used when that gives nothing.
+static GS::UniString GetRadialDimensionPrefix (const API_Element& element)
+{
+    GS::UniString prefix;
+    API_Element reread = {};
+    reread.header.guid = element.header.guid;
+    reread.radialDimension.prefixUStr = &prefix;
+    const bool read = ACAPI_Element_Get (&reread) == NoError;
+    if (read && reread.radialDimension.prefixUStr == &prefix && !prefix.IsEmpty ()) {
+        return prefix;
+    }
+    if (read && reread.radialDimension.prefixUStr != nullptr && reread.radialDimension.prefixUStr != &prefix) {
+        return *reread.radialDimension.prefixUStr;
+    }
+    const API_RadialDimensionType& radial = read ? reread.radialDimension : element.radialDimension;
+    USize length = 0;
+    while (length < sizeof (radial.prefix) && radial.prefix[length] != '\0') {
+        ++length;
+    }
+    return GS::UniString (radial.prefix, length, CC_UTF8);
 }
 
 // Defined OUTSIDE the anonymous namespace, like AddDimensionDetails (#2660).
@@ -1765,6 +2160,8 @@ void AddRadialDimensionDetails (GS::ObjectState& details, const API_Element& ele
     details.Add ("textContent", radial.note.contentType == API_NoteContent_Custom ? "Custom" : "Measured");
     details.Add ("showOrigin", radial.showOrigo);
     details.Add ("onlyDimensionText", radial.onlyDimensionText);
+    details.Add ("prefix", GetRadialDimensionPrefix (element));
+    details.Add ("textBox", CreateDimensionNoteObjectState (radial.note));
 }
 
 // ============================================================================
@@ -1873,6 +2270,281 @@ static bool RadialDimensionTextDirectionFromName (const GS::UniString& name, API
     return false;
 }
 
+// The settings CreateRadialDimensions and ModifyRadialDimensions both take, with the keys
+// GetDetailsOfElements returns, written by ApplyRadialDimensionSettings (#3133).
+static const char* RadialDimensionSettingsSchemaProperties = R"(
+                    "linePen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension line."
+                    },
+                    "marker": {
+                        "$ref": "#/DimensionMarker",
+                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "minimum": 0, "exclusiveMinimum": true,
+                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Optional. The pen of the dimension text."
+                    },
+                    "textPosition": {
+                        "type": "string",
+                        "enum": ["Above", "In", "Below"],
+                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
+                    },
+                    "textDirection": {
+                        "type": "string",
+                        "enum": ["Horizontal", "Vertical", "Radial"],
+                        "description": "Optional. The direction of the text (textWay)."
+                    },
+                    "textContent": {
+                        "type": "string",
+                        "enum": ["Measured", "Custom"],
+                        "description": "Optional. Whether the text shows the measured radius or a custom text (note.contentType), as GetDetailsOfElements returns it. Custom without customText keeps the custom text the dimension has; Measured cannot be given with customText."
+                    },
+                    "customText": {
+                        "type": "string",
+                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
+                    },
+                    "showOrigin": {
+                        "type": "boolean",
+                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
+                    },
+                    "onlyDimensionText": {
+                        "type": "boolean",
+                        "description": "Optional. Whether only the dimension text is shown, without the dimension line (onlyDimensionText)."
+                    },
+                    "prefix": {
+                        "type": "string",
+                        "description": "Optional. The text shown before the measured radius, e.g. R in R 7.55 (prefix, prefixUStr); an empty string removes it. GetDetailsOfElements returns it as prefix."
+                    },
+                    "textBox": {
+                        "$ref": "#/DimensionNote",
+                        "description": "Optional. The text box of the dimension text: angle, background, frame, alignment and the leader line style. Only the fields given change. The dimension is read back, and the item fails, naming the field, when Archicad did not keep one."
+                    })";
+
+// Writes the settings of RadialDimensionSettingsSchemaProperties given in parameters to
+// element.radialDimension, and sets their bits in mask when it is not nullptr (ModifyRadialDimensions;
+// CreateRadialDimensions passes nullptr). customText and prefix keep the strings note.contentUStr and
+// prefixUStr point to: they must live until ACAPI_Element_Create or ACAPI_Element_Change is called.
+// Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ApplyRadialDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask, GS::UniString& customText, GS::UniString& prefix)
+{
+    API_RadialDimensionType& radial = element.radialDimension;
+
+    Int32 linePen = 0;
+    if (parameters.Get ("linePen", linePen)) {
+        if (linePen < 1 || linePen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'linePen' must be between 1 and 255.");
+        }
+        radial.linPen = static_cast<short> (linePen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, linPen);
+        }
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        GS::UniString markerTypeName;
+        if (marker->Get ("type", markerTypeName)) {
+            API_MarkerID markerType = APIMark_CrossLine;
+            if (!ParseDimensionMarkerName (markerTypeName, markerType)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown marker 'type' value: " + markerTypeName);
+            }
+            radial.markerData.markerType = markerType;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerType);
+            }
+        }
+        Int32 markerPen = 0;
+        if (marker->Get ("pen", markerPen)) {
+            if (markerPen < 1 || markerPen > 255) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'pen' must be between 1 and 255.");
+            }
+            radial.markerData.markerPen = static_cast<short> (markerPen);
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerPen);
+            }
+        }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
+            }
+            radial.markerData.markerSize = markerSize;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, markerData.markerSize);
+            }
+        }
+    }
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0.");
+        }
+        radial.note.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.noteSize);
+        }
+    }
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255.");
+        }
+        radial.note.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.notePen);
+        }
+    }
+    GS::UniString textPosition;
+    if (parameters.Get ("textPosition", textPosition)) {
+        if (!RadialDimensionTextPositionFromName (textPosition, radial.textPos)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid textPosition: it must be Above, In or Below.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, textPos);
+        }
+    }
+    GS::UniString textDirection;
+    if (parameters.Get ("textDirection", textDirection)) {
+        if (!RadialDimensionTextDirectionFromName (textDirection, radial.textWay)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid textDirection: it must be Horizontal, Vertical or Radial.");
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, textWay);
+        }
+    }
+    if (parameters.Get ("showOrigin", radial.showOrigo) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, showOrigo);
+    }
+    if (parameters.Get ("onlyDimensionText", radial.onlyDimensionText) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, onlyDimensionText);
+    }
+
+    // The custom text is passed through contentUStr, as the DevKit's Element_Test does in
+    // Do_RadialDimension_Edit.
+    GS::UniString textContent;
+    const bool hasTextContent = parameters.Get ("textContent", textContent);
+    if (hasTextContent && textContent != "Measured" && textContent != "Custom") {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid textContent: it must be Measured or Custom.");
+    }
+    customText.Clear ();
+    const bool hasCustomText = parameters.Get ("customText", customText);
+    if (hasCustomText && hasTextContent && textContent == "Measured") {
+        return CreateErrorResponse (APIERR_BADPARS, "'customText' cannot be given with textContent Measured.");
+    }
+    if (hasTextContent || hasCustomText) {
+        radial.note.contentType = (hasCustomText || textContent == "Custom") ? API_NoteContent_Custom : API_NoteContent_Measured;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.contentType);
+        }
+    }
+    if (hasCustomText) {
+        radial.note.contentUStr = &customText;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.content);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, note.contentUStr);
+        }
+    }
+
+    // The prefix is passed through prefixUStr, and as many of its whole characters as fit in the
+    // 8 bytes of the char prefix are written there too.
+    prefix.Clear ();
+    if (parameters.Get ("prefix", prefix)) {
+        GS::UniString shortPrefix = prefix;
+        while (!shortPrefix.IsEmpty () && std::strlen (shortPrefix.ToCStr (CC_UTF8).Get ()) >= sizeof (radial.prefix)) {
+            shortPrefix = GS::UniString (shortPrefix.GetSubstring (0, shortPrefix.GetLength () - 1));
+        }
+        std::memset (radial.prefix, 0, sizeof (radial.prefix));
+        const auto shortPrefixBytes = shortPrefix.ToCStr (CC_UTF8);
+        std::memcpy (radial.prefix, shortPrefixBytes.Get (), std::strlen (shortPrefixBytes.Get ()));
+        radial.prefixUStr = &prefix;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, prefix);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_RadialDimensionType, prefixUStr);
+        }
+    }
+
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", radial.note, mask != nullptr ? &mask->radialDimension.note : nullptr);
+        if (noteError.HasValue ()) {
+            return noteError;
+        }
+    }
+    return {};
+}
+
+// Names the settings of RadialDimensionSettingsSchemaProperties given in parameters that Archicad
+// did not keep, each as a sentence with a leading space and the value it stored: wanted is the
+// dimension as written, got the one read back (with its guid, for the prefix).
+static GS::UniString GetRadialDimensionSettingsNotKept (const GS::ObjectState& parameters, const API_Element& wanted, const API_Element& got)
+{
+    const API_RadialDimensionType& want = wanted.radialDimension;
+    const API_RadialDimensionType& have = got.radialDimension;
+    GS::UniString notKept;
+    if (parameters.Contains ("linePen") && have.linPen != want.linPen) {
+        notKept += GS::UniString::Printf (" linePen is %d.", (int) have.linPen);
+    }
+    if (parameters.Contains ("textPen") && have.note.notePen != want.note.notePen) {
+        notKept += GS::UniString::Printf (" textPen is %d.", (int) have.note.notePen);
+    }
+    if (parameters.Contains ("textHeight") && std::fabs (have.note.noteSize - want.note.noteSize) > 1e-6) {
+        notKept += GS::UniString::Printf (" textHeight is %g.", have.note.noteSize);
+    }
+    if (parameters.Contains ("textPosition") && have.textPos != want.textPos) {
+        notKept += " textPosition is " + RadialDimensionTextPositionName (have.textPos) + ".";
+    }
+    if (parameters.Contains ("textDirection") && have.textWay != want.textWay) {
+        notKept += " textDirection is " + RadialDimensionTextDirectionName (have.textWay) + ".";
+    }
+    if (parameters.Contains ("showOrigin") && have.showOrigo != want.showOrigo) {
+        notKept += have.showOrigo ? GS::UniString (" showOrigin is true.") : GS::UniString (" showOrigin is false.");
+    }
+    if (parameters.Contains ("onlyDimensionText") && have.onlyDimensionText != want.onlyDimensionText) {
+        notKept += have.onlyDimensionText ? GS::UniString (" onlyDimensionText is true.") : GS::UniString (" onlyDimensionText is false.");
+    }
+    if (parameters.Contains ("customText") && have.note.contentType != API_NoteContent_Custom) {
+        notKept += " the text is the measured radius, not customText.";
+    } else if (parameters.Contains ("textContent") && have.note.contentType != want.note.contentType) {
+        notKept += have.note.contentType == API_NoteContent_Custom ? GS::UniString (" textContent is Custom.") : GS::UniString (" textContent is Measured.");
+    }
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        if (marker->Contains ("type") && have.markerData.markerType != want.markerData.markerType) {
+            notKept += " marker.type is " + DimensionMarkerName (have.markerData.markerType) + ".";
+        }
+        if (marker->Contains ("pen") && have.markerData.markerPen != want.markerData.markerPen) {
+            notKept += GS::UniString::Printf (" marker.pen is %d.", (int) have.markerData.markerPen);
+        }
+        if (marker->Contains ("size") && std::fabs (have.markerData.markerSize - want.markerData.markerSize) > 1e-6) {
+            notKept += GS::UniString::Printf (" marker.size is %g.", have.markerData.markerSize);
+        }
+    }
+    GS::UniString wantedPrefix;
+    if (parameters.Get ("prefix", wantedPrefix)) {
+        const GS::UniString keptPrefix = GetRadialDimensionPrefix (got);
+        if (keptPrefix != wantedPrefix) {
+            notKept += " prefix is '" + keptPrefix + "'.";
+        }
+    }
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        const GS::UniString textBoxNotKept = GetDimensionNoteNotKept (*textBox, want.note, have.note, "textBox");
+        if (!textBoxNotKept.IsEmpty ()) {
+            notKept += " it did not keep" + textBoxNotKept + ".";
+        }
+    }
+    return notKept;
+}
+
 CreateRadialDimensionsCommand::CreateRadialDimensionsCommand () :
     CreateElementsCommandBase ("CreateRadialDimensions", API_RadialDimensionID, "radialDimensionsData")
 {
@@ -1880,7 +2552,7 @@ CreateRadialDimensionsCommand::CreateRadialDimensionsCommand () :
 
 GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "radialDimensionsData": {
@@ -1921,46 +2593,7 @@ GS::Optional<GS::UniString> CreateRadialDimensionsCommand::GetInputParametersSch
                     "layerIndex": {
                         "type": "integer",
                         "description": "Optional. Layer attribute index to place the dimension on. By default the layer of the favorite or the Radial Dimension tool default is used."
-                    },
-                    "linePen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Optional. The pen of the dimension line."
-                    },
-                    "marker": {
-                        "$ref": "#/DimensionMarker",
-                        "description": "Optional. The marker at the end of the dimension line: any of its type, pen and size."
-                    },
-                    "textHeight": {
-                        "type": "number",
-                        "minimum": 0, "exclusiveMinimum": true,
-                        "description": "Optional. The height of the dimension text in millimeters (paper size)."
-                    },
-                    "textPen": {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 255,
-                        "description": "Optional. The pen of the dimension text."
-                    },
-                    "textPosition": {
-                        "type": "string",
-                        "enum": ["Above", "In", "Below"],
-                        "description": "Optional. Where the text is, relative to the dimension line (textPos)."
-                    },
-                    "textDirection": {
-                        "type": "string",
-                        "enum": ["Horizontal", "Vertical", "Radial"],
-                        "description": "Optional. The direction of the text (textWay)."
-                    },
-                    "customText": {
-                        "type": "string",
-                        "description": "Optional. A custom text shown instead of the measured radius (textContent Custom in GetDetailsOfElements)."
-                    },
-                    "showOrigin": {
-                        "type": "boolean",
-                        "description": "Optional. Whether the centre of the arc is marked (showOrigo)."
-                    }
+                    },)") + RadialDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -2044,69 +2677,9 @@ GS::Optional<GS::ObjectState> CreateRadialDimensionsCommand::SetTypeSpecificPara
         return layerError;
     }
 
-    Int32 linePen = 0;
-    if (parameters.Get ("linePen", linePen)) {
-        if (linePen < 1 || linePen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'linePen' must be between 1 and 255.");
-        }
-        radial.linPen = static_cast<short> (linePen);
-    }
-    const GS::ObjectState* marker = parameters.Get ("marker");
-    if (marker != nullptr) {
-        GS::UniString markerTypeName;
-        if (marker->Get ("type", markerTypeName)) {
-            API_MarkerID markerType = APIMark_CrossLine;
-            if (!ParseDimensionMarkerName (markerTypeName, markerType)) {
-                return CreateErrorResponse (APIERR_BADPARS, "Unknown marker 'type' value: " + markerTypeName);
-            }
-            radial.markerData.markerType = markerType;
-        }
-        Int32 markerPen = 0;
-        if (marker->Get ("pen", markerPen)) {
-            if (markerPen < 1 || markerPen > 255) {
-                return CreateErrorResponse (APIERR_BADPARS, "The marker 'pen' must be between 1 and 255.");
-            }
-            radial.markerData.markerPen = static_cast<short> (markerPen);
-        }
-        double markerSize = 0.0;
-        if (marker->Get ("size", markerSize)) {
-            if (markerSize <= 0.0) {
-                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
-            }
-            radial.markerData.markerSize = markerSize;
-        }
-    }
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight)) {
-        if (textHeight <= 0.0) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0.");
-        }
-        radial.note.noteSize = textHeight;
-    }
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen)) {
-        if (textPen < 1 || textPen > 255) {
-            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255.");
-        }
-        radial.note.notePen = static_cast<short> (textPen);
-    }
-    GS::UniString textPosition;
-    if (parameters.Get ("textPosition", textPosition) && !RadialDimensionTextPositionFromName (textPosition, radial.textPos)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid textPosition: it must be Above, In or Below.");
-    }
-    GS::UniString textDirection;
-    if (parameters.Get ("textDirection", textDirection) && !RadialDimensionTextDirectionFromName (textDirection, radial.textWay)) {
-        return CreateErrorResponse (APIERR_BADPARS, "Invalid textDirection: it must be Horizontal, Vertical or Radial.");
-    }
-    parameters.Get ("showOrigin", radial.showOrigo);
-
-    // ACAPI_Element_Create reads the custom text after this returns, so it is kept in the command.
-    customText.Clear ();
-    if (parameters.Get ("customText", customText)) {
-        radial.note.contentType = API_NoteContent_Custom;
-        radial.note.contentUStr = &customText;
-    }
-    return {};
+    // ACAPI_Element_Create reads the custom text and the prefix after this returns, so they are
+    // kept in the command.
+    return ApplyRadialDimensionSettings (parameters, element, nullptr, customText, prefix);
 }
 
 GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters, GS::UniString& failureReason) const
@@ -2149,39 +2722,7 @@ GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Elemen
             notKept += GS::UniString::Printf (" dimensionLineEnd is (%g, %g), off the direction of the given one from the centre.", got.endC.x, got.endC.y);
         }
     }
-    if (parameters.Contains ("linePen") && got.linPen != want.linPen) {
-        notKept += GS::UniString::Printf (" linePen is %d.", (int) got.linPen);
-    }
-    if (parameters.Contains ("textPen") && got.note.notePen != want.note.notePen) {
-        notKept += GS::UniString::Printf (" textPen is %d.", (int) got.note.notePen);
-    }
-    if (parameters.Contains ("textHeight") && std::fabs (got.note.noteSize - want.note.noteSize) > 1e-6) {
-        notKept += GS::UniString::Printf (" textHeight is %g.", got.note.noteSize);
-    }
-    if (parameters.Contains ("textPosition") && got.textPos != want.textPos) {
-        notKept += " textPosition is " + RadialDimensionTextPositionName (got.textPos) + ".";
-    }
-    if (parameters.Contains ("textDirection") && got.textWay != want.textWay) {
-        notKept += " textDirection is " + RadialDimensionTextDirectionName (got.textWay) + ".";
-    }
-    if (parameters.Contains ("showOrigin") && got.showOrigo != want.showOrigo) {
-        notKept += got.showOrigo ? GS::UniString (" showOrigin is true.") : GS::UniString (" showOrigin is false.");
-    }
-    if (parameters.Contains ("customText") && got.note.contentType != API_NoteContent_Custom) {
-        notKept += " the text is the measured radius, not customText.";
-    }
-    const GS::ObjectState* marker = parameters.Get ("marker");
-    if (marker != nullptr) {
-        if (marker->Contains ("type") && got.markerData.markerType != want.markerData.markerType) {
-            notKept += " marker.type is " + DimensionMarkerName (got.markerData.markerType) + ".";
-        }
-        if (marker->Contains ("pen") && got.markerData.markerPen != want.markerData.markerPen) {
-            notKept += GS::UniString::Printf (" marker.pen is %d.", (int) got.markerData.markerPen);
-        }
-        if (marker->Contains ("size") && std::fabs (got.markerData.markerSize - want.markerData.markerSize) > 1e-6) {
-            notKept += GS::UniString::Printf (" marker.size is %g.", got.markerData.markerSize);
-        }
-    }
+    notKept += GetRadialDimensionSettingsNotKept (parameters, requestedElement, created);
     if (notKept.IsEmpty ()) {
         return NoError;
     }
@@ -2195,6 +2736,141 @@ GSErrCode CreateRadialDimensionsCommand::AfterCreateWithReason (const API_Elemen
             (int) got.base.base.inIndex, got.base.base.line ? "true" : "false", got.base.loc.x, got.base.loc.y) +
         GetElementTypeNonLocalizedName (storedTypeId);
     return APIERR_GENERAL;
+}
+
+// ============================================================================
+// ModifyRadialDimensions (#3133)
+// Changes the settings of existing radial dimensions through ApplyRadialDimensionSettings, the
+// function CreateRadialDimensions uses, so both take the same keys. The measured element and the
+// dimension line are not taken: delete the dimension and create it again for a new geometry. The
+// element is read back, so a value Archicad did not take is reported as a failure.
+// ============================================================================
+
+ModifyRadialDimensionsCommand::ModifyRadialDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifyRadialDimensionsCommand::GetName () const
+{
+    return "ModifyRadialDimensions";
+}
+
+GS::Optional<GS::UniString> ModifyRadialDimensionsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "radialDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Radial Dimensions to change, each with the settings to change. Only the given settings are changed, also inside marker and textBox; the keys are those CreateRadialDimensions takes and GetDetailsOfElements returns. The measured element and the dimension line cannot be changed here: delete the dimension and create it again with CreateRadialDimensions.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The Radial Dimension to change."
+                    },)") + RadialDimensionSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "radialDimensionsWithDetails"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyRadialDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
+
+GS::ObjectState ModifyRadialDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("radialDimensionsWithDetails", itemsWithDetails);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyRadialDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_RadialDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Radial Dimension."));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No radial dimension settings to modify."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            // Pointed to by note.contentUStr and prefixUStr until ACAPI_Element_Change has run.
+            GS::UniString customText;
+            GS::UniString prefix;
+            const auto settingsError = ApplyRadialDimensionSettings (item, element, &mask, customText, prefix);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the radial dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the radial dimension back after the change."));
+                continue;
+            }
+            const GS::UniString notApplied = GetRadialDimensionSettingsNotKept (item, element, changed);
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply all settings:" + notApplied));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+        }
+        return NoError;
+    });
+
+    return response;
 }
 
 namespace {
@@ -17570,6 +18246,8 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -17594,6 +18272,12 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 GS::Array<API_Guid> createdDimension = { element.header.guid };
                 ACAPI_Element_Delete (createdDimension);
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, pointsError.Get ()));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -17766,6 +18450,8 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -17781,6 +18467,12 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
             createdElement.header.guid = element.header.guid;
             if (ACAPI_Element_Get (&createdElement) != NoError) {
                 elements.Push (CreateErrorResponse (APIERR_GENERAL, "The section associative dimension was not created: Archicad reported success but no such element exists."));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -17934,6 +18626,8 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 dimElem.witnessVal = element.dimension.defWitnessVal;
                 dimElem.witnessForm = element.dimension.defWitnessForm;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -17948,6 +18642,12 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             createdElement.header.guid = element.header.guid;
             if (ACAPI_Element_Get (&createdElement) != NoError) {
                 elements.Push (CreateErrorResponse (APIERR_GENERAL, "The dimension was not created (is a section or elevation window active? Activate a floor plan window and retry)."));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -18206,6 +18906,9 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                     }
                 }
                 CheckWitnessPointTexts (witnessPointTexts, changedMemo, changed.dimension.nDimElem, notApplied);
+                notApplied += GetDimensionSettingsNotKept (item, element, changed, &changedMemo);
+            } else {
+                notApplied += GetDimensionSettingsNotKept (item, element, changed, nullptr);
             }
             if (!notApplied.IsEmpty ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));

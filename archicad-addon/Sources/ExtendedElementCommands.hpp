@@ -153,8 +153,21 @@ public:
 
 private:
     // Kept here because CreateElementsCommandBase calls ACAPI_Element_Create after
-    // SetTypeSpecificParameters has returned.
+    // SetTypeSpecificParameters has returned (note.contentUStr and prefixUStr point to them).
     mutable GS::UniString customText;
+    mutable GS::UniString prefix;
+};
+
+// Changes the settings of existing radial dimensions with the keys CreateRadialDimensions takes and
+// GetDetailsOfElements returns (#3133).
+class ModifyRadialDimensionsCommand : public CommandBase
+{
+public:
+    ModifyRadialDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 class SolveStairBaselineCommand : public CommandBase

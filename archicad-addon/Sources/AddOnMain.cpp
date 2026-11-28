@@ -1254,7 +1254,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateAssociativeDimensionsCommand> (
             elementCommands, "1.4.0",
-            "Creates associative dimensions from explicit witness point references: linear by default, or cumulative, baseline or elevation dimensions (appearance). A witness point can also be static, given by its coordinate instead of an element."
+            "Creates associative dimensions from explicit witness point references: linear by default, or cumulative, baseline or elevation dimensions (appearance). A witness point can also be static, given by its coordinate instead of an element. The settings are those ModifyAssociativeDimensions takes; a new dimension that did not keep its textBox, textFillOrder, textPlacement.advanced, elevationMarker.circleFill, clipDimensionLine, clipWitnessLine or witnessExtensionLine fails with the settings named and is deleted again."
         );
         err |= RegisterCommand<CreateAssociativeDimensionsOnSectionCommand> (
             elementCommands, "1.4.0",
@@ -1266,7 +1266,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyAssociativeDimensionsCommand> (
             elementCommands, "2.0.0",
-            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline) and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, the text position and the reset to the automatic text position; GetDetailsOfElements reads them back with the same keys. Not written: the witness points, the dimension line position and direction (use MoveElements), the witness extension line and the hole and composite wall dimensioning settings."
+            "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin and elevation marker, the line pen, the marker type, pen and size, the text placement method, the text height, pen, frame, font and style (bold, italic, underline), the text box of the texts (textBox, DimensionNote: angle, background, frame, alignment and leader line style), the drawing order of the texts' fill (textFillOrder, from Archicad 27), the witness line form and value, the witness extension line and the clipping of the dimension and witness lines (witnessExtensionLine, clipDimensionLine, clipWitnessLine, from Archicad 30), the opening heights and the layered element dimensioning, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. witnessPointTexts sets the text of single witness points: the measured value or a custom text (which can contain the measured value), superscript, the text position and the reset to the automatic text position; GetDetailsOfElements reads them back with the same keys. The dimension is read back, and a setting Archicad did not keep fails the item. Not written: the witness points, the dimension line position and direction (use MoveElements)."
         );
         err |= RegisterCommand<GetDimensionDataCommand> (
             elementCommands, "1.5.0",
@@ -1365,11 +1365,15 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateRadialDimensionsCommand> (
             elementCommands, "2.0.1",
             "Creates Radial Dimension elements (the Radial Dimension tool) measuring the radius of an arc, a circle or a curved wall, linked to that element, with the dimension line ending at dimensionLineEnd, "
-            "optionally based on a Radial Dimension favorite, with the line pen, marker, text height, pen, position and direction, a custom text and the centre mark. "
+            "optionally based on a Radial Dimension favorite, with the settings ModifyRadialDimensions takes: the line pen, marker, text height, pen, position and direction, measured or custom text, the centre mark, onlyDimensionText, the prefix and the text box of the dimension text (DimensionNote). "
             "The Archicad API does not document how a radial dimension stores the measured element, so the link is written as GetDetailsOfElements reads it from dimensions placed by hand (ownerElementInIndex and ownerElementLine can be given), "
             "and each new dimension is read back: one Archicad did not link to the element, whose radius is not the element's, whose dimension line Archicad moved off the given direction (it may lengthen the line so that the text fits) or that did not keep a given setting fails with the values Archicad stored and is deleted again. "
             "Archicad stores the link to a circle with the type Arc, and to a curved wall with ownerElementInIndex -1, as for a dimension placed by hand. Tested on Archicad 29 with circles, arcs and curved walls. "
-            "The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point and owner element."
+            "The dimensions are created in the current database or in the one given by databaseId; GetDetailsOfElements returns their radius, base point, owner element and settings."
+        );
+        err |= RegisterCommand<ModifyRadialDimensionsCommand> (
+            elementCommands, "2.0.2",
+            "Changes the settings of existing Radial Dimension elements with the keys CreateRadialDimensions takes and GetDetailsOfElements returns, written by the same code: the line pen, the marker (DimensionMarker), the text height, pen, position and direction, measured or custom text, the centre mark, onlyDimensionText, the prefix (the R of R 7.55) and the text box of the dimension text (DimensionNote). Only the given settings are changed, also inside marker and textBox. The measured element and the dimension line are not changed: delete the dimension and create it again with CreateRadialDimensions. The element is read back, so a value Archicad did not take is reported as a failure."
         );
         err |= RegisterCommand<ModifyAngleDimensionsCommand> (
             elementCommands, "2.0.1",
