@@ -22,6 +22,62 @@ var gSchemaDefinitions = {
             "$ref": "#/ElementIdArrayItem"
         }
     },
+    "SurfaceElevationHit": {
+        "type": "object",
+        "description": "One upward-facing surface at the requested point, attributed to its element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "z": {
+                "type": "number",
+                "description": "Elevation in metres relative to project zero."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "z"
+        ]
+    },
+    "SurfaceElevationSample": {
+        "type": "object",
+        "description": "Elevations for one input project coordinate.",
+        "properties": {
+            "point": {
+                "$ref": "#/Coordinate2D"
+            },
+            "hits": {
+                "type": "array",
+                "description": "All distinct upward-facing elevations at this point, ordered by elevation then element GUID. A point outside the surfaces or inside a hole has no hits.",
+                "items": {
+                    "$ref": "#/SurfaceElevationHit"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "point",
+            "hits"
+        ]
+    },
+    "SurfaceElevationElementError": {
+        "type": "object",
+        "description": "An input element whose own model faces could not be read. No partial elevations from this element are returned.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "error": {
+                "$ref": "#/Error"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "error"
+        ]
+    },
     "ElementIdArrayItem": {
         "type": "object",
         "properties": {

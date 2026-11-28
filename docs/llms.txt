@@ -1,7 +1,7 @@
 # Tapir
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
-> ENZYME-APD and its community. It adds 831 JSON commands to Archicad's own JSON API, a palette
+> ENZYME-APD and its community. It adds 832 JSON commands to Archicad's own JSON API, a palette
 > that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
 > Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
 > every Monday.
@@ -60,7 +60,7 @@ plugin send the same JSON. Every command is listed in [commands.md](https://arch
 - [Application Commands](https://archicad-api.com/commands/application.md) ([JSON](https://archicad-api.com/commands/application.json)): 42 commands with their parameters, results, Grasshopper components and examples.
 - [Project Commands](https://archicad-api.com/commands/project.md) ([JSON](https://archicad-api.com/commands/project.json)): 70 commands with their parameters, results, Grasshopper components and examples.
 - [Custom Data Commands](https://archicad-api.com/commands/custom-data.md) ([JSON](https://archicad-api.com/commands/custom-data.json)): 2 commands with their parameters, results, Grasshopper components and examples.
-- [Element Commands](https://archicad-api.com/commands/element.md) ([JSON](https://archicad-api.com/commands/element.json)): 198 commands with their parameters, results, Grasshopper components and examples.
+- [Element Commands](https://archicad-api.com/commands/element.md) ([JSON](https://archicad-api.com/commands/element.json)): 199 commands with their parameters, results, Grasshopper components and examples.
 - [Element grouping Commands](https://archicad-api.com/commands/element-grouping.md) ([JSON](https://archicad-api.com/commands/element-grouping.json)): 15 commands with their parameters, results, Grasshopper components and examples.
 - [Favorites Commands](https://archicad-api.com/commands/favorites.md) ([JSON](https://archicad-api.com/commands/favorites.json)): 27 commands with their parameters, results, Grasshopper components and examples.
 - [Property Commands](https://archicad-api.com/commands/property.md) ([JSON](https://archicad-api.com/commands/property.json)): 32 commands with their parameters, results, Grasshopper components and examples.

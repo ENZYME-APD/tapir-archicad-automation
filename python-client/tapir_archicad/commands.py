@@ -4879,6 +4879,22 @@ class Commands:
         """
         return self.run ('GetProfileValuesOfElements', _Parameters (('elements', elements)))
 
+    def get_surface_elevations_at_points (self, *, elements, points):
+        """Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres,
+        using their generated 3D bodies. Returns all distinct elevations above project zero with their
+        element IDs, including several levels of one element, without sending the body geometry. Hole
+        interiors and points outside the surfaces have no hits. Reports unreadable elements separately.
+        Pass subelement IDs for a hierarchy whose bodies belong to its parts.
+
+        Tapir command GetSurfaceElevationsAtPoints (Tapir 2.0.2): https://archicad-api.com/archicad-addon/#GetSurfaceElevationsAtPoints
+
+        Arguments:
+        elements (Elements, required): Between 1 and 256 element IDs. Duplicate IDs are sampled once.
+        points (array of Coordinate2D, required): Between 1 and 4096 XY points in project metres;
+            results retain input order.
+        """
+        return self.run ('GetSurfaceElevationsAtPoints', _Parameters (('elements', elements), ('points', points)))
+
     # Element grouping Commands
 
     def create_groups (self, *, element_groups):

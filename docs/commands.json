@@ -46,7 +46,7 @@
     "Element Commands"
    ],
    "slug": "element",
-   "commandCount": 198,
+   "commandCount": 199,
    "json": "https://archicad-api.com/commands/element.json",
    "markdown": "https://archicad-api.com/commands/element.md"
   },
@@ -3040,6 +3040,15 @@
    "groupFile": "https://archicad-api.com/commands/element.json",
    "groupMarkdown": "https://archicad-api.com/commands/element.md",
    "docsUrl": "https://archicad-api.com/archicad-addon/#GetProfileValuesOfElements"
+  },
+  {
+   "name": "GetSurfaceElevationsAtPoints",
+   "group": "Element Commands",
+   "version": "2.0.2",
+   "description": "Samples the upward-facing surfaces of explicit elements at XY coordinates in project metres, using their generated 3D bodies.",
+   "groupFile": "https://archicad-api.com/commands/element.json",
+   "groupMarkdown": "https://archicad-api.com/commands/element.md",
+   "docsUrl": "https://archicad-api.com/archicad-addon/#GetSurfaceElevationsAtPoints"
   },
   {
    "name": "CreateGroups",
