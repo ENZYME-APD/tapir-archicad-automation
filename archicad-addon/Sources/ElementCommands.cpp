@@ -27,6 +27,8 @@
 #include <sstream>
 #include <functional>
 #include <limits>
+#include <numeric>
+#include <vector>
 
 // The pivot polygon of a multi-plane roof lives in the memo's additional polygon
 // (APIMemoMask_AdditionalPolygon); the first sub-polygon is the outline. Its arcs
@@ -13063,6 +13065,83 @@ static API_Coord3D TransformBodyVertex (const API_Tranmat& tranmat, double x, do
     };
 }
 
+// The component API can read from the floor plan and the model. When a drawing, section
+// or layout is current, switch only the database and restore it when the read ends.
+class ScopedModelReadDatabase {
+public:
+    ScopedModelReadDatabase ()
+    {
+        if (ACAPI_Database_GetCurrentDatabase (&previous) != NoError ||
+            previous.typeID == APIWind_FloorPlanID || previous.typeID == APIWind_3DModelID) {
+            return;
+        }
+        API_DatabaseInfo floorPlan = {};
+        floorPlan.typeID = APIWind_FloorPlanID;
+        switched = ACAPI_Window_GetDatabaseInfo (&floorPlan) == NoError &&
+                   ACAPI_Database_ChangeCurrentDatabase (&floorPlan) == NoError;
+    }
+
+    ~ScopedModelReadDatabase ()
+    {
+        if (switched) {
+            ACAPI_Database_ChangeCurrentDatabase (&previous);
+        }
+    }
+
+private:
+    API_DatabaseInfo previous = {};
+    bool switched = false;
+};
+
+template <typename Visitor>
+static GSErrCode VisitBodyWorldVertices (const API_BodyType& body, const Visitor& visit)
+{
+    GSErrCode readError = NoError;
+    for (Int32 i = 1; i <= body.nVert; ++i) {
+        API_Component3D v = {};
+        v.header.typeID = API_VertID;
+        v.header.index = i;
+        const GSErrCode err = ACAPI_ModelAccess_GetComponent (&v);
+        if (err == NoError) {
+            visit (TransformBodyVertex (body.tranmat, v.vert.x, v.vert.y, v.vert.z));
+        } else {
+            readError = err;
+            visit (API_Coord3D {}); // Keep vertex indices stable for the best-effort geometry dump.
+        }
+    }
+    return readError;
+}
+
+// Signed model edges form a zero-based outer loop followed by hole loops. A failed
+// edge read is reported to numerical consumers; the geometry dump keeps its partial loops.
+static GSErrCode GetBodyPolygonLoops (const API_PgonType& pgon, GS::Array<GS::Array<Int32>>& contours)
+{
+    API_Component3D component = {};
+    GSErrCode readError = NoError;
+    contours.Push (GS::Array<Int32> ());
+    for (Int32 iPedg = pgon.fpedg; iPedg <= pgon.lpedg; ++iPedg) {
+        component.header.typeID = API_PedgID;
+        component.header.index = iPedg;
+        if (const GSErrCode err = ACAPI_ModelAccess_GetComponent (&component)) {
+            readError = err;
+            continue;
+        }
+        const Int32 pedg = component.pedg.pedg;
+        if (pedg == 0) {
+            contours.Push (GS::Array<Int32> ());
+            continue;
+        }
+        component.header.typeID = API_EdgeID;
+        component.header.index = pedg > 0 ? pedg : -pedg;
+        if (const GSErrCode err = ACAPI_ModelAccess_GetComponent (&component)) {
+            readError = err;
+            continue;
+        }
+        contours.GetLast ().Push ((pedg > 0 ? component.edge.vert1 : component.edge.vert2) - 1);
+    }
+    return readError;
+}
+
 // Adds the solid bodies of the element's own 3D model to `bodies`, in the shape the "Body3D"
 // schema definition describes: world-coordinate vertices and the faces as 0-based vertex loops.
 // The model is walked through the component API like AccumulateSolidBodyBounds above: once a
@@ -13094,17 +13173,9 @@ static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS
 
         GS::ObjectState bodyOS;
         const auto& vertices = bodyOS.AddList<GS::ObjectState> ("vertices");
-        for (Int32 iVert = 1; iVert <= body.nVert; ++iVert) {
-            component.header.typeID = API_VertID;
-            component.header.index = iVert;
-            API_Coord3D vertex = { 0.0, 0.0, 0.0 };
-            if (ACAPI_ModelAccess_GetComponent (&component) == NoError) {
-                vertex = TransformBodyVertex (body.tranmat, component.vert.x, component.vert.y, component.vert.z);
-            }
-            // Written even when the read failed, so the polygons' indices keep pointing at the
-            // right vertices.
+        VisitBodyWorldVertices (body, [&](const API_Coord3D& vertex) {
             vertices (Create3DCoordinateObjectState (vertex));
-        }
+        });
 
         const auto& polygons = bodyOS.AddList<GS::ObjectState> ("polygons");
         for (Int32 iPgon = 1; iPgon <= body.nPgon; ++iPgon) {
@@ -13116,25 +13187,7 @@ static GSErrCode CollectSolidBodies (const API_Elem_Head& elemHead, GS::Array<GS
             const API_PgonType pgon = component.pgon;
 
             GS::Array<GS::Array<Int32>> contours;
-            contours.Push (GS::Array<Int32> ());
-            for (Int32 iPedg = pgon.fpedg; iPedg <= pgon.lpedg; ++iPedg) {
-                component.header.typeID = API_PedgID;
-                component.header.index = iPedg;
-                if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
-                    continue;
-                }
-                const Int32 pedg = component.pedg.pedg;
-                if (pedg == 0) {
-                    contours.Push (GS::Array<Int32> ());
-                    continue;
-                }
-                component.header.typeID = API_EdgeID;
-                component.header.index = pedg > 0 ? pedg : -pedg;
-                if (ACAPI_ModelAccess_GetComponent (&component) != NoError) {
-                    continue;
-                }
-                contours.GetLast ().Push ((pedg > 0 ? component.edge.vert1 : component.edge.vert2) - 1);
-            }
+            GetBodyPolygonLoops (pgon, contours);
             if (contours[0].GetSize () < 3) {
                 continue;
             }
@@ -13312,31 +13365,7 @@ GS::ObjectState Get3DGeometryOfElementsCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& geometries3D = response.AddList<GS::ObjectState> ("geometries3D");
 
-    // ACAPI_ModelAccess_Get3DInfo answers APIERR_BADDATABASE (-2130313110) when the current
-    // database is a 3D Document (and likewise a section, elevation, layout, ...), while it works
-    // from the floor plan and the 3D window (#1482). So switch the CURRENT DATABASE - not the
-    // visible window - to the floor plan for the reads in those cases, as CreateWindows and
-    // CreateDoors do (see SwitchCurrentDatabaseToFloorPlan in ExtendedElementCommands.cpp), and
-    // put the previous one back on every exit path.
-    API_DatabaseInfo previousDatabase = {};
-    bool databaseSwitched = false;
-    const GS::OnExit restoreDatabase ([&]() {
-        if (databaseSwitched) {
-            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
-        }
-    });
-    if (ACAPI_Database_GetCurrentDatabase (&previousDatabase) == NoError &&
-        previousDatabase.typeID != APIWind_FloorPlanID &&
-        previousDatabase.typeID != APIWind_3DModelID)
-    {
-        API_DatabaseInfo floorPlanDatabase = {};
-        floorPlanDatabase.typeID = APIWind_FloorPlanID;
-        if (ACAPI_Window_GetDatabaseInfo (&floorPlanDatabase) == NoError &&
-            ACAPI_Database_ChangeCurrentDatabase (&floorPlanDatabase) == NoError)
-        {
-            databaseSwitched = true;
-        }
-    }
+    const ScopedModelReadDatabase database;
 
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
@@ -16606,5 +16635,347 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
     }
 
     response.Add ("count", matchCount);
+    return response;
+}
+
+GetSurfaceElevationsAtPointsCommand::GetSurfaceElevationsAtPointsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetSurfaceElevationsAtPointsCommand::GetName () const
+{
+    return "GetSurfaceElevationsAtPoints";
+}
+
+GS::Optional<GS::UniString> GetSurfaceElevationsAtPointsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Between 1 and 256 element IDs. Duplicate IDs are sampled once."
+            },
+            "points": {
+                "type": "array",
+                "description": "Between 1 and 4096 XY points in project metres; results retain input order.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "points"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetSurfaceElevationsAtPointsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "samples": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/SurfaceElevationSample"
+                }
+            },
+            "elementErrors": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/SurfaceElevationElementError"
+                }
+            },
+            "unit": {
+                "type": "string",
+                "enum": [
+                    "m"
+                ]
+            },
+            "zReference": {
+                "type": "string",
+                "enum": [
+                    "projectZero"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "samples",
+            "elementErrors",
+            "unit",
+            "zReference"
+        ]
+    })";
+}
+
+namespace {
+
+constexpr double ElevationTolerance = 1e-7;  // metres along Z
+
+struct ElevationPoints {
+    std::vector<API_Coord> xy;
+    std::vector<size_t> byX;
+};
+
+// Normals use the inverse transpose of the linear part. Remove the scale of each
+// axis before the singularity check so small, valid instances remain measurable.
+static bool GetInverseBodyAxes (const API_Tranmat& transform, API_Tranmat& inverse)
+{
+    API_Tranmat axes = {};
+    double lengths[3];
+    for (int col = 0; col < 3; ++col) {
+        const double* m = transform.tmx + col;
+        lengths[col] = std::hypot (std::hypot (m[0], m[4]), m[8]);
+        if (!std::isfinite (lengths[col]) || lengths[col] == 0.0) {
+            return false;
+        }
+        for (int row = 0; row < 3; ++row) {
+            axes.tmx[4 * row + col] = m[4 * row] / lengths[col];
+        }
+    }
+    if (!InvertTranmat (axes, inverse)) {
+        return false;
+    }
+    for (int row = 0; row < 3; ++row) {
+        for (int col = 0; col < 3; ++col) {
+            inverse.tmx[4 * row + col] /= lengths[row];
+        }
+    }
+    return true;
+}
+
+enum class RingLocation { Outside, Inside, Boundary };
+
+static RingLocation LocateInRing (const API_Coord& p, const GS::Array<Int32>& ring, const std::vector<API_Coord3D>& vertices)
+{
+    bool inside = false;
+    for (UIndex i = 0, j = ring.GetSize () - 1; i < ring.GetSize (); j = i++) {
+        const API_Coord3D& a = vertices[ring[j]];
+        const API_Coord3D& b = vertices[ring[i]];
+        const long double dx = static_cast<long double> (b.x) - a.x, dy = static_cast<long double> (b.y) - a.y;
+        const long double px = static_cast<long double> (p.x) - a.x, py = static_cast<long double> (p.y) - a.y;
+        const long double cross = dx * py - dy * px;
+        const long double roundoff = 4 * std::numeric_limits<long double>::epsilon () * (std::abs (dx * py) + std::abs (dy * px));
+        if (std::abs (cross) <= roundoff &&
+            p.x >= std::min (a.x, b.x) && p.x <= std::max (a.x, b.x) &&
+            p.y >= std::min (a.y, b.y) && p.y <= std::max (a.y, b.y)) {
+            return RingLocation::Boundary;
+        }
+        if ((a.y > p.y) != (b.y > p.y) && (dy > 0.0 ? cross > 0.0 : cross < 0.0)) {
+            inside = !inside;
+        }
+    }
+    return inside ? RingLocation::Inside : RingLocation::Outside;
+}
+
+// Sample the plane inside its projected contours. A hole edge is on the surface;
+// its interior is open. Sorting the input by X avoids testing distant profile points.
+static GSErrCode SampleFace (const API_PgonType& face, const API_Tranmat& inverse,
+                             const std::vector<API_Coord3D>& vertices, const ElevationPoints& points,
+                             std::vector<std::vector<double>>& elevations)
+{
+    if (face.fpedg > face.lpedg) {
+        return NoError;
+    }
+    API_Component3D v = {};
+    v.header.typeID = API_VectID;
+    v.header.index = std::abs (face.ivect);
+    const GSErrCode err = ACAPI_ModelAccess_GetComponent (&v);
+    if (err != NoError) {
+        return err;
+    }
+    // The signed outward normal is a covector: inverse transpose also works for scaled or mirrored instances.
+    const double* m = inverse.tmx;
+    const double sign = face.ivect < 0 ? -1.0 : 1.0;
+    const API_Coord3D n { sign * (m[0] * v.vect.x + m[4] * v.vect.y + m[8] * v.vect.z),
+                          sign * (m[1] * v.vect.x + m[5] * v.vect.y + m[9] * v.vect.z),
+                          sign * (m[2] * v.vect.x + m[6] * v.vect.y + m[10] * v.vect.z) };
+    if (!std::isfinite (n.x) || !std::isfinite (n.y) || !std::isfinite (n.z) ||
+        (n.x == 0.0 && n.y == 0.0 && n.z == 0.0)) {
+        return APIERR_BADPOLY;
+    }
+    if (n.z <= 1e-12 * std::hypot (n.x, n.y)) {
+        return NoError;
+    }
+    GS::Array<GS::Array<Int32>> loops;
+    const GSErrCode loopError = GetBodyPolygonLoops (face, loops);
+    if (loopError != NoError) {
+        return loopError;
+    }
+    for (const auto& ring : loops) {
+        if (ring.GetSize () < 3) {
+            return APIERR_BADPOLY;
+        }
+        for (const Int32 index : ring) {
+            if (index < 0 || static_cast<size_t> (index) >= vertices.size ()) {
+                return APIERR_BADPOLY;
+            }
+        }
+    }
+
+    const auto& outer = loops[0];
+    const API_Coord3D& origin = vertices[outer[0]];
+    double minX = origin.x, maxX = origin.x, minY = origin.y, maxY = origin.y;
+    for (const Int32 index : outer) {
+        const API_Coord3D& a = vertices[index];
+        minX = std::min (minX, a.x); maxX = std::max (maxX, a.x);
+        minY = std::min (minY, a.y); maxY = std::max (maxY, a.y);
+    }
+    auto it = std::lower_bound (points.byX.begin (), points.byX.end (), minX,
+        [&](size_t i, double x) { return points.xy[i].x < x; });
+    for (; it != points.byX.end () && points.xy[*it].x <= maxX; ++it) {
+        const API_Coord& p = points.xy[*it];
+        if (p.y < minY || p.y > maxY ||
+            LocateInRing (p, outer, vertices) == RingLocation::Outside) {
+            continue;
+        }
+        bool inHole = false;
+        for (UIndex h = 1; h < loops.GetSize () && !inHole; ++h) {
+            inHole = LocateInRing (p, loops[h], vertices) == RingLocation::Inside;
+        }
+        if (!inHole) {
+            const double z = origin.z - (n.x / n.z) * (p.x - origin.x) - (n.y / n.z) * (p.y - origin.y);
+            if (!std::isfinite (z)) {
+                return APIERR_BADPOLY;
+            }
+            elevations[*it].push_back (z);
+        }
+    }
+    return NoError;
+}
+
+static GSErrCode SampleElement (const API_Elem_Head& head, const ElevationPoints& points, std::vector<std::vector<double>>& elevations)
+{
+    API_ElemInfo3D info = {};
+    GSErrCode err = ACAPI_ModelAccess_Get3DInfo (head, &info);
+    if (err != NoError) {
+        return err;
+    }
+    bool hasFaces = false;
+    for (Int32 i = info.fbody; i <= info.lbody; ++i) {
+        API_Component3D c = {};
+        c.header.typeID = API_BodyID;
+        c.header.index = i;
+        err = ACAPI_ModelAccess_GetComponent (&c);
+        if (err != NoError) {
+            return err;
+        }
+        const API_BodyType body = c.body;
+        if (body.nPgon == 0) {
+            continue;
+        }
+        hasFaces = true;
+        API_Tranmat inverse = {};
+        if (!GetInverseBodyAxes (body.tranmat, inverse)) {
+            return APIERR_BADPOLY;
+        }
+        std::vector<API_Coord3D> vertices;
+        vertices.reserve (body.nVert);
+        err = VisitBodyWorldVertices (body, [&](const API_Coord3D& vertex) { vertices.push_back (vertex); });
+        if (err != NoError) {
+            return err;
+        }
+        if (std::any_of (vertices.begin (), vertices.end (), [](const API_Coord3D& v) {
+                return !std::isfinite (v.x) || !std::isfinite (v.y) || !std::isfinite (v.z);
+            })) {
+            return APIERR_BADPOLY;
+        }
+        for (Int32 f = 1; f <= body.nPgon; ++f) {
+            c.header.typeID = API_PgonID;
+            c.header.index = f;
+            err = ACAPI_ModelAccess_GetComponent (&c);
+            if (err != NoError) {
+                return err;
+            }
+            err = SampleFace (c.pgon, inverse, vertices, points, elevations);
+            if (err != NoError) {
+                return err;
+            }
+        }
+    }
+    return hasFaces ? NoError : APIERR_NO3D;
+}
+
+} // namespace
+
+GS::ObjectState GetSurfaceElevationsAtPointsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements, coordinates;
+    if (!parameters.Get ("elements", elements) || elements.IsEmpty () || elements.GetSize () > 256 ||
+        !parameters.Get ("points", coordinates) || coordinates.IsEmpty () || coordinates.GetSize () > 4096) {
+        return CreateErrorResponse (APIERR_BADPARS, "Supply 1 to 256 elements and 1 to 4096 project coordinates.");
+    }
+    ElevationPoints points;
+    for (const auto& coord : coordinates) {
+        API_Coord xy = {};
+        if (!coord.Get ("x", xy.x) || !coord.Get ("y", xy.y) || !std::isfinite (xy.x) || !std::isfinite (xy.y)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each point needs finite X and Y coordinates.");
+        }
+        points.xy.push_back (xy);
+    }
+    points.byX.resize (points.xy.size ());
+    std::iota (points.byX.begin (), points.byX.end (), 0);
+    std::sort (points.byX.begin (), points.byX.end (), [&](size_t a, size_t b) { return points.xy[a].x < points.xy[b].x; });
+
+    GS::ObjectState response ("unit", "m", "zReference", "projectZero");
+    const auto& errors = response.AddList<GS::ObjectState> ("elementErrors");
+    const ScopedModelReadDatabase database;
+    GS::HashSet<API_Guid> seen;
+    std::vector<GS::UniString> ids;
+    using Hit = std::pair<double, size_t>;
+    std::vector<std::vector<Hit>> hits (points.xy.size ());
+    for (const auto& element : elements) {
+        const GS::ObjectState* id = element.Get ("elementId");
+        if (id == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Each element needs an elementId.");
+        }
+        API_Elem_Head head = {};
+        head.guid = GetGuidFromObjectState (*id);
+        if (seen.Contains (head.guid)) {
+            continue;
+        }
+        seen.Add (head.guid);
+        std::vector<std::vector<double>> elevations (points.xy.size ());
+        GSErrCode err = ACAPI_Element_GetHeader (&head);
+        if (err == NoError) {
+            err = SampleElement (head, points, elevations);
+        }
+        if (err != NoError) {
+            GS::ObjectState failure = CreateErrorResponse (err, "Could not read the element's own 3D faces.");
+            failure.Add ("elementId", *id);
+            errors (failure);
+            continue;
+        }
+        const size_t index = ids.size ();
+        ids.push_back (APIGuidToString (head.guid));
+        for (size_t i = 0; i < elevations.size (); ++i) {
+            auto& z = elevations[i];
+            std::sort (z.begin (), z.end ());
+            double last = -std::numeric_limits<double>::infinity ();
+            for (double value : z) {
+                if (value - last > ElevationTolerance) {
+                    hits[i].emplace_back (value, index);
+                    last = value;
+                }
+            }
+        }
+    }
+    const auto& samples = response.AddList<GS::ObjectState> ("samples");
+    for (size_t i = 0; i < hits.size (); ++i) {
+        std::sort (hits[i].begin (), hits[i].end (), [&](const Hit& a, const Hit& b) {
+            return a.first != b.first ? a.first < b.first : ids[a.second] < ids[b.second];
+        });
+        GS::ObjectState sample ("point", Create2DCoordinateObjectState (points.xy[i]));
+        const auto& values = sample.AddList<GS::ObjectState> ("hits");
+        for (const Hit& hit : hits[i]) {
+            values (GS::ObjectState ("elementId", GS::ObjectState ("guid", ids[hit.second]), "z", hit.first));
+        }
+        samples (sample);
+    }
     return response;
 }
