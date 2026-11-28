@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 18:17 UTC",
+ "generatedAt": "2026-11-28 18:51 UTC",
  "versions": [
   25,
   26,
@@ -6829,10 +6829,6 @@
      "title": "Refine API schemas following Tapir 2.0.1: Properties, IFC and element data"
     },
     {
-     "number": 3112,
-     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
-    },
-    {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
     },
@@ -7368,10 +7364,6 @@
     {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
-    },
-    {
-     "number": 3112,
-     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
     {
      "number": 2797,
@@ -25312,10 +25304,6 @@
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     },
     {
-     "number": 3112,
-     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -37408,10 +37396,6 @@
     {
      "number": 3127,
      "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
-    {
-     "number": 3112,
-     "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
     {
      "number": 2880,

@@ -74,7 +74,7 @@ Every field of every Archicad element type, and whether a Tapir command has a ke
 | [`API_RailingFinishType`](#api_railingfinishtype) | 100 % | 2 |  | 2 |  |  |  |
 | [`API_ExternalElemType`](#api_externalelemtype) | 0 % | 1 |  |  | 1 |  |  |
 
-Fields of the Archicad 30 DevKit; an estimate read from the code, updated 2026-11-28 18:25 UTC.
+Fields of the Archicad 30 DevKit; an estimate read from the code, updated 2026-11-28 19:03 UTC.
 
 | | Status |
 |---|---|
