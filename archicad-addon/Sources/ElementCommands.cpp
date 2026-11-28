@@ -4248,6 +4248,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("pen", (Int32) elem.angleDimension.linPen);
                 typeSpecificDetails.Add ("textHeight", elem.angleDimension.note.noteSize);
                 typeSpecificDetails.Add ("textPen", (Int32) elem.angleDimension.note.notePen);
+                AddAngleDimensionSettingsDetails (elem.angleDimension, typeSpecificDetails);
                 break;
             }
 

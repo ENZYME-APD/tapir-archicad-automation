@@ -1,7 +1,7 @@
-"""Creates a 30 degree angle dimension, then changes its pen, text and measured arc with ModifyAngleDimensions.
+"""Creates a 30 degree angle dimension, then changes its pen, text, marker, witness lines, text box and measured arc with ModifyAngleDimensions.
 
 The settings have the keys CreateAngleDimensions takes and GetDetailsOfElements returns; only the
-given ones are changed. The lines and the arc position cannot be changed (Archicad keeps them):
+given ones are changed (also inside marker and textBox). The lines and the arc position cannot be changed (Archicad keeps them):
 delete the dimension and create it again with CreateAngleDimensions for a new geometry.
 """
 import math
@@ -22,7 +22,11 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyAngleDimensions', {'angleDimensio
     'smallArc': False,
     'pen': 3,
     'textHeight': 3.0,
-    'textPen': 5
+    'textPen': 5,
+    'textPosition': 'Below',
+    'witnessForm': 'Fix',
+    'marker': {'type': 'FullArrow30', 'size': 2.0},
+    'textBox': {'frame': True, 'framePen': 2, 'opaque': True, 'backgroundPen': 1}
 }]}))
 
 details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [dimension]})

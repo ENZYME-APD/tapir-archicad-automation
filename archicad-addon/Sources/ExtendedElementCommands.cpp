@@ -735,7 +735,7 @@ static GS::UniString DimensionAppearanceToString (API_AppearID appearance)
     }
 }
 
-static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
+GS::UniString WitnessFormToString (API_WitnessID witnessForm)
 {
     switch (witnessForm) {
         case APIWtn_None:   return "None";
@@ -746,7 +746,7 @@ static GS::UniString WitnessFormToString (API_WitnessID witnessForm)
     }
 }
 
-static bool ParseWitnessFormString (const GS::UniString& witnessForm, API_WitnessID& result)
+bool ParseWitnessFormString (const GS::UniString& witnessForm, API_WitnessID& result)
 {
     if (witnessForm == "None") {
         result = APIWtn_None;
@@ -762,7 +762,7 @@ static bool ParseWitnessFormString (const GS::UniString& witnessForm, API_Witnes
     return true;
 }
 
-static GS::UniString DimensionMarkerName (API_MarkerID markerType)
+GS::UniString DimensionMarkerName (API_MarkerID markerType)
 {
     switch (markerType) {
         case APIMark_CrossLine:     return "CrossLine";
@@ -786,7 +786,7 @@ static GS::UniString DimensionMarkerName (API_MarkerID markerType)
     }
 }
 
-static bool ParseDimensionMarkerName (const GS::UniString& markerName, API_MarkerID& result)
+bool ParseDimensionMarkerName (const GS::UniString& markerName, API_MarkerID& result)
 {
     for (Int32 markerType = APIMark_CrossLine; markerType <= APIMark_SlashLine75; ++markerType) {
         if (DimensionMarkerName (static_cast<API_MarkerID> (markerType)) == markerName) {

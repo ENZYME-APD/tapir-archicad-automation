@@ -9594,9 +9594,45 @@ CreateAngleDimensionsCommand::CreateAngleDimensionsCommand () :
 {
 }
 
+// The settings of the Angle Dimension Settings that CreateAngleDimensions and ModifyAngleDimensions
+// both take with the same keys and GetDetailsOfElements returns (#3133), written by
+// ApplyAngleDimensionSettings.
+static const char* AngleDimensionSettingsSchemaProperties = R"(
+                    "onlyDimensionText": {
+                        "type": "boolean",
+                        "description": "Show only the dimension text, without the dimension arc and the witness lines (API onlyDimensionText). Optional parameter."
+                    },
+                    "textPosition": {
+                        "$ref": "#/AngleDimensionTextPosition",
+                        "description": "Where the dimension text is: above, in or below the dimension arc (API textPos). Optional parameter."
+                    },
+                    "textDirection": {
+                        "type": "string",
+                        "enum": ["Parallel", "Horizontal", "Perpendicular"],
+                        "description": "The direction of the dimension text: parallel or perpendicular to the dimension arc, or horizontal (API textWay). Optional parameter."
+                    },
+                    "witnessForm": {
+                        "type": "string",
+                        "enum": ["None", "Small", "Large", "Fix"],
+                        "description": "The witness line form: none, small, large (witnessValue is their length) or fixed gap (witnessValue is the gap) (API witnessForm). Optional parameter."
+                    },
+                    "witnessValue": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "The gap (witnessForm Fix) or the length (witnessForm Large) of the witness lines, as GetDetailsOfElements returns it (API witnessVal). Optional parameter."
+                    },
+                    "marker": {
+                        "$ref": "#/DimensionMarker",
+                        "description": "The marker at the ends of the dimension arc. Only the fields given change. Optional parameter."
+                    },
+                    "textBox": {
+                        "$ref": "#/DimensionNote",
+                        "description": "The text box of the dimension text: angle, background, frame, alignment and the leader line style. Only the fields given change. Optional parameter."
+                    })";
+
 GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "angleDimensionsData": {
@@ -9654,7 +9690,7 @@ GS::Optional<GS::UniString> CreateAngleDimensionsCommand::GetInputParametersSche
                         "minimum": 1,
                         "maximum": 255,
                         "description": "Pen index of the dimension text. Optional parameter."
-                    }
+                    },)") + AngleDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -9722,8 +9758,365 @@ static GS::Optional<GS::ObjectState> SetAngleDimensionGeometry (API_Element& ele
     return {};
 }
 
+// The names of the text positions (API_TextPosID) and text directions (API_DirID, of which the
+// DevKit gives angle dimensions APIDir_Parallel, APIDir_Horizontal and APIDir_Perpendicular) of an
+// angle dimension, as #/AngleDimensionTextPosition and textDirection name them.
+static const char* AngleDimensionTextPositionToString (API_TextPosID textPos)
+{
+    switch (textPos) {
+        case APIPos_In:    return "In";
+        case APIPos_Below: return "Below";
+        default:           return "Above";
+    }
+}
+
+static bool ParseAngleDimensionTextPosition (const GS::UniString& name, API_TextPosID& result)
+{
+    const API_TextPosID positions[] = { APIPos_Above, APIPos_In, APIPos_Below };
+    for (API_TextPosID position : positions) {
+        if (name == AngleDimensionTextPositionToString (position)) {
+            result = position;
+            return true;
+        }
+    }
+    return false;
+}
+
+static const char* AngleDimensionTextDirectionToString (API_DirID textWay)
+{
+    switch (textWay) {
+        case APIDir_Parallel:      return "Parallel";
+        case APIDir_Horizontal:    return "Horizontal";
+        case APIDir_Perpendicular: return "Perpendicular";
+        default:                   return "Unknown";
+    }
+}
+
+static bool ParseAngleDimensionTextDirection (const GS::UniString& name, API_DirID& result)
+{
+    const API_DirID directions[] = { APIDir_Parallel, APIDir_Horizontal, APIDir_Perpendicular };
+    for (API_DirID direction : directions) {
+        if (name == AngleDimensionTextDirectionToString (direction)) {
+            result = direction;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseNoteJustification (const GS::UniString& name, API_JustID& result)
+{
+    const API_JustID justifications[] = { APIJust_Left, APIJust_Center, APIJust_Right, APIJust_Full };
+    for (API_JustID just : justifications) {
+        if (name == JustificationToString (just)) {
+            result = just;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseNoteAnchorPoint (const GS::UniString& name, API_LblAnchorID& result)
+{
+    const API_LblAnchorID anchors[] = { APILbl_MiddleAnchor, APILbl_TopAnchor, APILbl_BottomAnchor, APILbl_Underlined };
+    for (API_LblAnchorID anchor : anchors) {
+        if (name == LabelAnchorPointToString (anchor)) {
+            result = anchor;
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool ParseArrowTypeName (const GS::UniString& name, API_ArrowID& result)
+{
+    for (int i = 0; i < kArrowTypeCount; ++i) {
+        if (name == kArrowTypeNames[i]) {
+            result = static_cast<API_ArrowID> (i);
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool GetNoteArrowVisible (const API_NoteType& note)
+{
+#ifdef ServerMainVers_2900
+    return note.arrowData.arrowVisibility;
+#else
+    // As for a label's leader line (AddLabelLeaderLineDetails): the arrowhead sits at the
+    // leader line's beginning.
+    return note.arrowData.begArrow;
+#endif
+}
+
+// The text box of a dimension text as #/DimensionNote returns it, with all of its fields.
+static GS::ObjectState CreateDimensionNoteObjectState (const API_NoteType& note)
+{
+    GS::ObjectState os;
+    os.Add ("textAngle", note.noteAngle);
+    os.Add ("opaque", note.opaque);
+    os.Add ("frame", note.frame);
+    os.Add ("backgroundPen", static_cast<Int32> (note.backgroundPen));
+    os.Add ("framePen", static_cast<Int32> (note.framePen));
+    os.Add ("justification", JustificationToString (note.just));
+    os.Add ("anchorRow", note.rowAnchor == 1 ? "Last" : "First");
+    os.Add ("anchorPoint", LabelAnchorPointToString (note.anchorPoint));
+    os.Add ("anchorAtTextEnd", note.anchorAtTextEnd);
+    os.Add ("leaderPen", static_cast<Int32> (note.leaderPen));
+    os.Add ("leaderLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, note.leaderLineType)));
+    os.Add ("leaderShape", LeaderShapeToString (note.leaderShape));
+    os.Add ("arrowType", ArrowTypeToString (note.arrowData.arrowType));
+    os.Add ("arrowVisible", GetNoteArrowVisible (note));
+    os.Add ("arrowPen", static_cast<Int32> (note.arrowData.arrowPen));
+    os.Add ("arrowSize", note.arrowData.arrowSize);
+    return os;
+}
+
+static GS::Optional<GS::ObjectState> GetPenOfObjectState (const GS::ObjectState& os, const char* name, const char* path, Int32 minimum, short& pen, bool& given)
+{
+    Int32 value = 0;
+    given = os.Get (name, value);
+    if (!given) {
+        return {};
+    }
+    if (value < minimum || value > 255) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("'") + path + GS::UniString::Printf ("' must be between %d and 255.", minimum));
+    }
+    pen = static_cast<short> (value);
+    return {};
+}
+
+// Writes the fields of a #/DimensionNote given in noteOS to note (a dimension's API_NoteType), and
+// marks them in noteMask, the same note in the element mask, when it is not nullptr. The arrowhead
+// is written as a whole, as ApplyLabelLeaderLineSettableDetails does: Archicad drops a change of
+// one arrowData field unless all of them are masked. Returns the error response of an invalid value.
+static GS::Optional<GS::ObjectState> ApplyDimensionNote (const GS::ObjectState& noteOS, API_NoteType& note, API_NoteType* noteMask)
+{
+    if (noteOS.Get ("textAngle", note.noteAngle) && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, noteAngle);
+    }
+    if (noteOS.Get ("opaque", note.opaque) && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, opaque);
+    }
+    if (noteOS.Get ("frame", note.frame) && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, frame);
+    }
+
+    bool given = false;
+    auto penError = GetPenOfObjectState (noteOS, "backgroundPen", "textBox.backgroundPen", -1, note.backgroundPen, given);
+    if (penError.HasValue ()) {
+        return penError;
+    }
+    if (given && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, backgroundPen);
+    }
+    penError = GetPenOfObjectState (noteOS, "framePen", "textBox.framePen", 1, note.framePen, given);
+    if (penError.HasValue ()) {
+        return penError;
+    }
+    if (given && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, framePen);
+    }
+
+    GS::UniString name;
+    if (noteOS.Get ("justification", name)) {
+        if (!ParseNoteJustification (name, note.just)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.justification' value: " + name);
+        }
+        if (noteMask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, just);
+        }
+    }
+    if (noteOS.Get ("anchorRow", name)) {
+        if (name == "First") {
+            note.rowAnchor = 0;
+        } else if (name == "Last") {
+            note.rowAnchor = 1;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorRow' value: " + name);
+        }
+        if (noteMask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, rowAnchor);
+        }
+    }
+    if (noteOS.Get ("anchorPoint", name)) {
+        if (!ParseNoteAnchorPoint (name, note.anchorPoint)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.anchorPoint' value: " + name);
+        }
+        if (noteMask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorPoint);
+        }
+    }
+    if (noteOS.Get ("anchorAtTextEnd", note.anchorAtTextEnd) && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, anchorAtTextEnd);
+    }
+
+    penError = GetPenOfObjectState (noteOS, "leaderPen", "textBox.leaderPen", 1, note.leaderPen, given);
+    if (penError.HasValue ()) {
+        return penError;
+    }
+    if (given && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderPen);
+    }
+    const GS::ObjectState* lineTypeId = noteOS.Get ("leaderLineTypeId");
+    if (lineTypeId != nullptr) {
+        if (!ResolveAttributeIndex (*lineTypeId, API_LinetypeID, note.leaderLineType)) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textBox.leaderLineTypeId' is not an existing line type.");
+        }
+        if (noteMask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderLineType);
+        }
+    }
+    if (noteOS.Get ("leaderShape", name)) {
+        if (name == "Segmented") {
+            note.leaderShape = API_Segmented;
+        } else if (name == "Splinear") {
+            note.leaderShape = API_Splinear;
+        } else {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.leaderShape' value: " + name + " (a dimension text takes Segmented or Splinear).");
+        }
+        if (noteMask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, leaderShape);
+        }
+    }
+
+    bool arrowTouched = false;
+    if (noteOS.Get ("arrowType", name)) {
+        if (!ParseArrowTypeName (name, note.arrowData.arrowType)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textBox.arrowType' value: " + name);
+        }
+        arrowTouched = true;
+    }
+    bool arrowVisible = false;
+    if (noteOS.Get ("arrowVisible", arrowVisible)) {
+#ifdef ServerMainVers_2900
+        note.arrowData.arrowVisibility = arrowVisible;
+#else
+        note.arrowData.begArrow = arrowVisible;
+#endif
+        arrowTouched = true;
+    }
+    penError = GetPenOfObjectState (noteOS, "arrowPen", "textBox.arrowPen", 1, note.arrowData.arrowPen, given);
+    if (penError.HasValue ()) {
+        return penError;
+    }
+    arrowTouched |= given;
+    double arrowSize = 0.0;
+    if (noteOS.Get ("arrowSize", arrowSize)) {
+        if (arrowSize <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textBox.arrowSize' must be greater than 0.");
+        }
+        note.arrowData.arrowSize = arrowSize;
+        arrowTouched = true;
+    }
+    if (arrowTouched && noteMask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.arrowType);
+#ifdef ServerMainVers_2900
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.arrowVisibility);
+#else
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.begArrow);
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.endArrow);
+#endif
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.arrowPen);
+        ACAPI_ELEMENT_MASK_SET (*noteMask, API_NoteType, arrowData.arrowSize);
+    }
+
+    return {};
+}
+
+// Names (each with a leading space, prefixed with path) the fields of a #/DimensionNote given in
+// noteOS that Archicad did not keep: got is the note read back, wanted the note as written.
+static GS::UniString GetDimensionNoteNotKept (const GS::ObjectState& noteOS, const API_NoteType& wanted, const API_NoteType& got, const GS::UniString& path)
+{
+    const double tolerance = 1e-6;
+    GS::UniString notKept;
+    auto check = [&] (const char* name, bool differs) {
+        if (noteOS.Contains (name) && differs) {
+            notKept += " " + path + "." + name;
+        }
+    };
+    check ("textAngle", std::abs (got.noteAngle - wanted.noteAngle) > tolerance);
+    check ("opaque", got.opaque != wanted.opaque);
+    check ("frame", got.frame != wanted.frame);
+    check ("backgroundPen", got.backgroundPen != wanted.backgroundPen);
+    check ("framePen", got.framePen != wanted.framePen);
+    check ("justification", got.just != wanted.just);
+    check ("anchorRow", got.rowAnchor != wanted.rowAnchor);
+    check ("anchorPoint", got.anchorPoint != wanted.anchorPoint);
+    check ("anchorAtTextEnd", got.anchorAtTextEnd != wanted.anchorAtTextEnd);
+    check ("leaderPen", got.leaderPen != wanted.leaderPen);
+    check ("leaderLineTypeId", got.leaderLineType != wanted.leaderLineType);
+    check ("leaderShape", got.leaderShape != wanted.leaderShape);
+    check ("arrowType", got.arrowData.arrowType != wanted.arrowData.arrowType);
+    check ("arrowVisible", GetNoteArrowVisible (got) != GetNoteArrowVisible (wanted));
+    check ("arrowPen", got.arrowData.arrowPen != wanted.arrowData.arrowPen);
+    check ("arrowSize", std::abs (got.arrowData.arrowSize - wanted.arrowData.arrowSize) > tolerance);
+    return notKept;
+}
+
+void AddAngleDimensionSettingsDetails (const API_AngleDimensionType& angleDimension, GS::ObjectState& details)
+{
+    details.Add ("onlyDimensionText", angleDimension.onlyDimensionText);
+    details.Add ("textPosition", AngleDimensionTextPositionToString (angleDimension.textPos));
+    details.Add ("textDirection", AngleDimensionTextDirectionToString (angleDimension.textWay));
+    details.Add ("witnessForm", WitnessFormToString (angleDimension.witnessForm));
+    details.Add ("witnessValue", angleDimension.witnessVal);
+    details.Add ("marker", GS::ObjectState (
+        "type", DimensionMarkerName (angleDimension.markerData.markerType),
+        "pen", static_cast<Int32> (angleDimension.markerData.markerPen),
+        "size", angleDimension.markerData.markerSize));
+    details.Add ("textBox", CreateDimensionNoteObjectState (angleDimension.note));
+}
+
+// Names (each with a leading space) the settings of parameters, as ApplyAngleDimensionSettings
+// takes them, that Archicad did not keep: got is the angle dimension read back, wanted the one
+// written. smallArc is only checked when checkSmallArc is true (ModifyAngleDimensions), as a new
+// dimension may measure the other angle at its arc position.
+static GS::UniString GetAngleDimensionSettingsNotKept (const GS::ObjectState& parameters, const API_AngleDimensionType& wanted, const API_AngleDimensionType& got, bool checkSmallArc)
+{
+    const double tolerance = 1e-6;
+    GS::UniString notKept;
+    auto check = [&] (const char* name, bool differs) {
+        if (parameters.Contains (name) && differs) {
+            notKept += GS::UniString (" ") + name;
+        }
+    };
+    if (checkSmallArc) {
+        check ("smallArc", got.smallArc != wanted.smallArc);
+    }
+    check ("pen", got.linPen != wanted.linPen);
+    check ("textHeight", std::abs (got.note.noteSize - wanted.note.noteSize) > tolerance);
+    check ("textPen", got.note.notePen != wanted.note.notePen);
+    check ("onlyDimensionText", got.onlyDimensionText != wanted.onlyDimensionText);
+    check ("textPosition", got.textPos != wanted.textPos);
+    check ("textDirection", got.textWay != wanted.textWay);
+    check ("witnessForm", got.witnessForm != wanted.witnessForm);
+    check ("witnessValue", std::abs (got.witnessVal - wanted.witnessVal) > tolerance);
+
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        if (marker->Contains ("type") && got.markerData.markerType != wanted.markerData.markerType) {
+            notKept += " marker.type";
+        }
+        if (marker->Contains ("pen") && got.markerData.markerPen != wanted.markerData.markerPen) {
+            notKept += " marker.pen";
+        }
+        if (marker->Contains ("size") && std::abs (got.markerData.markerSize - wanted.markerData.markerSize) > tolerance) {
+            notKept += " marker.size";
+        }
+    }
+
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        notKept += GetDimensionNoteNotKept (*textBox, wanted.note, got.note, "textBox");
+    }
+    return notKept;
+}
+
 // The settings CreateAngleDimensions and ModifyAngleDimensions both take beside the geometry:
-// smallArc, pen, textHeight and textPen. Sets their bits in mask when it is not nullptr.
+// smallArc, pen, textHeight and textPen, and those of AngleDimensionSettingsSchemaProperties (#3133).
+// Sets their bits in mask when it is not nullptr.
 static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
 {
     if (parameters.Get ("smallArc", element.angleDimension.smallArc) && mask != nullptr) {
@@ -9760,6 +10153,85 @@ static GS::Optional<GS::ObjectState> ApplyAngleDimensionSettings (const GS::Obje
         element.angleDimension.note.notePen = static_cast<short> (textPen);
         if (mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, note.notePen);
+        }
+    }
+
+    API_AngleDimensionType& angleDimension = element.angleDimension;
+    if (parameters.Get ("onlyDimensionText", angleDimension.onlyDimensionText) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, onlyDimensionText);
+    }
+
+    GS::UniString name;
+    if (parameters.Get ("textPosition", name)) {
+        if (!ParseAngleDimensionTextPosition (name, angleDimension.textPos)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textPosition' value: " + name);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, textPos);
+        }
+    }
+    if (parameters.Get ("textDirection", name)) {
+        if (!ParseAngleDimensionTextDirection (name, angleDimension.textWay)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textDirection' value: " + name);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, textWay);
+        }
+    }
+    if (parameters.Get ("witnessForm", name)) {
+        if (!ParseWitnessFormString (name, angleDimension.witnessForm)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'witnessForm' value: " + name);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, witnessForm);
+        }
+    }
+    double witnessValue = 0.0;
+    if (parameters.Get ("witnessValue", witnessValue)) {
+        if (witnessValue < 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'witnessValue' must not be negative.");
+        }
+        angleDimension.witnessVal = witnessValue;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, witnessVal);
+        }
+    }
+
+    const GS::ObjectState* marker = parameters.Get ("marker");
+    if (marker != nullptr) {
+        if (marker->Get ("type", name)) {
+            if (!ParseDimensionMarkerName (name, angleDimension.markerData.markerType)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown 'marker.type' value: " + name);
+            }
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, markerData.markerType);
+            }
+        }
+        bool given = false;
+        auto penError = GetPenOfObjectState (*marker, "pen", "marker.pen", 1, angleDimension.markerData.markerPen, given);
+        if (penError.HasValue ()) {
+            return penError;
+        }
+        if (given && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, markerData.markerPen);
+        }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "'marker.size' must be greater than 0.");
+            }
+            angleDimension.markerData.markerSize = markerSize;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_AngleDimensionType, markerData.markerSize);
+            }
+        }
+    }
+
+    const GS::ObjectState* textBox = parameters.Get ("textBox");
+    if (textBox != nullptr) {
+        auto noteError = ApplyDimensionNote (*textBox, angleDimension.note, mask != nullptr ? &mask->angleDimension.note : nullptr);
+        if (noteError.HasValue ()) {
+            return noteError;
         }
     }
 
@@ -9816,6 +10288,17 @@ GSErrCode CreateAngleDimensionsCommand::AfterCreate (const API_Element& /*reques
     return ACAPI_Element_Get (&created) == NoError ? NoError : APIERR_GENERAL;
 }
 
+// The new angle dimension is read back, so a setting Archicad did not keep fails the item (#3133).
+GS::UniString CreateAngleDimensionsCommand::GetSettingsNotKept (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
+{
+    API_Element created = {};
+    created.header.guid = newElementGuid;
+    if (ACAPI_Element_Get (&created) != NoError) {
+        return " (the new angle dimension could not be read back)";
+    }
+    return GetAngleDimensionSettingsNotKept (parameters, requestedElement.angleDimension, created.angleDimension, false);
+}
+
 ModifyAngleDimensionsCommand::ModifyAngleDimensionsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -9828,7 +10311,7 @@ GS::String ModifyAngleDimensionsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "angleDimensionsWithDetails": {
@@ -9860,7 +10343,7 @@ GS::Optional<GS::UniString> ModifyAngleDimensionsCommand::GetInputParametersSche
                         "minimum": 1,
                         "maximum": 255,
                         "description": "Pen index of the dimension text. Optional parameter."
-                    }
+                    },)") + AngleDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -9951,20 +10434,7 @@ GS::ObjectState ModifyAngleDimensionsCommand::Execute (const GS::ObjectState& pa
                 executionResults (CreateFailedExecutionResult (err, "Failed to read the angle dimension back after the change."));
                 continue;
             }
-            const double tolerance = 1e-6;
-            GS::UniString notApplied;
-            if (item.Contains ("smallArc") && changed.angleDimension.smallArc != element.angleDimension.smallArc) {
-                notApplied += " smallArc";
-            }
-            if (item.Contains ("pen") && changed.angleDimension.linPen != element.angleDimension.linPen) {
-                notApplied += " pen";
-            }
-            if (item.Contains ("textHeight") && std::abs (changed.angleDimension.note.noteSize - element.angleDimension.note.noteSize) > tolerance) {
-                notApplied += " textHeight";
-            }
-            if (item.Contains ("textPen") && changed.angleDimension.note.notePen != element.angleDimension.note.notePen) {
-                notApplied += " textPen";
-            }
+            const GS::UniString notApplied = GetAngleDimensionSettingsNotKept (item, element.angleDimension, changed.angleDimension, true);
             if (!notApplied.IsEmpty ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply:" + notApplied + "."));
                 continue;

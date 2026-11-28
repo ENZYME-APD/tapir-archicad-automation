@@ -15486,6 +15486,35 @@
             "textPen": {
                 "type": "integer",
                 "description": "Pen index of the dimension text."
+            },
+            "onlyDimensionText": {
+                "type": "boolean",
+                "description": "Whether only the dimension text is shown, without the dimension arc and the witness lines (API onlyDimensionText)."
+            },
+            "textPosition": {
+                "$ref": "#/AngleDimensionTextPosition"
+            },
+            "textDirection": {
+                "type": "string",
+                "enum": ["Parallel", "Horizontal", "Perpendicular", "Unknown"],
+                "description": "The direction of the dimension text (API textWay). Unknown is only returned, for a value the angle dimension commands do not take."
+            },
+            "witnessForm": {
+                "type": "string",
+                "enum": ["None", "Small", "Large", "Fix", "Unknown"],
+                "description": "The witness line form (API witnessForm). Unknown is only returned, for a value the angle dimension commands do not take."
+            },
+            "witnessValue": {
+                "type": "number",
+                "description": "The gap (witnessForm Fix) or the length (witnessForm Large) of the witness lines, as Archicad stores it (API witnessVal)."
+            },
+            "marker": {
+                "$ref": "#/DimensionMarker",
+                "description": "The marker at the ends of the dimension arc, always with its type, pen and size."
+            },
+            "textBox": {
+                "$ref": "#/DimensionNote",
+                "description": "The text box of the dimension text, always with all of its fields."
             }
         },
         "additionalProperties": false,
@@ -15499,8 +15528,20 @@
             "smallArc",
             "pen",
             "textHeight",
-            "textPen"
+            "textPen",
+            "onlyDimensionText",
+            "textPosition",
+            "textDirection",
+            "witnessForm",
+            "witnessValue",
+            "marker",
+            "textBox"
         ]
+    },
+    "AngleDimensionTextPosition": {
+        "type": "string",
+        "enum": ["Above", "In", "Below"],
+        "description": "Where the dimension text of an angle dimension is: above, in or below the dimension arc (API textPos)."
     },
     "DimensionDetails": {
         "type": "object",
@@ -15760,7 +15801,7 @@
     },
     "DimensionMarker": {
         "type": "object",
-        "description": "The marker at the witness points of a linear dimension (API_MarkerData). CreateAssociativeDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "description": "The marker at the witness points of a linear dimension, or at the ends of the arc of an angle dimension (API_MarkerData). CreateAssociativeDimensions, CreateAngleDimensions, ModifyAngleDimensions and the other dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
         "properties": {
             "type": {
                 "type": "string",
@@ -15797,6 +15838,88 @@
             "pushNeighbors": {
                 "type": "boolean",
                 "description": "Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled)."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionNote": {
+        "type": "object",
+        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
+        "properties": {
+            "textAngle": {
+                "type": "number",
+                "description": "The rotation angle of the text in radians (API noteAngle)."
+            },
+            "opaque": {
+                "type": "boolean",
+                "description": "Whether the text has a background fill (API opaque)."
+            },
+            "frame": {
+                "type": "boolean",
+                "description": "Whether the text has a frame (API frame)."
+            },
+            "backgroundPen": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 255,
+                "description": "The pen of the background fill, used while opaque is true (API backgroundPen)."
+            },
+            "framePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the frame, used while frame is true (API framePen)."
+            },
+            "justification": {
+                "$ref": "#/Justification",
+                "description": "The alignment of a multiline text (API just)."
+            },
+            "anchorRow": {
+                "type": "string",
+                "enum": ["First", "Last"],
+                "description": "Whether a multiline text is anchored at its first or its last row (API rowAnchor 0 or 1)."
+            },
+            "anchorPoint": {
+                "$ref": "#/LabelLeaderLineAnchorPoint",
+                "description": "Where the leader line is attached to the text (API anchorPoint)."
+            },
+            "anchorAtTextEnd": {
+                "type": "boolean",
+                "description": "Whether the leader line is attached to the end of the text rather than its beginning (API anchorAtTextEnd)."
+            },
+            "leaderPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the leader line (API leaderPen)."
+            },
+            "leaderLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the leader line (API leaderLineType). On input it must be an existing line type."
+            },
+            "leaderShape": {
+                "type": "string",
+                "enum": ["Segmented", "Splinear"],
+                "description": "The shape of the leader line: straight segments or a spline (API leaderShape; the square root shape is for labels only)."
+            },
+            "arrowType": {
+                "$ref": "#/LabelArrowType",
+                "description": "The arrowhead at the beginning of the leader line (API arrowData.arrowType)."
+            },
+            "arrowVisible": {
+                "type": "boolean",
+                "description": "Whether the leader line has the arrowhead (API arrowData.arrowVisibility from Archicad 29 on, arrowData.begArrow before, as for a label's leader line)."
+            },
+            "arrowPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the arrowhead (API arrowData.arrowPen)."
+            },
+            "arrowSize": {
+                "type": "number",
+                "minimum": 0, "exclusiveMinimum": true,
+                "description": "The size of the arrowhead in millimeters (API arrowData.arrowSize)."
             }
         },
         "additionalProperties": false
