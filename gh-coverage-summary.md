@@ -30,4 +30,4 @@ Parameters of the 789 used commands: 🟢 718 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-27 22:55 UTC.
+Updated 2026-11-28 04:08 UTC.
