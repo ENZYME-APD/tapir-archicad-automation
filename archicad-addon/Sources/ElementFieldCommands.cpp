@@ -1412,7 +1412,7 @@ GS::Optional<GS::UniString> GetFieldsOfElementDefaultsCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "$ref": "#/ElementFieldValues"
+                            "$ref": "#/ToolDefaultFieldValues"
                         },
                         {
                             "$ref": "#/ErrorItem"

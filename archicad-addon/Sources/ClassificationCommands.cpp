@@ -1920,13 +1920,13 @@ GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetInputPara
                     "type": "object",
                     "oneOf": [
                         {
-                            "$ref": "#/ClassificationVisibilityElement"
+                            "$ref": "#/ElementIdArrayItem"
                         },
                         {
                             "$ref": "#/ClassificationVisibilityToolDefault"
                         },
                         {
-                            "$ref": "#/ClassificationVisibilityAttribute"
+                            "$ref": "#/AttributeIdArrayItem"
                         }
                     ]
                 },

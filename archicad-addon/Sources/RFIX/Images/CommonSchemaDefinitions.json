@@ -7288,18 +7288,6 @@
             "categoryId"
         ]
     },
-    "ClassificationVisibilityElement": {
-        "type": "object",
-        "properties": {
-            "elementId": {
-                "$ref": "#/ElementId"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "elementId"
-        ]
-    },
     "ClassificationVisibilityToolDefault": {
         "type": "object",
         "properties": {
@@ -7311,18 +7299,6 @@
         "additionalProperties": false,
         "required": [
             "elementType"
-        ]
-    },
-    "ClassificationVisibilityAttribute": {
-        "type": "object",
-        "properties": {
-            "attributeId": {
-                "$ref": "#/AttributeId"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "attributeId"
         ]
     },
     "ElementUserData": {
@@ -7797,6 +7773,46 @@
             "readOnly"
         ],
         "description": "The definition and metadata of an element field."
+    },
+    "ToolDefaultFieldValues": {
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "structName": {
+                "type": "string",
+                "description": "The C++ struct of the element type in the Archicad API."
+            },
+            "fields": {
+                "type": "object",
+                "description": "The value of each field of the tool defaults, by its path.",
+                "additionalProperties": {
+                    "$ref": "#/ElementFieldValue"
+                }
+            },
+            "missingFields": {
+                "type": "array",
+                "description": "The asked paths this element type does not have.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "inactiveFields": {
+                "type": "array",
+                "description": "The asked paths in a member of a union the defaults do not use (see variant in GetElementFieldDefinitions). Without the fields input, these are simply left out.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "structName",
+            "fields"
+        ],
+        "description": "The field values returned for one element tool default."
     },
     "ElementFieldValues": {
         "type": "object",
