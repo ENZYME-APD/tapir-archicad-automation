@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 20:09 UTC",
+ "generatedAt": "2026-11-28 20:52 UTC",
  "versions": [
   25,
   26,
@@ -4039,7 +4039,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -5779,6 +5788,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
@@ -6746,6 +6759,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
      "number": 3119,
      "title": "Refine API schemas following Tapir 2.0.1: Properties, IFC and element data"
     },
@@ -7001,6 +7022,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
      "number": 2880,
      "title": "Add LabelElements: label elements with the Label tool's current settings"
     },
@@ -7081,6 +7110,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
     {
      "number": 2751,
      "title": "CreateWalls/ModifyWalls: create and change polygonal walls"
@@ -7282,6 +7315,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
+     "number": 3137,
+     "title": "[2/5] Level dimensions: text box keys for both texts (textBox, secondTextBox)"
+    },
     {
      "number": 3135,
      "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
@@ -7847,6 +7892,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
     {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
@@ -25212,6 +25261,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
     },
@@ -30834,6 +30891,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
     {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
@@ -37289,6 +37354,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
+     "number": 3137,
+     "title": "[2/5] Level dimensions: text box keys for both texts (textBox, secondTextBox)"
+    },
     {
      "number": 3135,
      "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
@@ -43958,6 +44035,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
+    {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
     },
@@ -47081,6 +47166,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
     {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
@@ -53600,6 +53693,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 3140,
+     "title": "[4/5] Linear dimensions: text box, text fill order, clipping and witness extension line keys"
+    },
+    {
+     "number": 3138,
+     "title": "[3/5] Radial dimensions: prefix, text box and ModifyRadialDimensions"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
