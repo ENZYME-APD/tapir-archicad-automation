@@ -1,0 +1,181 @@
+{
+  "title": "DuplicateAttributes copies an attribute of each creatable type under a new name, with its settings, and refuses a used or empty name and an unknown attribute (#291)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "layer to copy",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer to duplicate", "isHidden": false, "isLocked": true, "isWireframe": true }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "fill to copy",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          {
+            "name": "Tapir check fill to duplicate", "subType": "Vector", "scaleWithPlan": true,
+            "useForWalls": true, "useForDraft": true, "useForCover": true,
+            "horizontalSpacing": 0.7, "verticalSpacing": 0.3, "angle": 0.0,
+            "lineItems": [
+              { "frequency": 0.1, "direction": 0.0, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } },
+              { "frequency": 0.2, "direction": 1.5707963267948966, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "fill": "attributeIds[0].attributeId.guid" }
+    },
+    { "id": "a line type", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[0].attributeId.guid", "lineIndex": "attributes[0].index" } },
+    { "id": "a composite", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "Composite" },
+      "save": { "composite": "attributes[0].attributeId.guid" } },
+    { "id": "a surface", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "Surface" },
+      "save": { "surface": "attributes[0].attributeId.guid" } },
+    { "id": "a building material", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "BuildingMaterial" },
+      "save": { "buildingMaterial": "attributes[0].attributeId.guid" } },
+    { "id": "a pen table", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "PenTable" },
+      "save": { "penTable": "attributes[0].attributeId.guid" } },
+    { "id": "a zone category", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "ZoneCategory" },
+      "save": { "zoneCategory": "attributes[0].attributeId.guid" } },
+    { "id": "a layer combination", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "LayerCombination" },
+      "save": { "layerCombination": "attributes[0].attributeId.guid" } },
+    { "id": "a profile", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "Profile" },
+      "save": { "profile": "attributes[0].attributeId.guid" } },
+    { "id": "an MEP system", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "MEPSystem" },
+      "save": { "mepSystem": "attributes[0].attributeId.guid" } },
+    { "id": "an operation profile", "command": "GetAttributesByType", "creates": false, "params": { "attributeType": "OperationProfile" },
+      "save": { "operationProfile": "attributes[0].attributeId.guid" } },
+    {
+      "id": "duplicate one attribute of each type",
+      "command": "DuplicateAttributes",
+      "creates": false,
+      "params": {
+        "attributes": [
+          { "attributeId": { "guid": "${layer}" }, "newName": "Tapir check layer copy" },
+          { "attributeId": { "guid": "${fill}" }, "newName": "Tapir check fill copy" },
+          { "attributeType": "Line", "attributeIndex": "${lineIndex}", "newName": "Tapir check line copy" },
+          { "attributeId": { "guid": "${composite}" }, "newName": "Tapir check composite copy" },
+          { "attributeId": { "guid": "${surface}" }, "newName": "Tapir check surface copy" },
+          { "attributeId": { "guid": "${buildingMaterial}" }, "newName": "Tapir check building material copy" },
+          { "attributeId": { "guid": "${penTable}" }, "newName": "Tapir check pen table copy" },
+          { "attributeId": { "guid": "${zoneCategory}" }, "newName": "Tapir check zone category copy" },
+          { "attributeId": { "guid": "${layerCombination}" }, "newName": "Tapir check layer combination copy" },
+          { "attributeId": { "guid": "${profile}" }, "newName": "Tapir check profile copy" },
+          { "attributeId": { "guid": "${mepSystem}" }, "newName": "Tapir check MEP system copy" },
+          { "attributeId": { "guid": "${operationProfile}" }, "newName": "Tapir check operation profile copy" }
+        ]
+      },
+      "save": {
+        "layerCopy": "attributeIds[0].attributeId.guid",
+        "fillCopy": "attributeIds[1].attributeId.guid",
+        "lineCopy": "attributeIds[2].attributeId.guid",
+        "compositeCopy": "attributeIds[3].attributeId.guid",
+        "surfaceCopy": "attributeIds[4].attributeId.guid",
+        "buildingMaterialCopy": "attributeIds[5].attributeId.guid",
+        "penTableCopy": "attributeIds[6].attributeId.guid",
+        "zoneCategoryCopy": "attributeIds[7].attributeId.guid",
+        "layerCombinationCopy": "attributeIds[8].attributeId.guid",
+        "profileCopy": "attributeIds[9].attributeId.guid",
+        "mepSystemCopy": "attributeIds[10].attributeId.guid",
+        "operationProfileCopy": "attributeIds[11].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributeIds", "len": 12, "name": "one item per attribute" },
+        { "path": "attributeIds[0].attributeId.guid", "ne": "${layer}", "name": "layer: a new attribute" },
+        { "path": "attributeIds[1].attributeId.guid", "ne": "${fill}", "name": "fill: a new attribute" },
+        { "path": "attributeIds[2].attributeId.guid", "ne": "${line}", "name": "line type by type and index: a new attribute" },
+        { "path": "attributeIds[3].attributeId.guid", "ne": "${composite}", "name": "composite: a new attribute" },
+        { "path": "attributeIds[4].attributeId.guid", "ne": "${surface}", "name": "surface: a new attribute" },
+        { "path": "attributeIds[5].attributeId.guid", "ne": "${buildingMaterial}", "name": "building material: a new attribute" },
+        { "path": "attributeIds[6].attributeId.guid", "ne": "${penTable}", "name": "pen table: a new attribute" },
+        { "path": "attributeIds[7].attributeId.guid", "ne": "${zoneCategory}", "name": "zone category: a new attribute" },
+        { "path": "attributeIds[8].attributeId.guid", "ne": "${layerCombination}", "name": "layer combination: a new attribute" },
+        { "path": "attributeIds[9].attributeId.guid", "ne": "${profile}", "name": "profile: a new attribute" },
+        { "path": "attributeIds[10].attributeId.guid", "ne": "${mepSystem}", "name": "MEP system: a new attribute" },
+        { "path": "attributeIds[11].attributeId.guid", "ne": "${operationProfile}", "name": "operation profile: a new attribute" }
+      ]
+    },
+    {
+      "id": "the layer copy has the source's settings and the new name",
+      "command": "GetLayers",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${layerCopy}" } } ] },
+      "expect": [
+        { "path": "layers[0].name", "eq": "Tapir check layer copy", "name": "new name" },
+        { "path": "layers[0].isLocked", "eq": true, "name": "locked like the source" },
+        { "path": "layers[0].isWireframe", "eq": true, "name": "wireframe like the source" }
+      ]
+    },
+    {
+      "id": "the fill copy has the source's pattern and the new name",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${fillCopy}" } } ] },
+      "expect": [
+        { "path": "fills[0].name", "eq": "Tapir check fill copy", "name": "new name" },
+        { "path": "fills[0].horizontalSpacing", "approx": 0.7, "tol": 0.0001, "name": "horizontal spacing of the source" },
+        { "path": "fills[0].verticalSpacing", "approx": 0.3, "tol": 0.0001, "name": "vertical spacing of the source" },
+        { "path": "fills[0].lineItems", "len": 2, "name": "both line items of the source" }
+      ]
+    },
+    {
+      "id": "the source fill is unchanged",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${fill}" } } ] },
+      "expect": [
+        { "path": "fills[0].name", "eq": "Tapir check fill to duplicate", "name": "keeps its name" }
+      ]
+    },
+    {
+      "id": "[used name, empty name, bogus attribute, no source]",
+      "command": "DuplicateAttributes",
+      "creates": false,
+      "params": {
+        "attributes": [
+          { "attributeId": { "guid": "${fill}" }, "newName": "Tapir check fill copy" },
+          { "attributeId": { "guid": "${fill}" }, "newName": "" },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "newName": "Tapir check bogus copy" },
+          { "newName": "Tapir check copy of nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "attributeIds", "len": 4, "name": "one item per attribute" },
+        { "path": "attributeIds[0].error", "exists": true, "name": "used name: error item, not the existing copy" },
+        { "path": "attributeIds[1].error", "exists": true, "name": "empty name: error item" },
+        { "path": "attributeIds[2].error", "exists": true, "name": "bogus attribute: error item" },
+        { "path": "attributeIds[3].error", "exists": true, "name": "no attributeId and no type and index: error item" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerCopy}" } } },
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } },
+          { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fillCopy}" } } },
+          { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fill}" } } },
+          { "attributeType": "Line", "attributeId": { "attributeId": { "guid": "${lineCopy}" } } },
+          { "attributeType": "Composite", "attributeId": { "attributeId": { "guid": "${compositeCopy}" } } },
+          { "attributeType": "Surface", "attributeId": { "attributeId": { "guid": "${surfaceCopy}" } } },
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${buildingMaterialCopy}" } } },
+          { "attributeType": "PenTable", "attributeId": { "attributeId": { "guid": "${penTableCopy}" } } },
+          { "attributeType": "ZoneCategory", "attributeId": { "attributeId": { "guid": "${zoneCategoryCopy}" } } },
+          { "attributeType": "LayerCombination", "attributeId": { "attributeId": { "guid": "${layerCombinationCopy}" } } },
+          { "attributeType": "Profile", "attributeId": { "attributeId": { "guid": "${profileCopy}" } } },
+          { "attributeType": "MEPSystem", "attributeId": { "attributeId": { "guid": "${mepSystemCopy}" } } },
+          { "attributeType": "OperationProfile", "attributeId": { "attributeId": { "guid": "${operationProfileCopy}" } } }
+        ]
+      }
+    }
+  ]
+}

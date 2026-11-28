@@ -4592,6 +4592,46 @@
             "$ref": "#/ExecutionResult"
         }
     },
+    "SuccessfulExecutionResultWithWarnings": {
+        "type": "object",
+        "description": "The result of a successful execution, with the given values Archicad did not apply.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            },
+            "warnings": {
+                "type": "array",
+                "description": "Present only when a given value was read back unchanged or changed after the write: each item names the field, the value sent, the value read back and, where known, the condition the value needs. The other given values were applied.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    },
+    "ExecutionResultWithWarnings": {
+        "type": "object",
+        "description": "The result of the execution. A success may carry warnings about given values Archicad did not apply.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResultWithWarnings"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "ExecutionResultsWithWarnings": {
+        "type": "array",
+        "description": "A list of execution results, one per given item. A success may carry warnings about given values Archicad did not apply.",
+        "items": {
+            "$ref": "#/ExecutionResultWithWarnings"
+        }
+    },
     "DryRun": {
         "type": "boolean",
         "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
@@ -9857,14 +9897,34 @@
         "additionalProperties": false
     },
     "DatabaseIdAndWindowType": {
+        "type": "object",
+        "properties": {
+            "windowType": {
+                "$ref": "#/WindowType"
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
+            }
+        },
+        "additionalProperties": false,
         "anyOf": [
             {
-                "$ref": "#/DatabaseByWindowType"
+                "required": [
+                    "windowType"
+                ]
             },
             {
-                "$ref": "#/DatabaseById"
+                "required": [
+                    "databaseId"
+                ]
             }
-        ]
+        ],
+        "description": "Selects a database by window type or ID. Both may be supplied."
     },
     "WallRelations": {
         "type": "object",
@@ -29923,48 +29983,6 @@
             "WithoutFinishes",
             "StructureOnly"
         ]
-    },
-    "DatabaseByWindowType": {
-        "type": "object",
-        "properties": {
-            "windowType": {
-                "$ref": "#/WindowType"
-            },
-            "databaseId": {
-                "$ref": "#/DatabaseId",
-                "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
-            },
-            "storyIndex": {
-                "type": "integer",
-                "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "windowType"
-        ],
-        "description": "Selects a database by window type; a database ID may also be supplied."
-    },
-    "DatabaseById": {
-        "type": "object",
-        "properties": {
-            "windowType": {
-                "$ref": "#/WindowType"
-            },
-            "databaseId": {
-                "$ref": "#/DatabaseId",
-                "description": "The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match."
-            },
-            "storyIndex": {
-                "type": "integer",
-                "description": "Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "databaseId"
-        ],
-        "description": "Selects a database by ID; a window type may also be supplied."
     },
     "DetailsOfElement": {
         "type": "object",
