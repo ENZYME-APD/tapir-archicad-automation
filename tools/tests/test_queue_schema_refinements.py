@@ -26,7 +26,7 @@ class FakeGitHub:
         self.skip_merge = False
         self.change_after_first = False
         self.missing_url = False
-        self.wrong_run = False
+        self.run_metadata_responses = {}
         self.timeout_run = False
         self.change_during_checks = False
         self.fail_dispatch = False
@@ -61,6 +61,12 @@ class FakeGitHub:
         if path.endswith("/git/ref/heads/main"):
             return {"object": {"sha": self.main_sha}}
         run_id = int(path.rsplit("/", 1)[1])
+        responses = self.run_metadata_responses.get(run_id)
+        if responses:
+            response = responses.pop(0)
+            if isinstance(response, Exception):
+                raise response
+            return response
         number = self.run_numbers.get(run_id, run_id - 1000)
         if self.status_unavailable and number in self.run_status:
             raise queue.ItemFailed("Status unavailable")
@@ -69,7 +75,7 @@ class FakeGitHub:
             if self.status_reads >= self.complete_after_status_reads:
                 self.run_status[number] = "completed"
         return {"id": run_id, "event": "workflow_dispatch",
-                "path": ".github/workflows/other.yml" if self.wrong_run else ".github/workflows/schema_refinement.yml",
+                "path": ".github/workflows/schema_refinement.yml",
                 "display_title": f"Validate and merge PR #{number}",
                 "status": self.run_status.get(number, "queued")}
 
@@ -309,11 +315,72 @@ class QueueTests(unittest.TestCase):
             self.run_queue(gh)
         self.assertEqual([e for e in gh.events if e[0] == "dispatch"], [("dispatch", 1)])
 
-    def test_wrong_returned_workflow_is_not_watched(self):
-        gh = FakeGitHub({1: pr(1)});gh.wrong_run = True
-        with self.assertRaisesRegex(queue.QueueBlocked, "Unexpected dispatched run"):
-            self.run_queue(gh, (1,))
-        self.assertNotIn(("watch", 1), gh.events)
+    def test_initial_run_metadata_settles_without_another_dispatch(self) -> None:
+        initial_responses = [
+            {},
+            {"id": 1001, "event": "workflow_dispatch",
+             "path": ".github/workflows/schema_refinement.yml",
+             "display_title": "Validate and Merge Schema Refinement"},
+        ]
+        for initial in initial_responses:
+            with self.subTest(initial=initial):
+                gh = FakeGitHub({1: pr(1), 2: pr(2)})
+                gh.run_metadata_responses[1001] = [initial]
+                with patch.object(queue.time, "sleep") as sleep:
+                    self.assertFalse(self.run_queue(gh))
+                sleep.assert_called_once_with(queue.RUN_IDENTITY_INTERVAL)
+                self.assertEqual([e[1] for e in gh.events if e[0] == "dispatch"], [1, 2])
+                metadata_reads = [i for i, e in enumerate(gh.events)
+                                  if e == ("read", f"repos/{queue.DEFAULT_REPO}/actions/runs/1001")]
+                self.assertEqual(len(metadata_reads), 2)
+                self.assertLess(metadata_reads[-1], gh.events.index(("watch", 1)))
+                self.assertLess(gh.events.index(("watch", 1)), gh.events.index(("dispatch", 2)))
+
+    def test_transient_run_metadata_errors_retry_the_same_run(self) -> None:
+        gh = FakeGitHub({1: pr(1)})
+        gh.run_metadata_responses[1001] = [
+            queue.ItemFailed("HTTP 404"), subprocess.TimeoutExpired("gh api", 60),
+        ]
+        with patch.object(queue.time, "sleep") as sleep:
+            self.assertFalse(self.run_queue(gh, (1,)))
+        self.assertEqual(sleep.call_count, 2)
+        self.assertEqual(gh.events.count(("read", f"repos/{queue.DEFAULT_REPO}/actions/runs/1001")), 3)
+        self.assertEqual(gh.events.count(("dispatch", 1)), 1)
+        self.assertEqual(gh.events.count(("watch", 1)), 1)
+
+    def test_wrong_run_identity_blocks_with_mismatch_details_after_bounded_reads(self) -> None:
+        expected = {"id": 1001, "event": "workflow_dispatch",
+                    "path": ".github/workflows/schema_refinement.yml",
+                    "display_title": "Validate and merge PR #1"}
+        wrong_values = {"id": 9999, "event": "push", "path": ".github/workflows/other.yml",
+                        "display_title": "Validate and merge PR #2"}
+        for field, wrong in wrong_values.items():
+            with self.subTest(field=field):
+                gh = FakeGitHub({1: pr(1), 2: pr(2)})
+                metadata = {**expected, field: wrong}
+                gh.run_metadata_responses[1001] = [metadata] * queue.RUN_IDENTITY_ATTEMPTS
+                with patch.object(queue.time, "sleep") as sleep, \
+                        self.assertRaises(queue.QueueBlocked) as error:
+                    self.run_queue(gh)
+                self.assertIn(f"{field}: expected {expected[field]!r}, received {wrong!r}", str(error.exception))
+                self.assertIn("actions/runs/1001", str(error.exception))
+                self.assertEqual(sleep.call_count, queue.RUN_IDENTITY_ATTEMPTS - 1)
+                self.assertEqual(gh.events.count(("read", f"repos/{queue.DEFAULT_REPO}/actions/runs/1001")),
+                                 queue.RUN_IDENTITY_ATTEMPTS)
+                self.assertEqual([e for e in gh.events if e[0] == "dispatch"], [("dispatch", 1)])
+                self.assertFalse(any(e[0] == "watch" for e in gh.events))
+
+    def test_unavailable_run_metadata_blocks_after_bounded_reads_without_redispatch(self) -> None:
+        gh = FakeGitHub({1: pr(1), 2: pr(2)})
+        gh.run_metadata_responses[1001] = [queue.ItemFailed("HTTP 404")] * queue.RUN_IDENTITY_ATTEMPTS
+        with patch.object(queue.time, "sleep") as sleep, \
+                self.assertRaisesRegex(queue.QueueBlocked, "HTTP 404"):
+            self.run_queue(gh)
+        self.assertEqual(sleep.call_count, queue.RUN_IDENTITY_ATTEMPTS - 1)
+        self.assertEqual(gh.events.count(("read", f"repos/{queue.DEFAULT_REPO}/actions/runs/1001")),
+                         queue.RUN_IDENTITY_ATTEMPTS)
+        self.assertEqual([e for e in gh.events if e[0] == "dispatch"], [("dispatch", 1)])
+        self.assertFalse(any(e[0] == "watch" for e in gh.events))
 
     def test_watch_timeout_blocks_if_server_action_is_still_active(self):
         gh = FakeGitHub({1: pr(1), 2: pr(2)});gh.timeout_run = True
