@@ -5597,29 +5597,7 @@ GS::Optional<GS::UniString> GetSchedulesCommand::GetRawResponseSchema () const
                 "type": "array",
                 "description": "The Interactive Schedules of the Project Map, in navigator order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "navigatorItemId": {
-                            "$ref": "#/NavigatorItemId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the schedule."
-                        },
-                        "uiId": {
-                            "type": "string",
-                            "description": "The ID of the schedule, shown before its name in the navigator."
-                        },
-                        "folderPath": {
-                            "type": "array",
-                            "description": "The names of the Project Map items the schedule is in, from the top down, without the project itself (e.g. Schedules, Element). Archicad's API does not say whether a schedule lists elements, components or surfaces; the default Project Map shows it by these folders.",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["navigatorItemId", "name", "uiId", "folderPath"]
+                    "$ref": "#/ScheduleSummary"
                 }
             }
         },
@@ -5823,25 +5801,7 @@ GS::ObjectState SetMasterLayoutContextCommand::Execute (const GS::ObjectState& p
 // leaf nodes), read with ACAPI_Navigator_GetNavigatorVP*. They are identified
 // by their guid, given as {"viewpointId": {"guid": ...}}.
 
-static const char* AddOnViewpointIdsSchema = R"({
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "viewpointId": {
-                "type": "object",
-                "description": "The identifier of an add-on viewpoint item.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
-            }
-        },
-        "additionalProperties": false,
-        "required": ["viewpointId"]
-    }
-})";
+
 
 #ifdef ServerMainVers_2700
 static GS::ObjectState CreateViewpointIdArrayItem (const API_Guid& guid)
@@ -5871,13 +5831,20 @@ GS::String GetAddOnViewpointRootsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetAddOnViewpointRootsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -5916,13 +5883,8 @@ GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParameters
         "type": "object",
         "properties": {
             "viewpointId": {
-                "type": "object",
-                "description": "The add-on viewpoint root or group to list the children of.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/AddOnViewpointId",
+                "description": "The add-on viewpoint root or group to list the children of."
             }
         },
         "additionalProperties": false,
@@ -5932,13 +5894,20 @@ GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetInputParameters
 
 GS::Optional<GS::UniString> GetAddOnViewpointChildrenCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -5979,13 +5948,20 @@ GS::String GetAddOnViewpointsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetAddOnViewpointsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "viewpointIds": )") + AddOnViewpointIdsSchema + R"(
+            "viewpointIds": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/AddOnViewpointIdArrayItem"
+                }
+            }
         },
         "additionalProperties": false,
-        "required": ["viewpointIds"]
+        "required": [
+            "viewpointIds"
+        ]
     })";
 }
 
@@ -6212,13 +6188,8 @@ GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetInputParametersSche
                             "$ref": "#/AddOnViewpointType"
                         },
                         "parentViewpointId": {
-                            "type": "object",
-                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root.",
-                            "properties": {
-                                "guid": { "$ref": "#/Guid" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
+                            "$ref": "#/AddOnViewpointId",
+                            "description": "The root or group to create the item in. Required for a group or a leaf node, ignored for a root."
                         },
                         "displayId": {
                             "type": "string",
@@ -6261,20 +6232,7 @@ GS::Optional<GS::UniString> CreateAddOnViewpointsCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "viewpointId": {
-                                    "type": "object",
-                                    "description": "The identifier of the created add-on viewpoint item.",
-                                    "properties": {
-                                        "guid": { "$ref": "#/Guid" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["guid"]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["viewpointId"]
+                            "$ref": "#/AddOnViewpointIdArrayItem"
                         },
                         {
                             "$ref": "#/ErrorItem"

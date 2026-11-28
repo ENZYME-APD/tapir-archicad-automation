@@ -1353,27 +1353,15 @@
         "type": "object",
         "properties": {
             "viewpointId": {
-                "type": "object",
-                "description": "The identifier of the add-on viewpoint item.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/AddOnViewpointId",
+                "description": "The identifier of the add-on viewpoint item."
             },
             "parentViewpointId": {
-                "type": "object",
-                "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/AddOnViewpointId",
+                "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root."
             },
             "itemType": {
-                "type": "string",
-                "description": "Whether the item is a root, a group or a leaf node.",
-                "enum": ["Root", "Group", "Leaf", "Undefined"]
+                "$ref": "#/AddOnViewpointTypeOrUndefined"
             },
             "displayId": {
                 "type": "string",
@@ -1404,13 +1392,7 @@
         "type": "object",
         "properties": {
             "viewpointId": {
-                "type": "object",
-                "description": "The identifier of the add-on viewpoint item to change.",
-                "properties": {
-                    "guid": { "$ref": "#/Guid" }
-                },
-                "additionalProperties": false,
-                "required": ["guid"]
+                "$ref": "#/AddOnViewpointId"
             },
             "displayId": {
                 "type": "string",
@@ -1509,6 +1491,948 @@
             "projectInfoGroupId"
         ]
     },
+    "HotlinkNodeChange": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            },
+            "sourceLocation": {
+                "type": "string",
+                "description": "Absolute path of the new module source file (.mod or .pln)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId",
+            "sourceLocation"
+        ],
+        "description": "Changes to one hotlink node."
+    },
+    "HotlinkNodeReference": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId"
+        ],
+        "description": "A reference to one hotlink node."
+    },
+    "LockableObjectSetStatus": {
+        "type": "string",
+        "description": "Free: nobody has reserved it. Editable: the current user has reserved it. Locked: another user has reserved it (see conflicts). NotAvailable: the Teamwork server is offline or not available. NotExist: there is no Teamwork connection, for example the project is not a Teamwork project. An unknown object set name is reported as an error, not as a status.",
+        "enum": [
+            "Free",
+            "Editable",
+            "Locked",
+            "NotAvailable",
+            "NotExist"
+        ]
+    },
+    "DesignOptionCombinationRename": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option combination."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId",
+            "name"
+        ]
+    },
+    "DesignOptionSetRename": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId",
+            "name"
+        ]
+    },
+    "DesignOptionRename": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the design option. The name is kept when it is not given."
+            },
+            "id": {
+                "type": "string",
+                "description": "The new string id of the design option. The id is kept when it is not given."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId"
+        ]
+    },
+    "DesignOptionActivation": {
+        "type": "object",
+        "properties": {
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId"
+            },
+            "designOptionId": {
+                "$ref": "#/DesignOptionId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionCombinationId",
+            "designOptionId"
+        ]
+    },
+    "DesignOptionMoveCapability": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "canMove": {
+                "type": "boolean",
+                "description": "Whether the element can be moved to another design option or to the main model."
+            },
+            "error": {
+                "$ref": "#/Error",
+                "description": "The reason why the element cannot be moved. Only present when canMove is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "canMove"
+        ]
+    },
+    "ElementStateType": {
+        "type": "string",
+        "description": "How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to a tracked element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type. With either type the changes come from Archicad's element difference generator, which tracks the model elements: 2D elements such as texts, labels and hatches can be missing from the result even when they were created, modified or deleted.",
+        "enum": [
+            "ModificationStamp",
+            "3DModel"
+        ]
+    },
+    "ElementStateId": {
+        "type": "object",
+        "description": "The identifier of the captured state, accepted by GetElementChangesSince and ReleaseElementState. It is only valid in the Archicad session and project it was captured in.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "AddOnViewpointId": {
+        "type": "object",
+        "description": "The identifier of an add-on viewpoint item.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "AddOnViewpointIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "$ref": "#/AddOnViewpointId",
+                "description": "The identifier of an add-on viewpoint item."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "viewpointId"
+        ],
+        "description": "A wrapper containing an add-on viewpoint identifier."
+    },
+    "ElementSetIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "elementSetId": {
+                "$ref": "#/ElementSetId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSetId"
+        ],
+        "description": "A wrapper containing an element set identifier."
+    },
+    "ElementSetId": {
+        "type": "object",
+        "description": "The identifier of an element set.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "AddOnViewpointTypeOrUndefined": {
+        "type": "string",
+        "description": "Whether the item is a root, a group or a leaf node.",
+        "enum": [
+            "Root",
+            "Group",
+            "Leaf",
+            "Undefined"
+        ]
+    },
+    "ElementSetDetails": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements of the element set."
+            },
+            "userData": {
+                "$ref": "#/ElementSetUserData"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "userData"
+        ]
+    },
+    "ElementSetUserData": {
+        "type": "object",
+        "description": "The custom data stored with the element set by the add-on that created it.",
+        "properties": {
+            "dataVersion": {
+                "type": "integer",
+                "description": "The version of the data, as set by the add-on that created the element set."
+            },
+            "platformSign": {
+                "type": "integer",
+                "description": "The platform sign of the data, telling the byte order it was written with."
+            },
+            "data": {
+                "type": "string",
+                "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "dataVersion",
+            "platformSign",
+            "data"
+        ]
+    },
+    "HotlinkDesignOptionTableDetails": {
+        "type": "object",
+        "properties": {
+            "nodeGuid": {
+                "$ref": "#/GuidId",
+                "description": "The node guid the design option table belongs to."
+            },
+            "filterMode": {
+                "$ref": "#/HotlinkDesignOptionFilterMode"
+            },
+            "sets": {
+                "type": "array",
+                "description": "The design option sets of the source file.",
+                "items": {
+                    "$ref": "#/HotlinkDesignOptionSetDetails"
+                }
+            },
+            "combinations": {
+                "type": "array",
+                "description": "The names of the design option combinations of the source file.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "activeCombination": {
+                "type": "string",
+                "description": "The name of the combination the node shows. Left out when none is active."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "nodeGuid",
+            "filterMode",
+            "sets",
+            "combinations"
+        ]
+    },
+    "HotlinkDesignOptionFilterMode": {
+        "type": "string",
+        "enum": [
+            "MainModelOnly",
+            "FilterByOptions",
+            "FilterByCombination"
+        ],
+        "description": "What the node shows: only the main model of the source, the active option of each set, or the active combination."
+    },
+    "HotlinkDesignOptionSetDetails": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the set."
+            },
+            "options": {
+                "type": "array",
+                "description": "The names of the design options in the set.",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "activeOption": {
+                "type": "string",
+                "description": "The name of the option the node shows from this set. Left out when none is active."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "options"
+        ]
+    },
+    "HotlinkSourceStatus": {
+        "type": "string",
+        "enum": [
+            "AuthCanceld",
+            "SourceMissing",
+            "SourceAvailable",
+            "SourceNotAccessible",
+            "SourceIncompatible",
+            "SourceOffline"
+        ],
+        "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
+    },
+    "RevisionIssueCustomSchemeItem": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "$ref": "#/Guid"
+            },
+            "customSchemeName": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customSchemeKey",
+            "customSchemeName"
+        ]
+    },
+    "RevisionIssueCustomSchemeValue": {
+        "type": "object",
+        "properties": {
+            "customSchemeKey": {
+                "$ref": "#/Guid"
+            },
+            "customSchemeName": {
+                "type": "string"
+            },
+            "customSchemeValue": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "customSchemeValue"
+        ]
+    },
+    "DesignOptionSetMove": {
+        "type": "object",
+        "properties": {
+            "designOptionSetId": {
+                "$ref": "#/DesignOptionSetId",
+                "description": "The design option set to move."
+            },
+            "beforeDesignOptionSetId": {
+                "$ref": "#/DesignOptionSetId",
+                "description": "The design option set to move it before. When it is not given, the set is moved to the end."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionSetId"
+        ]
+    },
+    "DesignOptionMove": {
+        "type": "object",
+        "properties": {
+            "designOptionId": {
+                "$ref": "#/DesignOptionId",
+                "description": "The design option to move within its set."
+            },
+            "beforeDesignOptionId": {
+                "$ref": "#/DesignOptionId",
+                "description": "The design option of the same set to move it before. When it is not given, the design option is moved to the end of its set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "designOptionId"
+        ]
+    },
+    "ProjectInfoFieldMove": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            },
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId",
+                "description": "The group to move the field to. To reorder a field within its group, give its current group."
+            },
+            "beforeProjectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId",
+                "description": "The field of the target group to move the field before. When omitted, the field is moved to the end of the group."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId",
+            "projectInfoGroupId"
+        ]
+    },
+    "ProjectInfoFieldRename": {
+        "type": "object",
+        "properties": {
+            "projectInfoFieldId": {
+                "$ref": "#/ProjectInfoFieldId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the field. It must not be used by another field.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoFieldId",
+            "name"
+        ]
+    },
+    "CreatedLayoutWithPlacementError": {
+        "type": "object",
+        "description": "The layout was created, but it could not be moved to the place asked for by previousNavigatorItemId or position: it stays where Archicad put it.",
+        "properties": {
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            },
+            "error": {
+                "$ref": "#/Error"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databaseId",
+            "error"
+        ]
+    },
+    "NotificationBubbleIconInput": {
+        "type": "string",
+        "enum": [
+            "none",
+            "information",
+            "warning",
+            "error"
+        ],
+        "description": "The icon shown in the bubble. Default: information."
+    },
+    "NotificationBubbleLargeIconInput": {
+        "type": "string",
+        "enum": [
+            "information",
+            "warning",
+            "error"
+        ],
+        "description": "The icon shown instead of icon when the \"Use large alert cues\" option is on in Work Environment. Not set by default."
+    },
+    "NotificationBubbleOffsetInput": {
+        "type": "object",
+        "description": "Moves the bubble from its position by this many pixels.",
+        "properties": {
+            "h": {
+                "type": "integer",
+                "description": "Horizontal offset in pixels, positive to the right.",
+                "minimum": -32768,
+                "maximum": 32767
+            },
+            "v": {
+                "type": "integer",
+                "description": "Vertical offset in pixels, positive downwards.",
+                "minimum": -32768,
+                "maximum": 32767
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "h",
+            "v"
+        ]
+    },
+    "NotificationBubbleIcon": {
+        "type": "string",
+        "enum": [
+            "none",
+            "information",
+            "warning",
+            "error",
+            "other"
+        ],
+        "description": "The icon of the bubble."
+    },
+    "NotificationBubbleOffset": {
+        "type": "object",
+        "description": "The offset of the bubble from its position, in pixels.",
+        "properties": {
+            "h": {
+                "type": "integer"
+            },
+            "v": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "h",
+            "v"
+        ]
+    },
+    "NotificationBubbleScreenPoint": {
+        "type": "object",
+        "description": "The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.",
+        "properties": {
+            "h": {
+                "type": "integer",
+                "description": "Horizontal pixel position from the left edge of the view window.",
+                "minimum": -32768,
+                "maximum": 32767
+            },
+            "v": {
+                "type": "integer",
+                "description": "Vertical pixel position from the top edge of the view window.",
+                "minimum": -32768,
+                "maximum": 32767
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "h",
+            "v"
+        ]
+    },
+    "HotlinkDesignOptionTableUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "filterMode": {
+                "$ref": "#/HotlinkDesignOptionFilterMode",
+                "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+            },
+            "activeDesignOptionCombination": {
+                "type": "string",
+                "description": "The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination."
+            },
+            "activeDesignOptions": {
+                "type": "array",
+                "description": "The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "setName": {
+                            "type": "string"
+                        },
+                        "designOptionName": {
+                            "type": "string",
+                            "description": "The name of the option to activate in the set. An empty string deactivates every option of the set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "setName",
+                        "designOptionName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "HotlinkDesignOptionTable": {
+        "type": "object",
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId",
+                "description": "The hotlink node the table belongs to; for an instance, the node it is placed from."
+            },
+            "filterMode": {
+                "$ref": "#/HotlinkDesignOptionFilterModeOrUnknown"
+            },
+            "designOptionCombinations": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "The names of the design option combinations of the hotlinked module."
+            },
+            "activeDesignOptionCombination": {
+                "type": "string",
+                "description": "The name of the active combination. Missing when no combination is active."
+            },
+            "designOptionSets": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/HotlinkDesignOptionSet"
+                },
+                "description": "The design option sets of the hotlinked module."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId",
+            "filterMode",
+            "designOptionCombinations",
+            "designOptionSets"
+        ]
+    },
+    "HotlinkDesignOptionFilterModeOrUnknown": {
+        "type": "string",
+        "enum": [
+            "MainModelOnly",
+            "FilterByOptions",
+            "FilterByCombination",
+            "Unknown"
+        ],
+        "description": "Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination."
+    },
+    "HotlinkDesignOptionSet": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "designOptions": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "description": "The names of the design options in the set."
+            },
+            "activeDesignOption": {
+                "type": "string",
+                "description": "The name of the active design option of the set. Missing when no option of the set is active."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "designOptions"
+        ]
+    },
+    "ViewDesignOptionCombination": {
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            },
+            "status": {
+                "$ref": "#/ViewDesignOptionCombinationStatus"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the design option combination settings of the view, as Archicad reports it."
+            },
+            "designOptionCombinationId": {
+                "$ref": "#/DesignOptionCombinationId",
+                "description": "The design option combination the view shows. Given for the Standard status and, on Archicad 27 and 28, also for the Custom status (the combination the custom set was made from). On Archicad 29 and newer it is given only when exactly one combination has the name of the view's settings."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId",
+            "status",
+            "name"
+        ]
+    },
+    "ViewDesignOptionCombinationStatus": {
+        "type": "string",
+        "enum": [
+            "MainModelOnly",
+            "Standard",
+            "Custom",
+            "Missing"
+        ],
+        "description": "MainModelOnly: the view shows only the main model, no design option. Standard: the view shows a design option combination. Custom: the view shows a set of design options modified by the user, without a name. Missing: the combination of the view was deleted."
+    },
+    "HotlinkDesignOptionsByNode": {
+        "properties": {
+            "hotlinkNodeId": {
+                "$ref": "#/HotlinkNodeId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodeId"
+        ]
+    },
+    "HotlinkDesignOptionsByElement": {
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "InputConstraintType": {
+        "type": "string",
+        "description": "What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).",
+        "enum": [
+            "X",
+            "Y",
+            "Z",
+            "Angle",
+            "Distance"
+        ]
+    },
+    "ResolvedName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The given word or phrase."
+            },
+            "status": {
+                "$ref": "#/NameResolutionStatus"
+            },
+            "found": {
+                "type": "array",
+                "description": "The items named exactly so (the same characters), with match 'exact'. More than one when items of different kinds, or several stories, have the name.",
+                "items": {
+                    "$ref": "#/NameMatch"
+                }
+            },
+            "closeMatches": {
+                "type": "array",
+                "description": "When nothing is named exactly so: the nearest items, best first. Empty when the status is found or notFound.",
+                "items": {
+                    "$ref": "#/NameMatch"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "status",
+            "found",
+            "closeMatches"
+        ],
+        "description": "The lookup result for one requested name."
+    },
+    "NameResolutionStatus": {
+        "type": "string",
+        "description": "found: an item of the project has exactly this name (see found). closeMatches: no item has exactly this name, but some are close (see closeMatches). notFound: nothing in the project is close to it; the project has no such item, so it must not be guessed.",
+        "enum": [
+            "found",
+            "closeMatches",
+            "notFound"
+        ]
+    },
+    "ScriptUIShown": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [
+                    true
+                ]
+            },
+            "uiId": {
+                "type": "integer",
+                "description": "The window the page is shown in (1 to 8). Pass it to GetScriptUIResult, or to a later ShowScriptUI to replace the page."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "uiId"
+        ]
+    },
+    "TapirCommandDescription": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the command.",
+                "minLength": 1
+            },
+            "group": {
+                "type": "string",
+                "description": "The name of the command group, e.g. \"Application Commands\".",
+                "minLength": 1
+            },
+            "version": {
+                "type": "string",
+                "description": "The Tapir version the command was introduced in, in the form of \"1.1.1\".",
+                "minLength": 1
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the command, as in the command reference."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "group",
+            "version",
+            "description"
+        ],
+        "description": "The description and schemas of a Tapir command."
+    },
+    "ScheduleSummary": {
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the schedule."
+            },
+            "uiId": {
+                "type": "string",
+                "description": "The ID of the schedule, shown before its name in the navigator."
+            },
+            "folderPath": {
+                "type": "array",
+                "description": "The names of the Project Map items the schedule is in, from the top down, without the project itself (e.g. Schedules, Element). Archicad's API does not say whether a schedule lists elements, components or surfaces; the default Project Map shows it by these folders.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId",
+            "name",
+            "uiId",
+            "folderPath"
+        ],
+        "description": "The identifier and summary of a schedule."
+    },
+    "NameToResolve": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The word or phrase.",
+                "minLength": 1
+            },
+            "kind": {
+                "$ref": "#/NameKind",
+                "description": "The kind of item the word names. When it is left out, every kind is searched."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ],
+        "description": "A name and the kind of project item to look it up among."
+    },
+    "LayoutSubsetSettingsChange": {
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The subset to change, from GetNavigatorItemTree or CreateLayoutSubset."
+            },
+            "settings": {
+                "$ref": "#/LayoutSubsetSettingsData",
+                "description": "The settings to change. The ones not given keep the value the subset has."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId",
+            "settings"
+        ],
+        "description": "Partial setting changes for one layout subset."
+    },
+    "ChangedLayoutSubset": {
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The new subset, with the new settings, holding the layouts and subsets of the old one in their order, right after the old one in the Layout Book."
+            },
+            "oldNavigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The old subset, now empty. The Archicad API cannot delete a subset: delete it in Archicad."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "navigatorItemId",
+            "oldNavigatorItemId"
+        ],
+        "description": "A layout subset whose settings were changed."
+    },
+    "NumberingStyle": {
+        "type": "string",
+        "enum": [
+            "Undefined",
+            "abc",
+            "ABC",
+            "1",
+            "01",
+            "001",
+            "0001",
+            "noID"
+        ]
+    },
+    "StoryInsertionPosition": {
+        "type": "string",
+        "description": "Whether the new story is inserted directly above or directly below the story of storyIndex.",
+        "enum": [
+            "Above",
+            "Below"
+        ]
+    },
     "HotlinkSourceReference": {
         "type": "object",
         "properties": {
@@ -1526,16 +2450,7 @@
         "type": "object",
         "properties": {
             "status": {
-                "type": "string",
-                "enum": [
-                    "AuthCanceld",
-                    "SourceMissing",
-                    "SourceAvailable",
-                    "SourceNotAccessible",
-                    "SourceIncompatible",
-                    "SourceOffline"
-                ],
-                "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
+                "$ref": "#/HotlinkSourceStatus"
             }
         },
         "additionalProperties": false,
@@ -4032,15 +4947,7 @@
         "description": "Archicad's drawing constraint for the clicks of a Get...FromUser command: the cursor can only move along it, as when a coordinate is locked in the Tracker. It is dissolved when the command returns, also on Escape and on errors.",
         "properties": {
             "type": {
-                "type": "string",
-                "description": "What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).",
-                "enum": [
-                    "X",
-                    "Y",
-                    "Z",
-                    "Angle",
-                    "Distance"
-                ]
+                "$ref": "#/InputConstraintType"
             },
             "value": {
                 "type": "number",
@@ -30841,17 +31748,7 @@
                 "type": "string"
             },
             "numberingStyle": {
-                "type": "string",
-                "enum": [
-                    "Undefined",
-                    "abc",
-                    "ABC",
-                    "1",
-                    "01",
-                    "001",
-                    "0001",
-                    "noID"
-                ]
+                "$ref": "#/NumberingStyle"
             },
             "startAt": {
                 "type": "integer"
@@ -30904,18 +31801,8 @@
                 "description": "The subset's custom number (its custom ID). Giving it also switches customNumbering on, unless customNumbering is given."
             },
             "numberingStyle": {
-                "type": "string",
-                "description": "The ID appearance style of the subset.",
-                "enum": [
-                    "Undefined",
-                    "abc",
-                    "ABC",
-                    "1",
-                    "01",
-                    "001",
-                    "0001",
-                    "noID"
-                ]
+                "$ref": "#/NumberingStyle",
+                "description": "The ID appearance style of the subset."
             },
             "startAt": {
                 "type": "integer",

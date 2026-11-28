@@ -1459,9 +1459,7 @@ GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSch
                 "minLength": 1
             },
             "icon": {
-                "type": "string",
-                "enum": ["none", "information", "warning", "error"],
-                "description": "The icon shown in the bubble. Default: information."
+                "$ref": "#/NotificationBubbleIconInput"
             },
             "timeoutMilliseconds": {
                 "type": "integer",
@@ -1474,55 +1472,13 @@ GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSch
                 "description": "The model coordinate in the current database (meters) where the bubble is shown, converted like ModelToScreen does: in a 3D window it is projected with the current camera, in other windows z is disregarded. Do not give it together with screenPoint. When neither is given, the bubble is shown at the center of the current view in 2D windows and at the project's local origin otherwise."
             },
             "screenPoint": {
-                "type": "object",
-                "description": "The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.",
-                "properties": {
-                    "h": {
-                        "type": "integer",
-                        "description": "Horizontal pixel position from the left edge of the view window.",
-                        "minimum": -32768,
-                        "maximum": 32767
-                    },
-                    "v": {
-                        "type": "integer",
-                        "description": "Vertical pixel position from the top edge of the view window.",
-                        "minimum": -32768,
-                        "maximum": 32767
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "h",
-                    "v"
-                ]
+                "$ref": "#/NotificationBubbleScreenPoint"
             },
             "offset": {
-                "type": "object",
-                "description": "Moves the bubble from its position by this many pixels.",
-                "properties": {
-                    "h": {
-                        "type": "integer",
-                        "description": "Horizontal offset in pixels, positive to the right.",
-                        "minimum": -32768,
-                        "maximum": 32767
-                    },
-                    "v": {
-                        "type": "integer",
-                        "description": "Vertical offset in pixels, positive downwards.",
-                        "minimum": -32768,
-                        "maximum": 32767
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "h",
-                    "v"
-                ]
+                "$ref": "#/NotificationBubbleOffsetInput"
             },
             "largeIcon": {
-                "type": "string",
-                "enum": ["information", "warning", "error"],
-                "description": "The icon shown instead of icon when the \"Use large alert cues\" option is on in Work Environment. Not set by default."
+                "$ref": "#/NotificationBubbleLargeIconInput"
             },
             "redrawCountLimit": {
                 "type": "integer",
@@ -1553,31 +1509,14 @@ GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetRawResponseSchema 
                 "description": "The text of the bubble. Missing when it has none."
             },
             "icon": {
-                "type": "string",
-                "enum": ["none", "information", "warning", "error", "other"],
-                "description": "The icon of the bubble."
+                "$ref": "#/NotificationBubbleIcon"
             },
             "largeIcon": {
-                "type": "string",
-                "enum": ["none", "information", "warning", "error", "other"],
+                "$ref": "#/NotificationBubbleIcon",
                 "description": "The icon shown when the \"Use large alert cues\" option is on in Work Environment."
             },
             "offset": {
-                "type": "object",
-                "description": "The offset of the bubble from its position, in pixels.",
-                "properties": {
-                    "h": {
-                        "type": "integer"
-                    },
-                    "v": {
-                        "type": "integer"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "h",
-                    "v"
-                ]
+                "$ref": "#/NotificationBubbleOffset"
             },
             "timeoutMilliseconds": {
                 "type": "integer",

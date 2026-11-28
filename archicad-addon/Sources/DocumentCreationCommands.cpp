@@ -674,14 +674,7 @@ GS::Optional<GS::UniString> CreateLayoutCommand::GetRawResponseSchema () const
                         { "$ref": "#/DatabaseIdArrayItem" },
                         { "$ref": "#/ErrorItem" },
                         {
-                            "type": "object",
-                            "description": "The layout was created, but it could not be moved to the place asked for by previousNavigatorItemId or position: it stays where Archicad put it.",
-                            "properties": {
-                                "databaseId": { "$ref": "#/DatabaseId" },
-                                "error":      { "$ref": "#/Error" }
-                            },
-                            "additionalProperties": false,
-                            "required": ["databaseId", "error"]
+                            "$ref": "#/CreatedLayoutWithPlacementError"
                         }
                     ]
                 }
@@ -934,7 +927,9 @@ GS::Optional<GS::UniString> CreateLayoutSubsetCommand::GetInputParametersSchema 
                         "parentNavigatorItemId": { "$ref": "#/NavigatorItemId" },
                         "ownPrefix":             { "type": "string" },
                         "customNumber":          { "type": "string" },
-                        "numberingStyle":        { "type": "string", "enum": ["Undefined", "abc", "ABC", "1", "01", "001", "0001", "noID"] },
+                        "numberingStyle":        {
+                            "$ref": "#/NumberingStyle"
+                        },
                         "startAt":               { "type": "integer" },
                         "continueNumbering":     { "type": "boolean" },
                         "useUpperPrefix":        { "type": "boolean" },
@@ -1150,22 +1145,7 @@ GS::Optional<GS::UniString> ChangeLayoutSubsetSettingsCommand::GetInputParameter
                 "type": "array",
                 "description": "The Layout Book subsets to change, each with the settings to change.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "navigatorItemId": {
-                            "$ref": "#/NavigatorItemId",
-                            "description": "The subset to change, from GetNavigatorItemTree or CreateLayoutSubset."
-                        },
-                        "settings": {
-                            "$ref": "#/LayoutSubsetSettingsData",
-                            "description": "The settings to change. The ones not given keep the value the subset has."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "navigatorItemId",
-                        "settings"
-                    ]
+                    "$ref": "#/LayoutSubsetSettingsChange"
                 }
             }
         },
@@ -1187,22 +1167,7 @@ GS::Optional<GS::UniString> ChangeLayoutSubsetSettingsCommand::GetRawResponseSch
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "navigatorItemId": {
-                                    "$ref": "#/NavigatorItemId",
-                                    "description": "The new subset, with the new settings, holding the layouts and subsets of the old one in their order, right after the old one in the Layout Book."
-                                },
-                                "oldNavigatorItemId": {
-                                    "$ref": "#/NavigatorItemId",
-                                    "description": "The old subset, now empty. The Archicad API cannot delete a subset: delete it in Archicad."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "navigatorItemId",
-                                "oldNavigatorItemId"
-                            ]
+                            "$ref": "#/ChangedLayoutSubset"
                         },
                         {
                             "$ref": "#/ErrorItem"

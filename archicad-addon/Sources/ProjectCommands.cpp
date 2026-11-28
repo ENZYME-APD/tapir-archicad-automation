@@ -1492,22 +1492,7 @@ GS::Optional<GS::UniString> RenameProjectInfoFieldsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The fields of the Project Info groups to rename, each with its new name. Fixed (built-in) fields cannot be renamed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoFieldId": {
-                            "$ref": "#/ProjectInfoFieldId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the field. It must not be used by another field.",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoFieldId",
-                        "name"
-                    ]
+                    "$ref": "#/ProjectInfoFieldRename"
                 },
                 "minItems": 1
             }
@@ -1578,25 +1563,7 @@ GS::Optional<GS::UniString> MoveProjectInfoFieldsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The fields of the Project Info groups to move, in the order the moves are made. A subfield of a calculated field cannot be moved on its own, it moves with its parent field.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoFieldId": {
-                            "$ref": "#/ProjectInfoFieldId"
-                        },
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId",
-                            "description": "The group to move the field to. To reorder a field within its group, give its current group."
-                        },
-                        "beforeProjectInfoFieldId": {
-                            "$ref": "#/ProjectInfoFieldId",
-                            "description": "The field of the target group to move the field before. When omitted, the field is moved to the end of the group."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoFieldId",
-                        "projectInfoGroupId"
-                    ]
+                    "$ref": "#/ProjectInfoFieldMove"
                 },
                 "minItems": 1
             }
@@ -3092,7 +3059,7 @@ static GSErrCode RestoreHomeStoryOfElements (const GS::Array<std::pair<API_Guid,
 }
 
 InsertStoryCommand::InsertStoryCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -3111,12 +3078,7 @@ GS::Optional<GS::UniString> InsertStoryCommand::GetInputParametersSchema () cons
                 "description": "The index of an existing story (see GetStories) next to which the new story is inserted."
             },
             "position": {
-                "type": "string",
-                "description": "Whether the new story is inserted directly above or directly below the story of storyIndex.",
-                "enum": [
-                    "Above",
-                    "Below"
-                ]
+                "$ref": "#/StoryInsertionPosition"
             },
             "name": {
                 "type": "string",
@@ -8642,16 +8604,7 @@ GS::Optional<GS::UniString> UpdateHotlinksCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The hotlink nodes to update, from GetHotlinks or CreateHotlinkNodes. Each node's cached content is re-read from its source file, as the Hotlink Manager's Update button does.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId"
-                    ]
+                    "$ref": "#/HotlinkNodeReference"
                 }
             }
         },
@@ -8734,21 +8687,7 @@ GS::Optional<GS::UniString> ChangeHotlinkNodesCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The hotlink nodes to repoint at another source file, as the Hotlink Manager's Relink button does. The placed instances stay where they are. Follow it with UpdateHotlinks on the same nodes to re-read the content from the new file.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        },
-                        "sourceLocation": {
-                            "type": "string",
-                            "description": "Absolute path of the new module source file (.mod or .pln)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId",
-                        "sourceLocation"
-                    ]
+                    "$ref": "#/HotlinkNodeChange"
                 }
             }
         },
@@ -8834,34 +8773,7 @@ enum class HotlinkNodeRemoval {
     Delete
 };
 
-static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniString& description)
-{
-    return R"({
-        "type": "object",
-        "properties": {
-            "hotlinkNodes": {
-                "type": "array",
-                "description": ")" + description + R"(",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "hotlinkNodeId": {
-                            "$ref": "#/HotlinkNodeId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "hotlinkNodeId"
-                    ]
-                }
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "hotlinkNodes"
-        ]
-    })";
-}
+
 
 static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, HotlinkNodeRemoval removal)
 {
@@ -8919,8 +8831,22 @@ GS::String BreakHotlinkNodesCommand::GetName () const
 
 GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetInputParametersSchema () const
 {
-    return GetHotlinkNodesInputSchema (
-        "The hotlink nodes to break, from GetHotlinks or CreateHotlinkNodes. The elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file, as the Hotlink Manager's Break Hotlink does. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to break, from GetHotlinks or CreateHotlinkNodes. The elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file, as the Hotlink Manager's Break Hotlink does. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).",
+                "items": {
+                    "$ref": "#/HotlinkNodeReference"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetRawResponseSchema () const
@@ -8956,8 +8882,22 @@ GS::String DeleteHotlinkNodesCommand::GetName () const
 
 GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetInputParametersSchema () const
 {
-    return GetHotlinkNodesInputSchema (
-        "The hotlink nodes to delete, from GetHotlinks or CreateHotlinkNodes. Each node is removed together with its placed instances and their elements, as the Hotlink Manager's Delete does; use BreakHotlinkNodes instead to keep the elements. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).");
+    return R"({
+        "type": "object",
+        "properties": {
+            "hotlinkNodes": {
+                "type": "array",
+                "description": "The hotlink nodes to delete, from GetHotlinks or CreateHotlinkNodes. Each node is removed together with its placed instances and their elements, as the Hotlink Manager's Delete does; use BreakHotlinkNodes instead to keep the elements. In Teamwork the Hotlink and XRef management has to be reserved first (ReserveHotlinkCacheManagement).",
+                "items": {
+                    "$ref": "#/HotlinkNodeReference"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hotlinkNodes"
+        ]
+    })";
 }
 
 GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () const
