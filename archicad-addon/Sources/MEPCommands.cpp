@@ -4167,8 +4167,7 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
                 "type": "array",
                 "description": "Reference ids to delete from the reference set of the Piping or Ventilation domain.",
                 "items": {
-                    "type": "integer",
-                    "minimum": 0
+                    "$ref": "#/MEPReferenceId"
                 }
             },
             "anglesToAdd": {
@@ -4202,14 +4201,7 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "guid": {
-                                    "type": "string"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["guid"]
+                            "$ref": "#/MEPAddedPreferenceTableId"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"
@@ -6506,20 +6498,7 @@ GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetInputPara
             "wiringTypesToAdd": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "crossSectionalArea": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "crossSectionalArea"
-                    ]
+                    "$ref": "#/ElectricalWiringType"
                 }
             },
             "wiringTypesToRemove": {
@@ -6532,20 +6511,7 @@ GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetInputPara
             "loadClassificationsToAdd": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "demandFactor": {
-                            "type": "number"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "demandFactor"
-                    ]
+                    "$ref": "#/ElectricalLoadClassification"
                 }
             },
             "loadClassificationsToRemove": {
@@ -9437,33 +9403,7 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParameters
                 "type": "array",
                 "description": "The routing elements to rebuild. Each is deleted and placed again. Every segment, node and fitting gets a new guid (see guidMap); labels, dimensions and other things attached to them are not carried over. Use ModifyMEPRoutingElements nodePositions instead when the node count stays the same: it keeps every guid.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "routingElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The routing element (duct, pipe or cable carrier route) to rebuild."
-                        },
-                        "nodeCoordinates": {
-                            "type": "array",
-                            "description": "The new corner points of the route, at least 2, absolute like the polyline GetMEPRoutingElements returns. Fewer or more points than the route has nodes remove or add nodes. Omitted: the route's current polyline.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "removeCollinearNodes": {
-                            "type": "boolean",
-                            "description": "Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false."
-                        },
-                        "resetCustomSegments": {
-                            "type": "boolean",
-                            "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; a segment along no old segment takes the settings of its nearest neighbour along the route (the one before it first), and nodes without an old counterpart take the route's uncustomized settings."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "routingElementId"
-                    ]
+                    "$ref": "#/MEPRoutingElementRebuildData"
                 }
             }
         },
@@ -9485,52 +9425,7 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "description": "The rebuilt routing element.",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The rebuilt route: its old guid when Archicad let it keep it, else a new one."
-                                },
-                                "guidMap": {
-                                    "type": "array",
-                                    "description": "The parts of the old route paired with those of the rebuilt one, which all have new guids: a segment with the old segment it lies along most (its rigid segments by order when both segments have the same ends), a node with the old node at its position (its elbows and transitions by order). Every old and every new part is listed once or more; an old segment that two new segments lie along is listed with each.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "kind": {
-                                                "type": "string",
-                                                "enum": [ "Segment", "RigidSegment", "Node", "Elbow", "Transition" ],
-                                                "description": "The kind of part. Elbows are called bends in Archicad 28."
-                                            },
-                                            "oldGuid": {
-                                                "$ref": "#/Guid",
-                                                "description": "The guid of the part of the old route. Left out for a new part without an old counterpart."
-                                            },
-                                            "newGuid": {
-                                                "$ref": "#/Guid",
-                                                "description": "The guid of the part of the rebuilt route. Left out for an old part without a new counterpart."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "kind"
-                                        ]
-                                    }
-                                },
-                                "warnings": {
-                                    "type": "array",
-                                    "description": "What was not carried over: a setting of a segment or node, the layer, home story, renovation status, element ID, a classification, the property values or a connection of the route, and the new segments that lie along old segments of different sizes. Left out when everything was carried over.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "guidMap"
-                            ]
+                            "$ref": "#/RebuiltMEPRoutingElement"
                         },
                         {
                             "$ref": "#/ErrorItem"

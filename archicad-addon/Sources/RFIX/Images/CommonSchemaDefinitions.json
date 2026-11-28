@@ -551,36 +551,7 @@
         "type": "array",
         "description": "The geometry of a polyline MEP flexible segment: its line and spline parts in order, which alternate and connect at their ends. Available from Archicad 28.",
         "items": {
-            "type": "object",
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "description": "A straight line from 'begin' to 'end', or a spline through 'controlPoints'.",
-                    "enum": [
-                        "Line",
-                        "Spline"
-                    ]
-                },
-                "begin": {
-                    "$ref": "#/Coordinate3D",
-                    "description": "The beginning of a line part."
-                },
-                "end": {
-                    "$ref": "#/Coordinate3D",
-                    "description": "The end of a line part."
-                },
-                "controlPoints": {
-                    "type": "array",
-                    "description": "The control points of a spline part.",
-                    "items": {
-                        "$ref": "#/Coordinate3D"
-                    }
-                }
-            },
-            "additionalProperties": false,
-            "required": [
-                "type"
-            ]
+            "$ref": "#/MEPFlexibleSegmentPolylinePart"
         },
         "minItems": 1
     },
@@ -5981,19 +5952,7 @@
                 "type": "array",
                 "description": "Rows to add to a rectangular duct or cable carrier segment table, after the other changes. Adding rows to the other tables is not supported yet.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "value": {
-                            "type": "number"
-                        },
-                        "description": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "value"
-                    ]
+                    "$ref": "#/MEPNewValuePreferenceRow"
                 }
             }
         },
@@ -9830,23 +9789,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "$ref": "#/MEPPreferenceRowIndex"
-                        },
-                        "value": {
-                            "type": "number",
-                            "description": "The size of the row."
-                        },
-                        "description": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "value"
-                    ]
+                    "$ref": "#/MEPValuePreferenceRow"
                 }
             }
         },
@@ -22535,20 +22478,7 @@
                 "type": "array",
                 "description": "The reference ids of the set in the same order as referenceIds, each with whether it is defined.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "referenceId": {
-                            "type": "integer"
-                        },
-                        "isDefined": {
-                            "type": "boolean",
-                            "description": "Whether the reference id is defined in the set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "referenceId"
-                    ]
+                    "$ref": "#/MEPReferenceIdDetails"
                 }
             }
         },
@@ -22579,20 +22509,7 @@
                 "type": "array",
                 "description": "The angles of the set in the same order as angles, each with whether it is defined.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "angle": {
-                            "type": "number"
-                        },
-                        "isDefined": {
-                            "type": "boolean",
-                            "description": "Whether the angle is defined in the set."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "angle"
-                    ]
+                    "$ref": "#/MEPAngleDetails"
                 }
             }
         },
@@ -22618,38 +22535,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "$ref": "#/MEPPreferenceRowIndex"
-                        },
-                        "referenceId": {
-                            "type": "integer"
-                        },
-                        "angle": {
-                            "type": "number",
-                            "description": "In degrees. Available from Archicad 29."
-                        },
-                        "diameter": {
-                            "type": "number"
-                        },
-                        "radius": {
-                            "type": "number"
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "isValid": {
-                            "type": "boolean",
-                            "description": "Whether the row is valid."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "referenceId",
-                        "diameter",
-                        "radius"
-                    ]
+                    "$ref": "#/MEPElbowPreferenceTableRow"
                 }
             }
         },
@@ -22676,54 +22562,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "$ref": "#/MEPPreferenceRowIndex"
-                        },
-                        "mainAxisReferenceId": {
-                            "type": "integer"
-                        },
-                        "branchAxisReferenceId": {
-                            "type": "integer"
-                        },
-                        "branchAxisAngle": {
-                            "type": "number",
-                            "description": "In degrees. Available from Archicad 29."
-                        },
-                        "mainAxisDiameter": {
-                            "type": "number"
-                        },
-                        "branchAxisDiameter": {
-                            "type": "number"
-                        },
-                        "length": {
-                            "type": "number"
-                        },
-                        "branchOffset": {
-                            "type": "number"
-                        },
-                        "connectionLength": {
-                            "type": "number"
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "isValid": {
-                            "type": "boolean",
-                            "description": "Whether the row is valid."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "mainAxisReferenceId",
-                        "branchAxisReferenceId",
-                        "mainAxisDiameter",
-                        "branchAxisDiameter",
-                        "length",
-                        "branchOffset",
-                        "connectionLength"
-                    ]
+                    "$ref": "#/MEPBranchPreferenceTableRow"
                 }
             }
         },
@@ -22750,46 +22589,7 @@
             "rows": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "$ref": "#/MEPPreferenceRowIndex"
-                        },
-                        "beginReferenceId": {
-                            "type": "integer"
-                        },
-                        "endReferenceId": {
-                            "type": "integer"
-                        },
-                        "beginDiameter": {
-                            "type": "number"
-                        },
-                        "endDiameter": {
-                            "type": "number"
-                        },
-                        "length": {
-                            "type": "number",
-                            "description": "Piping only."
-                        },
-                        "angle": {
-                            "type": "number",
-                            "description": "In degrees. Ventilation only."
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "isValid": {
-                            "type": "boolean",
-                            "description": "Whether the row is valid."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "beginReferenceId",
-                        "endReferenceId",
-                        "beginDiameter",
-                        "endDiameter"
-                    ]
+                    "$ref": "#/MEPTransitionPreferenceTableRow"
                 }
             }
         },
@@ -22907,16 +22707,7 @@
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "systemGroupId": {
-                        "$ref": "#/MEPSystemGroupId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "systemGroupId"
-                ]
+                "$ref": "#/MEPSystemGroupIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -22927,16 +22718,7 @@
         "type": "object",
         "oneOf": [
             {
-                "type": "object",
-                "properties": {
-                    "physicalSystemId": {
-                        "$ref": "#/MEPPhysicalSystemId"
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "physicalSystemId"
-                ]
+                "$ref": "#/MEPPhysicalSystemIdArrayItem"
             },
             {
                 "$ref": "#/ErrorItem"
@@ -23098,42 +22880,7 @@
                 "description": "Optional home story index (as returned by GetStories) of the routing element and all its parts. The node coordinates stay absolute: the route is placed at them, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
             },
             "defaults": {
-                "type": "object",
-                "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                "properties": {
-                    "routingNode": {
-                        "type": "object",
-                        "description": "The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.",
-                        "properties": {
-                            "elbow": {
-                                "type": "object",
-                                "properties": {
-                                    "preferenceTableId": {
-                                        "$ref": "#/Guid",
-                                        "description": "The guid of an elbow preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                    },
-                                    "factorRadius": {
-                                        "type": "number",
-                                        "description": "The radius factor of the elbows placed at the nodes."
-                                    }
-                                },
-                                "additionalProperties": false
-                            },
-                            "transition": {
-                                "type": "object",
-                                "properties": {
-                                    "preferenceTableId": {
-                                        "$ref": "#/Guid",
-                                        "description": "The guid of a transition preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                    }
-                                },
-                                "additionalProperties": false
-                            }
-                        },
-                        "additionalProperties": false
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/MEPRoutingElementDefaults"
             }
         },
         "additionalProperties": false,
@@ -23224,19 +22971,7 @@
                 "description": "Optional home story index (as returned by GetStories). The position stays absolute: the element is placed at it, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
             },
             "defaults": {
-                "type": "object",
-                "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                "properties": {
-                    "insulationThickness": {
-                        "type": "number",
-                        "description": "The insulation thickness in meters."
-                    },
-                    "removeInsulation": {
-                        "type": "boolean",
-                        "description": "If true, the element is placed without insulation. Cannot be combined with insulationThickness."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/MEPElementDefaults"
             }
         },
         "additionalProperties": false,
@@ -24061,12 +23796,7 @@
                 "type": "number"
             },
             "connectionStyle": {
-                "type": "string",
-                "enum": [
-                    "SimpleBody",
-                    "Flanged",
-                    "Welded"
-                ]
+                "$ref": "#/MEPConnectionStyle"
             }
         },
         "additionalProperties": false,
@@ -24112,11 +23842,7 @@
         "description": "The routing node default parameters of a routing element (RoutingElement::GetRoutingNodeDefaultParameters). The elbow is given from Archicad 29.",
         "properties": {
             "preferredTransitionPlacement": {
-                "type": "string",
-                "enum": [
-                    "SmallToLarge",
-                    "LargeToSmall"
-                ]
+                "$ref": "#/MEPPreferredTransitionPlacement"
             },
             "elbow": {
                 "$ref": "#/MEPElbowParameters"
@@ -24152,12 +23878,7 @@
                 "$ref": "#/ElementId"
             },
             "type": {
-                "type": "string",
-                "enum": [
-                    "RoutingElement",
-                    "RoutingNode",
-                    "RoutingSegment"
-                ]
+                "$ref": "#/MEPRoutingParameterElementType"
             },
             "routingNodeParameters": {
                 "$ref": "#/MEPRoutingNodeParameters"
@@ -24187,7 +23908,7 @@
         "properties": {
             "preferenceTableId": {
                 "$ref": "#/Guid",
-                "description": "A transition preference table, as returned by GetMEPPreferenceTables."
+                "description": "A transition preference table of the routing domain, as returned by GetMEPPreferenceTables with includeFittingTables."
             }
         },
         "additionalProperties": false,
@@ -24223,29 +23944,10 @@
         "description": "The routing node default parameters of a routing element (RoutingElement::Modifier::SetRoutingNodeDefaultParameters). Archicad 29 or newer.",
         "properties": {
             "elbow": {
-                "type": "object",
-                "properties": {
-                    "factorRadius": {
-                        "type": "number"
-                    },
-                    "preferenceTableId": {
-                        "$ref": "#/Guid",
-                        "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+                "$ref": "#/MEPElbowParameters"
             },
             "transition": {
-                "type": "object",
-                "properties": {
-                    "preferenceTableId": {
-                        "$ref": "#/Guid",
-                        "description": "A transition preference table, as returned by GetMEPPreferenceTables."
-                    }
-                },
-                "additionalProperties": false,
-                "required": []
+                "$ref": "#/MEPTransitionDefaults"
             }
         },
         "additionalProperties": false,
@@ -24276,17 +23978,469 @@
             "elementId"
         ]
     },
+    "MEPBranchPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "mainAxisReferenceId": {
+                "type": "integer"
+            },
+            "branchAxisReferenceId": {
+                "type": "integer"
+            },
+            "branchAxisAngle": {
+                "type": "number",
+                "description": "In degrees. Available from Archicad 29."
+            },
+            "mainAxisDiameter": {
+                "type": "number"
+            },
+            "branchAxisDiameter": {
+                "type": "number"
+            },
+            "length": {
+                "type": "number"
+            },
+            "branchOffset": {
+                "type": "number"
+            },
+            "connectionLength": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Whether the row is valid."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "mainAxisReferenceId",
+            "branchAxisReferenceId",
+            "mainAxisDiameter",
+            "branchAxisDiameter",
+            "length",
+            "branchOffset",
+            "connectionLength"
+        ],
+        "description": "A row of an MEP branch preference table."
+    },
+    "MEPElbowPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "referenceId": {
+                "type": "integer"
+            },
+            "angle": {
+                "type": "number",
+                "description": "In degrees. Available from Archicad 29."
+            },
+            "diameter": {
+                "type": "number"
+            },
+            "radius": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Whether the row is valid."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceId",
+            "diameter",
+            "radius"
+        ],
+        "description": "A row of an MEP elbow preference table."
+    },
+    "MEPTransitionPreferenceTableRow": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "beginReferenceId": {
+                "type": "integer"
+            },
+            "endReferenceId": {
+                "type": "integer"
+            },
+            "beginDiameter": {
+                "type": "number"
+            },
+            "endDiameter": {
+                "type": "number"
+            },
+            "length": {
+                "type": "number",
+                "description": "Piping only."
+            },
+            "angle": {
+                "type": "number",
+                "description": "In degrees. Ventilation only."
+            },
+            "description": {
+                "type": "string"
+            },
+            "isValid": {
+                "type": "boolean",
+                "description": "Whether the row is valid."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "beginReferenceId",
+            "endReferenceId",
+            "beginDiameter",
+            "endDiameter"
+        ],
+        "description": "A row of an MEP transition preference table."
+    },
+    "MEPSystemGroupIdArrayItem": {
+        "type": "object",
+        "properties": {
+            "systemGroupId": {
+                "$ref": "#/MEPSystemGroupId"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "systemGroupId"
+        ]
+    },
+    "MEPPreferenceRowShape": {
+        "type": "string",
+        "description": "Archicad 27 only: the shape whose list of values the row is in.",
+        "enum": [
+            "Circular",
+            "Rectangular"
+        ]
+    },
+    "MEPPreferenceTableContainerDetails": {
+        "type": "object",
+        "properties": {
+            "tableId": {
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The id of a preference table, for the tableId of the preference table row commands."
+            },
+            "name": {
+                "type": "string"
+            },
+            "exists": {
+                "type": "boolean"
+            },
+            "sizes": {
+                "$ref": "#/MEPPreferenceTableSizes"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "tableId",
+            "name",
+            "exists",
+            "sizes"
+        ]
+    },
+    "MEPPreferenceTableSizes": {
+        "type": "object",
+        "description": "The number of rows of each shape.",
+        "properties": {
+            "Circular": {
+                "type": "integer"
+            },
+            "Rectangular": {
+                "type": "integer"
+            }
+        },
+        "additionalProperties": false
+    },
+    "MEPRoutingParameterElementType": {
+        "type": "string",
+        "enum": [
+            "RoutingElement",
+            "RoutingNode",
+            "RoutingSegment"
+        ]
+    },
+    "MEPAngleDetails": {
+        "type": "object",
+        "properties": {
+            "angle": {
+                "type": "number"
+            },
+            "isDefined": {
+                "type": "boolean",
+                "description": "Whether the angle is defined in the set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "angle"
+        ]
+    },
+    "MEPElementDefaults": {
+        "type": "object",
+        "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
+        "properties": {
+            "insulationThickness": {
+                "type": "number",
+                "description": "The insulation thickness in meters."
+            },
+            "removeInsulation": {
+                "type": "boolean",
+                "description": "If true, the element is placed without insulation. Cannot be combined with insulationThickness."
+            }
+        },
+        "additionalProperties": false
+    },
+    "MEPNewValuePreferenceRow": {
+        "type": "object",
+        "properties": {
+            "value": {
+                "type": "number"
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "value"
+        ],
+        "description": "A value row to add to an MEP preference table."
+    },
+    "MEPReferenceIdDetails": {
+        "type": "object",
+        "properties": {
+            "referenceId": {
+                "type": "integer"
+            },
+            "isDefined": {
+                "type": "boolean",
+                "description": "Whether the reference id is defined in the set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "referenceId"
+        ]
+    },
+    "MEPRoutingElementDefaults": {
+        "type": "object",
+        "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
+        "properties": {
+            "routingNode": {
+                "$ref": "#/MEPRoutingNodeDefaults"
+            }
+        },
+        "additionalProperties": false
+    },
+    "MEPRoutingNodeDefaults": {
+        "type": "object",
+        "description": "The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.",
+        "properties": {
+            "elbow": {
+                "$ref": "#/MEPElbowDefaults"
+            },
+            "transition": {
+                "$ref": "#/MEPTransitionDefaults"
+            }
+        },
+        "additionalProperties": false
+    },
+    "MEPElbowDefaults": {
+        "type": "object",
+        "properties": {
+            "preferenceTableId": {
+                "$ref": "#/Guid",
+                "description": "The guid of an elbow preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
+            },
+            "factorRadius": {
+                "type": "number",
+                "description": "The radius factor of the elbows placed at the nodes."
+            }
+        },
+        "additionalProperties": false
+    },
+    "MEPValuePreferenceRow": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "$ref": "#/MEPPreferenceRowIndex"
+            },
+            "value": {
+                "type": "number",
+                "description": "The size of the row."
+            },
+            "description": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "value"
+        ],
+        "description": "A value row of an MEP preference table."
+    },
+    "MEPAddedPreferenceTableId": {
+        "type": "object",
+        "properties": {
+            "guid": {
+                "type": "string"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "MEPReferenceId": {
+        "type": "integer",
+        "minimum": 0
+    },
+    "MEPFlexibleSegmentPolylinePart": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/MEPFlexibleSegmentPolylinePartType"
+            },
+            "begin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The beginning of a line part."
+            },
+            "end": {
+                "$ref": "#/Coordinate3D",
+                "description": "The end of a line part."
+            },
+            "controlPoints": {
+                "type": "array",
+                "description": "The control points of a spline part.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type"
+        ]
+    },
+    "MEPFlexibleSegmentPolylinePartType": {
+        "type": "string",
+        "description": "A straight line from 'begin' to 'end', or a spline through 'controlPoints'.",
+        "enum": [
+            "Line",
+            "Spline"
+        ]
+    },
+    "MEPRoutingElementRebuildData": {
+        "type": "object",
+        "properties": {
+            "routingElementId": {
+                "$ref": "#/ElementId",
+                "description": "The routing element (duct, pipe or cable carrier route) to rebuild."
+            },
+            "nodeCoordinates": {
+                "type": "array",
+                "description": "The new corner points of the route, at least 2, absolute like the polyline GetMEPRoutingElements returns. Fewer or more points than the route has nodes remove or add nodes. Omitted: the route's current polyline.",
+                "items": {
+                    "$ref": "#/Coordinate3D"
+                },
+                "minItems": 2
+            },
+            "removeCollinearNodes": {
+                "type": "boolean",
+                "description": "Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false."
+            },
+            "resetCustomSegments": {
+                "type": "boolean",
+                "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; a segment along no old segment takes the settings of its nearest neighbour along the route (the one before it first), and nodes without an old counterpart take the route's uncustomized settings."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "routingElementId"
+        ],
+        "description": "Rebuild settings for one MEP routing element."
+    },
+    "RebuiltMEPRoutingElement": {
+        "type": "object",
+        "description": "The rebuilt routing element.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The rebuilt route: its old guid when Archicad let it keep it, else a new one."
+            },
+            "guidMap": {
+                "type": "array",
+                "description": "The parts of the old route paired with those of the rebuilt one, which all have new guids: a segment with the old segment it lies along most (its rigid segments by order when both segments have the same ends), a node with the old node at its position (its elbows and transitions by order). Every old and every new part is listed once or more; an old segment that two new segments lie along is listed with each.",
+                "items": {
+                    "$ref": "#/MEPRoutingRebuildGuidMapItem"
+                }
+            },
+            "warnings": {
+                "type": "array",
+                "description": "What was not carried over: a setting of a segment or node, the layer, home story, renovation status, element ID, a classification, the property values or a connection of the route, and the new segments that lie along old segments of different sizes. Left out when everything was carried over.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "guidMap"
+        ]
+    },
+    "MEPRoutingRebuildGuidMapItem": {
+        "type": "object",
+        "properties": {
+            "kind": {
+                "$ref": "#/MEPRoutingRebuildGuidKind"
+            },
+            "oldGuid": {
+                "$ref": "#/Guid",
+                "description": "The guid of the part of the old route. Left out for a new part without an old counterpart."
+            },
+            "newGuid": {
+                "$ref": "#/Guid",
+                "description": "The guid of the part of the rebuilt route. Left out for an old part without a new counterpart."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kind"
+        ],
+        "description": "An old-to-new identifier mapping for a rebuilt routing part."
+    },
+    "MEPRoutingRebuildGuidKind": {
+        "type": "string",
+        "enum": [
+            "Segment",
+            "RigidSegment",
+            "Node",
+            "Elbow",
+            "Transition"
+        ],
+        "description": "The kind of part. Elbows are called bends in Archicad 28."
+    },
     "MEPPreferenceRowKey": {
         "type": "object",
         "description": "The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).",
         "properties": {
             "shape": {
-                "type": "string",
-                "description": "Archicad 27 only: the shape whose list of values the row is in.",
-                "enum": [
-                    "Circular",
-                    "Rectangular"
-                ]
+                "$ref": "#/MEPPreferenceRowShape"
             },
             "index": {
                 "type": "integer",
@@ -24486,39 +24640,7 @@
             "tables": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "tableId": {
-                            "$ref": "#/MEPPreferenceTableId",
-                            "description": "The id of a preference table, for the tableId of the preference table row commands."
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "exists": {
-                            "type": "boolean"
-                        },
-                        "sizes": {
-                            "type": "object",
-                            "description": "The number of rows of each shape.",
-                            "properties": {
-                                "Circular": {
-                                    "type": "integer"
-                                },
-                                "Rectangular": {
-                                    "type": "integer"
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "tableId",
-                        "name",
-                        "exists",
-                        "sizes"
-                    ]
+                    "$ref": "#/MEPPreferenceTableContainerDetails"
                 }
             }
         },
