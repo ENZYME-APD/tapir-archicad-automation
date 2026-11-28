@@ -4344,24 +4344,28 @@ static GS::UniString BuildObjectLampDetailFields (bool isLamp)
 // through the same Printf call never crashed). Root cause not confirmed further (suspected fixed-size
 // internal buffer in GS::UniString::Printf/PrintfFwd's va_arg handling) - concatenating instead
 // avoids the vararg path entirely for the large piece.
-static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
-                                                  const char* elementSingularName,
-                                                  const char* libraryPartNameDescription,
-                                                  bool isLamp)
+
+
+CreateObjectsCommand::CreateObjectsCommand () :
+    CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
 {
-    GS::UniString schema = GS::UniString::Printf (R"({
+}
+
+GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
+{
+    return R"({
         "type": "object",
         "properties": {
-            "%s": {
+            "objectsData": {
                 "type": "array",
-                "description": "Array of data to create %ss.",
+                "description": "Array of data to create Objects.",
                 "items": {
                     "type": "object",
-                    "description": "The parameters of the new %s.",
+                    "description": "The parameters of the new Object.",
                     "properties": {
                         "libraryPartName": {
                             "type": "string",
-                            "description" : "%s"
+                            "description": "The name of the library part to use."
                         },
                         "coordinates": {
                             "$ref": "#/Coordinate3D"
@@ -4369,12 +4373,73 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "dimensions": {
                             "$ref": "#/Dimensions3D"
                         },
-                        )",
-        arrayFieldName, elementSingularName, elementSingularName, libraryPartNameDescription);
-
-    schema += BuildObjectLampDetailFields (isLamp);
-
-    schema += GS::UniString::Printf (R"(,
+                        "angle": {
+                            "type": "number"
+                        },
+                        "pen": {
+                            "type": "integer"
+                        },
+                        "lineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Material/Surface override (API_ObjectType.mat)."
+                        },
+                        "sectionFillId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "sectionFillPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Foreground pen of the section fill."
+                        },
+                        "sectionFillBackgroundPen": {
+                            "type": "integer"
+                        },
+                        "sectionContourPen": {
+                            "type": "integer"
+                        },
+                        "useObjectPens": {
+                            "type": "boolean"
+                        },
+                        "useObjectLineTypes": {
+                            "type": "boolean"
+                        },
+                        "useObjectMaterials": {
+                            "type": "boolean"
+                        },
+                        "useObjectSectionAttributes": {
+                            "type": "boolean"
+                        },
+                        "reflected": {
+                            "type": "boolean"
+                        },
+                        "useFixSize": {
+                            "type": "boolean"
+                        },
+                        "fixPoint": {
+                            "type": "integer",
+                            "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)."
+                        },
+                        "offset": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType."
+                        },
+                        "useFixedAngle": {
+                            "type": "boolean",
+                            "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify."
+                        },
+                        "isAutoOnStoryVisibility": {
+                            "type": "boolean"
+                        },
+                        "visibility": {
+                            "$ref": "#/StoryVisibility"
+                        },
+                        "linkToSettings": {
+                            "$ref": "#/LinkToSettings"
+                        },
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
@@ -4391,13 +4456,7 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                             "type": "array",
                             "description": "Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.",
                             "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": { "type": "string" },
-                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
-                                },
-                                "additionalProperties": false,
-                                "required": ["name", "value"]
+                                "$ref": "#/ElementGDLParameterData"
                             }
                         },
                         "layerIndex": {
@@ -4407,7 +4466,7 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         }
                     },
                     "additionalProperties": false,
-                    "required" : [
+                    "required": [
                         "libraryPartName",
                         "coordinates"
                     ]
@@ -4420,22 +4479,9 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
         },
         "additionalProperties": false,
         "required": [
-            "%s"
+            "objectsData"
         ]
-    })", arrayFieldName);
-
-    return schema;
-}
-
-CreateObjectsCommand::CreateObjectsCommand () :
-    CreateElementsCommandBase ("CreateObjects", API_ObjectID, "objectsData")
-{
-}
-
-GS::Optional<GS::UniString> CreateObjectsCommand::GetInputParametersSchema () const
-{
-    return BuildLibraryPartBasedSchema ("objectsData", "Object",
-                                        "The name of the library part to use.", false);
+    })";
 }
 
 constexpr const char* ParameterValueFieldName = "value";
@@ -4881,8 +4927,142 @@ CreateLampsCommand::CreateLampsCommand () :
 
 GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () const
 {
-    return BuildLibraryPartBasedSchema ("lampsData", "Lamp",
-                                        "The name of the lamp library part to use.", true);
+    return R"({
+        "type": "object",
+        "properties": {
+            "lampsData": {
+                "type": "array",
+                "description": "Array of data to create Lamps.",
+                "items": {
+                    "type": "object",
+                    "description": "The parameters of the new Lamp.",
+                    "properties": {
+                        "libraryPartName": {
+                            "type": "string",
+                            "description": "The name of the lamp library part to use."
+                        },
+                        "coordinates": {
+                            "$ref": "#/Coordinate3D"
+                        },
+                        "dimensions": {
+                            "$ref": "#/Dimensions3D"
+                        },
+                        "angle": {
+                            "type": "number"
+                        },
+                        "pen": {
+                            "type": "integer"
+                        },
+                        "lineTypeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "surfaceId": {
+                            "$ref": "#/AttributeId",
+                            "description": "Material/Surface override (API_ObjectType.mat)."
+                        },
+                        "sectionFillId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "sectionFillPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "Foreground pen of the section fill."
+                        },
+                        "sectionFillBackgroundPen": {
+                            "type": "integer"
+                        },
+                        "sectionContourPen": {
+                            "type": "integer"
+                        },
+                        "useObjectPens": {
+                            "type": "boolean"
+                        },
+                        "useObjectLineTypes": {
+                            "type": "boolean"
+                        },
+                        "useObjectMaterials": {
+                            "type": "boolean"
+                        },
+                        "useObjectSectionAttributes": {
+                            "type": "boolean"
+                        },
+                        "reflected": {
+                            "type": "boolean"
+                        },
+                        "useFixSize": {
+                            "type": "boolean"
+                        },
+                        "fixPoint": {
+                            "type": "integer",
+                            "description": "0-based index of the hotspot to keep fixed (raw API_ObjectType.fixPoint value, not 1-based)."
+                        },
+                        "offset": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "Offset of the symbol's origin from the insertion point. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default hotspot offset regardless of what is sent) - same class of read-only-in-practice field as Morph's bodyType/edgeType."
+                        },
+                        "useFixedAngle": {
+                            "type": "boolean",
+                            "description": "Use a fixed rotation angle. Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify."
+                        },
+                        "isAutoOnStoryVisibility": {
+                            "type": "boolean"
+                        },
+                        "visibility": {
+                            "$ref": "#/StoryVisibility"
+                        },
+                        "linkToSettings": {
+                            "$ref": "#/LinkToSettings"
+                        },
+                        "lightColor": {
+                            "$ref": "#/ColorRGB",
+                            "description": "Reported accurately on Get, but confirmed live that Archicad silently discards this value through both Create and Modify (Get always reports the library part's own default light color). lightIsOn (the on/off state, as opposed to the color) does not have this problem."
+                        },
+                        "lightIsOn": {
+                            "type": "boolean"
+                        },
+                        "floorIndex": {
+                            "type": "integer",
+                            "description": "Optional floor index. If omitted, derived from the coordinate's z value."
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them."
+                        },
+                        "id": {
+                            "type": "string",
+                            "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "parameters": {
+                            "type": "array",
+                            "description": "Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.",
+                            "items": {
+                                "$ref": "#/ElementGDLParameterData"
+                            }
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "libraryPartName",
+                        "coordinates"
+                    ]
+                }
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "Optional database to place the elements in, e.g. a worksheet or a detail (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), for a legend of symbols. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lampsData"
+        ]
+    })";
 }
 
 GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const

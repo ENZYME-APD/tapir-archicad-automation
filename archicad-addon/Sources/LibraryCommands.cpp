@@ -1813,54 +1813,7 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
 static const char* GDLDateComponentNames[] = { "year", "month", "day", "hour", "minute", "second" };
 static const USize GDLDateComponentCount = 6;
 
-static GS::UniString GetGDLDateSchema (const char* description)
-{
-    return GS::UniString (R"({
-        "type": "object",
-        "description": ")") + description + R"(",
-        "properties": {
-            "year": {
-                "type": "integer"
-            },
-            "month": {
-                "type": "integer",
-                "description": "1 to 12. Archicad can also report 0, which SetGDLDate accepts back.",
-                "minimum": 0,
-                "maximum": 12
-            },
-            "day": {
-                "type": "integer",
-                "description": "1 to 31. Archicad can also report 0, which SetGDLDate accepts back.",
-                "minimum": 0,
-                "maximum": 31
-            },
-            "hour": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 23
-            },
-            "minute": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 59
-            },
-            "second": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 59
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "year",
-            "month",
-            "day",
-            "hour",
-            "minute",
-            "second"
-        ]
-    })";
-}
+
 
 GetGDLDateCommand::GetGDLDateCommand () :
     CommandBase (CommonSchema::Used)
@@ -1874,10 +1827,12 @@ GS::String GetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "date": )") + GetGDLDateSchema ("The date GDL scripts see.") + R"(
+            "date": {
+                "$ref": "#/GDLDate"
+            }
         },
         "additionalProperties": false,
         "required": [
@@ -1914,10 +1869,13 @@ GS::String SetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> SetGDLDateCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "date": )") + GetGDLDateSchema ("The date GDL scripts should see, in the format GetGDLDate returns.") + R"(
+            "date": {
+                "$ref": "#/GDLDate",
+                "description": "The date GDL scripts should see, in the format GetGDLDate returns."
+            }
         },
         "additionalProperties": false,
         "required": [
@@ -2513,26 +2471,7 @@ GS::Optional<GS::UniString> GetLibraryPartTypeDetailsCommand::GetRawResponseSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "properties": {
-                                "index": { "type": "integer", "description": "The current index of the library part. It may change when the libraries are reloaded." },
-                                "name": { "type": "string", "description": "The name of the library part." },
-                                "fileName": { "type": "string", "description": "The file name of the library part." },
-                                "unId": { "type": "string", "description": "The full unique ID (main and revision GUID) of the library part." },
-                                "parentUnId": { "type": "string", "description": "The full unique ID of the direct parent subtype of the library part." },
-                                "typeId": { "$ref": "#/LibraryPartType" },
-                                "isPlaceable": { "type": "boolean" },
-                                "isTemplate": { "type": "boolean" },
-                                "objectDetails": {
-                                    "$ref": "#/LibraryPartObjectDetails"
-                                },
-                                "doorWindowDetails": {
-                                    "$ref": "#/LibraryPartDoorWindowDetails"
-                                },
-                                "creatorElementType": { "$ref": "#/ElementType", "description": "The type of the element the library part is placed as (its creator tool). Missing when Archicad does not report one." },
-                                "creatorVariation": { "type": "string", "description": "The four character variation ID of the creator tool, when it is not the generic variation." }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "index", "name", "fileName", "unId", "parentUnId", "typeId", "isPlaceable", "isTemplate" ]
+                            "$ref": "#/LibraryPartTypeDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2697,12 +2636,7 @@ GS::Optional<GS::UniString> IsLibraryPartSubtypeOfCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "properties": {
-                                "unId": { "type": "string", "description": "The full unique ID of the checked library part." },
-                                "isSubtypeOf": { "type": "boolean", "description": "True if the ancestor is anywhere up the subtype hierarchy of the library part. False for the ancestor itself: a library part is not a subtype of itself." }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "unId", "isSubtypeOf" ]
+                            "$ref": "#/LibraryPartSubtypeCheck"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4847,37 +4781,14 @@ GS::String SetLibraryPartParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetLibraryPartParametersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "libraryParts": {
                 "type": "array",
                 "description": "The library parts to modify and the parameter values to set in each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). A name without extension, as GetGDLParametersOfLibraryParts takes it, is looked up as '<name>.gsm' when no file has that name. The library part must be editable, i.e. loaded from a writable file, not from a library package, a BIMcloud or read-only library. When Archicad does not let the loaded part be modified, as in a saved project, a part of a local library folder is changed in its file, and a part of the embedded library in a temporary copy that then replaces it, keeping its main GUID; the libraries are reloaded after the call. When a part of the same name is in more than one library, the one Archicad finds by that name is changed."
-                        },
-                        "parameters": )") + SetGDLParameterValuesSchema + R"(,
-                        "descriptions": {
-                            "type": "array",
-                            "description": "The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "merge": {
-                            "type": "boolean",
-                            "description": "When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "parameters"
-                    ]
+                    "$ref": "#/LibraryPartParametersUpdate"
                 }
             }
         },
@@ -5059,30 +4970,10 @@ GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetInputParametersSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "libraryPartName": {
-                                    "type": "string",
-                                    "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "libraryPartName"
-                            ]
+                            "$ref": "#/LibraryPartScriptQueryByName"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is read."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId"
-                            ]
+                            "$ref": "#/LibraryPartScriptQueryByElement"
                         }
                     ]
                 }
@@ -5647,17 +5538,7 @@ GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetInputParame
                 "type": "array",
                 "description": "The library parts to read.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/LibraryPartParameterValuesByName"
                 }
             }
         },

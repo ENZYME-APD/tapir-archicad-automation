@@ -884,10 +884,16 @@ GS::String GetGDLUserGlobalsCommand::GetName () const
 
 GS::Optional<GS::UniString> GetGDLUserGlobalsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "globals": )") + GDLParameterValuesSchema + R"(
+            "globals": {
+                "type": "array",
+                "description": "The GDL parameters, in the format GetGDLParametersOfElements uses. Separators, titles and dictionary parameters have no value here and are left out.",
+                "items": {
+                    "$ref": "#/GDLUserGlobal"
+                }
+            }
         },
         "additionalProperties": false,
         "required": [

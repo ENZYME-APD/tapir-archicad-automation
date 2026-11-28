@@ -2472,17 +2472,7 @@ GS::Optional<GS::UniString> GetGDLParametersOfLibraryPartsCommand::GetInputParam
             "type": "array",
             "description": "The library parts to read the default GDL parameters of.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "libraryPartName": {
-                        "type": "string",
-                        "description": "The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName. The file name with its .gsm extension, as GetAvailableLibraryParts returns it and SetLibraryPartParameters takes it, is accepted too."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "libraryPartName"
-                ]
+                "$ref": "#/LibraryPartGDLParameterQuery"
             }
         }
     },
@@ -2505,89 +2495,7 @@ GS::Optional<GS::UniString> GetGDLParametersOfLibraryPartsCommand::GetRawRespons
                 "type": "object",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "libPart": {
-                                "$ref": "#/LibPartDetails",
-                                "description": "The library part found by the name. Absent when it could not be read."
-                            },
-                            "parameters": {
-                                "type": "array",
-                                "description": "The GDL parameters of the library part with their default values as stored in the library part (its Parameter Script is not run). The description of each parameter is the displayName of the same entry.",
-                                "items": {
-                                    "type": "object",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the parameter."
-                                        },
-                                        "displayName": {
-                                            "type": "string",
-                                            "description": "The display name (description) of the parameter."
-                                        },
-                                        "index": {
-                                            "type": "integer",
-                                            "description": "The index of the parameter."
-                                        },
-                                        "type": {
-                                            "type": "string",
-                                            "description": "The type of the parameter."
-                                        },
-                                        "dimension1": {
-                                            "type": "integer",
-                                            "description": "The 1st dimension of array (in case of array value)."
-                                        },
-                                        "dimension2": {
-                                            "type": "integer",
-                                            "description": "The 2nd dimension of array (in case of array value)."
-                                        },
-                                        "value": {
-                                            "description": "The default value of the parameter. An array value is a flat list of dimension1 x dimension2 items, as GetGDLParametersOfElements returns it. Absent for a Dictionary parameter."
-                                        },
-                                        "valueDescription": {
-                                            "type": "string",
-                                            "description": "The value description for numeric parameter."
-                                        },
-                                        "itemDescriptions": {
-                                            "type": "array",
-                                            "description": "Per-item text labels for an array-type parameter, one per array element in dim1xdim2 order. Only present when the library part defines them.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "flags": {
-                                            "type": "array",
-                                            "description": "The flags of the parameter.",
-                                            "items": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "Hidden",
-                                                    "HiddenFromScript",
-                                                    "Disabled",
-                                                    "Child",
-                                                    "Unique",
-                                                    "Fixed",
-                                                    "BoldName",
-                                                    "Open"
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "name",
-                                        "displayName",
-                                        "index",
-                                        "type",
-                                        "flags"
-                                    ]
-                                }
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "parameters"
-                        ]
+                        "$ref": "#/LibraryPartGDLParameters"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -3482,70 +3390,7 @@ GS::Optional<GS::UniString> ChangeLibraryPartOfElementsCommand::GetInputParamete
             "type": "array",
             "description": "The elements with the library part to change them to. Components of stairs and railings are not supported, even when they are reported as Objects.",
             "items": {
-                "type": "object",
-                "properties": {
-                    "elementId": {
-                        "$ref": "#/ElementId"
-                    },
-                    "libraryPart": {
-                        "type": "object",
-                        "description": "The new library part, given by one of name, index or guid. It has to be a placeable library part of the element's type in the loaded libraries; a wall end (a Window whose library part is a Wall End part) only takes another Wall End part.",
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "name"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "index": {
-                                        "type": "integer",
-                                        "description": "The index of the library part, as GetAvailableLibraryParts returns it."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "index"
-                                ]
-                            },
-                            {
-                                "type": "object",
-                                "properties": {
-                                    "guid": {
-                                        "type": "string",
-                                        "description": "The main guid of the library part, as GetAvailableLibraryParts returns it in guid."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "guid"
-                                ]
-                            }
-                        ]
-                    },
-                    "keepParameters": {
-                        "type": "boolean",
-                        "description": "Copies the values of the element's GDL parameters to the parameters of the new library part that have the same name, type and array dimensions; the other parameters get the new part's defaults. Default: true."
-                    },
-                    "keepSize": {
-                        "type": "boolean",
-                        "description": "Keeps the size (A and B) of the element; when false, the element gets the new part's default size. Default: true."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementId",
-                    "libraryPart"
-                ]
+                "$ref": "#/ElementLibraryPartChange"
             }
         }
     },

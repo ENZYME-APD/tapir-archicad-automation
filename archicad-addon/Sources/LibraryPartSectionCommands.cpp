@@ -166,38 +166,7 @@ GS::Optional<GS::UniString> UpdateLibraryPartSectionsCommand::GetInputParameters
                 "type": "array",
                 "description": "The sections to replace. Each section must already exist in the library part; this command does not add new sections.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "MasterScript",
-                                "2DScript",
-                                "3DScript",
-                                "ParameterScript",
-                                "UIScript",
-                                "Comment",
-                                "Keywords",
-                                "Copyright"
-                            ],
-                            "description": "The type of the text section."
-                        },
-                        "subIdent": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 65535,
-                            "description": "The secondary identifier of the section, for a library part with more sections of the same type. Default value is 0."
-                        },
-                        "text": {
-                            "type": "string",
-                            "description": "The new content of the section."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "text"
-                    ]
+                    "$ref": "#/LibraryPartSectionUpdate"
                 },
                 "minItems": 1
             }
@@ -452,79 +421,7 @@ GS::Optional<GS::UniString> GetLibraryPart2DPrimitivesCommand::GetRawResponseSch
                 "type": "array",
                 "description": "The lines, arcs and polygons of the 2D symbol, in the order Archicad draws them, in the coordinate system of the library part. Other primitives (texts, hotspots, ...) are not returned.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "Line",
-                                "Arc",
-                                "Polygon"
-                            ]
-                        },
-                        "begCoordinate": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "The start point of a Line."
-                        },
-                        "endCoordinate": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "The end point of a Line."
-                        },
-                        "origin": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "The center of an Arc."
-                        },
-                        "radius": {
-                            "type": "number",
-                            "description": "The radius of an Arc."
-                        },
-                        "begAngle": {
-                            "type": "number",
-                            "description": "The start angle of an Arc, in radians."
-                        },
-                        "endAngle": {
-                            "type": "number",
-                            "description": "The end angle of an Arc, in radians."
-                        },
-                        "isWhole": {
-                            "type": "boolean",
-                            "description": "Whether an Arc is a full circle."
-                        },
-                        "isFill": {
-                            "type": "boolean",
-                            "description": "Whether a Polygon is the outline of a fill."
-                        },
-                        "coordinates": {
-                            "type": "array",
-                            "description": "The outline of a Polygon.",
-                            "items": {
-                                "$ref": "#/Coordinate2D"
-                            }
-                        },
-                        "holes": {
-                            "type": "array",
-                            "description": "The holes of a Polygon.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "coordinates": {
-                                        "type": "array",
-                                        "items": {
-                                            "$ref": "#/Coordinate2D"
-                                        }
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "coordinates"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type"
-                    ]
+                    "$ref": "#/LibraryPart2DPrimitive"
                 }
             }
         },
