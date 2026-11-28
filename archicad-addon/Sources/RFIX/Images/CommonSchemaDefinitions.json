@@ -20086,15 +20086,38 @@
         ]
     },
     "LibraryPartIdentifier": {
+        "type": "object",
+        "description": "Identifies a loaded library part by exactly one of: its index, its name or its unique ID.",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name."
+            },
+            "unId": {
+                "type": "string",
+                "description": "The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it."
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/LibraryPartIdentifierByIndex"
+                "required": [
+                    "index"
+                ]
             },
             {
-                "$ref": "#/LibraryPartIdentifierByName"
+                "required": [
+                    "name"
+                ]
             },
             {
-                "$ref": "#/LibraryPartIdentifierByUniqueId"
+                "required": [
+                    "unId"
+                ]
             }
         ]
     },
@@ -25409,12 +25432,32 @@
         "additionalProperties": false
     },
     "LibraryPartNameOrIndex": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm')."
+            },
+            "index": {
+                "type": "integer",
+                "description": "The index of the library part, as returned by FindLibraryParts."
+            },
+            "password": {
+                "type": "string",
+                "description": "Optional. The password of a password protected library part, used to read its scripts."
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/LibraryPartScriptsByName"
+                "required": [
+                    "name"
+                ]
             },
             {
-                "$ref": "#/LibraryPartScriptsByIndex"
+                "required": [
+                    "index"
+                ]
             }
         ]
     },
@@ -25635,58 +25678,6 @@
         ],
         "description": "A library package required by another package."
     },
-    "LibraryPartScriptDataWithScripts": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-            },
-            "scripts": {
-                "$ref": "#/LibraryPartScripts"
-            },
-            "deleteScripts": {
-                "type": "array",
-                "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
-                "items": {
-                    "$ref": "#/LibraryPartScriptType"
-                },
-                "minItems": 1,
-                "uniqueItems": true
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name",
-            "scripts"
-        ]
-    },
-    "LibraryPartScriptDataWithDeletions": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-            },
-            "scripts": {
-                "$ref": "#/LibraryPartScripts"
-            },
-            "deleteScripts": {
-                "type": "array",
-                "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
-                "items": {
-                    "$ref": "#/LibraryPartScriptType"
-                },
-                "minItems": 1,
-                "uniqueItems": true
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name",
-            "deleteScripts"
-        ]
-    },
     "LibraryPartGDLParameterQuery": {
         "type": "object",
         "properties": {
@@ -25700,182 +25691,6 @@
             "libraryPartName"
         ],
         "description": "A library part whose default GDL parameters are requested."
-    },
-    "LibraryPartIdentifierByIndex": {
-        "type": "object",
-        "description": "Identifies a loaded library part by exactly one of: its index, its name or its unique ID.",
-        "properties": {
-            "index": {
-                "type": "integer",
-                "description": "The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded."
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name."
-            },
-            "unId": {
-                "type": "string",
-                "description": "The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "index"
-        ]
-    },
-    "LibraryPartIdentifierByName": {
-        "type": "object",
-        "description": "Identifies a loaded library part by exactly one of: its index, its name or its unique ID.",
-        "properties": {
-            "index": {
-                "type": "integer",
-                "description": "The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded."
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name."
-            },
-            "unId": {
-                "type": "string",
-                "description": "The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name"
-        ]
-    },
-    "LibraryPartIdentifierByUniqueId": {
-        "type": "object",
-        "description": "Identifies a loaded library part by exactly one of: its index, its name or its unique ID.",
-        "properties": {
-            "index": {
-                "type": "integer",
-                "description": "The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded."
-            },
-            "name": {
-                "type": "string",
-                "description": "The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name."
-            },
-            "unId": {
-                "type": "string",
-                "description": "The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "unId"
-        ]
-    },
-    "LibraryPartLookupByIndex": {
-        "type": "object",
-        "properties": {
-            "index": {
-                "type": "integer",
-                "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
-            },
-            "path": {
-                "type": "string",
-                "description": "The path of a library part file, for example a .gsm file."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "index"
-        ]
-    },
-    "LibraryPartLookupByPath": {
-        "type": "object",
-        "properties": {
-            "index": {
-                "type": "integer",
-                "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
-            },
-            "path": {
-                "type": "string",
-                "description": "The path of a library part file, for example a .gsm file."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "path"
-        ]
-    },
-    "LibraryPartScriptsByName": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm')."
-            },
-            "index": {
-                "type": "integer",
-                "description": "The index of the library part, as returned by FindLibraryParts."
-            },
-            "password": {
-                "type": "string",
-                "description": "Optional. The password of a password protected library part, used to read its scripts."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name"
-        ]
-    },
-    "LibraryPartScriptsByIndex": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm')."
-            },
-            "index": {
-                "type": "integer",
-                "description": "The index of the library part, as returned by FindLibraryParts."
-            },
-            "password": {
-                "type": "string",
-                "description": "Optional. The password of a password protected library part, used to read its scripts."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "index"
-        ]
-    },
-    "LibraryRemovalByName": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the library, as returned by GetLibraries."
-            },
-            "path": {
-                "type": "string",
-                "description": "The absolute path of the library, as returned by GetLibraries."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "name"
-        ]
-    },
-    "LibraryRemovalByPath": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "description": "The name of the library, as returned by GetLibraries."
-            },
-            "path": {
-                "type": "string",
-                "description": "The absolute path of the library, as returned by GetLibraries."
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "path"
-        ]
     },
     "GDLDate": {
         "type": "object",
@@ -26587,12 +26402,28 @@
         "additionalProperties": false
     },
     "LibraryToRemove": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the library, as returned by GetLibraries."
+            },
+            "path": {
+                "type": "string",
+                "description": "The absolute path of the library, as returned by GetLibraries."
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/LibraryRemovalByName"
+                "required": [
+                    "name"
+                ]
             },
             {
-                "$ref": "#/LibraryRemovalByPath"
+                "required": [
+                    "path"
+                ]
             }
         ]
     },
@@ -26765,12 +26596,39 @@
         ]
     },
     "LibraryPartScriptsUpdate": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+            },
+            "scripts": {
+                "$ref": "#/LibraryPartScripts"
+            },
+            "deleteScripts": {
+                "type": "array",
+                "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
+                "items": {
+                    "$ref": "#/LibraryPartScriptType"
+                },
+                "minItems": 1,
+                "uniqueItems": true
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name"
+        ],
         "anyOf": [
             {
-                "$ref": "#/LibraryPartScriptDataWithScripts"
+                "required": [
+                    "scripts"
+                ]
             },
             {
-                "$ref": "#/LibraryPartScriptDataWithDeletions"
+                "required": [
+                    "deleteScripts"
+                ]
             }
         ]
     },
@@ -26972,12 +26830,28 @@
         ]
     },
     "LibraryPartIndexOrPath": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
+            },
+            "path": {
+                "type": "string",
+                "description": "The path of a library part file, for example a .gsm file."
+            }
+        },
+        "additionalProperties": false,
         "oneOf": [
             {
-                "$ref": "#/LibraryPartLookupByIndex"
+                "required": [
+                    "index"
+                ]
             },
             {
-                "$ref": "#/LibraryPartLookupByPath"
+                "required": [
+                    "path"
+                ]
             }
         ]
     },
