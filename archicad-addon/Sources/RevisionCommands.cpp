@@ -1121,7 +1121,7 @@ GS::String ModifyChangeMarkersCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "changeMarkersWithDetails": {
@@ -1132,11 +1132,34 @@ GS::Optional<GS::UniString> ModifyChangeMarkersCommand::GetInputParametersSchema
                     "properties": {
                         "elementId": {
                             "$ref": "#/ElementId"
-                        },)") + ChangeMarkerSettingsSchemaProperties + R"(
-                        "linkType": {
+                        },
+                        "markerComponent": {
+                            "$ref": "#/ChangeMarkerComponent",
+                            "description": "Which parts the marker shows. A new marker gets HeadAndCloud when it is left out."
+                        },
+                        "changeId": {
                             "type": "string",
-                            "enum": ["Linked", "Unlinked"],
-                            "description": "Unlinked removes the link of the marker to its Change (the Change stays in the project); it cannot be given with changeId or createChange. Linked links the marker to the Change of changeId, which it needs; changeId alone does the same."
+                            "minLength": 1,
+                            "description": "The ID of the Change the marker is linked to. Without createChange it must be the ID of an existing Change (GetRevisionChanges). A new marker created without it is not linked to any Change."
+                        },
+                        "createChange": {
+                            "type": "boolean",
+                            "description": "True: Archicad creates a new Change with changeId and changeDescription, and links the marker to it. A Change with the same ID must not exist yet. Default: false."
+                        },
+                        "changeDescription": {
+                            "type": "string",
+                            "description": "The description (short name) of the new Change. Only with createChange: the description of an existing Change cannot be changed."
+                        },
+                        "angle": {
+                            "type": "number",
+                            "description": "The rotation angle of the marker head in radians (API_ChangeMarkerType::angle), as GetDetailsOfElements returns it. A new marker gets the angle of the Change Marker tool defaults when it is left out."
+                        },
+                        "horizontalMarker": {
+                            "type": "boolean",
+                            "description": "Whether the marker head is always horizontal (API_ChangeMarkerType::horizontalMarker), as GetDetailsOfElements returns it. A new marker gets the setting of the Change Marker tool defaults when it is left out."
+                        },
+                        "linkType": {
+                            "$ref": "#/ChangeMarkerLinkTypeInput"
                         },
                         "position": {
                             "$ref": "#/Coordinate2D",

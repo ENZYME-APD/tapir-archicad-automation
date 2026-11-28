@@ -15679,59 +15679,11 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetInputParametersSchema (
 }
 
 // Also the extrusion parameters of the Opening tool defaults in GetOpeningDefault.
-static const char* OpeningExtrusionParametersResponseSchema = R"({
-    "type": "object",
-    "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
-    "properties": {
-        "constraint": {
-            "type": "string",
-            "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
-            "description": "How the opening's orientation is constrained."
-        },
-        "limitType": {
-            "type": "string",
-            "enum": ["Infinite", "Finite", "HalfInfinite"],
-            "description": "How far the opening's extrusion reaches."
-        },
-        "linkedStatus": {
-            "type": "string",
-            "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening's width and height are linked. Left out when Archicad gives none."
-        },
-        "shapeType": {
-            "type": "string",
-            "enum": ["Rectangular", "Circular", "Polygonal"],
-            "description": "The shape of the opening's polygon."
-        },
-        "width": { "type": "number" },
-        "height": { "type": "number" },
-        "anchor": {
-            "type": "string",
-            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
-            "description": "The anchor point of the opening's polygon."
-        },
-        "anchorAltitude": { "type": "number" },
-        "extrusionStartOffset": { "type": "number" },
-        "finiteBodyLength": { "type": "number" },
-        "isExtrusionSurfaceOverridden": { "type": "boolean" },
-        "extrusionSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the extrusion faces. Only given when it is overridden."
-        },
-        "isEndSurfaceOverridden": { "type": "boolean" },
-        "endSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the end faces. Only given when it is overridden."
-        },
-        "areOverriddenSurfacesLinked": { "type": "boolean" }
-    },
-    "additionalProperties": false,
-    "required": ["anchor", "isExtrusionSurfaceOverridden", "isEndSurfaceOverridden", "areOverriddenSurfacesLinked"]
-})";
+
 
 GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -15741,47 +15693,7 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "exists": {
-                                    "type": "boolean",
-                                    "description": "Whether the opening still exists in the project."
-                                },
-                                "parentElementId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The element the opening was placed in. Left out when the opening has none."
-                                },
-                                "cutElements": {
-                                    "type": "array",
-                                    "description": "The elements the opening cuts.",
-                                    "items": { "$ref": "#/ElementIdArrayItem" }
-                                },
-                                "connectedOpenings": {
-                                    "type": "array",
-                                    "description": "The openings Archicad reports as connected to this one. Left out when they cannot be read.",
-                                    "items": { "$ref": "#/ElementIdArrayItem" }
-                                },
-                                "geometry": {
-                                    "type": "object",
-                                    "properties": {
-                                        "anchorPoint": { "$ref": "#/Coordinate3D", "description": "The anchor point of the opening in world coordinates." },
-                                        "extrusionDirection": { "$ref": "#/Coordinate3D", "description": "The direction the opening is extruded in." },
-                                        "xAxis": { "$ref": "#/Coordinate3D", "description": "The X axis of the plane of the opening's polygon." },
-                                        "yAxis": { "$ref": "#/Coordinate3D", "description": "The Y axis of the plane of the opening's polygon." },
-                                        "polygon": {
-                                            "type": "array",
-                                            "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis, measured from anchorPoint (the origin of the opening's own coordinate system). Left out when the opening has no polygon.",
-                                            "items": { "$ref": "#/Coordinate2D" }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": ["anchorPoint", "extrusionDirection", "xAxis", "yAxis"]
-                                },
-                                "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "exists", "cutElements", "geometry", "extrusionParameters"]
+                            "$ref": "#/OpeningDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -15791,7 +15703,9 @@ GS::Optional<GS::UniString> GetOpeningDetailsCommand::GetRawResponseSchema () co
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -16154,103 +16068,25 @@ GS::String SetOpeningDetailsCommand::GetName () const
 }
 
 // The extrusion parameters accepted by SetOpeningDetails, SetOpeningDefault and PlaceOpenings.
-static const char* OpeningExtrusionParametersInputSchema = R"({
-    "type": "object",
-    "description": "The size and extrusion settings to change, with the names GetOpeningDetails returns. The ones left out are not changed.",
-    "properties": {
-        "constraint": {
-            "type": "string",
-            "enum": ["ForcedVertical", "ForcedHorizontal", "Aligned", "Free"],
-            "description": "How the opening's orientation is constrained."
-        },
-        "limitType": {
-            "type": "string",
-            "enum": ["Infinite", "Finite", "HalfInfinite"],
-            "description": "How far the opening's extrusion reaches."
-        },
-        "linkedStatus": {
-            "type": "string",
-            "enum": ["Linked", "NotLinked"],
-            "description": "Whether the opening's width and height are linked. While they are linked, giving both width and height makes a square of the height; give NotLinked with them to get a different width and height."
-        },
-        "shapeType": {
-            "type": "string",
-            "enum": ["Rectangular", "Circular", "Polygonal"],
-            "description": "The shape of the opening's polygon."
-        },
-        "width": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The opening's width. See linkedStatus." },
-        "height": { "type": "number", "minimum": 0.0, "exclusiveMinimum": true, "description": "The opening's height. See linkedStatus." },
-        "anchor": {
-            "type": "string",
-            "enum": ["TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"],
-            "description": "The anchor point of the opening's polygon."
-        },
-        "anchorAltitude": { "type": "number" },
-        "extrusionStartOffset": { "type": "number" },
-        "finiteBodyLength": { "type": "number" },
-        "isExtrusionSurfaceOverridden": { "type": "boolean" },
-        "extrusionSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the extrusion faces. Only used when the surface is overridden."
-        },
-        "isEndSurfaceOverridden": { "type": "boolean" },
-        "endSurfaceId": {
-            "$ref": "#/AttributeId",
-            "description": "The surface of the end faces. Only used when the surface is overridden."
-        },
-        "areOverriddenSurfacesLinked": { "type": "boolean" }
-    },
-    "additionalProperties": false
-})";
+
 
 GS::Optional<GS::UniString> SetOpeningDetailsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openingsWithDetails": {
                 "type": "array",
                 "description": "The Opening elements (made with the Opening tool) to change, each with the details to set. A detail that is left out stays as it is.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "parentElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The new element the opening belongs to."
-                        },
-                        "addCutElements": {
-                            "type": "array",
-                            "description": "Elements the opening should cut as well.",
-                            "items": { "$ref": "#/ElementIdArrayItem" }
-                        },
-                        "removeCutElements": {
-                            "type": "array",
-                            "description": "Elements the opening should no longer cut.",
-                            "items": { "$ref": "#/ElementIdArrayItem" }
-                        },
-                        "polygon": {
-                            "type": "array",
-                            "description": "The new shape of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails. Archicad keeps only the shape: it places the polygon on the opening's anchor point by the opening's anchor (extrusionParameters.anchor), so with the Center anchor the polygon is centred on the anchor point, and an offset in the given coordinates is dropped. The polygon does not move the opening; GetOpeningDetails reads it back measured from the anchor point.",
-                            "items": { "$ref": "#/Coordinate2D" },
-                            "minItems": 3
-                        },
-                        "transformation": {
-                            "type": "array",
-                            "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] is a translation by 1 along X. The matrix goes to Archicad as it is, and Archicad refuses a 3x3 part that is not orthogonal or that scales with the error 'Can transform only with ortogonal matrix with no scaling.' Archicad 29 has also been reported to refuse a pure translation with that error (#2957); the cause is not known yet.",
-                            "items": { "type": "number" },
-                            "minItems": 12,
-                            "maxItems": 12
-                        },
-                        "extrusionParameters": )") + OpeningExtrusionParametersInputSchema + R"(
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId"]
+                    "$ref": "#/OpeningModificationData"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["openingsWithDetails"]
+        "required": [
+            "openingsWithDetails"
+        ]
     })";
 }
 
@@ -22343,52 +22179,7 @@ GS::Optional<GS::UniString> GetOpeningTransformationsCommand::GetRawResponseSche
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "globalToLocal": {
-                                    "type": "array",
-                                    "description": "The global-to-local matrix (API_Tranmat), the inverse of localToGlobal: the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
-                                    "items": { "type": "number" },
-                                    "minItems": 12,
-                                    "maxItems": 12
-                                },
-                                "localToGlobal": {
-                                    "type": "array",
-                                    "description": "The local-to-global matrix, in the same layout: the matrix ACAPI_Element_GetOpeningTransformation returns for a Window, Door or Skylight, or the one built from the geometry of an Opening element.",
-                                    "items": { "type": "number" },
-                                    "minItems": 12,
-                                    "maxItems": 12
-                                },
-                                "origin": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. For an Opening element this is its anchor point."
-                                },
-                                "xAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local X axis in world coordinates, from localToGlobal."
-                                },
-                                "yAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local Y axis in world coordinates, from localToGlobal."
-                                },
-                                "zAxis": {
-                                    "$ref": "#/Coordinate3D",
-                                    "description": "The local Z axis in world coordinates, from localToGlobal. For an Opening element it is X × Y, which points against its extrusion direction."
-                                },
-                                "determinant": {
-                                    "type": "number",
-                                    "description": "The determinant of the 3x3 part of localToGlobal: 1, or -1 for a mirrored Window, Door or Skylight."
-                                },
-                                "isMirrored": {
-                                    "type": "boolean",
-                                    "description": "True when the matrix is left-handed (negative determinant), which Archicad returns for a mirrored opening."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "globalToLocal", "localToGlobal", "origin", "xAxis", "yAxis", "zAxis", "determinant", "isMirrored"]
+                            "$ref": "#/OpeningTransformation"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -26103,52 +25894,7 @@ GSErrCode ApplyFavoriteToElementDefaults (const GS::UniString& favoriteName, API
 
 // The floor plan parameters of an opening, read by GetOpeningFloorPlanParameters and
 // GetOpeningDefault and changed by SetOpeningFloorPlanParameters with the same names.
-static const char* OpeningFloorPlanParametersSchemaProperties = R"(
-    "floorPlanDisplayMode": {
-        "type": "string",
-        "enum": ["Symbolic", "SymbolicCut", "SymbolicOverhead", "Projected"],
-        "description": "How the opening is shown on the floor plan."
-    },
-    "dividedOpeningMode": {
-        "type": "string",
-        "enum": ["Disconnected", "Connected"],
-        "description": "How the parts of an opening divided by the floor plan cut are shown."
-    },
-    "openEdgeStyle": {
-        "type": "string",
-        "enum": ["Hide", "ShowUncut", "ShowOverhead"],
-        "description": "How the open edges of the opening are shown on the floor plan."
-    },
-    "showReferenceAxis": { "type": "boolean", "description": "Whether the reference axis of the opening is shown on the floor plan." },
-    "referenceAxisPen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "referenceAxisLineTypeId": { "$ref": "#/AttributeId", "description": "The line type of the reference axis." },
-    "referenceAxisOverhang": { "type": "number", "description": "How far the reference axis reaches beyond the opening." },
-    "cutSurfacesUseLineOfCutElements": { "type": "boolean", "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId." },
-    "cutSurfacesLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "cutSurfacesLineTypeId": { "$ref": "#/AttributeId" },
-    "outlinesUseLineOfCutElements": { "type": "boolean", "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below." },
-    "outlinesUncutLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "outlinesUncutLineTypeId": { "$ref": "#/AttributeId" },
-    "outlinesOverheadLinePen": { "type": "integer", "minimum": 1, "maximum": 255 },
-    "outlinesOverheadLineTypeId": { "$ref": "#/AttributeId" },
-    "useCoverFills": { "type": "boolean" },
-    "coverFillsUseFillsOfCutElements": { "type": "boolean", "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId." },
-    "coverFillId": { "$ref": "#/AttributeId", "description": "The fill of the cover fills." },
-    "coverFillPen": { "type": "integer", "minimum": 1, "maximum": 255, "description": "Foreground pen of the cover fills." },
-    "coverFillBackgroundPen": { "type": "integer", "minimum": -1, "maximum": 255, "description": "Background pen of the cover fills; 0 makes the background transparent and -1 gives it the window background color." },
-    "coverFillOrientation": { "$ref": "#/HatchOrientationType" },
-    "coverFillTransformation": {
-        "$ref": "#/CoverFillTransformation",
-        "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
-    },
-    "cutSymbolLibPartId": {
-        "$ref": "#/Guid",
-        "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
-    },
-    "unCutSymbolLibPartId": {
-        "$ref": "#/Guid",
-        "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
-    })";
+
 
 #ifdef ServerMainVers_2900
 static GS::ObjectState CreateOpeningFloorPlanParametersObjectState (const ACAPI::Element::OpeningFloorPlanParameters& floorPlanParameters)
@@ -26491,7 +26237,7 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetInputParame
 
 GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -26501,24 +26247,7 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponse
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "floorPlanParameters": {
-                                    "type": "object",
-                                    "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "showReferenceAxis", "referenceAxisPen", "referenceAxisLineTypeId", "referenceAxisOverhang",
-                                        "cutSurfacesUseLineOfCutElements", "cutSurfacesLinePen", "cutSurfacesLineTypeId",
-                                        "outlinesUseLineOfCutElements", "outlinesUncutLinePen", "outlinesUncutLineTypeId", "outlinesOverheadLinePen", "outlinesOverheadLineTypeId",
-                                        "useCoverFills", "coverFillsUseFillsOfCutElements", "coverFillId", "coverFillPen", "coverFillBackgroundPen", "coverFillOrientation"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId", "floorPlanParameters"]
+                            "$ref": "#/OpeningFloorPlanDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -26528,7 +26257,9 @@ GS::Optional<GS::UniString> GetOpeningFloorPlanParametersCommand::GetRawResponse
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -26571,32 +26302,20 @@ GS::String SetOpeningFloorPlanParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetOpeningFloorPlanParametersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openingsWithFloorPlanParameters": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "floorPlanParameters": {
-                            "type": "object",
-                            "description": "The floor plan parameters to change, with the names GetOpeningFloorPlanParameters returns. The ones left out are not changed.",
-                            "properties": {)") + OpeningFloorPlanParametersSchemaProperties + R"(,
-                                "clearCutSymbol": { "type": "boolean", "description": "Removes the cut symbol of the opening. Cannot be given together with cutSymbolLibPartId." },
-                                "clearUnCutSymbol": { "type": "boolean", "description": "Removes the uncut symbol of the opening. Cannot be given together with unCutSymbolLibPartId." }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "floorPlanParameters"]
+                    "$ref": "#/OpeningFloorPlanModificationData"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["openingsWithFloorPlanParameters"]
+        "required": [
+            "openingsWithFloorPlanParameters"
+        ]
     })";
 }
 
@@ -26693,7 +26412,7 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetInputParameter
 
 GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openings": {
@@ -26703,14 +26422,7 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": { "$ref": "#/ElementId" },
-                                "cutSymbolParameters": )") + GDLParameterValuesSchema + R"(,
-                                "unCutSymbolParameters": )" + GDLParameterValuesSchema + R"(
-                            },
-                            "additionalProperties": false,
-                            "required": ["elementId"]
+                            "$ref": "#/OpeningSymbolParameters"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -26720,7 +26432,9 @@ GS::Optional<GS::UniString> GetOpeningSymbolParametersCommand::GetRawResponseSch
             }
         },
         "additionalProperties": false,
-        "required": ["openings"]
+        "required": [
+            "openings"
+        ]
     })";
 }
 
@@ -26825,25 +26539,20 @@ GS::String SetOpeningSymbolParametersCommand::GetName () const
 
 GS::Optional<GS::UniString> SetOpeningSymbolParametersCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "elements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": { "$ref": "#/ElementId" },
-                        "cutSymbolParameters": )") + SetGDLParameterValuesSchema + R"(,
-                        "unCutSymbolParameters": )" + SetGDLParameterValuesSchema + R"(
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId"]
+                    "$ref": "#/OpeningSymbolParametersUpdate"
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["elements"]
+        "required": [
+            "elements"
+        ]
     })";
 }
 
@@ -26981,19 +26690,21 @@ GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetInputParametersSchema (
 
 GS::Optional<GS::UniString> GetOpeningDefaultCommand::GetRawResponseSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
-            "extrusionParameters": )") + OpeningExtrusionParametersResponseSchema + R"(,
+            "extrusionParameters": {
+                "$ref": "#/OpeningExtrusionParameters"
+            },
             "floorPlanParameters": {
-                "type": "object",
-                "properties": {)" + OpeningFloorPlanParametersSchemaProperties + R"(
-                },
-                "additionalProperties": false
+                "$ref": "#/OpeningDefaultFloorPlanParameters"
             }
         },
         "additionalProperties": false,
-        "required": ["extrusionParameters", "floorPlanParameters"]
+        "required": [
+            "extrusionParameters",
+            "floorPlanParameters"
+        ]
     })";
 }
 
@@ -27016,20 +26727,7 @@ GS::ObjectState GetOpeningDefaultCommand::Execute (const GS::ObjectState& /*para
 
 // The Opening tool settings taken by SetOpeningDefault and by each opening of PlaceOpenings,
 // with the names GetOpeningDefault returns.
-static GS::UniString GetOpeningSettingsInputSchemaProperties ()
-{
-    return GS::UniString (R"(
-        "extrusionParameters": )") + OpeningExtrusionParametersInputSchema + R"(,
-        "floorPlanParameters": {
-            "type": "object",
-            "description": "The floor plan settings to change, with the names GetOpeningDefault returns. The ones left out are not changed.",
-            "properties": {)" + OpeningFloorPlanParametersSchemaProperties + R"(,
-                "clearCutSymbol": { "type": "boolean", "description": "Removes the cut symbol. Cannot be given together with cutSymbolLibPartId." },
-                "clearUnCutSymbol": { "type": "boolean", "description": "Removes the uncut symbol. Cannot be given together with unCutSymbolLibPartId." }
-            },
-            "additionalProperties": false
-        })";
-}
+
 
 #ifdef ServerMainVers_2900
 struct OpeningSettingsChange {
@@ -27107,9 +26805,16 @@ GS::String SetOpeningDefaultCommand::GetName () const
 
 GS::Optional<GS::UniString> SetOpeningDefaultCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
-        "properties": {)") + GetOpeningSettingsInputSchemaProperties () + R"(
+        "properties": {
+            "extrusionParameters": {
+                "$ref": "#/OpeningExtrusionParametersUpdate"
+            },
+            "floorPlanParameters": {
+                "$ref": "#/OpeningFloorPlanParametersUpdate",
+                "description": "The floor plan settings to change, with the names GetOpeningDefault returns. The ones left out are not changed."
+            }
         },
         "additionalProperties": false
     })";
@@ -27177,7 +26882,7 @@ GS::String PlaceOpeningsCommand::GetName () const
 
 GS::Optional<GS::UniString> PlaceOpeningsCommand::GetInputParametersSchema () const
 {
-    return GS::UniString (R"({
+    return R"({
         "type": "object",
         "properties": {
             "openingsData": {
@@ -27192,15 +26897,27 @@ GS::Optional<GS::UniString> PlaceOpeningsCommand::GetInputParametersSchema () co
                         "point": {
                             "$ref": "#/Coordinate3D",
                             "description": "Where to place the opening. A point off the parent element's surface is moved to the closest point of the surface."
-                        },)") + GetOpeningSettingsInputSchemaProperties () + R"(
+                        },
+                        "extrusionParameters": {
+                            "$ref": "#/OpeningExtrusionParametersUpdate"
+                        },
+                        "floorPlanParameters": {
+                            "$ref": "#/OpeningFloorPlanParametersUpdate",
+                            "description": "The floor plan settings to change, with the names GetOpeningDefault returns. The ones left out are not changed."
+                        }
                     },
                     "additionalProperties": false,
-                    "required": ["parentElementId", "point"]
+                    "required": [
+                        "parentElementId",
+                        "point"
+                    ]
                 }
             }
         },
         "additionalProperties": false,
-        "required": ["openingsData"]
+        "required": [
+            "openingsData"
+        ]
     })";
 }
 

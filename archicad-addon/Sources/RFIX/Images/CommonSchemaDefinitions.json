@@ -9918,6 +9918,1033 @@
             "zoneRelations"
         ]
     },
+    "MarkerParametersOfElement": {
+        "type": "object",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails",
+                "description": "The library part of the marker. Absent when it could not be read."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the marker.",
+                "items": {
+                    "$ref": "#/StoredGDLParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "parameters"
+        ],
+        "description": "The marker parameters returned for one element."
+    },
+    "ElementWithMarkerParameters": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "markerParameters": {
+                "type": "array",
+                "description": "The marker parameters to change, each given by name or by index. The other marker parameters and the element's own settings are left as they are.",
+                "items": {
+                    "$ref": "#/MarkerParameterUpdate"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "markerParameters"
+        ],
+        "description": "Marker parameter changes for one element."
+    },
+    "MarkerParameterUpdate": {
+        "oneOf": [
+            {
+                "$ref": "#/MarkerParameterUpdateByName"
+            },
+            {
+                "$ref": "#/MarkerParameterUpdateByIndex"
+            }
+        ],
+        "description": "A marker parameter update selected by name or index."
+    },
+    "MarkerParameterUpdateByName": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the marker parameter."
+            },
+            "value": {
+                "description": "The new value of the marker parameter: a number for the numeric types (Integer, Length, Angle, RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, Intensity), a string for String and Title, true/false for Boolean and 'On'/'Off' for LightSwitch. Array parameters are not supported."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ],
+        "description": "A marker parameter update selected by name."
+    },
+    "MarkerParameterUpdateByIndex": {
+        "type": "object",
+        "properties": {
+            "index": {
+                "type": "integer",
+                "description": "The index of the marker parameter, as GetMarkerParametersOfElements reports it."
+            },
+            "value": {
+                "description": "The new value of the marker parameter, see the value given with a name."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "index",
+            "value"
+        ],
+        "description": "A marker parameter update selected by index."
+    },
+    "OpeningModificationData": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "parentElementId": {
+                "$ref": "#/ElementId",
+                "description": "The new element the opening belongs to."
+            },
+            "addCutElements": {
+                "type": "array",
+                "description": "Elements the opening should cut as well.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
+            "removeCutElements": {
+                "type": "array",
+                "description": "Elements the opening should no longer cut.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The new shape of the opening, in the plane of the xAxis and yAxis returned by GetOpeningDetails. Archicad keeps only the shape: it places the polygon on the opening's anchor point by the opening's anchor (extrusionParameters.anchor), so with the Center anchor the polygon is centred on the anchor point, and an offset in the given coordinates is dropped. The polygon does not move the opening; GetOpeningDetails reads it back measured from the anchor point.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                },
+                "minItems": 3
+            },
+            "transformation": {
+                "type": "array",
+                "description": "A transformation applied to the opening's geometry: a 3x4 matrix of 12 numbers, row by row, the 4th, 8th and 12th numbers being the translation along X, Y and Z. For example [1,0,0,1, 0,1,0,0, 0,0,1,0] is a translation by 1 along X. The matrix goes to Archicad as it is, and Archicad refuses a 3x3 part that is not orthogonal or that scales with the error 'Can transform only with ortogonal matrix with no scaling.' Archicad 29 has also been reported to refuse a pure translation with that error (#2957); the cause is not known yet.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "extrusionParameters": {
+                "$ref": "#/OpeningExtrusionParametersUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ],
+        "description": "Partial changes to the details of one opening."
+    },
+    "OpeningFloorPlanModificationData": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "floorPlanParameters": {
+                "$ref": "#/OpeningFloorPlanParametersUpdate"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "floorPlanParameters"
+        ],
+        "description": "Partial floor plan parameter changes for one opening."
+    },
+    "OpeningDetails": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "exists": {
+                "type": "boolean",
+                "description": "Whether the opening still exists in the project."
+            },
+            "parentElementId": {
+                "$ref": "#/ElementId",
+                "description": "The element the opening was placed in. Left out when the opening has none."
+            },
+            "cutElements": {
+                "type": "array",
+                "description": "The elements the opening cuts.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
+            "connectedOpenings": {
+                "type": "array",
+                "description": "The openings Archicad reports as connected to this one. Left out when they cannot be read.",
+                "items": {
+                    "$ref": "#/ElementIdArrayItem"
+                }
+            },
+            "geometry": {
+                "$ref": "#/OpeningGeometry"
+            },
+            "extrusionParameters": {
+                "$ref": "#/OpeningExtrusionParameters"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "exists",
+            "cutElements",
+            "geometry",
+            "extrusionParameters"
+        ],
+        "description": "The details returned for one opening."
+    },
+    "OpeningFloorPlanDetails": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "floorPlanParameters": {
+                "$ref": "#/OpeningFloorPlanParameters"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "floorPlanParameters"
+        ],
+        "description": "The floor plan parameters returned for one opening."
+    },
+    "OpeningTransformation": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "globalToLocal": {
+                "type": "array",
+                "description": "The global-to-local matrix (API_Tranmat), the inverse of localToGlobal: the 12 values of a 3x4 matrix, row by row, so x' = m[0]*x + m[1]*y + m[2]*z + m[3], y' = m[4]*x + ... + m[7], z' = m[8]*x + ... + m[11].",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "localToGlobal": {
+                "type": "array",
+                "description": "The local-to-global matrix, in the same layout: the matrix ACAPI_Element_GetOpeningTransformation returns for a Window, Door or Skylight, or the one built from the geometry of an Opening element.",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 12,
+                "maxItems": 12
+            },
+            "origin": {
+                "$ref": "#/Coordinate3D",
+                "description": "The origin of the opening's local coordinate system in world coordinates, from localToGlobal. For an Opening element this is its anchor point."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The local X axis in world coordinates, from localToGlobal."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The local Y axis in world coordinates, from localToGlobal."
+            },
+            "zAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The local Z axis in world coordinates, from localToGlobal. For an Opening element it is X × Y, which points against its extrusion direction."
+            },
+            "determinant": {
+                "type": "number",
+                "description": "The determinant of the 3x3 part of localToGlobal: 1, or -1 for a mirrored Window, Door or Skylight."
+            },
+            "isMirrored": {
+                "type": "boolean",
+                "description": "True when the matrix is left-handed (negative determinant), which Archicad returns for a mirrored opening."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "globalToLocal",
+            "localToGlobal",
+            "origin",
+            "xAxis",
+            "yAxis",
+            "zAxis",
+            "determinant",
+            "isMirrored"
+        ],
+        "description": "The transformation returned for one opening."
+    },
+    "OpeningGeometry": {
+        "type": "object",
+        "properties": {
+            "anchorPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The anchor point of the opening in world coordinates."
+            },
+            "extrusionDirection": {
+                "$ref": "#/Coordinate3D",
+                "description": "The direction the opening is extruded in."
+            },
+            "xAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The X axis of the plane of the opening's polygon."
+            },
+            "yAxis": {
+                "$ref": "#/Coordinate3D",
+                "description": "The Y axis of the plane of the opening's polygon."
+            },
+            "polygon": {
+                "type": "array",
+                "description": "The vertices of the opening's polygon, in the plane of xAxis and yAxis, measured from anchorPoint (the origin of the opening's own coordinate system). Left out when the opening has no polygon.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "anchorPoint",
+            "extrusionDirection",
+            "xAxis",
+            "yAxis"
+        ],
+        "description": "The geometry reported for an opening."
+    },
+    "OpeningExtrusionParameters": {
+        "type": "object",
+        "description": "The size and extrusion settings. A size Archicad does not give for the opening's shape is left out.",
+        "properties": {
+            "constraint": {
+                "$ref": "#/OpeningConstraint"
+            },
+            "limitType": {
+                "$ref": "#/OpeningLimitType"
+            },
+            "linkedStatus": {
+                "$ref": "#/OpeningLinkedStatus"
+            },
+            "shapeType": {
+                "$ref": "#/OpeningShapeType"
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "anchor": {
+                "$ref": "#/OpeningAnchor"
+            },
+            "anchorAltitude": {
+                "type": "number"
+            },
+            "extrusionStartOffset": {
+                "type": "number"
+            },
+            "finiteBodyLength": {
+                "type": "number"
+            },
+            "isExtrusionSurfaceOverridden": {
+                "type": "boolean"
+            },
+            "extrusionSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface of the extrusion faces. Only given when it is overridden."
+            },
+            "isEndSurfaceOverridden": {
+                "type": "boolean"
+            },
+            "endSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface of the end faces. Only given when it is overridden."
+            },
+            "areOverriddenSurfacesLinked": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "anchor",
+            "isExtrusionSurfaceOverridden",
+            "isEndSurfaceOverridden",
+            "areOverriddenSurfacesLinked"
+        ]
+    },
+    "OpeningExtrusionParametersUpdate": {
+        "type": "object",
+        "description": "The size and extrusion settings to change, with the names GetOpeningDetails returns. The ones left out are not changed.",
+        "properties": {
+            "constraint": {
+                "$ref": "#/OpeningConstraint"
+            },
+            "limitType": {
+                "$ref": "#/OpeningLimitType"
+            },
+            "linkedStatus": {
+                "$ref": "#/OpeningLinkedStatus",
+                "description": "Whether the opening's width and height are linked. While they are linked, giving both width and height makes a square of the height; give NotLinked with them to get a different width and height."
+            },
+            "shapeType": {
+                "$ref": "#/OpeningShapeType"
+            },
+            "width": {
+                "type": "number",
+                "minimum": 0.0,
+                "exclusiveMinimum": true,
+                "description": "The opening's width. See linkedStatus."
+            },
+            "height": {
+                "type": "number",
+                "minimum": 0.0,
+                "exclusiveMinimum": true,
+                "description": "The opening's height. See linkedStatus."
+            },
+            "anchor": {
+                "$ref": "#/OpeningAnchor"
+            },
+            "anchorAltitude": {
+                "type": "number"
+            },
+            "extrusionStartOffset": {
+                "type": "number"
+            },
+            "finiteBodyLength": {
+                "type": "number"
+            },
+            "isExtrusionSurfaceOverridden": {
+                "type": "boolean"
+            },
+            "extrusionSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface of the extrusion faces. Only used when the surface is overridden."
+            },
+            "isEndSurfaceOverridden": {
+                "type": "boolean"
+            },
+            "endSurfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "The surface of the end faces. Only used when the surface is overridden."
+            },
+            "areOverriddenSurfacesLinked": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false
+    },
+    "OpeningDefaultFloorPlanParameters": {
+        "type": "object",
+        "properties": {
+            "floorPlanDisplayMode": {
+                "$ref": "#/OpeningFloorPlanDisplayMode"
+            },
+            "dividedOpeningMode": {
+                "$ref": "#/OpeningDividedMode"
+            },
+            "openEdgeStyle": {
+                "$ref": "#/OpeningEdgeStyle"
+            },
+            "showReferenceAxis": {
+                "type": "boolean",
+                "description": "Whether the reference axis of the opening is shown on the floor plan."
+            },
+            "referenceAxisPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "referenceAxisLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the reference axis."
+            },
+            "referenceAxisOverhang": {
+                "type": "number",
+                "description": "How far the reference axis reaches beyond the opening."
+            },
+            "cutSurfacesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId."
+            },
+            "cutSurfacesLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "cutSurfacesLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below."
+            },
+            "outlinesUncutLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesUncutLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesOverheadLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesOverheadLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "useCoverFills": {
+                "type": "boolean"
+            },
+            "coverFillsUseFillsOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId."
+            },
+            "coverFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the cover fills."
+            },
+            "coverFillPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "Foreground pen of the cover fills."
+            },
+            "coverFillBackgroundPen": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 255,
+                "description": "Background pen of the cover fills; 0 makes the background transparent and -1 gives it the window background color."
+            },
+            "coverFillOrientation": {
+                "$ref": "#/HatchOrientationType"
+            },
+            "coverFillTransformation": {
+                "$ref": "#/CoverFillTransformation",
+                "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
+            },
+            "cutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
+            },
+            "unCutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
+            }
+        },
+        "additionalProperties": false,
+        "description": "The floor plan parameters of the opening tool default."
+    },
+    "OpeningFloorPlanParameters": {
+        "type": "object",
+        "properties": {
+            "floorPlanDisplayMode": {
+                "$ref": "#/OpeningFloorPlanDisplayMode"
+            },
+            "dividedOpeningMode": {
+                "$ref": "#/OpeningDividedMode"
+            },
+            "openEdgeStyle": {
+                "$ref": "#/OpeningEdgeStyle"
+            },
+            "showReferenceAxis": {
+                "type": "boolean",
+                "description": "Whether the reference axis of the opening is shown on the floor plan."
+            },
+            "referenceAxisPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "referenceAxisLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the reference axis."
+            },
+            "referenceAxisOverhang": {
+                "type": "number",
+                "description": "How far the reference axis reaches beyond the opening."
+            },
+            "cutSurfacesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId."
+            },
+            "cutSurfacesLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "cutSurfacesLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below."
+            },
+            "outlinesUncutLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesUncutLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesOverheadLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesOverheadLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "useCoverFills": {
+                "type": "boolean"
+            },
+            "coverFillsUseFillsOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId."
+            },
+            "coverFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the cover fills."
+            },
+            "coverFillPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "Foreground pen of the cover fills."
+            },
+            "coverFillBackgroundPen": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 255,
+                "description": "Background pen of the cover fills; 0 makes the background transparent and -1 gives it the window background color."
+            },
+            "coverFillOrientation": {
+                "$ref": "#/HatchOrientationType"
+            },
+            "coverFillTransformation": {
+                "$ref": "#/CoverFillTransformation",
+                "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
+            },
+            "cutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
+            },
+            "unCutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "showReferenceAxis",
+            "referenceAxisPen",
+            "referenceAxisLineTypeId",
+            "referenceAxisOverhang",
+            "cutSurfacesUseLineOfCutElements",
+            "cutSurfacesLinePen",
+            "cutSurfacesLineTypeId",
+            "outlinesUseLineOfCutElements",
+            "outlinesUncutLinePen",
+            "outlinesUncutLineTypeId",
+            "outlinesOverheadLinePen",
+            "outlinesOverheadLineTypeId",
+            "useCoverFills",
+            "coverFillsUseFillsOfCutElements",
+            "coverFillId",
+            "coverFillPen",
+            "coverFillBackgroundPen",
+            "coverFillOrientation"
+        ],
+        "description": "The floor plan parameters of an opening."
+    },
+    "OpeningFloorPlanParametersUpdate": {
+        "type": "object",
+        "description": "The floor plan parameters to change, with the names GetOpeningFloorPlanParameters returns. The ones left out are not changed.",
+        "properties": {
+            "floorPlanDisplayMode": {
+                "$ref": "#/OpeningFloorPlanDisplayMode"
+            },
+            "dividedOpeningMode": {
+                "$ref": "#/OpeningDividedMode"
+            },
+            "openEdgeStyle": {
+                "$ref": "#/OpeningEdgeStyle"
+            },
+            "showReferenceAxis": {
+                "type": "boolean",
+                "description": "Whether the reference axis of the opening is shown on the floor plan."
+            },
+            "referenceAxisPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "referenceAxisLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the reference axis."
+            },
+            "referenceAxisOverhang": {
+                "type": "number",
+                "description": "How far the reference axis reaches beyond the opening."
+            },
+            "cutSurfacesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cut surfaces use the line of the cut elements instead of cutSurfacesLinePen and cutSurfacesLineTypeId."
+            },
+            "cutSurfacesLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "cutSurfacesLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesUseLineOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the outlines use the line of the cut elements instead of the uncut and overhead lines below."
+            },
+            "outlinesUncutLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesUncutLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "outlinesOverheadLinePen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255
+            },
+            "outlinesOverheadLineTypeId": {
+                "$ref": "#/AttributeId"
+            },
+            "useCoverFills": {
+                "type": "boolean"
+            },
+            "coverFillsUseFillsOfCutElements": {
+                "type": "boolean",
+                "description": "Whether the cover fills are the fills of the cut elements instead of coverFillId."
+            },
+            "coverFillId": {
+                "$ref": "#/AttributeId",
+                "description": "The fill of the cover fills."
+            },
+            "coverFillPen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "Foreground pen of the cover fills."
+            },
+            "coverFillBackgroundPen": {
+                "type": "integer",
+                "minimum": -1,
+                "maximum": 255,
+                "description": "Background pen of the cover fills; 0 makes the background transparent and -1 gives it the window background color."
+            },
+            "coverFillOrientation": {
+                "$ref": "#/HatchOrientationType"
+            },
+            "coverFillTransformation": {
+                "$ref": "#/CoverFillTransformation",
+                "description": "The orientation and distortion of the cover fill. Left out when Archicad gives none."
+            },
+            "cutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the cut opening. Left out when the opening has no cut symbol."
+            },
+            "unCutSymbolLibPartId": {
+                "$ref": "#/Guid",
+                "description": "The id of the library part drawn as the symbol of the uncut opening. Left out when the opening has no uncut symbol."
+            },
+            "clearCutSymbol": {
+                "type": "boolean",
+                "description": "Removes the cut symbol of the opening. Cannot be given together with cutSymbolLibPartId."
+            },
+            "clearUnCutSymbol": {
+                "type": "boolean",
+                "description": "Removes the uncut symbol of the opening. Cannot be given together with unCutSymbolLibPartId."
+            }
+        },
+        "additionalProperties": false
+    },
+    "OpeningAnchor": {
+        "type": "string",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ],
+        "description": "The anchor point of the opening's polygon."
+    },
+    "OpeningSymbolParameters": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "cutSymbolParameters": {
+                "type": "array",
+                "description": "The GDL parameters, in the format GetGDLParametersOfElements uses. Separators, titles and dictionary parameters have no value here and are left out.",
+                "items": {
+                    "$ref": "#/OpeningSymbolParameter"
+                }
+            },
+            "unCutSymbolParameters": {
+                "type": "array",
+                "description": "The GDL parameters, in the format GetGDLParametersOfElements uses. Separators, titles and dictionary parameters have no value here and are left out.",
+                "items": {
+                    "$ref": "#/OpeningSymbolParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ],
+        "description": "The symbol parameters returned for one opening."
+    },
+    "OpeningSymbolParameter": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "type": {
+                "$ref": "#/OpeningSymbolParameterType"
+            },
+            "dimension1": {
+                "type": "integer",
+                "description": "The 1st dimension of an array parameter."
+            },
+            "dimension2": {
+                "type": "integer",
+                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+            },
+            "value": {
+                "description": "The value of the parameter as the parameter list holds it: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "type",
+            "value"
+        ],
+        "description": "A parameter of an opening symbol."
+    },
+    "OpeningFloorPlanDisplayMode": {
+        "type": "string",
+        "enum": [
+            "Symbolic",
+            "SymbolicCut",
+            "SymbolicOverhead",
+            "Projected"
+        ],
+        "description": "How the opening is shown on the floor plan."
+    },
+    "OpeningDividedMode": {
+        "type": "string",
+        "enum": [
+            "Disconnected",
+            "Connected"
+        ],
+        "description": "How the parts of an opening divided by the floor plan cut are shown."
+    },
+    "OpeningEdgeStyle": {
+        "type": "string",
+        "enum": [
+            "Hide",
+            "ShowUncut",
+            "ShowOverhead"
+        ],
+        "description": "How the open edges of the opening are shown on the floor plan."
+    },
+    "OpeningConstraint": {
+        "type": "string",
+        "enum": [
+            "ForcedVertical",
+            "ForcedHorizontal",
+            "Aligned",
+            "Free"
+        ],
+        "description": "How the opening's orientation is constrained."
+    },
+    "OpeningLimitType": {
+        "type": "string",
+        "enum": [
+            "Infinite",
+            "Finite",
+            "HalfInfinite"
+        ],
+        "description": "How far the opening's extrusion reaches."
+    },
+    "OpeningLinkedStatus": {
+        "type": "string",
+        "enum": [
+            "Linked",
+            "NotLinked"
+        ],
+        "description": "Whether the opening's width and height are linked. Left out when Archicad gives none."
+    },
+    "OpeningShapeType": {
+        "type": "string",
+        "enum": [
+            "Rectangular",
+            "Circular",
+            "Polygonal"
+        ],
+        "description": "The shape of the opening's polygon."
+    },
+    "OpeningSymbolParametersUpdate": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "cutSymbolParameters": {
+                "type": "array",
+                "description": "The GDL parameters to change, by name, in the format SetGDLParametersOfElements uses. The parameters left out are not changed.",
+                "items": {
+                    "$ref": "#/OpeningSymbolParameterUpdate"
+                }
+            },
+            "unCutSymbolParameters": {
+                "type": "array",
+                "description": "The GDL parameters to change, by name, in the format SetGDLParametersOfElements uses. The parameters left out are not changed.",
+                "items": {
+                    "$ref": "#/OpeningSymbolParameterUpdate"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId"
+        ]
+    },
+    "OpeningSymbolParameterUpdate": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "index1": {
+                "type": "integer",
+                "description": "The 1-based first index of the one item of an array parameter to change. Only with a single value."
+            },
+            "index2": {
+                "type": "integer",
+                "description": "The 1-based second index of the item to change, only together with index1. Defaults to 1."
+            },
+            "value": {
+                "description": "The new value, in the format the parameter list was read in. For an array parameter without index1, a list of all of its items, flat (the first index outer) or as a list of rows; resizing an array is not supported."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "value"
+        ],
+        "description": "A parameter value to change in an opening symbol."
+    },
+    "OpeningSymbolParameterType": {
+        "type": "string",
+        "enum": [
+            "Integer",
+            "Length",
+            "Angle",
+            "RealNumber",
+            "LightSwitch",
+            "RGBColor",
+            "Intensity",
+            "LineType",
+            "Material",
+            "FillPattern",
+            "PenColor",
+            "String",
+            "Boolean",
+            "BuildingMaterial",
+            "Profile"
+        ],
+        "description": "The type of the parameter."
+    },
+    "FavoriteDefaultMarker": {
+        "type": "object",
+        "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
+        "properties": {
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "libPart": {
+                "$ref": "#/LibPartDetails",
+                "description": "The library part of the marker. Absent when it could not be read."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the marker.",
+                "items": {
+                    "$ref": "#/StoredGDLParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementType",
+            "parameters"
+        ]
+    },
+    "ChangeMarkerLinkType": {
+        "type": "string",
+        "enum": [
+            "Linked",
+            "Unlinked",
+            "NewChange",
+            "Unknown"
+        ],
+        "description": "Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change."
+    },
+    "ChangeMarkerLinkTypeInput": {
+        "type": "string",
+        "enum": [
+            "Linked",
+            "Unlinked"
+        ],
+        "description": "Unlinked removes the link of the marker to its Change (the Change stays in the project); it cannot be given with changeId or createChange. Linked links the marker to the Change of changeId, which it needs; changeId alone does the same."
+    },
     "OpeningRelationsOfElement": {
         "type": "object",
         "description": "Relations of a curtain wall panel, skylight, window or door: the zones on the two sides of the opening.",
@@ -15667,9 +16694,7 @@
         "description": "A Change Marker: the revision Change it is linked to, the parts it shows and its geometry.",
         "properties": {
             "linkType": {
-                "type": "string",
-                "enum": ["Linked", "Unlinked", "NewChange", "Unknown"],
-                "description": "Whether the marker is linked to a Change. NewChange is the value a marker is created with to make a new Change."
+                "$ref": "#/ChangeMarkerLinkType"
             },
             "markerComponent": {
                 "$ref": "#/ChangeMarkerComponent"
@@ -26732,29 +27757,7 @@
                 }
             },
             "marker": {
-                "type": "object",
-                "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
-                "properties": {
-                    "elementType": {
-                        "$ref": "#/ElementType"
-                    },
-                    "libPart": {
-                        "$ref": "#/LibPartDetails",
-                        "description": "The library part of the marker. Absent when it could not be read."
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "description": "The GDL parameters of the marker.",
-                        "items": {
-                            "$ref": "#/StoredGDLParameter"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "elementType",
-                    "parameters"
-                ]
+                "$ref": "#/FavoriteDefaultMarker"
             },
             "subElements": {
                 "type": "array",
@@ -30735,25 +31738,8 @@
                 }
             },
             "marker": {
-                "type": "object",
-                "description": "The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error.",
-                "properties": {
-                    "libPart": {
-                        "$ref": "#/LibPartDetails",
-                        "description": "The library part of the marker. Absent when it could not be read."
-                    },
-                    "parameters": {
-                        "type": "array",
-                        "description": "The GDL parameters of the marker.",
-                        "items": {
-                            "$ref": "#/StoredGDLParameter"
-                        }
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "parameters"
-                ]
+                "$ref": "#/MarkerParametersOfElement",
+                "description": "The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error."
             },
             "subElements": {
                 "type": "array",
