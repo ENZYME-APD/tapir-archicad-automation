@@ -1026,41 +1026,7 @@ GS::Optional<GS::UniString> GetElementFieldDefinitionsCommand::GetRawResponseSch
                 "type": "array",
                 "description": "Every field GetElementFields reads and SetElementFields writes for this element type.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The field's path in the struct, as in C++: e.g. note.noteFont, u.planeRoof.angle or defHandrailEnd[0].x."
-                        },
-                        "type": {
-                            "type": "string",
-                            "enum": [ "number", "boolean", "integer", "string", "object" ],
-                            "description": "The JSON type of the field's value: object for an OverriddenPen or OverriddenAttribute (see ElementFieldOptionalValue)."
-                        },
-                        "kind": {
-                            "type": "string",
-                            "enum": [ "Real", "Bool", "SignedInt", "UnsignedInt", "CString", "UString", "AttributeIndex", "Guid", "OverriddenPen", "OverriddenAttribute", "UniStringPointer" ],
-                            "description": "The C++ kind of the field: an enum is a SignedInt, an AttributeIndex is the index of an attribute (pen tables excepted, pens are plain integers). OverriddenPen and OverriddenAttribute are the optional pens and attributes of the API (API_OverriddenPen, API_OverriddenAttribute, e.g. cutFillPen and refMat of a wall), read and written as an object with hasValue and value. A UniStringPointer is a GS::UniString* through which Archicad passes a text (e.g. note.contentUStr, the text of a dimension note): it is read and written as a string, the commands pointing it to a string of their own."
-                        },
-                        "size": {
-                            "type": "integer",
-                            "description": "The size of the field in bytes (for a string, the room in bytes including the closing zero; for a UniStringPointer, the size of the pointer)."
-                        },
-                        "readOnly": {
-                            "type": "boolean",
-                            "description": "True for the owners and counts that Archicad computes, and for the fields that choose the shape of an element (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, also in the default structures of a stair such as structure[0][0].structType, a wall's type: changing one without the data of the other shape made Archicad 29 quit), and for the fields of placed elements Archicad refuses whatever their value: the library part (libInd) of Objects, Lamps, Windows, Doors, Skylights, Zones and symbol Labels, which ChangeLibraryPartOfElements changes, and the leader line fields of the notes of a Level Dimension (note1/note2 useLeaderLine, anchorAtTextEnd, begC, midC, endC). SetElementFields refuses them, giving readOnlyReason; SetFieldsOfElementDefaults refuses only the first group (owners, counts and shape selectors)."
-                        },
-                        "readOnlyReason": {
-                            "type": "string",
-                            "description": "Why the field is read-only; only given for a read-only field."
-                        },
-                        "variant": {
-                            "type": "string",
-                            "description": "For a field in a union, the member it is in, e.g. u.revolvedShell, u.planeRoof or structure[0][1].data.monolith. Only the member the element uses holds values (a roof's roofClass, a shell's shellClass, a label's labelClass, a stair structure's structType, the structType of that default structure of a stair): GetElementFields leaves the others out and SetElementFields refuses them."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [ "path", "type", "kind", "size", "readOnly" ]
+                    "$ref": "#/ElementFieldDefinition"
                 }
             }
         },
@@ -1155,39 +1121,7 @@ GS::Optional<GS::UniString> GetElementFieldsCommand::GetRawResponseSchema () con
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "structName": {
-                                    "type": "string",
-                                    "description": "The C++ struct of the element in the Archicad API."
-                                },
-                                "fields": {
-                                    "type": "object",
-                                    "description": "The value of each field, by its path.",
-                                    "additionalProperties": {
-                                        "$ref": "#/ElementFieldValue"
-                                    }
-                                },
-                                "missingFields": {
-                                    "type": "array",
-                                    "description": "The asked paths this element type does not have.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "inactiveFields": {
-                                    "type": "array",
-                                    "description": "The asked paths in a member of a union this element does not use (see variant in GetElementFieldDefinitions), e.g. u.revolvedShell fields of an extruded shell: their bytes hold another member's values, so they are not read. Without the fields input, these are simply left out.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "elementType", "structName", "fields" ]
+                            "$ref": "#/ElementFieldValues"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1266,25 +1200,7 @@ GS::Optional<GS::UniString> SetElementFieldsCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "The elements to change and the fields to write to each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "fields": {
-                            "type": "object",
-                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"note.noteFont\": 3, \"note.frame\": true, \"note.contentUStr\": \"A\"}, or {\"refMat\": {\"hasValue\": true, \"value\": 12}} for a wall. Only these fields change: they are written with ACAPI_Element_Change and a mask of exactly their bytes, then read back.",
-                            "additionalProperties": {
-                                "$ref": "#/ElementFieldValue"
-                            },
-                            "minProperties": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "fields"
-                    ]
+                    "$ref": "#/ElementFieldsUpdate"
                 }
             },
             "dryRun": {
@@ -1496,39 +1412,7 @@ GS::Optional<GS::UniString> GetFieldsOfElementDefaultsCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "structName": {
-                                    "type": "string",
-                                    "description": "The C++ struct of the element type in the Archicad API."
-                                },
-                                "fields": {
-                                    "type": "object",
-                                    "description": "The value of each field of the tool defaults, by its path.",
-                                    "additionalProperties": {
-                                        "$ref": "#/ElementFieldValue"
-                                    }
-                                },
-                                "missingFields": {
-                                    "type": "array",
-                                    "description": "The asked paths this element type does not have.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "inactiveFields": {
-                                    "type": "array",
-                                    "description": "The asked paths in a member of a union the defaults do not use (see variant in GetElementFieldDefinitions). Without the fields input, these are simply left out.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "elementType", "structName", "fields" ]
+                            "$ref": "#/ElementFieldValues"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1602,25 +1486,7 @@ GS::Optional<GS::UniString> SetFieldsOfElementDefaultsCommand::GetInputParameter
                 "type": "array",
                 "description": "The element types whose tool defaults change and the fields to write to each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementType": {
-                            "$ref": "#/ElementType"
-                        },
-                        "fields": {
-                            "type": "object",
-                            "description": "The new value of each field, by its path (see GetElementFieldDefinitions), e.g. {\"thickness\": 0.25, \"height\": 2.7, \"cutFillPen\": {\"hasValue\": true, \"value\": 5}}. Only these fields change: they are written with ACAPI_Element_ChangeDefaults and a mask of exactly their bytes, then read back.",
-                            "additionalProperties": {
-                                "$ref": "#/ElementFieldValue"
-                            },
-                            "minProperties": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementType",
-                        "fields"
-                    ]
+                    "$ref": "#/ToolDefaultFieldsUpdate"
                 }
             },
             "dryRun": {
