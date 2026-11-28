@@ -186,7 +186,10 @@ def compare(actual: Any, rule: dict) -> tuple[bool, str]:
     if "len" in rule:
         return isinstance(actual, list) and len(actual) == rule["len"], f"has {rule['len']} items"
     if "contains" in rule:
-        return isinstance(actual, str) and rule["contains"] in actual, f"contains {json.dumps(rule['contains'])}"
+        # A text inside a string, or a value among the items of a list (a path with [*]).
+        ok = (isinstance(actual, str) and isinstance(rule["contains"], str) and rule["contains"] in actual) or \
+            (isinstance(actual, list) and rule["contains"] in actual)
+        return ok, f"contains {json.dumps(rule['contains'])}"
     if "exists" in rule:
         return (actual is not None) == bool(rule["exists"]), "exists" if rule["exists"] else "missing"
     raise ValueError(f"unknown expectation: {rule}")

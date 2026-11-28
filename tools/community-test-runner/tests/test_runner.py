@@ -145,6 +145,14 @@ class EngineTest(unittest.TestCase):
         self.assertFalse(rows["unknown"]["ok"])
         self.assertIn("unknown variable", rows["unknown"]["detail"])
 
+    def test_contains_finds_a_text_or_a_list_item(self):
+        self.assertTrue(r.compare("railing 12", {"contains": "12"})[0])
+        self.assertTrue(r.compare([3, 7, 9], {"contains": 7})[0])
+        self.assertTrue(r.compare(["a", "b"], {"contains": "b"})[0])
+        self.assertFalse(r.compare([3, 9], {"contains": 7})[0])
+        self.assertFalse(r.compare(12, {"contains": 1})[0])
+        self.assertFalse(r.compare("12", {"contains": 1})[0])
+
     def test_expressions_allow_arithmetic_only(self):
         self.assertAlmostEqual(r.evaluate("(${a} - ${b}) * 2", {"a": 5, "b": 1.5}), 7.0)
         for hostile in ("__import__('os')", "${a}.real", "open('x')", "[1][0]"):
