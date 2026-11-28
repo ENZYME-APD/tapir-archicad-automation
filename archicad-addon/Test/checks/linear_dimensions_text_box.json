@@ -1,0 +1,191 @@
+{
+  "title": "Linear dimensions: CreateAssociativeDimensions and ModifyAssociativeDimensions write the text box (textBox), textPlacement.advanced and elevationMarker.circleFill, read them back and refuse bad values (#3133)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "linear dimension with a framed, opaque text box and the Centered method with advanced logic",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1100.0, "y": 1099.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "textFrame": true,
+            "textBox": { "frame": true, "framePen": 2, "opaque": true, "backgroundPen": 1, "justification": "Left" },
+            "textPlacement": { "method": "Centered", "advanced": true },
+            "witnessPoints": [
+              { "coordinate": { "x": 1100.0, "y": 1100.0 } },
+              { "coordinate": { "x": 1103.0, "y": 1100.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "created, and the command read the new settings back (else the error names the ones Archicad did not keep)" }
+      ]
+    },
+    {
+      "id": "Elevation dimension with a circle fill",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "appearance": "Elevation",
+            "elevationMarker": { "circleFill": "NorthwestBlack" },
+            "referencePoint": { "x": 1100.0, "y": 1104.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 1100.0, "y": 1105.0 } },
+              { "coordinate": { "x": 1102.0, "y": 1105.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "e": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "elevation dimension created with its circle fill kept" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } }, { "elementId": { "guid": "${e}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Dimension", "name": "a linear dimension" },
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": true, "name": "text framed" },
+        { "path": "detailsOfElements[0].details.textFrame", "eq": true, "name": "textFrame is the same setting" },
+        { "path": "detailsOfElements[0].details.textBox.framePen", "eq": 2, "name": "frame pen" },
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": true, "name": "text opaque" },
+        { "path": "detailsOfElements[0].details.textBox.backgroundPen", "eq": 1, "name": "background pen" },
+        { "path": "detailsOfElements[0].details.textBox.justification", "eq": "Left", "name": "left aligned" },
+        { "path": "detailsOfElements[0].details.textBox.leaderLineTypeId.guid", "exists": true, "name": "leader line type read" },
+        { "path": "detailsOfElements[0].details.textPlacement.method", "eq": "Centered", "name": "Centered method" },
+        { "path": "detailsOfElements[0].details.textPlacement.advanced", "eq": true, "name": "advanced logic on" },
+        { "path": "detailsOfElements[1].details.appearance", "eq": "Elevation", "name": "an elevation dimension" },
+        { "path": "detailsOfElements[1].details.elevationMarker.circleFill", "eq": "NorthwestBlack", "name": "circle fill kept" }
+      ]
+    },
+    {
+      "id": "GetDimensionData returns the same text placement and elevation marker",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].textPlacement.advanced", "eq": true, "name": "GetDimensionData returns textPlacement.advanced" },
+        { "path": "dimensionsData[0].elevationMarker.circleFill", "exists": true, "name": "GetDimensionData returns elevationMarker.circleFill" }
+      ]
+    },
+    {
+      "id": "change the text box, the advanced logic and the circle fill",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "textBox": { "opaque": false, "justification": "Right", "framePen": 3 },
+            "textPlacement": { "advanced": false }
+          },
+          {
+            "elementId": { "guid": "${e}" },
+            "elevationMarker": { "circleFill": "NortheastBlack" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "text box and advanced changed and read back by the command" },
+        { "path": "executionResults[1].success", "eq": true, "name": "circle fill changed and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the change: the given settings changed, the others kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } }, { "elementId": { "guid": "${e}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textBox.opaque", "eq": false, "name": "background off" },
+        { "path": "detailsOfElements[0].details.textBox.justification", "eq": "Right", "name": "right aligned" },
+        { "path": "detailsOfElements[0].details.textBox.framePen", "eq": 3, "name": "frame pen changed" },
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": true, "name": "frame kept" },
+        { "path": "detailsOfElements[0].details.textBox.backgroundPen", "eq": 1, "name": "background pen kept" },
+        { "path": "detailsOfElements[0].details.textPlacement.advanced", "eq": false, "name": "advanced logic off" },
+        { "path": "detailsOfElements[0].details.textPlacement.method", "eq": "Centered", "name": "method kept" },
+        { "path": "detailsOfElements[1].details.elevationMarker.circleFill", "eq": "NortheastBlack", "name": "circle fill changed" }
+      ]
+    },
+    {
+      "id": "textFrame and textBox.frame with different values are refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [ { "elementId": { "guid": "${d}" }, "textFrame": false, "textBox": { "frame": true } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "contradicting frame settings refused" }
+      ]
+    },
+    {
+      "id": "a leader line type that does not exist is refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "textBox": { "leaderLineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown leader line type refused" }
+      ]
+    },
+    {
+      "id": "the circle fill Unknown is only returned, never written",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [ { "elementId": { "guid": "${e}" }, "elevationMarker": { "circleFill": "Unknown" } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "circleFill Unknown refused" }
+      ]
+    },
+    {
+      "id": "a new dimension with a bad text box is not created",
+      "command": "CreateAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1100.0, "y": 1109.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "textFrame": true,
+            "textBox": { "frame": false },
+            "witnessPoints": [
+              { "coordinate": { "x": 1100.0, "y": 1110.0 } },
+              { "coordinate": { "x": 1101.0, "y": 1110.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "contradicting frame settings refused on creation" }
+      ]
+    },
+    {
+      "id": "the refused changes changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } }, { "elementId": { "guid": "${e}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.textBox.frame", "eq": true, "name": "frame still on" },
+        { "path": "detailsOfElements[0].details.textFrame", "eq": true, "name": "textFrame still on" },
+        { "path": "detailsOfElements[0].details.textBox.justification", "eq": "Right", "name": "still right aligned" },
+        { "path": "detailsOfElements[1].details.elevationMarker.circleFill", "eq": "NortheastBlack", "name": "circle fill still NortheastBlack" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "title": "Linear dimensions on Archicad 30: clipDimensionLine, clipWitnessLine, textFillOrder and the witness extension line written by CreateAssociativeDimensions and ModifyAssociativeDimensions, read back, and a bad line type refused (#3133)",
+  "minTapir": "2.0.2",
+  "minArchicad": "30",
+  "steps": [
+    {
+      "id": "linear dimension with clipped lines, the text fill above the line and an overridden witness extension line",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 1120.0, "y": 1119.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "clipDimensionLine": true,
+            "clipWitnessLine": true,
+            "textFillOrder": "AboveDimensionLine",
+            "witnessExtensionLine": { "overridePenAndLineType": true, "pen": 3, "gap": true },
+            "witnessPoints": [
+              { "coordinate": { "x": 1120.0, "y": 1120.0 } },
+              { "coordinate": { "x": 1123.0, "y": 1120.0 } }
+            ]
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "created, and the command read the settings back from the dimension and its first witness point" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "save": { "lt": "detailsOfElements[0].details.witnessExtensionLine.lineTypeId.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.clipDimensionLine", "eq": true, "name": "dimension line clipped" },
+        { "path": "detailsOfElements[0].details.clipWitnessLine", "eq": true, "name": "witness lines clipped" },
+        { "path": "detailsOfElements[0].details.textFillOrder", "eq": "AboveDimensionLine", "name": "text fill above the dimension line" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.overridePenAndLineType", "eq": true, "name": "extension line overridden" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.pen", "eq": 3, "name": "extension line pen" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.gap", "eq": true, "name": "gap on" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.gapSize", "exists": true, "name": "gap size read" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.lineTypeId.guid", "exists": true, "name": "extension line type read" }
+      ]
+    },
+    {
+      "id": "change them with ModifyAssociativeDimensions, the line type written back as read",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "clipDimensionLine": false,
+            "textFillOrder": "UnderDimensionLine",
+            "witnessExtensionLine": { "pen": 4, "gap": false, "lineTypeId": { "guid": "${lt}" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "change accepted and read back by the command" }
+      ]
+    },
+    {
+      "id": "read after the change: the given settings changed, the others kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.clipDimensionLine", "eq": false, "name": "dimension line no longer clipped" },
+        { "path": "detailsOfElements[0].details.clipWitnessLine", "eq": true, "name": "witness lines still clipped" },
+        { "path": "detailsOfElements[0].details.textFillOrder", "eq": "UnderDimensionLine", "name": "text fill under the dimension line" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.pen", "eq": 4, "name": "extension line pen changed" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.gap", "eq": false, "name": "gap off" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.overridePenAndLineType", "eq": true, "name": "override kept" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.lineTypeId.guid", "eq": "${lt}", "name": "line type kept" }
+      ]
+    },
+    {
+      "id": "a witness extension line type that does not exist is refused",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "witnessExtensionLine": { "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "unknown line type refused" }
+      ]
+    },
+    {
+      "id": "the refused change changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.lineTypeId.guid", "eq": "${lt}", "name": "line type unchanged" },
+        { "path": "detailsOfElements[0].details.witnessExtensionLine.pen", "eq": 4, "name": "pen unchanged" }
+      ]
+    }
+  ]
+}

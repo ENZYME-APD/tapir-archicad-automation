@@ -823,6 +823,118 @@ static bool ParseDimensionTextPlacementMethod (const GS::UniString& methodName, 
     return false;
 }
 
+// The circle style marker fill of an Elevation dimension (API_CircleLevelDimensionFillID), as
+// DimensionElevationMarker's circleFill names it (#3133).
+static GS::UniString CircleLevelDimensionFillName (API_CircleLevelDimensionFillID fill)
+{
+    switch (fill) {
+        case API_EmptyFill:      return "Empty";
+        case API_NorthwestBlack: return "NorthwestBlack";
+        case API_NortheastBlack: return "NortheastBlack";
+        default:                 return "Unknown";
+    }
+}
+
+static bool ParseCircleLevelDimensionFill (const GS::UniString& name, API_CircleLevelDimensionFillID& result)
+{
+    const API_CircleLevelDimensionFillID fills[] = { API_EmptyFill, API_NorthwestBlack, API_NortheastBlack };
+    for (API_CircleLevelDimensionFillID fill : fills) {
+        if (CircleLevelDimensionFillName (fill) == name) {
+            result = fill;
+            return true;
+        }
+    }
+    return false;
+}
+
+#ifdef ServerMainVers_2700
+// The drawing order of the texts' fill and contour relative to the dimension line
+// (API_DimTextFillOrderID, in the DevKit's API_DimensionType from Archicad 27), as textFillOrder
+// names it (#3133).
+static GS::UniString DimensionTextFillOrderName (API_DimTextFillOrderID order)
+{
+    switch (order) {
+        case API_DimTextFillOrderID::FillAndContourUnderDimLine: return "UnderDimensionLine";
+        case API_DimTextFillOrderID::FillAndContourAboveDimLine: return "AboveDimensionLine";
+        default:                                                 return "Unknown";
+    }
+}
+
+static bool ParseDimensionTextFillOrder (const GS::UniString& name, API_DimTextFillOrderID& result)
+{
+    const API_DimTextFillOrderID orders[] = { API_DimTextFillOrderID::FillAndContourUnderDimLine, API_DimTextFillOrderID::FillAndContourAboveDimLine };
+    for (API_DimTextFillOrderID order : orders) {
+        if (DimensionTextFillOrderName (order) == name) {
+            result = order;
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef ServerMainVers_3000
+// The witness extension line of a linear dimension's settings (#/DimensionWitnessExtensionLine,
+// API_DimensionType defWitnessExtension* and defWitnessOverrideExtension, from Archicad 30), as
+// GetDetailsOfElements returns it (#3133).
+static GS::ObjectState CreateDimensionWitnessExtensionLineObjectState (const API_DimensionType& dimension)
+{
+    GS::ObjectState os;
+    os.Add ("overridePenAndLineType", dimension.defWitnessOverrideExtension);
+    os.Add ("pen", static_cast<Int32> (dimension.defWitnessExtensionLinePen));
+    os.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, dimension.defWitnessExtensionLineType)));
+    os.Add ("gap", dimension.defWitnessExtensionGap);
+    os.Add ("gapSize", dimension.defWitnessExtensionGapSize);
+    return os;
+}
+#endif
+
+// Copies the fields of a #/DimensionNote given in noteOS from one note to another: from the
+// dimension's defNote, as ApplyDimensionNote wrote it, into the note of a witness point (#3133).
+// The arrowhead is copied as a whole, as ApplyDimensionNote writes it.
+static void CopyDimensionNoteFields (const GS::ObjectState& noteOS, const API_NoteType& from, API_NoteType& to)
+{
+    if (noteOS.Contains ("textAngle")) {
+        to.noteAngle = from.noteAngle;
+    }
+    if (noteOS.Contains ("opaque")) {
+        to.opaque = from.opaque;
+    }
+    if (noteOS.Contains ("frame")) {
+        to.frame = from.frame;
+    }
+    if (noteOS.Contains ("backgroundPen")) {
+        to.backgroundPen = from.backgroundPen;
+    }
+    if (noteOS.Contains ("framePen")) {
+        to.framePen = from.framePen;
+    }
+    if (noteOS.Contains ("justification")) {
+        to.just = from.just;
+    }
+    if (noteOS.Contains ("anchorRow")) {
+        to.rowAnchor = from.rowAnchor;
+    }
+    if (noteOS.Contains ("anchorPoint")) {
+        to.anchorPoint = from.anchorPoint;
+    }
+    if (noteOS.Contains ("anchorAtTextEnd")) {
+        to.anchorAtTextEnd = from.anchorAtTextEnd;
+    }
+    if (noteOS.Contains ("leaderPen")) {
+        to.leaderPen = from.leaderPen;
+    }
+    if (noteOS.Contains ("leaderLineTypeId")) {
+        to.leaderLineType = from.leaderLineType;
+    }
+    if (noteOS.Contains ("leaderShape")) {
+        to.leaderShape = from.leaderShape;
+    }
+    if (noteOS.Contains ("arrowType") || noteOS.Contains ("arrowVisible") || noteOS.Contains ("arrowPen") || noteOS.Contains ("arrowSize")) {
+        to.arrowData = from.arrowData;
+    }
+}
+
 // The marker and the text placement of a linear dimension as GetDetailsOfElements and
 // GetDimensionData return them (DimensionMarker, DimensionTextPlacement).
 static GS::ObjectState CreateDimensionMarkerObjectState (const API_Element& element)
@@ -864,6 +976,7 @@ static GS::ObjectState CreateDimensionElevationMarkerObjectState (const API_Elem
     marker.Add ("arrowFilled", element.dimension.ed_arrowFill);
     marker.Add ("arrowUp", element.dimension.ed_arrowUp);
     marker.Add ("plusSign", element.dimension.ed_needPlus);
+    marker.Add ("circleFill", CircleLevelDimensionFillName (element.dimension.ed_circleLevelDimensionFill));
     return marker;
 }
 
@@ -872,7 +985,8 @@ static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Elemen
     return GS::ObjectState (
         "method", DimensionTextPlacementMethodName (element.dimension.dimLayout),
         "placeBelowLine", element.dimension.placeUnderEnabled,
-        "pushNeighbors", element.dimension.pushNeighborEnabled);
+        "pushNeighbors", element.dimension.pushNeighborEnabled,
+        "advanced", element.dimension.advanced);
 }
 
 // The settings of a linear dimension that CreateAssociativeDimensions,
@@ -955,6 +1069,27 @@ static const char* DimensionSettingsSchemaProperties = R"(
                         "layeredElementDimensions": {
                             "$ref": "#/LayeredElementDimensions",
                             "description": "Optional automatic dimensioning of layered (composite) elements. Give any of the three; the others stay as they are. Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
+                        },
+                        "textBox": {
+                            "$ref": "#/DimensionNote",
+                            "description": "Optional text box of the dimension texts (API defNote): angle, background, frame, alignment and the leader line style, applied to every witness point (on creation after favoriteName). Only the fields given change. textBox.frame is the same setting as textFrame; giving both with different values is an error. The dimension is read back, and a field Archicad did not keep fails the item."
+                        },
+                        "textFillOrder": {
+                            "type": "string",
+                            "enum": ["UnderDimensionLine", "AboveDimensionLine"],
+                            "description": "Optional drawing order of the texts' fill and contour: under or above the dimension line (API textFillOrder). Available from Archicad 27; older versions refuse it."
+                        },
+                        "clipDimensionLine": {
+                            "type": "boolean",
+                            "description": "Optional: no dimension line part on the other side, opposite to the base point (API clipDimensionLine). Available from Archicad 30; older versions refuse it."
+                        },
+                        "clipWitnessLine": {
+                            "type": "boolean",
+                            "description": "Optional: no witness line part on the other side (API clipWitnessLine). Available from Archicad 30; older versions refuse it."
+                        },
+                        "witnessExtensionLine": {
+                            "$ref": "#/DimensionWitnessExtensionLine",
+                            "description": "Optional witness extension line, applied to every witness point (on creation after favoriteName). Give any of its fields; the others stay as they are. Available from Archicad 30; older versions refuse it."
                         })";
 
 static const unsigned short DimensionTextFaceBits = APIFace_Bold | APIFace_Italic | APIFace_Underline;
@@ -1127,6 +1262,15 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         if (elevationMarker->Get ("plusSign", element.dimension.ed_needPlus) && mask != nullptr) {
             ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_needPlus);
         }
+        GS::UniString circleFill;
+        if (elevationMarker->Get ("circleFill", circleFill)) {
+            if (!ParseCircleLevelDimensionFill (circleFill, element.dimension.ed_circleLevelDimensionFill)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown 'elevationMarker.circleFill' value: " + circleFill);
+            }
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, ed_circleLevelDimensionFill);
+            }
+        }
     }
 
     double textHeight = 0.0;
@@ -1242,6 +1386,9 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
                 ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, pushNeighborEnabled);
             }
         }
+        if (textPlacement->Get ("advanced", element.dimension.advanced) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, advanced);
+        }
     }
 
     GS::UniString witnessFormName;
@@ -1316,6 +1463,91 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         }
     }
 
+    // The text box of the dimension texts (#3133), in defNote like the other text settings.
+    const GS::ObjectState* textBox = data.Get ("textBox");
+    if (textBox != nullptr) {
+        bool textBoxFrame = false;
+        bool givenTextFrame = false;
+        if (textBox->Get ("frame", textBoxFrame) && data.Get ("textFrame", givenTextFrame) && textBoxFrame != givenTextFrame) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textFrame' and 'textBox.frame' are the same setting and are given with different values.");
+        }
+        auto noteError = ApplyDimensionNote (*textBox, "textBox", element.dimension.defNote, mask != nullptr ? &mask->dimension.defNote : nullptr);
+        if (noteError.HasValue ()) {
+            return noteError;
+        }
+    }
+
+    GS::UniString textFillOrder;
+    if (data.Get ("textFillOrder", textFillOrder)) {
+#ifdef ServerMainVers_2700
+        if (!ParseDimensionTextFillOrder (textFillOrder, element.dimension.textFillOrder)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'textFillOrder' value: " + textFillOrder);
+        }
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, textFillOrder);
+        }
+#else
+        return CreateErrorResponse (APIERR_BADPARS, "'textFillOrder' is available from Archicad 27: the Archicad API of this version has no such setting.");
+#endif
+    }
+
+    const bool hasArchicad30Setting = data.Contains ("clipDimensionLine") || data.Contains ("clipWitnessLine") || data.Contains ("witnessExtensionLine");
+#ifdef ServerMainVers_3000
+    if (hasArchicad30Setting) {
+        API_DimensionType& dimension = element.dimension;
+        if (data.Get ("clipDimensionLine", dimension.clipDimensionLine) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, clipDimensionLine);
+        }
+        if (data.Get ("clipWitnessLine", dimension.clipWitnessLine) && mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, clipWitnessLine);
+        }
+        const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+        if (extension != nullptr) {
+            if (extension->Get ("overridePenAndLineType", dimension.defWitnessOverrideExtension) && mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessOverrideExtension);
+            }
+            Int32 pen = 0;
+            if (extension->Get ("pen", pen)) {
+                if (pen < 1 || pen > 255) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.pen' must be between 1 and 255.");
+                }
+                dimension.defWitnessExtensionLinePen = static_cast<short> (pen);
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionLinePen);
+                }
+            }
+            const GS::ObjectState* lineTypeId = extension->Get ("lineTypeId");
+            if (lineTypeId != nullptr) {
+                const API_AttributeIndex lineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
+                if (lineType == ACAPI_CreateAttributeIndex (-1)) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.lineTypeId' is not an existing line type.");
+                }
+                dimension.defWitnessExtensionLineType = lineType;
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionLineType);
+                }
+            }
+            if (extension->Get ("gap", dimension.defWitnessExtensionGap) && mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionGap);
+            }
+            double gapSize = 0.0;
+            if (extension->Get ("gapSize", gapSize)) {
+                if (gapSize < 0.0) {
+                    return CreateErrorResponse (APIERR_BADPARS, "'witnessExtensionLine.gapSize' must not be negative.");
+                }
+                dimension.defWitnessExtensionGapSize = gapSize;
+                if (mask != nullptr) {
+                    ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defWitnessExtensionGapSize);
+                }
+            }
+        }
+    }
+#else
+    if (hasArchicad30Setting) {
+        return CreateErrorResponse (APIERR_BADPARS, "'clipDimensionLine', 'clipWitnessLine' and 'witnessExtensionLine' are available from Archicad 30: the Archicad API of this version has no such settings.");
+    }
+#endif
+
     return {};
 }
 
@@ -1336,7 +1568,13 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     const bool hasTextStyle = hasFont || hasFace || hasWidthFactor || hasSpacingFactor;
     const bool hasWitnessForm = data.Contains ("defaultWitnessForm");
     const bool hasWitnessVal = data.Contains ("defaultWitnessVal");
-    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasTextStyle && !hasWitnessForm && !hasWitnessVal) {
+    const GS::ObjectState* textBox = data.Get ("textBox");
+#ifdef ServerMainVers_3000
+    const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+#else
+    const GS::ObjectState* extension = nullptr;
+#endif
+    if (!hasTextHeight && !hasTextPen && !hasTextFrame && !hasTextStyle && !hasWitnessForm && !hasWitnessVal && textBox == nullptr && extension == nullptr) {
         return false;
     }
     if (memo.dimElems == nullptr || *memo.dimElems == nullptr) {
@@ -1374,8 +1612,130 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
         if (hasWitnessVal) {
             dimElem.witnessVal = element.dimension.defWitnessVal;
         }
+        if (textBox != nullptr) {
+            CopyDimensionNoteFields (*textBox, element.dimension.defNote, dimElem.note);
+        }
+#ifdef ServerMainVers_3000
+        if (extension != nullptr) {
+            const API_DimensionType& dimension = element.dimension;
+            if (extension->Contains ("overridePenAndLineType")) {
+                dimElem.witnessOverrideExtension = dimension.defWitnessOverrideExtension;
+            }
+            if (extension->Contains ("pen")) {
+                dimElem.witnessExtensionLinePen = dimension.defWitnessExtensionLinePen;
+            }
+            if (extension->Contains ("lineTypeId")) {
+                dimElem.witnessExtensionLineType = dimension.defWitnessExtensionLineType;
+            }
+            if (extension->Contains ("gap")) {
+                dimElem.witnessExtensionGap = dimension.defWitnessExtensionGap;
+            }
+            if (extension->Contains ("gapSize")) {
+                dimElem.witnessExtensionGapSize = dimension.defWitnessExtensionGapSize;
+            }
+        }
+#endif
     }
     return true;
+}
+
+// Names (each with a leading space) the settings of #3133 given in data that Archicad did not keep:
+// wanted is the dimension as written, got the one read back, gotMemo its witness points (or nullptr).
+// The text box and the witness extension line are also checked on the first witness point, which
+// carries them for its text and its witness line, as ModifyAssociativeDimensions checks the text
+// height there. Used by ModifyAssociativeDimensions and the dimension creation commands.
+static GS::UniString GetDimensionSettingsNotKept (const GS::ObjectState& data, const API_Element& wanted, const API_Element& got, const API_ElementMemo* gotMemo)
+{
+    const API_DimensionType& want = wanted.dimension;
+    const API_DimensionType& have = got.dimension;
+    GS::UniString notKept;
+
+    const GS::ObjectState* elevationMarker = data.Get ("elevationMarker");
+    if (elevationMarker != nullptr && elevationMarker->Contains ("circleFill") && have.ed_circleLevelDimensionFill != want.ed_circleLevelDimensionFill) {
+        notKept += " elevationMarker.circleFill";
+    }
+    const GS::ObjectState* textPlacement = data.Get ("textPlacement");
+    if (textPlacement != nullptr && textPlacement->Contains ("advanced") && have.advanced != want.advanced) {
+        notKept += " textPlacement.advanced";
+    }
+#ifdef ServerMainVers_2700
+    if (data.Contains ("textFillOrder") && have.textFillOrder != want.textFillOrder) {
+        notKept += " textFillOrder";
+    }
+#endif
+
+    const API_DimElem* firstPoint = nullptr;
+    if (gotMemo != nullptr && gotMemo->dimElems != nullptr && *gotMemo->dimElems != nullptr && have.nDimElem > 0) {
+        firstPoint = &(*gotMemo->dimElems)[0];
+    }
+
+#ifdef ServerMainVers_3000
+    const double tolerance = 1e-6;
+    if (data.Contains ("clipDimensionLine") && have.clipDimensionLine != want.clipDimensionLine) {
+        notKept += " clipDimensionLine";
+    }
+    if (data.Contains ("clipWitnessLine") && have.clipWitnessLine != want.clipWitnessLine) {
+        notKept += " clipWitnessLine";
+    }
+    const GS::ObjectState* extension = data.Get ("witnessExtensionLine");
+    if (extension != nullptr) {
+        auto check = [&] (const char* name, bool dimensionDiffers, bool pointDiffers) {
+            if (!extension->Contains (name)) {
+                return;
+            }
+            if (dimensionDiffers) {
+                notKept += GS::UniString (" witnessExtensionLine.") + name;
+            }
+            if (pointDiffers) {
+                notKept += GS::UniString (" witnessPoints[0].witnessExtensionLine.") + name;
+            }
+        };
+        check ("overridePenAndLineType", have.defWitnessOverrideExtension != want.defWitnessOverrideExtension,
+            firstPoint != nullptr && firstPoint->witnessOverrideExtension != want.defWitnessOverrideExtension);
+        check ("pen", have.defWitnessExtensionLinePen != want.defWitnessExtensionLinePen,
+            firstPoint != nullptr && firstPoint->witnessExtensionLinePen != want.defWitnessExtensionLinePen);
+        check ("lineTypeId", have.defWitnessExtensionLineType != want.defWitnessExtensionLineType,
+            firstPoint != nullptr && firstPoint->witnessExtensionLineType != want.defWitnessExtensionLineType);
+        check ("gap", have.defWitnessExtensionGap != want.defWitnessExtensionGap,
+            firstPoint != nullptr && firstPoint->witnessExtensionGap != want.defWitnessExtensionGap);
+        check ("gapSize", std::abs (have.defWitnessExtensionGapSize - want.defWitnessExtensionGapSize) > tolerance,
+            firstPoint != nullptr && std::abs (firstPoint->witnessExtensionGapSize - want.defWitnessExtensionGapSize) > tolerance);
+    }
+#endif
+
+    const GS::ObjectState* textBox = data.Get ("textBox");
+    if (textBox != nullptr) {
+        notKept += GetDimensionNoteNotKept (*textBox, want.defNote, have.defNote, "textBox");
+        if (firstPoint != nullptr) {
+            notKept += GetDimensionNoteNotKept (*textBox, want.defNote, firstPoint->note, "witnessPoints[0].textBox");
+        }
+    }
+    return notKept;
+}
+
+// Reads a new linear dimension back and names (each with a leading space) the settings of #3133
+// given in data that Archicad did not keep (GetDimensionSettingsNotKept); requested is the
+// dimension as it was created.
+static GS::UniString GetCreatedDimensionSettingsNotKept (const GS::ObjectState& data, const API_Element& requested)
+{
+    API_Element created = {};
+    created.header.guid = requested.header.guid;
+    if (ACAPI_Element_Get (&created) != NoError) {
+        return " (the new dimension could not be read back)";
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const bool hasMemo = created.header.hasMemo && ACAPI_Element_GetMemo (created.header.guid, &memo) == NoError;
+    return GetDimensionSettingsNotKept (data, requested, created, hasMemo ? &memo : nullptr);
+}
+
+// Deletes a new linear dimension whose settings Archicad did not keep (notKept, as
+// GetCreatedDimensionSettingsNotKept names them) and returns the error response for its item.
+static GS::ObjectState DeleteDimensionWithSettingsNotKept (const API_Guid& guid, const GS::UniString& notKept)
+{
+    GS::Array<API_Guid> createdDimension = { guid };
+    ACAPI_Element_Delete (createdDimension);
+    return CreateErrorResponse (APIERR_REFUSEDPAR, "Archicad did not keep:" + notKept + ". The new dimension was deleted again.");
 }
 
 // The placeholder that stands for the measured value in a custom witness point text (#2663). The
@@ -1661,6 +2021,15 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("openingHeightsInChain", element.dimension.detailedHoleDim);
     details.Add ("openingHeightsNominal", element.dimension.nominalHoleDim != 0);
     details.Add ("layeredElementDimensions", LayeredElementDimensionsToObjectState (element.dimension.compAutoThick));
+    details.Add ("textBox", CreateDimensionNoteObjectState (element.dimension.defNote));
+#ifdef ServerMainVers_2700
+    details.Add ("textFillOrder", DimensionTextFillOrderName (element.dimension.textFillOrder));
+#endif
+#ifdef ServerMainVers_3000
+    details.Add ("clipDimensionLine", element.dimension.clipDimensionLine);
+    details.Add ("clipWitnessLine", element.dimension.clipWitnessLine);
+    details.Add ("witnessExtensionLine", CreateDimensionWitnessExtensionLineObjectState (element.dimension));
+#endif
 
     // The texts of the witness points with the keys ModifyAssociativeDimensions' witnessPointTexts
     // writes, so the list read can be sent back. The custom text only while it is shown, and the
@@ -17756,6 +18125,8 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -17780,6 +18151,12 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 GS::Array<API_Guid> createdDimension = { element.header.guid };
                 ACAPI_Element_Delete (createdDimension);
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, pointsError.Get ()));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -17952,6 +18329,8 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 elements.Push (CreateErrorResponse (APIERR_MEMFULL, error.Get ()));
                 continue;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -17967,6 +18346,12 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
             createdElement.header.guid = element.header.guid;
             if (ACAPI_Element_Get (&createdElement) != NoError) {
                 elements.Push (CreateErrorResponse (APIERR_GENERAL, "The section associative dimension was not created: Archicad reported success but no such element exists."));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -18120,6 +18505,8 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
                 dimElem.witnessVal = element.dimension.defWitnessVal;
                 dimElem.witnessForm = element.dimension.defWitnessForm;
             }
+            // The witness extension line is kept by every witness point (#3133).
+            ApplyDimensionSettingsToWitnessPoints (data, element, memo);
 
             err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
@@ -18134,6 +18521,12 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             createdElement.header.guid = element.header.guid;
             if (ACAPI_Element_Get (&createdElement) != NoError) {
                 elements.Push (CreateErrorResponse (APIERR_GENERAL, "The dimension was not created (is a section or elevation window active? Activate a floor plan window and retry)."));
+                continue;
+            }
+
+            const GS::UniString notKept = GetCreatedDimensionSettingsNotKept (data, element);
+            if (!notKept.IsEmpty ()) {
+                elements.Push (DeleteDimensionWithSettingsNotKept (element.header.guid, notKept));
                 continue;
             }
 
@@ -18392,6 +18785,9 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                     }
                 }
                 CheckWitnessPointTexts (witnessPointTexts, changedMemo, changed.dimension.nDimElem, notApplied);
+                notApplied += GetDimensionSettingsNotKept (item, element, changed, &changedMemo);
+            } else {
+                notApplied += GetDimensionSettingsNotKept (item, element, changed, nullptr);
             }
             if (!notApplied.IsEmpty ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));

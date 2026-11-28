@@ -15628,6 +15628,27 @@
             "layeredElementDimensions": {
                 "$ref": "#/LayeredElementDimensions"
             },
+            "textBox": {
+                "$ref": "#/DimensionNote",
+                "description": "The text box of the dimension's settings (API defNote), always with all of its fields. Each witness point keeps its own (GetDimensionData)."
+            },
+            "textFillOrder": {
+                "type": "string",
+                "enum": ["UnderDimensionLine", "AboveDimensionLine", "Unknown"],
+                "description": "The drawing order of the texts' fill and contour relative to the dimension line (API textFillOrder). Only returned from Archicad 27. Unknown is only returned, for a value this version of Tapir does not know."
+            },
+            "clipDimensionLine": {
+                "type": "boolean",
+                "description": "Whether the dimension line has no part on the other side, opposite to the base point (API clipDimensionLine). Only returned from Archicad 30."
+            },
+            "clipWitnessLine": {
+                "type": "boolean",
+                "description": "Whether the witness lines have no part on the other side (API clipWitnessLine). Only returned from Archicad 30."
+            },
+            "witnessExtensionLine": {
+                "$ref": "#/DimensionWitnessExtensionLine",
+                "description": "The witness extension line of the dimension's settings, always with all of its fields. Each witness point keeps its own. Only returned from Archicad 30."
+            },
             "witnessPointTexts": {
                 "type": "array",
                 "description": "The text of every witness point, in the order GetDimensionData returns them, with the keys ModifyAssociativeDimensions' witnessPointTexts takes, so the list read can be sent back as it is. Missing when the witness points cannot be read.",
@@ -15657,7 +15678,8 @@
             "onlyDimensionText",
             "openingHeightsInChain",
             "openingHeightsNominal",
-            "layeredElementDimensions"
+            "layeredElementDimensions",
+            "textBox"
         ]
     },
     "DimensionWitnessPointText": {
@@ -15824,7 +15846,7 @@
     },
     "DimensionTextPlacement": {
         "type": "object",
-        "description": "The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all three.",
+        "description": "The text placement method of a linear dimension's texts, as in the Dimension Settings (API dimLayout, placeUnderEnabled, pushNeighborEnabled, advanced). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all four.",
         "properties": {
             "method": {
                 "type": "string",
@@ -15838,13 +15860,17 @@
             "pushNeighbors": {
                 "type": "boolean",
                 "description": "Flexible method: a text may push its neighbouring texts aside (API pushNeighborEnabled)."
+            },
+            "advanced": {
+                "type": "boolean",
+                "description": "Centered method: use the advanced logic (API advanced)."
             }
         },
         "additionalProperties": false
     },
     "DimensionNote": {
         "type": "object",
-        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension and radial dimension commands take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
+        "description": "The text box of a dimension text (API_NoteType): its angle, background and frame, the alignment of a multiline text, and the style of the leader line a dimension text can have. The angle dimension, radial dimension and linear dimension commands (CreateAssociativeDimensions, CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions, ModifyAssociativeDimensions) take any of its fields as textBox, where only the fields given change, and GetDetailsOfElements always returns all of them. The leader line itself (whether the text has one, and its points) is not part of it: the DevKit gives leader lines only to angle dimensions, floor plan dimensions and hatches, and Archicad refuses them on level dimensions (#3059).",
         "properties": {
             "textAngle": {
                 "type": "number",
@@ -15926,7 +15952,7 @@
     },
     "DimensionElevationMarker": {
         "type": "object",
-        "description": "The marker an Elevation dimension (appearance Elevation, e.g. a height chain in a section) draws at its witness points, set under Elevation dimension in the Dimension Settings (API ed_dimForm, ed_arrowAng, ed_arrowFill, ed_arrowUp, ed_needPlus). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all five, for the other dimension types too.",
+        "description": "The marker an Elevation dimension (appearance Elevation, e.g. a height chain in a section) draws at its witness points, set under Elevation dimension in the Dimension Settings (API ed_dimForm, ed_arrowAng, ed_arrowFill, ed_arrowUp, ed_needPlus, ed_circleLevelDimensionFill). The dimension commands take any of its fields; GetDetailsOfElements and GetDimensionData always return all six, for the other dimension types too.",
         "properties": {
             "form": {
                 "type": "integer",
@@ -15949,6 +15975,41 @@
             "plusSign": {
                 "type": "boolean",
                 "description": "Whether positive values get a \"+\" sign (API ed_needPlus)."
+            },
+            "circleFill": {
+                "type": "string",
+                "enum": ["Empty", "NorthwestBlack", "NortheastBlack", "Unknown"],
+                "description": "The fill of a circle style marker: empty, or the northwest or northeast quarter black (API ed_circleLevelDimensionFill). Unknown is only returned, for a value this version of Tapir does not know."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DimensionWitnessExtensionLine": {
+        "type": "object",
+        "description": "The witness extension line of a linear dimension, from Archicad 30 (API_DimensionType defWitnessOverrideExtension, defWitnessExtensionLinePen, defWitnessExtensionLineType, defWitnessExtensionGap, defWitnessExtensionGapSize; every witness point keeps its own copy). The linear dimension commands take any of its fields as witnessExtensionLine and write it to every witness point; GetDetailsOfElements always returns all five.",
+        "properties": {
+            "overridePenAndLineType": {
+                "type": "boolean",
+                "description": "Whether the witness extension line is drawn with the pen and line type below instead of those of the witness line (API defWitnessOverrideExtension)."
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen of the witness extension line (API defWitnessExtensionLinePen)."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "The line type of the witness extension line (API defWitnessExtensionLineType). On input it must be an existing line type."
+            },
+            "gap": {
+                "type": "boolean",
+                "description": "Whether there is a gap between the marker line and the witness extension line (API defWitnessExtensionGap)."
+            },
+            "gapSize": {
+                "type": "number",
+                "minimum": 0,
+                "description": "The size of that gap, as Archicad stores it (API defWitnessExtensionGapSize; the DevKit names no unit): read it back with GetDetailsOfElements from a dimension that has the wanted gap."
             }
         },
         "additionalProperties": false
