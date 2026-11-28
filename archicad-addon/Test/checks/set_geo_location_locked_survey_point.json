@@ -1,0 +1,47 @@
+{
+  "title": "SetGeoLocation: a new project location refused because the survey point is locked says so in its error, and the same change with surveyPoint.isLocked false goes through",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "lock the survey point",
+      "command": "SetGeoLocation",
+      "creates": false,
+      "params": { "surveyPoint": { "isLocked": true } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "survey point locked" }
+      ]
+    },
+    {
+      "id": "a new north while it is locked",
+      "command": "SetGeoLocation",
+      "creates": false,
+      "params": { "projectLocation": { "longitude": 10.0, "latitude": 50.0, "altitude": 0.0, "north": 1.0 } },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused while locked" },
+        { "path": "error.message", "contains": "survey point is locked", "name": "the error names the lock" }
+      ]
+    },
+    {
+      "id": "the same change with the lock off",
+      "command": "SetGeoLocation",
+      "creates": false,
+      "params": {
+        "projectLocation": { "longitude": 10.0, "latitude": 50.0, "altitude": 0.0, "north": 1.0 },
+        "surveyPoint": { "isLocked": false }
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "written once unlocked" }
+      ]
+    },
+    {
+      "id": "read it back",
+      "command": "GetGeoLocation",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectLocation.north", "approx": 1.0, "name": "north written (radians)" },
+        { "path": "surveyPoint.isLocked", "eq": false, "name": "left unlocked" }
+      ]
+    }
+  ]
+}
