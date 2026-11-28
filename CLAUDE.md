@@ -200,6 +200,28 @@ by hand.
    release regenerates them automatically; run it yourself to update them earlier.
 7. Bump the version consistently (see Versioning below) when releasing.
 
+### Command design: expose what the API call gives, and fail when it can't
+
+New and changed commands follow these three rules (#3114); the review checks them:
+
+1. **Ids for another command are complete.** A command that returns ids meant to be passed to
+   another command returns every id that command needs, e.g. an edge's own id from `edgeIDs`
+   next to the vertex id (#3034), or the `databaseId` of the element's database.
+2. **Optional API parameters are accepted.** When the Archicad API call behind a command takes
+   an optional parameter or setting a user can set in the GUI, the command accepts it too, with
+   the API's default when it is left out: a `databaseId` for the 2D creation commands, so a
+   worksheet, detail or layout need not be opened first (#1776); the witness point location
+   `API_DimBase.loc` of `CreateAssociativeDimensions`, which otherwise sat at the middle of the
+   edge (#1814); `favoriteName`, `layerIndex` and `id` of `CreateMorphs`, like the other creation
+   commands (#1817); and data Archicad keeps for the element, such as a stair's boundaries and
+   walking lines in its memo for `GetDetailsOfElements` (#2935).
+3. **No success when nothing happened.** When Archicad refuses or ignores a request (an error
+   code, or a read-back that shows no change), the command returns an error item that says so,
+   not success: `ModifyStairs` with `inputDirection: Inverse` left the stair `Upward` (#2940), and
+   `RenameNavigatorItem` on a publisher set's root item kept the set's name (#3051). When the
+   API has no way to do it at all, the error says so, and the limits page gets a row (see
+   *Conventions & tips for changes*).
+
 ## Building the Add-On
 
 Requires **CMake ≥ 3.17**, **Python** (for DevKit download + resource compilation),
