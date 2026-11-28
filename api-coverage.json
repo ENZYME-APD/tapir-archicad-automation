@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 14:30 UTC",
+ "generatedAt": "2026-11-28 14:47 UTC",
  "versions": [
   25,
   26,
@@ -5769,10 +5769,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3113,
-     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     },
@@ -7613,12 +7609,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3113,
-     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7847,10 +7838,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3113,
-     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
-    },
     {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
@@ -25197,10 +25184,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3113,
-     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
-    },
-    {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
     },
@@ -37265,10 +37248,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3113,
-     "title": "ModifyRailings: write the panel symbol of a segment's pattern entry, with a neighbour check"
-    },
     {
      "number": 3112,
      "title": "ModifyShells: make the edge surface writes reach Archicad; fix the shell checks' thickness"
