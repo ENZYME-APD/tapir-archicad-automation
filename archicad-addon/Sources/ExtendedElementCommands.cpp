@@ -28099,6 +28099,10 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                                 "type": "object",
                                                 "description": "The panel model of the pattern (API_RailingPatternType::defPanel).",
                                                 "properties": {
+                                                    "symbolId": {
+                                                        "type": "string",
+                                                        "description": "The library part the panels are made of (API_RailingPanelType::symbID), as the symbolId GetRailingSegmentPatterns returns in entry.panel or GetDetailsOfElements for a RailingPanel. Only the symbol of a railing panel already in the project is taken, for example one copied from another railing; any other GUID is refused before anything is changed. The panels of the segment are read back, so a symbol Archicad does not take is reported as a failure. Untested in Archicad (#2447)."
+                                                    },
                                                     "visible": {
                                                         "type": "boolean",
                                                         "description": "Whether the panels are shown (API_RailingPanelType::visible)."
@@ -28131,7 +28135,8 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                     "index"
                                 ]
                             }
-                        },
+                        },)"
+        R"(
                         "nodes": {
                             "type": "array",
                             "description": "Changes to single nodes of the railing and to the posts of a node, applied after the segments. Only the given fields of the given nodes and posts change.",
@@ -28275,13 +28280,14 @@ struct RailingPartChange {
     GS::Optional<API_PatternAlignID>    distributionAlignment;
     GS::Optional<double>                distributionLength;
     GS::Optional<UInt32>                patternAmount;
+    GS::Optional<API_Guid>              symbolId;   // the panel model of a pattern only (API_RailingPanelType::symbID, #2447)
 
     bool HasFields () const
     {
         return visible.HasValue () || doublePostOffset.HasValue () || postCount.HasValue () || bottomRailIndex.HasValue () || topRailIndex.HasValue () ||
             horizontalPosition.HasValue () || isStretchable.HasValue () || lateralOffset.HasValue () || topOffset.HasValue () || bottomOffset.HasValue () ||
             beginOffset.HasValue () || endOffset.HasValue () || distributionType.HasValue () || distributionAlignment.HasValue () ||
-            distributionLength.HasValue () || patternAmount.HasValue ();
+            distributionLength.HasValue () || patternAmount.HasValue () || symbolId.HasValue ();
     }
 };
 
@@ -28373,10 +28379,21 @@ GS::Optional<GS::UniString> ReadRailingDistributionChange (const GS::ObjectState
 }
 
 // Reads the fields of one post, inner post, panel or baluster set change (an item of a list, or the
-// model of a pattern or node) into change, whose kind is set. Returns an error text, or nothing.
-GS::Optional<GS::UniString> ReadRailingPartFields (const GS::ObjectState& partEntry, const GS::UniString& prefix, RailingPartChange& change)
+// model of a pattern or node) into change, whose kind is set. symbolId is only read for the panel
+// model of a pattern (acceptsSymbol). Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingPartFields (const GS::ObjectState& partEntry, const GS::UniString& prefix, RailingPartChange& change, bool acceptsSymbol = false)
 {
     const RailingPartKind kind = change.kind;
+    if (acceptsSymbol && kind == RailingPartKind::Panel) {
+        GS::UniString symbolId;
+        if (partEntry.Get ("symbolId", symbolId)) {
+            const API_Guid symbol = APIGuidFromString (symbolId.ToCStr ());
+            if (symbol == APINULLGuid) {
+                return GS::UniString (prefix + "symbolId must be a GUID.");
+            }
+            change.symbolId = symbol;
+        }
+    }
     {
         bool flag = false;
         double value = 0.0;
@@ -28498,7 +28515,7 @@ GS::Optional<GS::UniString> ReadRailingPatternChange (const GS::ObjectState& ent
         }
         RailingPartChange change;
         change.kind = model.second;
-        GS::Optional<GS::UniString> fieldError = ReadRailingPartFields (modelEntry, GS::UniString::Printf ("segments: segment %d: pattern.%s: ", static_cast<int> (segmentIndex), model.first), change);
+        GS::Optional<GS::UniString> fieldError = ReadRailingPartFields (modelEntry, GS::UniString::Printf ("segments: segment %d: pattern.%s: ", static_cast<int> (segmentIndex), model.first), change, true);
         if (fieldError.HasValue ()) {
             return fieldError;
         }
@@ -29100,6 +29117,10 @@ void ApplyRailingPartChange (API_Element& part, API_Element& mask, const Railing
             }
             break;
         case RailingPartKind::Panel:
+            if (change.symbolId.HasValue ()) {
+                part.railingPanel.symbID = change.symbolId.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingPanelType, symbID);
+            }
             if (change.visible.HasValue ()) {
                 part.railingPanel.visible = change.visible.Get ();
                 ACAPI_ELEMENT_MASK_SET (mask, API_RailingPanelType, visible);
@@ -29563,6 +29584,9 @@ void AppendRailingPartNotApplied (GS::UniString& notApplied, UInt32 ownerIndex, 
             checkFlag (change.isStretchable, got.railingInnerPost.horizontalPosition.isStretchable, "horizontalPosition.isStretchable");
             break;
         case RailingPartKind::Panel:
+            if (change.symbolId.HasValue () && got.railingPanel.symbID != change.symbolId.Get ()) {
+                notApplied += GS::UniString (" symbolId of ") + what + " is " + APIGuidToString (got.railingPanel.symbID) + ".";
+            }
             checkFlag (change.visible, got.railingPanel.visible, "visible");
             checkFrame (got.railingPanel.frame);
             break;
@@ -29631,6 +29655,62 @@ GS::Optional<GS::UniString> CheckRailingComponentIndices (const API_Guid& railin
             if (handrail.index >= nHandrails) {
                 return GS::UniString::Printf ("segments: handrails: index %u is not a handrail of segment %u, which has %u handrails.", static_cast<unsigned> (handrail.index), static_cast<unsigned> (change.index), static_cast<unsigned> (nHandrails));
             }
+        }
+    }
+    return GS::NoValue;
+}
+
+// Checks before anything is changed that every symbolId given for the panel model of a pattern is
+// the symbol of a railing panel of this project: the panel model or a panel of some railing's
+// segment. The DevKit does not say what kind of GUID symbID is, so only a symbol Archicad already
+// uses for a railing panel is written (#2447). Returns an error text, or nothing.
+GS::Optional<GS::UniString> CheckRailingPanelSymbols (const GS::Array<RailingSegmentChange>& changes)
+{
+    GS::Array<API_Guid> wanted;
+    for (const RailingSegmentChange& change : changes) {
+        for (const RailingPartChange& part : change.patternParts) {
+            if (part.kind == RailingPartKind::Panel && part.symbolId.HasValue () && !wanted.Contains (part.symbolId.Get ())) {
+                wanted.Push (part.symbolId.Get ());
+            }
+        }
+    }
+    if (wanted.IsEmpty ()) {
+        return GS::NoValue;
+    }
+    GS::Array<API_Guid> railings;
+    if (ACAPI_Element_GetElemList (API_RailingID, &railings) != NoError) {
+        return GS::UniString ("segments: pattern.panel.symbolId: failed to list the railings of the project.");
+    }
+    GS::Array<API_Guid> known;
+    for (const API_Guid& railingGuid : railings) {
+        API_ElementMemo memo = {};
+        const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+        if (ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingPattern | APIMemoMask_RailingPanel) != NoError) {
+            continue;
+        }
+        if (memo.railingSegments != nullptr) {
+            const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.railingSegments)) / sizeof (API_RailingSegmentType);
+            for (GSSize i = 0; i < n; ++i) {
+                known.Push (memo.railingSegments[i].defPattern.defPanel.symbID);
+            }
+        }
+        if (memo.railingPatterns != nullptr) {
+            const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.railingPatterns)) / sizeof (API_RailingPatternType);
+            for (GSSize i = 0; i < n; ++i) {
+                known.Push (memo.railingPatterns[i].defPanel.symbID);
+            }
+        }
+        if (memo.railingPanels != nullptr) {
+            const GSSize n = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.railingPanels)) / sizeof (API_RailingPanelType);
+            for (GSSize i = 0; i < n; ++i) {
+                known.Push (memo.railingPanels[i].symbID);
+            }
+        }
+    }
+    for (const API_Guid& symbol : wanted) {
+        if (!known.Contains (symbol)) {
+            return GS::UniString ("segments: pattern.panel.symbolId ") + APIGuidToString (symbol) +
+                " is not the symbol of a railing panel of this project: give a symbolId GetRailingSegmentPatterns (entry.panel.symbolId) or GetDetailsOfElements (of a RailingPanel) returns.";
         }
     }
     return GS::NoValue;
@@ -29849,6 +29929,9 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                     }
                 }
                 changeError = CheckRailingPartIndices (element, parts);
+            }
+            if (!changeError.HasValue ()) {
+                changeError = CheckRailingPanelSymbols (segmentChanges);
             }
             if (changeError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, changeError.Get ()));
