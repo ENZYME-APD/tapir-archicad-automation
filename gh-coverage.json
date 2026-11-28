@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-28 18:51 UTC",
+ "generatedAt": "2026-11-28 20:09 UTC",
  "counts": {
   "done": 789,
-  "open": 42,
+  "open": 43,
   "not applicable": 1
  },
  "parameters": {
@@ -12249,6 +12249,21 @@
     "attributes.attributeId",
     "attributes.newName"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DuplicateAttributes",
+   "group": "Attribute Commands",
+   "version": "2.0.2",
+   "brief": "Duplicates attributes of any type that can be created (layers, line types, fills, composites, surfaces, layer combinations, zone categories, profiles, pen tables, MEP systems, operation profiles, building materials), each given by attributeId or by attributeType and attributeIndex, under a new name. The copy gets every setting of the source with its extended definition (composite skins, profile geometry, fill pattern, layer combination and pen table items), its classification items, the values of its custom properties that are not the default, and from Archicad 26 its attribute folder. A new name that is empty or already used by an attribute of the same type is an error item, never a rename; pens and fonts cannot be created, so they are error items too. Archicad chooses the index of the copy (ReindexAttributes can move it) and gives it a new attribute id. What could not be copied (a classification item, a property value, the folder) is listed in the warnings of the copy. Returns one item per input attribute.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 5,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

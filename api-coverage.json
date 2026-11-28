@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-28 18:51 UTC",
+ "generatedAt": "2026-11-28 20:09 UTC",
  "versions": [
   25,
   26,
@@ -2737,12 +2737,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2763,12 +2758,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2809,12 +2799,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2938,10 +2923,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -3027,12 +3008,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3133,12 +3109,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3177,12 +3148,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3202,12 +3168,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3287,12 +3248,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3334,12 +3290,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3544,12 +3495,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3570,12 +3516,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3616,12 +3557,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3663,12 +3599,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4108,12 +4039,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -5788,12 +5714,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7362,6 +7283,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3135,
+     "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
+    },
+    {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
@@ -7997,12 +7922,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 3121,
-     "title": "Refine API schemas following Tapir 2.0.1: Openings and marker parameters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25300,10 +25220,6 @@
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
     },
     {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
-    {
      "number": 2797,
      "title": "CreateBeams, CreateColumns: take the floor plan display settings"
     },
@@ -26757,10 +26673,6 @@
     {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
-    },
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     }
    ],
    "issues": []
@@ -29633,10 +29545,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
-    {
      "number": 2781,
      "title": "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"
     }
@@ -30929,10 +30837,6 @@
     {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
-    },
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     },
     {
      "number": 2712,
@@ -37386,16 +37290,16 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 3135,
+     "title": "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"
+    },
+    {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
     },
     {
      "number": 3128,
      "title": "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"
-    },
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     },
     {
      "number": 2880,
@@ -44058,10 +43962,6 @@
      "title": "Sample surface elevations at XY points in one call"
     },
     {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
-    {
      "number": 2712,
      "title": "ModifyAssociativeDimensions: move dimension texts and set text placement"
     },
@@ -47184,10 +47084,6 @@
     {
      "number": 3129,
      "title": "Sample surface elevations at XY points in one call"
-    },
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
     },
     {
      "number": 2712,
@@ -53704,10 +53600,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 3127,
-     "title": "Add DuplicateAttributes: copy an attribute of any type under a new name"
-    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"

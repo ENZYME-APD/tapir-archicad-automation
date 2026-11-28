@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1447 | 1441 | 6 |  |  |  | 11 | 369 |
 
-Archicad 25–30 DevKits; updated 2026-11-28 18:51 UTC.
+Archicad 25–30 DevKits; updated 2026-11-28 20:09 UTC.
 
 | | Status |
 |---|---|
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#3135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3135 "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"), [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -176,7 +176,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetMemo` — [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
-- ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub> — [#3121](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3121 "Refine API schemas following Tapir 2.0.1: Openings and marker parameters")
+- ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
 - ✅ `ACAPI_Element_GetPropertyDefinitions` – Retrieves all of the property definitions that are available for an element.
 - ✅ `ACAPI_Element_GetPropertyDefinitionsOfDefaultElem` – Retrieves all of the property definitions that are available for an element default.
 - ✅ `ACAPI_Element_GetPropertyObjects` – Returns property objects of the element.
@@ -318,34 +318,34 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Attribute
 
-- ✅ `ACAPI_Attribute_AddClassificationItem` – Classifies an attribute. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
-- ✅ `ACAPI_Attribute_Create` — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_AddClassificationItem` – Classifies an attribute.
+- ✅ `ACAPI_Attribute_Create`
 - ✅ `ACAPI_Attribute_CreateAttributeFolderPicker` <sub>AC26–30</sub> – Enables the attribute folder picker functionality for a push check. If the user clicks the push check, the picker will open. Attributes folder pickers can be used to choose an attribute folder.
-- ✅ `ACAPI_Attribute_CreateExt` — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_CreateExt`
 - ✅ `ACAPI_Attribute_CreateFolder` <sub>AC26–30</sub> – Creates attribute folders. To create a folder, its full path has to be provided. The command will create all folders along the path, if they do not exist.
 - ✅ `ACAPI_Attribute_Delete` – Deletes an attribute.
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - ✅ `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database.
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
-- ✅ `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute.
 - ✅ `ACAPI_Attribute_GetCreationInfo` <sub>AC30</sub> – Retrieves creation metadata for an attribute.
 - ✅ `ACAPI_Attribute_GetCurrPenSet` – Get current pen set index. <sub>(was `APIEnv_GetCurrPenSetID`)</sub>
 - ➖ `ACAPI_Attribute_GetCurrentAttributeSetReader` <sub>AC26–30</sub> – Returns an attribute reader for the currently used attribute set. *(a C++ attribute reader the add-on passes to its own 3D model export (EXPGetModel); what it reads (surfaces, pens, fills, line types, building materials) the attribute commands already return, and its texture data holds only the image name)*
 - ✅ `ACAPI_Attribute_GetDef` – Retrieves extended information for an attribute.
-- ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute.
 - ✅ `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index.
-- ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
-- ✅ `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid.
+- ✅ `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type.
 - ✅ `ACAPI_Attribute_GetNum` – Returns the number of instances of a given type of attribute.
 - ✅ `ACAPI_Attribute_GetPen` <sub>AC27–30</sub> – Returns a pen by index from the active pen table.
 - ✅ `ACAPI_Attribute_GetPenNum` <sub>AC27–30</sub> – Get the number of pens in the active pen table.
-- ✅ `ACAPI_Attribute_GetPropertyDefinitions` – Retrieves all of the built-in property definitions that are available for an attribute. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_GetPropertyDefinitions` – Retrieves all of the built-in property definitions that are available for an attribute.
 - ✅ `ACAPI_Attribute_GetPropertyValue` – Retrieves the property value of the property definition.
-- ✅ `ACAPI_Attribute_GetPropertyValues` – Retrieves the property values of the property definitions. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_GetPropertyValues` – Retrieves the property values of the property definitions.
 - ✅ `ACAPI_Attribute_GetPropertyValuesByGuid` – Retrieves the property values of the property definitions.
 - ✅ `ACAPI_Attribute_IsClassificationItemVisible` – Tells whether a classification item is visible for an attribute.
 - ✅ `ACAPI_Attribute_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an attribute.
@@ -355,12 +355,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_ModifyExt` – Modifies an attribute.
 - ✅ `ACAPI_Attribute_ModifyPen` <sub>AC27–30</sub> – Modify a pen by index in the active pen table.
 - ✅ `ACAPI_Attribute_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple attributes. If the property is not available for at least one of the given attribute then returns with an error without changing any property value.
-- ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
-- ✅ `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders.
+- ✅ `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute.
 - ✅ `ACAPI_Attribute_RenameFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
-- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name.
 - ✅ `ACAPI_Attribute_SetProperties` – Sets the specified built-in properties for the given values on an attribute.
-- ✅ `ACAPI_Attribute_SetProperty` – Sets the property value of the property definition. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_Attribute_SetProperty` – Sets the property value of the property definition.
 - ✅ `ACAPI_Attribute_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given attributes (it is created if it does not exist).
 - ✅ `ACAPI_Attribute_DeleteProperty` <sub>AC27</sub> – Makes a property definition unavailable for all of given attributes.
 - ✅ `ACAPI_Attribute_GetUserData` <sub>AC25–26</sub>
@@ -507,10 +507,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands: the add-on hands Archicad a function that Archicad calls later, when something happens; a JSON request gets one answer and leaves nothing behind that Archicad could call)*
 - ✅ `ACAPI_CallCommand` – Performs an operation without opening an undoable session.
-- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
+- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
 - ✅ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles.
-- ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles. — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
 - ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#3135](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3135 "[1/5] Angle dimensions: keys for the text position, witness lines, marker and text box"), [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2880](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2880 "Add LabelElements: label elements with the Label tool's current settings"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2729](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2729 "SetMEPRoutingParameters: set the transition angle of ducts"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment"), [#2520](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2520 "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3128](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3128 "[6/6] ModifyColumns/ModifyBeams: warn about values Archicad did not apply"), [#2797](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2797 "CreateBeams, CreateColumns: take the floor plan display settings"), [#2755](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2755 "Refuse unknown keys inside shared schema definitions ($ref), for every command"), [#2751](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2751 "CreateWalls/ModifyWalls: create and change polygonal walls"), [#2712](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2712 "ModifyAssociativeDimensions: move dimension texts and set text placement"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"), [#2544](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2544 "ModifyBeams: set the surfaces of a beam segment"), [#2520](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2520 "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>
@@ -2529,7 +2529,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Favorite::Favorite::GetElementType` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetMemo` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetMemoMarker` <sub>AC29–30</sub>
-- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call"), [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name")
+- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#3129](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3129 "Sample surface elevations at XY points in one call")
 - ✅ `ACAPI::Favorite::Favorite::GetOldElementDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetParentFolder` <sub>AC29–30</sub>
 - ⛔ `ACAPI::Favorite::Favorite::GetPreviewImage` <sub>AC29–30</sub> *(GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9))*
@@ -2663,7 +2663,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Library::Library::GetDisplayName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Library::Library::GetLocalizedName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub> — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
+- ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub> — [#2781](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2781 "Add GetZoneStampOfDefaults and SetZoneStampOfDefaults (missing default zone stamp breaks CreateZones)")
 - ✅ `ACAPI::Library::Library::GetPackageDependencies` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageID` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageMainVersion` <sub>AC28–30</sub>
@@ -3008,7 +3008,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#3127](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/3127 "Add DuplicateAttributes: copy an attribute of any type under a new name"), [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
+- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#2550](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2550 "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults")
 - ✅ `IFCAPI::Attribute::GetValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetValueType` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub>
