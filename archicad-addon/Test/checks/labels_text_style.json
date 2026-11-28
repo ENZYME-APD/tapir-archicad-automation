@@ -1,0 +1,132 @@
+{
+  "title": "Text style of a Text label (u.text.*) through 'style' in CreateLabels, ModifyLabels and GetDetailsOfElements (#3133)",
+  "minTapir": "2.0.2",
+  "steps": [
+    {
+      "id": "[text label with a style]",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text", "text": "Tapir label style", "textWay": "General",
+            "style": {
+              "penIndex": 5, "bold": true, "italic": false, "underline": true,
+              "justification": "Center", "height": 3.5, "angle": 0.25,
+              "effectStrikeout": true, "widthFactor": 1.25, "charSpaceFactor": 1.5,
+              "fixedSize": true, "usedContour": true, "usedFill": true,
+              "contourPenIndex": 7, "fillPenIndex": 9, "anchor": "MiddleMiddle",
+              "fixedAngle": true, "contourOffset": 1.5, "flipEnabled": true
+            },
+            "begCoordinate": { "x": 760, "y": 700 }, "midCoordinate": { "x": 761, "y": 701 }, "endCoordinate": { "x": 763, "y": 701 } }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result per label" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text label created" }
+      ]
+    },
+    {
+      "id": "read the new label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.labelClass", "eq": "Text", "name": "a text label" },
+        { "path": "detailsOfElements[0].details.text", "eq": "Tapir label style", "name": "text kept" },
+        { "path": "detailsOfElements[0].details.style.penIndex", "eq": 5, "name": "created: pen (u.text.pen)" },
+        { "path": "detailsOfElements[0].details.style.bold", "eq": true, "name": "created: bold (u.text.faceBits)" },
+        { "path": "detailsOfElements[0].details.style.italic", "eq": false, "name": "created: not italic (u.text.faceBits)" },
+        { "path": "detailsOfElements[0].details.style.underline", "eq": true, "name": "created: underline (u.text.faceBits)" },
+        { "path": "detailsOfElements[0].details.style.justification", "eq": "Center", "name": "created: justification (u.text.just)" },
+        { "path": "detailsOfElements[0].details.style.height", "approx": 3.5, "tol": 0.001, "name": "created: height (u.text.size)" },
+        { "path": "detailsOfElements[0].details.style.angle", "approx": 0.25, "tol": 0.001, "name": "created: angle (u.text.angle)" },
+        { "path": "detailsOfElements[0].details.style.effectStrikeout", "eq": true, "name": "created: strikeout (u.text.effectsBits)" },
+        { "path": "detailsOfElements[0].details.style.widthFactor", "approx": 1.25, "tol": 0.001, "name": "created: width factor (u.text.widthFactor)" },
+        { "path": "detailsOfElements[0].details.style.charSpaceFactor", "approx": 1.5, "tol": 0.001, "name": "created: character spacing (u.text.charSpaceFactor)" },
+        { "path": "detailsOfElements[0].details.style.fixedSize", "eq": true, "name": "created: fixed size (u.text.fixedSize)" },
+        { "path": "detailsOfElements[0].details.style.usedContour", "eq": true, "name": "created: frame (u.text.usedContour)" },
+        { "path": "detailsOfElements[0].details.style.usedFill", "eq": true, "name": "created: background fill (u.text.usedFill)" },
+        { "path": "detailsOfElements[0].details.style.contourPenIndex", "eq": 7, "name": "created: frame pen (u.text.contourPen)" },
+        { "path": "detailsOfElements[0].details.style.fillPenIndex", "eq": 9, "name": "created: fill pen (u.text.fillPen)" },
+        { "path": "detailsOfElements[0].details.style.anchor", "eq": "MiddleMiddle", "name": "created: anchor (u.text.anchor)" },
+        { "path": "detailsOfElements[0].details.style.fixedAngle", "eq": true, "name": "created: fixed angle (u.text.fixedAngle)" },
+        { "path": "detailsOfElements[0].details.style.contourOffset", "approx": 1.5, "tol": 0.001, "name": "created: frame offset (u.text.contourOffset)" },
+        { "path": "detailsOfElements[0].details.style.flipEnabled", "eq": true, "name": "created: always readable (u.text.flipEnabled)" }
+      ]
+    },
+    {
+      "id": "[every style field changed]",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {
+        "labelsWithDetails": [
+          { "elementId": { "guid": "${l1}" },
+            "style": {
+              "penIndex": 6, "bold": false, "italic": true, "underline": false,
+              "justification": "Right", "height": 2.5, "angle": 0.5,
+              "effectStrikeout": false, "widthFactor": 0.8, "charSpaceFactor": 1.1,
+              "fixedSize": false, "usedContour": false, "usedFill": false,
+              "contourPenIndex": 8, "fillPenIndex": 10, "anchor": "LeftBottom",
+              "fixedAngle": false, "contourOffset": 0.5, "flipEnabled": false
+            } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per label" },
+        { "path": "executionResults[0].success", "eq": true, "name": "style changed" }
+      ]
+    },
+    {
+      "id": "read the modified label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "Tapir label style", "name": "text kept" },
+        { "path": "detailsOfElements[0].details.style.penIndex", "eq": 6, "name": "modified: pen" },
+        { "path": "detailsOfElements[0].details.style.bold", "eq": false, "name": "modified: not bold" },
+        { "path": "detailsOfElements[0].details.style.italic", "eq": true, "name": "modified: italic" },
+        { "path": "detailsOfElements[0].details.style.underline", "eq": false, "name": "modified: not underlined" },
+        { "path": "detailsOfElements[0].details.style.justification", "eq": "Right", "name": "modified: justification" },
+        { "path": "detailsOfElements[0].details.style.height", "approx": 2.5, "tol": 0.001, "name": "modified: height" },
+        { "path": "detailsOfElements[0].details.style.angle", "approx": 0.5, "tol": 0.001, "name": "modified: angle" },
+        { "path": "detailsOfElements[0].details.style.effectStrikeout", "eq": false, "name": "modified: no strikeout" },
+        { "path": "detailsOfElements[0].details.style.widthFactor", "approx": 0.8, "tol": 0.001, "name": "modified: width factor" },
+        { "path": "detailsOfElements[0].details.style.charSpaceFactor", "approx": 1.1, "tol": 0.001, "name": "modified: character spacing" },
+        { "path": "detailsOfElements[0].details.style.fixedSize", "eq": false, "name": "modified: size not fixed" },
+        { "path": "detailsOfElements[0].details.style.usedContour", "eq": false, "name": "modified: no frame" },
+        { "path": "detailsOfElements[0].details.style.usedFill", "eq": false, "name": "modified: no background fill" },
+        { "path": "detailsOfElements[0].details.style.contourPenIndex", "eq": 8, "name": "modified: frame pen" },
+        { "path": "detailsOfElements[0].details.style.fillPenIndex", "eq": 10, "name": "modified: fill pen" },
+        { "path": "detailsOfElements[0].details.style.anchor", "eq": "LeftBottom", "name": "modified: anchor" },
+        { "path": "detailsOfElements[0].details.style.fixedAngle", "eq": false, "name": "modified: angle not fixed" },
+        { "path": "detailsOfElements[0].details.style.contourOffset", "approx": 0.5, "tol": 0.001, "name": "modified: frame offset" },
+        { "path": "detailsOfElements[0].details.style.flipEnabled", "eq": false, "name": "modified: not always readable" }
+      ]
+    },
+    {
+      "id": "[font that is not loaded]",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {
+        "labelsWithDetails": [
+          { "elementId": { "guid": "${l1}" }, "style": { "fontName": "Tapir No Such Font 3133" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per label" },
+        { "path": "executionResults[0].success", "eq": false, "name": "refused: no loaded font has the name" }
+      ]
+    },
+    {
+      "id": "label unchanged after the refused font",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.penIndex", "eq": 6, "name": "pen kept" },
+        { "path": "detailsOfElements[0].details.style.height", "approx": 2.5, "tol": 0.001, "name": "height kept" }
+      ]
+    }
+  ]
+}

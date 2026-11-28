@@ -1,0 +1,85 @@
+{
+  "title": "Text frame of a Text label (u.text.textFrame.*) through 'style' in CreateLabels, ModifyLabels and GetDetailsOfElements, from Archicad 28 (#3133)",
+  "minTapir": "2.0.2",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "[text label with a fixed size rounded frame]",
+      "command": "CreateLabels",
+      "params": {
+        "labelsData": [
+          { "labelClass": "Text", "text": "Tapir label frame",
+            "style": { "usedContour": true, "textFrameShape": "RoundedRectangle", "textFrameSizeFixed": true, "textFrameFixedWidth": 30, "textFrameFixedHeight": 12 },
+            "begCoordinate": { "x": 780, "y": 700 }, "midCoordinate": { "x": 781, "y": 701 }, "endCoordinate": { "x": 783, "y": 701 } }
+        ]
+      },
+      "save": { "l1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result per label" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "text label created" }
+      ]
+    },
+    {
+      "id": "read the new label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.textFrameShape", "eq": "RoundedRectangle", "name": "created: frame shape (u.text.textFrame.shapeType)" },
+        { "path": "detailsOfElements[0].details.style.textFrameSizeFixed", "eq": true, "name": "created: fixed frame size (u.text.textFrame.isSizeFixed)" },
+        { "path": "detailsOfElements[0].details.style.textFrameFixedWidth", "approx": 30, "tol": 0.001, "name": "created: frame width (u.text.textFrame.fixedWidth)" },
+        { "path": "detailsOfElements[0].details.style.textFrameFixedHeight", "approx": 12, "tol": 0.001, "name": "created: frame height (u.text.textFrame.fixedHeight)" }
+      ]
+    },
+    {
+      "id": "[circle frame of another size]",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {
+        "labelsWithDetails": [
+          { "elementId": { "guid": "${l1}" }, "style": { "textFrameShape": "Circle", "textFrameFixedWidth": 20, "textFrameFixedHeight": 8 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per label" },
+        { "path": "executionResults[0].success", "eq": true, "name": "frame changed" }
+      ]
+    },
+    {
+      "id": "read the modified label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.textFrameShape", "eq": "Circle", "name": "modified: frame shape" },
+        { "path": "detailsOfElements[0].details.style.textFrameSizeFixed", "eq": true, "name": "fixed frame size kept" },
+        { "path": "detailsOfElements[0].details.style.textFrameFixedWidth", "approx": 20, "tol": 0.001, "name": "modified: frame width" },
+        { "path": "detailsOfElements[0].details.style.textFrameFixedHeight", "approx": 8, "tol": 0.001, "name": "modified: frame height" },
+        { "path": "detailsOfElements[0].details.text", "eq": "Tapir label frame", "name": "text kept" }
+      ]
+    },
+    {
+      "id": "[frame size no longer fixed]",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {
+        "labelsWithDetails": [
+          { "elementId": { "guid": "${l1}" }, "style": { "textFrameSizeFixed": false } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "frame size fit to the text again" }
+      ]
+    },
+    {
+      "id": "read the label again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.textFrameSizeFixed", "eq": false, "name": "modified: frame size not fixed" },
+        { "path": "detailsOfElements[0].details.style.textFrameShape", "eq": "Circle", "name": "frame shape kept" }
+      ]
+    }
+  ]
+}
